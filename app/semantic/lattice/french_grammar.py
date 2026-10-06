@@ -139,6 +139,8 @@ class _Clause:
     shared_modal_host: "_Clause | None" = None  # clause whose modal a bare infinitive shares
     prep_member_of: str | None = None   # F-B3G-1: unit id of the prep-governed member it coordinates with
     rel_member: bool = False            # N7: a verb coordinated inside a subject "qui" relative
+    rel_sibling: "_Clause | None" = None  # N7b: the relative clause it is coordinated with
+    rel_member_possible_request: bool = False  # N7b: homograph under an imperative host (H11 C)
     ni_modal: object = None  # obligation modal of "ne doit ni INF1 ni INF2" (token, then its draft)
     ni_scope_open: object = None  # "vouloir" token of a "ne ... ni INF" whose negated scope is not shared
     neg_scope_open: object = None  # negated operator chain draft whose scope over a bare coordinated INF is open
@@ -2276,18 +2278,48 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 and clause.boundary in {None, ","} \
                 and (clause.conn in {"et", "ou", "puis", "mais"} or (clause.conn is None and clause.boundary == ",")):
             clause.attachment_ambiguous = clause.after_postposed_protasis = True
-    # N7: "Le script qui lance P et exécute Q est prêt": a verb coordinated right after a
-    # subject "qui" relative on the sentence-initial NP continues that relative (the main
-    # predicate comes later); never a root injunction. Its attachment stays open and named.
-    if len(clauses) > 2 and _bare_noun_phrase(clauses[0].toks) \
-            and not any(_is_verb(clauses[0].toks, j) for j in range(len(clauses[0].toks))):
-        for k in range(2, len(clauses)):
-            prev, clause = clauses[k - 1], clauses[k]
-            rel_qui = prev.conn == "rel" and prev.conn_toks and prev.conn_toks[-1].low == "qui"
-            if (rel_qui or prev.rel_member) and clause.conn in {"et", "ou", "puis"} and clause.boundary is None \
-                    and clause.toks and _is_verb(clause.toks, 0) and all(c.conn == "rel" or c.rel_member
-                                                                        for c in clauses[1:k]):
-                clause.attachment_ambiguous = clause.rel_member = True
+    # N7 / N7b: a verb coordinated right after a subject "qui" relative ("qui teste P et
+    # exécute Q") is attached by morphology only (H11 option C), never by proximity:
+    # - the relative is on the sentence-initial NP (main predicate later), or the form can only
+    #   be a 3rd person ("et a exécuté Q", "exécutent"), or the host cannot coordinate a finite
+    #   imperative (question / declarative host): it continues the relative, coordinated with
+    #   the relative's predicate (same antecedent), never a root request;
+    # - the form can only be an imperative ("et exécutez Q"): it is the host's main directive;
+    # - 3sg / imperative homograph under an imperative host ("Lance le script qui teste P et
+    #   exécute Q"): attachment open and named, its possible request exposed fail-closed
+    #   (never a definitive REQUESTED, never silently dropped).
+    subject_np = _bare_noun_phrase(clauses[0].toks) if clauses else False
+    subject_np = subject_np and not any(_is_verb(clauses[0].toks, j) for j in range(len(clauses[0].toks)))
+    host_imperative = bool(clauses and clauses[0].toks and clauses[0].conn is None
+                           and _is_verb(clauses[0].toks, 0) and "IMP" in _feats(clauses[0].toks[0])
+                           and not interrogative)
+    for k in range(2, len(clauses)):
+        prev, clause = clauses[k - 1], clauses[k]
+        rel_qui = (prev.conn == "rel" and prev.conn_toks and prev.conn_toks[-1].low == "qui") or prev.rel_member
+        if not rel_qui or clause.conn not in {"et", "ou", "puis"} or clause.boundary is not None \
+                or not clause.toks or not _is_verb(clause.toks, 0):
+            continue
+        f, first = _feats(clause.toks[0]), clause.toks[0].low
+        third = bool({"P3S", "P3P"} & f) or bool(_AUX_PERSON.get(first, set()) & {"P3S", "P3P"})
+        imp_only = "IMP" in f and not third
+        on_subject = subject_np and all(c.conn == "rel" or c.rel_member for c in clauses[1:k])
+        host = next((c for c in reversed(clauses[:k - 1]) if c.conn != "rel" and not c.rel_member), None)
+        hverbs = [t for j, t in enumerate(host.toks) if _is_verb(host.toks, j)] if host is not None else []
+        host_infinitive = bool(hverbs) and "INF" in _feats(hverbs[-1]) and not ({"PRES", "IMP"} & _feats(hverbs[-1]))
+        host_imp = host is clauses[0] and host_imperative
+        if imp_only and not on_subject:
+            continue                                   # "et exécutez Q": the host's directive
+        if on_subject or host_infinitive or (host_imp and "IMP" not in f):
+            # only the relative can host it ("Peux-tu lancer le script qui teste P et exécute Q ?",
+            # "Lance le script qui teste P et a exécuté Q")
+            clause.rel_member, clause.rel_sibling = True, prev
+            clause.embedding_parent = prev.embedding_parent
+            clause.conn = "rel"
+        else:
+            # relative or host continuation: open, named; a possible directive only under an
+            # imperative host
+            clause.attachment_ambiguous = True
+            clause.rel_member_possible_request = host_imp
     if any(t.hyphen_before and t.low in _SUBJECT_PRONOUNS for t in toks):
         interrogative = True
 
@@ -2397,6 +2429,10 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         parent_unit, host = None, clauses[ci - 1] if ci > 0 else None
         if clause.coordinated_with is not None and id(clause.coordinated_with) in resolved:
             parent_unit, host = resolved[id(clause.coordinated_with)]
+        elif clause.rel_sibling is not None and id(clause.rel_sibling) in resolved:
+            # N7b: a predicate coordinated inside a relative shares its sibling's parent (if
+            # any); never embedded under the sibling itself
+            parent_unit, host = resolved[id(clause.rel_sibling)]
         else:
             if clause.embedding_parent is not None and clause.embedding_parent < ci:
                 parent_unit = last_of(clause.embedding_parent)
@@ -2428,6 +2464,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 # never a root assertion.
                 prag, epi = "EMBEDDED", UNRESOLVED_GOVERNANCE
                 ambiguities.append(f"coordination_attachment_ambiguous:{u.id}")
+                if clause.rel_member_possible_request and u.polarity == "positive" and d.subject is None:
+                    d.possible_request = True   # N7b: one reading is the host's directive (H11 C)
                 if clause.after_postposed_protasis and u.polarity == "negative" and d.subject is None \
                         and u.verb_form in {"INFINITIVE", "IMPERATIVE"} and d.head_index == d.lex_index \
                         and not any(c.modal is not None for c in clauses[:ci]
@@ -3060,6 +3098,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             else:
                 ambiguities.append(f"exception_condition_open:{h.id}"
                                    + (f":host={','.join(u.id for u in hosts)}" if hosts else ""))
+        elif clause.rel_sibling is not None and clause.rel_sibling.units and h is not None:
+            # N7b: predicates coordinated inside one relative ("qui teste P et exécute Q")
+            link = clause.conn_toks[0].low if clause.conn_toks else "et"
+            kind = {"et": RelationKind.COORDINATES, "ou": RelationKind.ALTERNATIVE,
+                    "puis": RelationKind.PRECEDES}.get(link, RelationKind.COORDINATES)
+            relations.append(LatticeRelation(kind.value, clause.rel_sibling.units[-1][0].id, h.id, evidence=link))
         elif clause.prep_member_of is not None:
             # F-B3G-1: a member of one prep-governed chain coordinates with its sibling member
             # (never with the governor, never a main-clause relation)
