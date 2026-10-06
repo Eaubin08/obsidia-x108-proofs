@@ -2778,6 +2778,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     missing: list[str] = list(detached_sources)
     protases = [cj for cj, c in enumerate(clauses)
                 if c.conn == "si" or (c.toks and c.toks[0].low == "si")]
+    def verbless_si(ci: int) -> bool:
+        # "Si P, lance R": a verbless preposed protasis closed by its comma; never one whose
+        # subject is coordinated into the next clause ("Si Nadia et Luc exécutent Q")
+        c, nxt = clauses[ci], clauses[ci + 1] if ci + 1 < len(clauses) else None
+        return c.toks[0].low == "si" and nxt is not None and nxt.boundary == ","
+
     for ci, clause in enumerate(clauses):
         if not clause.toks:
             continue
@@ -2793,12 +2799,13 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             k = lost[0][0]
             governed_by = next((u for (u, _) in clause.units
                                 if u.span == (clause.toks[k].start, clause.toks[k].end)), None)
-        elif clause.conn not in {"quand", "rel"} and not _unanalyzed_predicative(
+        elif clause.conn not in {"quand", "rel"} and not verbless_si(ci) and not _unanalyzed_predicative(
                 clause, in_sequence=(in_seq := clause.conn in _SEQUENCE_CONNECTIVES
                                      or (clause.conn is None and any(c.units for c in clauses if c is not clause)))) \
                 and not (_copula_evidence(clause) and (in_seq or clause.conn in _COPULA_REPORTED_CONNS)):
-            # (a "quand / lorsque" subordinate or a relative ("qui est utile") without any unit is
-            # always reported; so is
+            # (a "quand / lorsque" subordinate, a verbless preposed protasis ("Si P, lance R",
+            # "Si possible, ...": a condition is never dropped, H11) or a relative ("qui est
+            # utile") without any unit is always reported; so is
             # a copula + attribute clause in a subordinate or a sequence: "si c'est prêt")
             continue
         content = clause.toks[1:] if clause.toks[0].low == "si" else clause.toks
@@ -3009,7 +3016,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                     # into the clause and dropped; its content is kept (no antecedent, subject or
                     # predicate inferred)
                     link = "unattached_relative_of"
-                elif first in {"puis", "mais", "then", "but"}:  # "si" / "car"... have their own reporting
+                elif first == "si":
+                    # "Lance R si P", "Lance R si possible": a verbless protasis opens no clause;
+                    # the condition is kept as reported content (never dropped, H11), no
+                    # CONDITIONS relation invented (it needs a unit), frame open
+                    link = "conditional_protasis_of"
+                elif first in {"puis", "mais", "then", "but"}:  # "car"... have their own reporting
                     # "Lance P puis R": a verbless connective tail (R) was dropped with a closed frame;
                     # kept as reported content, no sequence relation invented (PRECEDES needs units)
                     link = "unattached_connective_content_of"
@@ -3031,6 +3043,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                         and i not in heads_of[id(clause)]
                 while end + 1 < len(clause.toks) and _continues(end + 1):
                     end += 1
+                if link == "conditional_protasis_of" and any(
+                        int(m.split(":")[1].split("-")[0]) < clause.toks[end].end
+                        and clause.toks[k].start < int(m.split(":")[1].split("-")[1])
+                        for m in missing if m.startswith(f"{UNANALYZED_PREDICATIVE_CONTENT}:")):
+                    break  # already reported (unknown-verb protasis)
                 parsed = _oblique_members(clause.toks, k, end) if link == "unattached_prepositional_of" else None
                 if parsed is None:
                     missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{clause.toks[k].start}-{clause.toks[end].end}"
