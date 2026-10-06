@@ -474,6 +474,21 @@ _GRAPH: "dict[str, dict]" = {
                      "human_authorized_eah": "exact EAH from PREPARE"},
         availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
         notes="V2 BROWSER NAVIGATE EXECUTE: TOCTOU URL drift check, navigate, independent post-read proof. STRICT_EXACT_URL. STRONG. KX108_ONLY."),
+    "PC_V2_BROWSER_READ_PREPARE": _cap(
+        "PC_V2_BROWSER_READ_PREPARE", family="PC_GOVERNED_READ", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_READ,
+        route=ROUTE_NATIVE,
+        input_shape={"selector": "str|None"},
+        availability="AVAILABLE", proof_status="J5_PREPARE_ONLY",
+        notes="V2 BROWSER READ PREPARE: read page_id+session_id as PSA V1. KX108_ONLY. Selector must be exactly 1 element. No password/hidden selectors."),
+    "PC_V2_BROWSER_READ_EXECUTE": _cap(
+        "PC_V2_BROWSER_READ_EXECUTE", family="PC_GOVERNED_READ", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_READ,
+        route=ROUTE_STAGE4_GOVERNED,
+        input_shape={"prepared_result": "PC_V2_BROWSER_READ_PREPARE output",
+                     "human_authorized_eah": "exact EAH from PREPARE"},
+        availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
+        notes="V2 BROWSER READ EXECUTE: TOCTOU page_id drift check, read_page(), selector count=1 guard. text_sha256 in receipt. STRONG. KX108_ONLY."),
 }
 
 _CAPABILITY_IDS = tuple(_GRAPH.keys())

@@ -1,7 +1,7 @@
 from __future__ import annotations
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock
 import pytest
 
 WORKTREE = Path(__file__).resolve().parents[1]
@@ -12,16 +12,26 @@ if str(SCRIPTS) not in sys.path:
 import obsidia_pc_capabilities_v2 as PC2
 import jarjar_browser_bridge_v0 as BBRIDGE
 
-PRE_URL  = "https://example.com/start"
-DEST_URL = "https://example.com/dashboard"
+PRE_URL    = "https://example.com/start"
+DEST_URL   = "https://example.com/dashboard"
+SESSION_ID = "sess-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+PAGE_ID    = "page-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 
 
-def _ex(*, pre_url=PRE_URL, post_url=DEST_URL, nav_ok=True, nav_url=None, status=200):
+def _state(url=PRE_URL, sid=SESSION_ID, pid=PAGE_ID, closed=False, origin="https://example.com"):
+    return {
+        "ok": True, "url": url, "title": "Pre Page",
+        "browser_session_id": sid, "page_id": pid,
+        "origin": origin, "closed": closed,
+    }
+
+
+def _ex(*, pre_url=PRE_URL, post_url=DEST_URL, nav_ok=True, nav_url=None, status=200,
+        sid=SESSION_ID, pid=PAGE_ID, closed=False):
     ex = MagicMock()
     ex.EXECUTOR_PROVIDER = "JARJAR"
     ex.EXECUTOR_BACKEND  = "BrowserBackend"
-    ex.read_browser_state.return_value = {
-        "ok": True, "url": pre_url, "title": "Pre Page"}
+    ex.read_browser_state.return_value = _state(pre_url, sid, pid, closed)
     ex.navigate.return_value = {
         "ok": nav_ok,
         "nav_url": nav_url or post_url,
@@ -32,17 +42,16 @@ def _ex(*, pre_url=PRE_URL, post_url=DEST_URL, nav_ok=True, nav_url=None, status
     return ex
 
 
-def _ex_post(ex, post_url):
-    """After navigate, read_browser_state returns post_url."""
+def _ex_post(ex, post_url, post_pid=PAGE_ID):
     ex.read_browser_state.side_effect = [
-        {"ok": True, "url": PRE_URL, "title": "Pre Page"},
-        {"ok": True, "url": PRE_URL, "title": "Pre Page"},
-        {"ok": True, "url": post_url, "title": "Post Page"},
+        _state(PRE_URL),
+        _state(PRE_URL),
+        _state(post_url, pid=post_pid),
     ]
     return ex
 
 
-# ── registration ──────────────────────────────────────────────────────────────
+# registration
 
 def test_bnav_prepare_is_registered():
     r = PC2.execute_pc_capability_v2(
@@ -61,7 +70,7 @@ def test_bnav_execute_is_registered():
     assert r["status"] != "UNKNOWN_CAPABILITY_V2"
 
 
-# ── prepare ────────────────────────────────────────────────────────────────────
+# prepare
 
 def test_prepare_reads_pre_url():
     ex = _ex()
@@ -97,7 +106,48 @@ def test_prepare_unknown_redirect_policy_rejected():
     assert "UNSUPPORTED_REDIRECT_POLICY" in r.get("reason", "")
 
 
-def test_prepare_psa_contains_pre_url_only():
+def test_prepare_missing_browser_session_id_rejected():
+    ex = _ex(sid="")
+    r = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir="/tmp/s", executor=ex)
+    assert r["status"] == PC2.PREPARE_REJECTED
+    assert "PAGE_IDENTITY_MISSING" in r.get("reason", "")
+
+
+def test_prepare_missing_page_id_rejected():
+    ex = _ex(pid="")
+    r = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir="/tmp/s", executor=ex)
+    assert r["status"] == PC2.PREPARE_REJECTED
+    assert "PAGE_IDENTITY_MISSING" in r.get("reason", "")
+
+
+def test_prepare_closed_page_rejected():
+    ex = _ex(closed=True)
+    r = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir="/tmp/s", executor=ex)
+    assert r["status"] == PC2.PREPARE_REJECTED
+    assert "PAGE_CLOSED" in r.get("reason", "")
+
+
+def test_prepare_captures_browser_session_id():
+    ex = _ex()
+    r = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir="/tmp/s", executor=ex)
+    assert r["browser_session_id"] == SESSION_ID
+
+
+def test_prepare_captures_page_id():
+    ex = _ex()
+    r = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir="/tmp/s", executor=ex)
+    assert r["page_id"] == PAGE_ID
+
+
+def test_prepare_psa_v1_different_page_id():
+    ex  = _ex()
+    r   = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir="/tmp/s", executor=ex)
+    ex2 = _ex(pid="page-ccccccccccccccccccccccccccccccc")
+    r2  = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir="/tmp/s2", executor=ex2)
+    assert r["physical_state_anchor"] != r2["physical_state_anchor"]
+
+
+def test_prepare_psa_same_for_different_dest():
     ex = _ex(pre_url="https://example.com/a")
     p1 = PC2.pc_v2_browser_navigate_prepare("https://example.com/x",
                                              stores_base_dir="/tmp/s1", executor=ex)
@@ -107,7 +157,7 @@ def test_prepare_psa_contains_pre_url_only():
     assert p1["execution_authority_hash"] != p2["execution_authority_hash"]
 
 
-# ── execute rejections ─────────────────────────────────────────────────────────
+# execute rejections
 
 def test_execute_wrong_eah_rejected(tmp_path):
     ex = _ex()
@@ -129,14 +179,47 @@ def test_execute_pre_state_drift_rejected(tmp_path):
     ex = _ex()
     prep = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir=tmp_path / "s", executor=ex)
     eah = prep["execution_authority_hash"]
-    ex.read_browser_state.return_value = {"ok": True, "url": "https://other.com/"}
+    ex.read_browser_state.return_value = _state("https://other.com/")
     r = PC2.pc_v2_browser_navigate_execute(prep, eah, "REF", stores_base_dir=tmp_path / "s", executor=ex)
     assert r["status"] == PC2.EXECUTE_REJECTED
     assert "PRE_STATE_DRIFT" in r.get("reason", "")
     ex.navigate.assert_not_called()
 
 
-# ── golden paths ───────────────────────────────────────────────────────────────
+def test_execute_page_id_drift_at_toctou_rejected(tmp_path):
+    ex = _ex()
+    prep = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir=tmp_path / "s", executor=ex)
+    eah = prep["execution_authority_hash"]
+    ex.read_browser_state.return_value = _state(PRE_URL, pid="page-zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz")
+    r = PC2.pc_v2_browser_navigate_execute(prep, eah, "REF", stores_base_dir=tmp_path / "s", executor=ex)
+    assert r["status"] == PC2.EXECUTE_REJECTED
+    assert "PRE_STATE_DRIFT" in r.get("reason", "")
+    ex.navigate.assert_not_called()
+
+
+def test_execute_session_drift_at_toctou_rejected(tmp_path):
+    ex = _ex()
+    prep = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir=tmp_path / "s", executor=ex)
+    eah = prep["execution_authority_hash"]
+    ex.read_browser_state.return_value = _state(PRE_URL, sid="sess-zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz")
+    r = PC2.pc_v2_browser_navigate_execute(prep, eah, "REF", stores_base_dir=tmp_path / "s", executor=ex)
+    assert r["status"] == PC2.EXECUTE_REJECTED
+    assert "PRE_STATE_DRIFT" in r.get("reason", "")
+    ex.navigate.assert_not_called()
+
+
+def test_execute_closed_page_at_toctou_rejected(tmp_path):
+    ex = _ex()
+    prep = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir=tmp_path / "s", executor=ex)
+    eah = prep["execution_authority_hash"]
+    ex.read_browser_state.return_value = _state(PRE_URL, closed=True)
+    r = PC2.pc_v2_browser_navigate_execute(prep, eah, "REF", stores_base_dir=tmp_path / "s", executor=ex)
+    assert r["status"] == PC2.EXECUTE_REJECTED
+    assert "PAGE_CLOSED_AT_EXECUTE" in r.get("reason", "")
+    ex.navigate.assert_not_called()
+
+
+# golden paths
 
 def test_navigate_success_strong_proof(tmp_path):
     ex = _ex_post(_ex(), DEST_URL)
@@ -171,12 +254,21 @@ def test_redirect_different_url_fail_closed(tmp_path):
     assert "REALIZED_STATE_MISMATCH" in r.get("reason", "")
 
 
+def test_post_navigate_page_id_drift_fail_closed(tmp_path):
+    ex = _ex_post(_ex(), DEST_URL, post_pid="page-zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz")
+    prep = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir=tmp_path / "s", executor=ex)
+    eah = prep["execution_authority_hash"]
+    r = PC2.pc_v2_browser_navigate_execute(prep, eah, "REF-N012", stores_base_dir=tmp_path / "s", executor=ex)
+    assert r["status"] == PC2.EXECUTE_REJECTED
+    assert "POST_PAGE_ID_DRIFT" in r.get("reason", "")
+
+
 def test_status_none_allowed_if_post_read_ok(tmp_path):
     ex = _ex(status=None)
     ex.read_browser_state.side_effect = [
-        {"ok": True, "url": PRE_URL, "title": "Pre"},
-        {"ok": True, "url": PRE_URL, "title": "Pre"},
-        {"ok": True, "url": DEST_URL, "title": "Post"},
+        _state(PRE_URL),
+        _state(PRE_URL),
+        _state(DEST_URL),
     ]
     prep = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir=tmp_path / "s", executor=ex)
     eah = prep["execution_authority_hash"]
@@ -188,7 +280,7 @@ def test_status_none_allowed_if_post_read_ok(tmp_path):
 def test_navigate_exception_fail_closed(tmp_path):
     ex = _ex()
     ex.navigate.return_value = {"ok": False, "error": "NAVIGATE_FAILED:timeout"}
-    ex.read_browser_state.return_value = {"ok": True, "url": PRE_URL, "title": "Pre"}
+    ex.read_browser_state.return_value = _state(PRE_URL)
     prep = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir=tmp_path / "s", executor=ex)
     eah = prep["execution_authority_hash"]
     r = PC2.pc_v2_browser_navigate_execute(prep, eah, "REF-N005", stores_base_dir=tmp_path / "s", executor=ex)
@@ -199,8 +291,8 @@ def test_navigate_exception_fail_closed(tmp_path):
 def test_post_read_exception_fail_closed(tmp_path):
     ex = _ex()
     ex.read_browser_state.side_effect = [
-        {"ok": True, "url": PRE_URL, "title": "Pre"},
-        {"ok": True, "url": PRE_URL, "title": "Pre"},
+        _state(PRE_URL),
+        _state(PRE_URL),
         {"ok": False, "error": "READ_BROWSER_STATE_FAILED:crash"},
     ]
     prep = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir=tmp_path / "s", executor=ex)
@@ -210,14 +302,14 @@ def test_post_read_exception_fail_closed(tmp_path):
     assert "POST_READ_FAILED" in r.get("reason", "")
 
 
-# ── no-op path ─────────────────────────────────────────────────────────────────
+# no-op path
 
 def test_noop_already_on_target_url(tmp_path):
     ex = _ex(pre_url=DEST_URL)
     ex.read_browser_state.side_effect = [
-        {"ok": True, "url": DEST_URL, "title": "Dest"},
-        {"ok": True, "url": DEST_URL, "title": "Dest"},
-        {"ok": True, "url": DEST_URL, "title": "Dest"},
+        _state(DEST_URL),
+        _state(DEST_URL),
+        _state(DEST_URL),
     ]
     prep = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir=tmp_path / "s", executor=ex)
     eah = prep["execution_authority_hash"]
@@ -231,9 +323,9 @@ def test_noop_already_on_target_url(tmp_path):
 def test_noop_post_read_mismatch_fail_closed(tmp_path):
     ex = _ex(pre_url=DEST_URL)
     ex.read_browser_state.side_effect = [
-        {"ok": True, "url": DEST_URL, "title": "Dest"},
-        {"ok": True, "url": DEST_URL, "title": "Dest"},
-        {"ok": True, "url": "https://other.com/"},
+        _state(DEST_URL),
+        _state(DEST_URL),
+        _state("https://other.com/"),
     ]
     prep = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir=tmp_path / "s", executor=ex)
     eah = prep["execution_authority_hash"]
@@ -242,7 +334,21 @@ def test_noop_post_read_mismatch_fail_closed(tmp_path):
     assert "REALIZED_STATE_MISMATCH" in r.get("reason", "")
 
 
-# ── URL normalization contract ─────────────────────────────────────────────────
+def test_noop_preserves_page_id(tmp_path):
+    ex = _ex(pre_url=DEST_URL)
+    ex.read_browser_state.side_effect = [
+        _state(DEST_URL),
+        _state(DEST_URL),
+        _state(DEST_URL, pid=PAGE_ID),
+    ]
+    prep = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir=tmp_path / "s", executor=ex)
+    eah = prep["execution_authority_hash"]
+    r = PC2.pc_v2_browser_navigate_execute(prep, eah, "REF-N013", stores_base_dir=tmp_path / "s", executor=ex)
+    assert r["status"] == PC2.EXECUTED_OK
+    assert r["mutation_performed"] is False
+
+
+# URL normalization
 
 def test_canon_strips_default_https_port(tmp_path):
     ex = _ex_post(_ex(), "https://example.com/dashboard")
@@ -271,7 +377,7 @@ def test_canon_different_path_still_mismatch(tmp_path):
     assert "REALIZED_STATE_MISMATCH" in r.get("reason", "")
 
 
-# ── graph + security ───────────────────────────────────────────────────────────
+# graph + security
 
 def test_bnav_caps_in_graph():
     import obsidia_capability_graph_v0 as CG

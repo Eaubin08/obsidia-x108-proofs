@@ -60,8 +60,20 @@ _CAP_STAB_EXECUTE   = "PC_V2_UIA_SELECT_TAB_EXECUTE"
 OP_BROWSER_NAVIGATE = "V2_BROWSER_NAVIGATE"
 _CAP_BNAV_PREPARE   = "PC_V2_BROWSER_NAVIGATE_PREPARE"
 _CAP_BNAV_EXECUTE   = "PC_V2_BROWSER_NAVIGATE_EXECUTE"
+
+OP_BROWSER_READ    = "V2_BROWSER_READ"
+_CAP_BRAD_PREPARE  = "PC_V2_BROWSER_READ_PREPARE"
+_CAP_BRAD_EXECUTE  = "PC_V2_BROWSER_READ_EXECUTE"
+
+_SENSITIVE_SELECTOR_PATTERNS = (
+    "type=password", 'type="password"', "type=hidden", 'type="hidden"',
+)
+
+def _is_sensitive_selector(selector: str) -> bool:
+    sl = selector.lower().replace(" ", "")
+    return any(p.replace(" ", "") in sl for p in _SENSITIVE_SELECTOR_PATTERNS)
 OP_UIA_SET_CHECKED  = "V2_UIA_SET_CHECKED"
-_CAPABILITY_IDS_V2 = (_CAP_CREATE_PREPARE, _CAP_CREATE_EXECUTE, _CAP_MOVE_PREPARE, _CAP_MOVE_EXECUTE, _CAP_PATCH_PREPARE, _CAP_PATCH_EXECUTE, _CAP_CDIR_PREPARE, _CAP_CDIR_EXECUTE, _CAP_WFOCUS_PREPARE, _CAP_WFOCUS_EXECUTE, _CAP_AOPEN_PREPARE, _CAP_AOPEN_EXECUTE, _CAP_AVOL_PREPARE, _CAP_AVOL_EXECUTE, _CAP_UTEXT_PREPARE, _CAP_UTEXT_EXECUTE, _CAP_SCHK_PREPARE, _CAP_SCHK_EXECUTE, _CAP_SRAD_PREPARE, _CAP_SRAD_EXECUTE, _CAP_STAB_PREPARE, _CAP_STAB_EXECUTE, _CAP_BNAV_PREPARE, _CAP_BNAV_EXECUTE)
+_CAPABILITY_IDS_V2 = (_CAP_CREATE_PREPARE, _CAP_CREATE_EXECUTE, _CAP_MOVE_PREPARE, _CAP_MOVE_EXECUTE, _CAP_PATCH_PREPARE, _CAP_PATCH_EXECUTE, _CAP_CDIR_PREPARE, _CAP_CDIR_EXECUTE, _CAP_WFOCUS_PREPARE, _CAP_WFOCUS_EXECUTE, _CAP_AOPEN_PREPARE, _CAP_AOPEN_EXECUTE, _CAP_AVOL_PREPARE, _CAP_AVOL_EXECUTE, _CAP_UTEXT_PREPARE, _CAP_UTEXT_EXECUTE, _CAP_SCHK_PREPARE, _CAP_SCHK_EXECUTE, _CAP_SRAD_PREPARE, _CAP_SRAD_EXECUTE, _CAP_STAB_PREPARE, _CAP_STAB_EXECUTE, _CAP_BNAV_PREPARE, _CAP_BNAV_EXECUTE, _CAP_BRAD_PREPARE, _CAP_BRAD_EXECUTE)
 PREPARED_AWAITING_HUMAN_APPROVAL = "PREPARED_AWAITING_HUMAN_APPROVAL"
 EXECUTED_OK = "EXECUTED_OK"
 PREPARE_REJECTED = "PREPARE_REJECTED"
@@ -1755,6 +1767,18 @@ OP_BROWSER_NAVIGATE = "V2_BROWSER_NAVIGATE"
 _CAP_BNAV_PREPARE   = "PC_V2_BROWSER_NAVIGATE_PREPARE"
 _CAP_BNAV_EXECUTE   = "PC_V2_BROWSER_NAVIGATE_EXECUTE"
 
+OP_BROWSER_READ    = "V2_BROWSER_READ"
+_CAP_BRAD_PREPARE  = "PC_V2_BROWSER_READ_PREPARE"
+_CAP_BRAD_EXECUTE  = "PC_V2_BROWSER_READ_EXECUTE"
+
+_SENSITIVE_SELECTOR_PATTERNS = (
+    "type=password", 'type="password"', "type=hidden", 'type="hidden"',
+)
+
+def _is_sensitive_selector(selector: str) -> bool:
+    sl = selector.lower().replace(" ", "")
+    return any(p.replace(" ", "") in sl for p in _SENSITIVE_SELECTOR_PATTERNS)
+
 
 def _canon_url(url: str) -> str:
     """Canonical URL: lower scheme+host, strip default port, ensure non-empty path."""
@@ -1783,12 +1807,13 @@ def _url_origin(url: str) -> str:
         return ""
 
 
-def _browser_pre_state_anchor(pre_url: str, pre_origin: str):
+def _browser_pre_state_anchor(pre_url: str, pre_origin: str, browser_session_id: str = "", page_id: str = ""):
     snapshot = {
-        "anchor_schema": "BROWSER_NAVIGATE_PRE_STATE_V0",
+        "anchor_schema": "BROWSER_NAVIGATE_PRE_STATE_V1",
+        "browser_session_id": browser_session_id,
+        "page_id": page_id,
         "pre_url": pre_url,
         "pre_origin": pre_origin,
-        "identity_note": "V0_SINGLETON_PAGE_NO_EXPLICIT_ID",
     }
     return snapshot, _sha256(json.dumps(snapshot, sort_keys=True, ensure_ascii=False).encode("utf-8"))
 
@@ -1808,12 +1833,25 @@ def pc_v2_browser_navigate_prepare(
     if not pre_r.get("ok"):
         return _prep_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_PREPARE,
                          "PRE_STATE_READ_FAILED:" + str(pre_r.get("error", "")), session_id)
+    browser_session_id = str(pre_r.get("browser_session_id") or "")
+    page_id            = str(pre_r.get("page_id") or "")
+    if not browser_session_id:
+        return _prep_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_PREPARE,
+                         "PAGE_IDENTITY_MISSING:browser_session_id", session_id)
+    if not page_id:
+        return _prep_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_PREPARE,
+                         "PAGE_IDENTITY_MISSING:page_id", session_id)
+    if pre_r.get("closed"):
+        return _prep_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_PREPARE, "PAGE_CLOSED", session_id)
     pre_url    = str(pre_r.get("url") or "")
-    pre_origin = _url_origin(pre_url)
+    pre_origin = str(pre_r.get("origin") or _url_origin(pre_url))
     canon_req  = _canon_url(requested_url)
-    _, physical_state_anchor = _browser_pre_state_anchor(pre_url, pre_origin)
+    _, physical_state_anchor = _browser_pre_state_anchor(
+        pre_url, pre_origin, browser_session_id, page_id)
     desc = {
         "operation_type": OP_BROWSER_NAVIGATE,
+        "browser_session_id": browser_session_id,
+        "page_id": page_id,
         "requested_url": requested_url,
         "canon_requested_url": canon_req,
         "requested_origin": _url_origin(requested_url),
@@ -1839,6 +1877,7 @@ def pc_v2_browser_navigate_prepare(
         "requested_url": requested_url, "canon_requested_url": canon_req,
         "requested_origin": req_origin,
         "redirect_policy": redirect_policy,
+        "browser_session_id": browser_session_id, "page_id": page_id,
         "pre_url": pre_url, "pre_origin": pre_origin,
         "physical_state_anchor": physical_state_anchor,
         "state_anchor_kind": "PHYSICAL_PRE_STATE",
@@ -1847,6 +1886,7 @@ def pc_v2_browser_navigate_prepare(
         "receipt": _rcpt(_CAP_BNAV_PREPARE, OP_BROWSER_NAVIGATE,
                           PREPARED_AWAITING_HUMAN_APPROVAL, session_id,
                           execution_authority_hash=eah,
+                          browser_session_id=browser_session_id, page_id=page_id,
                           requested_url=requested_url, canon_requested_url=canon_req,
                           requested_origin=req_origin,
                           redirect_policy=redirect_policy,
@@ -1880,20 +1920,27 @@ def pc_v2_browser_navigate_execute(
                    and _eah(OP_BROWSER_NAVIGATE, desc.get("descriptor", {})) == exp_eah)
     if not desc_eah_ok:
         return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "DESCRIPTOR_EAH_MISMATCH", session_id)
-    d               = desc["descriptor"]
-    requested_url   = d.get("requested_url", "")
-    canon_req       = d.get("canon_requested_url", "")
-    stored_psa      = d.get("physical_state_anchor", "")
-    stored_pre_url  = d.get("pre_url", "")
+    d                  = desc["descriptor"]
+    requested_url      = d.get("requested_url", "")
+    canon_req          = d.get("canon_requested_url", "")
+    stored_psa         = d.get("physical_state_anchor", "")
+    stored_pre_url     = d.get("pre_url", "")
+    stored_session_id  = d.get("browser_session_id", "")
+    stored_page_id     = d.get("page_id", "")
     if not requested_url or not canon_req:
         return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "DESCRIPTOR_INVALID", session_id)
     toctou_r = executor.read_browser_state()
     if not toctou_r.get("ok"):
         return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE,
                          "TOCTOU_READ_FAILED:" + str(toctou_r.get("error", "")), session_id)
-    current_url    = str(toctou_r.get("url") or "")
-    current_origin = _url_origin(current_url)
-    _, current_psa = _browser_pre_state_anchor(current_url, current_origin)
+    if toctou_r.get("closed"):
+        return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "PAGE_CLOSED_AT_EXECUTE", session_id)
+    current_url        = str(toctou_r.get("url") or "")
+    current_origin     = str(toctou_r.get("origin") or _url_origin(current_url))
+    current_session_id = str(toctou_r.get("browser_session_id") or "")
+    current_page_id    = str(toctou_r.get("page_id") or "")
+    _, current_psa     = _browser_pre_state_anchor(
+        current_url, current_origin, current_session_id, current_page_id)
     if current_psa != stored_psa:
         return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "PRE_STATE_DRIFT", session_id)
     scope_id = _sha16(f"BROWSER:{canon_req}")
@@ -1915,9 +1962,12 @@ def pc_v2_browser_navigate_execute(
         if not post_r.get("ok"):
             return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE,
                              "NOOP_POST_READ_FAILED:" + str(post_r.get("error", "")), session_id)
-        post_url = str(post_r.get("url") or "")
+        post_url     = str(post_r.get("url") or "")
+        post_page_id = str(post_r.get("page_id") or "")
         if _canon_url(post_url) != canon_req:
             return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "REALIZED_STATE_MISMATCH", session_id)
+        if post_page_id and post_page_id != stored_page_id:
+            return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "POST_PAGE_ID_DRIFT", session_id)
         return {
             "status": EXECUTED_OK, "j5_phase": "EXECUTE",
             "operation_type": OP_BROWSER_NAVIGATE, "jarvis_authority": JARVIS_AUTHORITY,
@@ -1950,9 +2000,12 @@ def pc_v2_browser_navigate_execute(
     if not post_r.get("ok"):
         return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE,
                          "POST_READ_FAILED:" + str(post_r.get("error", "")), session_id)
-    post_url = str(post_r.get("url") or "")
+    post_url     = str(post_r.get("url") or "")
+    post_page_id = str(post_r.get("page_id") or "")
     if _canon_url(post_url) != canon_req:
         return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "REALIZED_STATE_MISMATCH", session_id)
+    if post_page_id and post_page_id != stored_page_id:
+        return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "POST_PAGE_ID_DRIFT", session_id)
     return {
         "status": EXECUTED_OK, "j5_phase": "EXECUTE",
         "operation_type": OP_BROWSER_NAVIGATE, "jarvis_authority": JARVIS_AUTHORITY,
@@ -1976,6 +2029,204 @@ def pc_v2_browser_navigate_execute(
                           physical_state_anchor=stored_psa, state_anchor_kind="PHYSICAL_PRE_STATE"),
     }
 
+
+
+
+
+# ============================
+# GOVERNED_BROWSER_READ
+# ============================
+
+def _browser_read_pre_state_anchor(browser_session_id, page_id, pre_url, pre_origin):
+    snapshot = {
+        "anchor_schema": "BROWSER_READ_PRE_STATE_V1",
+        "browser_session_id": browser_session_id,
+        "page_id": page_id,
+        "pre_url": pre_url,
+        "pre_origin": pre_origin,
+    }
+    return snapshot, _sha256(json.dumps(snapshot, sort_keys=True, ensure_ascii=False).encode("utf-8"))
+
+
+def pc_v2_browser_read_prepare(
+        selector=None,
+        *, stores_base_dir, session_id="", executor=None):
+    if executor is None:
+        return _prep_rej(OP_BROWSER_READ, _CAP_BRAD_PREPARE, "EXECUTOR_REQUIRED", session_id)
+    if selector is not None and not isinstance(selector, str):
+        return _prep_rej(OP_BROWSER_READ, _CAP_BRAD_PREPARE, "SELECTOR_MUST_BE_STRING", session_id)
+    if selector and _is_sensitive_selector(selector):
+        return _prep_rej(OP_BROWSER_READ, _CAP_BRAD_PREPARE, "SENSITIVE_SELECTOR_FORBIDDEN", session_id)
+    st = _stores(stores_base_dir)
+    pre_r = executor.read_browser_state()
+    if not pre_r.get("ok"):
+        return _prep_rej(OP_BROWSER_READ, _CAP_BRAD_PREPARE,
+                         "PRE_STATE_READ_FAILED:" + str(pre_r.get("error", "")), session_id)
+    browser_session_id = str(pre_r.get("browser_session_id") or "")
+    page_id            = str(pre_r.get("page_id") or "")
+    if not browser_session_id:
+        return _prep_rej(OP_BROWSER_READ, _CAP_BRAD_PREPARE,
+                         "PAGE_IDENTITY_MISSING:browser_session_id", session_id)
+    if not page_id:
+        return _prep_rej(OP_BROWSER_READ, _CAP_BRAD_PREPARE,
+                         "PAGE_IDENTITY_MISSING:page_id", session_id)
+    if pre_r.get("closed"):
+        return _prep_rej(OP_BROWSER_READ, _CAP_BRAD_PREPARE, "PAGE_CLOSED", session_id)
+    pre_url    = str(pre_r.get("url") or "")
+    pre_origin = str(pre_r.get("origin") or _url_origin(pre_url))
+    read_scope = "SELECTOR" if selector else "FULL_PAGE"
+    _, physical_state_anchor = _browser_read_pre_state_anchor(
+        browser_session_id, page_id, pre_url, pre_origin)
+    desc = {
+        "operation_type": OP_BROWSER_READ,
+        "browser_session_id": browser_session_id,
+        "page_id": page_id,
+        "pre_url": pre_url,
+        "pre_origin": pre_origin,
+        "selector": selector,
+        "read_scope": read_scope,
+        "session_id": session_id,
+        "physical_state_anchor": physical_state_anchor,
+        "state_anchor_kind": "PHYSICAL_PRE_STATE_V1",
+    }
+    eah   = _eah(OP_BROWSER_READ, desc)
+    scope = _sha16(f"BROWSER_READ:{read_scope}:{selector or ''}")
+    child = _v2id("chd", eah + scope + "BROWSER_READ")
+    v2id  = _v2id("v2x", eah + session_id + "BROWSER_READ")
+    mh    = _sha16(json.dumps(desc, sort_keys=True))
+    dh    = _persist_desc(v2id, OP_BROWSER_READ, eah, desc, st["v2exec"])
+    return {
+        "status": PREPARED_AWAITING_HUMAN_APPROVAL, "j5_phase": "PREPARE",
+        "operation_type": OP_BROWSER_READ, "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "execution_authority_hash": eah,
+        "browser_session_id": browser_session_id, "page_id": page_id,
+        "pre_url": pre_url, "pre_origin": pre_origin,
+        "selector": selector, "read_scope": read_scope,
+        "physical_state_anchor": physical_state_anchor,
+        "state_anchor_kind": "PHYSICAL_PRE_STATE_V1",
+        "v2_exec_id": v2id, "child_id": child, "manifest_hash": mh, "desc_hash": dh,
+        "_stores_base_dir": str(stores_base_dir),
+        "receipt": _rcpt(_CAP_BRAD_PREPARE, OP_BROWSER_READ,
+                          PREPARED_AWAITING_HUMAN_APPROVAL, session_id,
+                          execution_authority_hash=eah,
+                          browser_session_id=browser_session_id, page_id=page_id,
+                          pre_url=pre_url, pre_origin=pre_origin,
+                          selector=selector, read_scope=read_scope,
+                          physical_state_anchor=physical_state_anchor,
+                          state_anchor_kind="PHYSICAL_PRE_STATE"),
+    }
+
+def pc_v2_browser_read_execute(
+        prepared_result, human_authorized_eah, human_authorization_reference,
+        *, stores_base_dir, session_id="", executor=None):
+    if prepared_result.get("j5_phase") != "PREPARE":
+        return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE, "PREPARE_PHASE_REQUIRED", session_id)
+    if prepared_result.get("status") != PREPARED_AWAITING_HUMAN_APPROVAL:
+        return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE,
+                         "PREPARED_AWAITING_HUMAN_APPROVAL_REQUIRED", session_id)
+    exp_eah = prepared_result.get("execution_authority_hash", "")
+    if not exp_eah or human_authorized_eah != exp_eah:
+        return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE, EAH_MISMATCH, session_id)
+    if not (human_authorization_reference or "").strip():
+        return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE,
+                         "HUMAN_AUTHORIZATION_REFERENCE_REQUIRED", session_id)
+    if executor is None:
+        return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE, "EXECUTOR_REQUIRED", session_id)
+    v2id  = prepared_result.get("v2_exec_id", "")
+    child = prepared_result.get("child_id", "")
+    mh    = prepared_result.get("manifest_hash", "")
+    dh    = prepared_result.get("desc_hash", "")
+    st    = _stores(stores_base_dir)
+    desc  = _load_desc(v2id, st["v2exec"])
+    desc_eah_ok = (desc and desc.get("eah") == exp_eah
+                   and _eah(OP_BROWSER_READ, desc.get("descriptor", {})) == exp_eah)
+    if not desc_eah_ok:
+        return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE, "DESCRIPTOR_EAH_MISMATCH", session_id)
+    d                 = desc["descriptor"]
+    stored_session_id = d.get("browser_session_id", "")
+    stored_page_id    = d.get("page_id", "")
+    stored_pre_url    = d.get("pre_url", "")
+    stored_pre_origin = d.get("pre_origin", "")
+    stored_psa        = d.get("physical_state_anchor", "")
+    selector          = d.get("selector")
+    read_scope        = d.get("read_scope", "FULL_PAGE")
+    toctou_r = executor.read_browser_state()
+    if not toctou_r.get("ok"):
+        return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE,
+                         "TOCTOU_READ_FAILED:" + str(toctou_r.get("error", "")), session_id)
+    if toctou_r.get("closed"):
+        return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE, "PAGE_CLOSED_AT_EXECUTE", session_id)
+    current_session_id = str(toctou_r.get("browser_session_id") or "")
+    current_page_id    = str(toctou_r.get("page_id") or "")
+    current_url        = str(toctou_r.get("url") or "")
+    current_origin     = str(toctou_r.get("origin") or _url_origin(current_url))
+    _, current_psa     = _browser_read_pre_state_anchor(
+        current_session_id, current_page_id, current_url, current_origin)
+    if current_psa != stored_psa:
+        return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE, "PRE_STATE_DRIFT", session_id)
+    scope_id = _sha16(f"BROWSER_READ:{read_scope}:{selector or ''}")
+    apr      = _approval(v2id, child, exp_eah, scope_id + "BROWSER_READ")
+    apv_id   = apr["approval_id"]
+    ar = _E.store_approval_artifact(apr, st["approval"])
+    if ar.get("status") not in ("STORED", "IDEMPOTENT_ALREADY_EXISTS"):
+        return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE, "APPROVAL_STORE_FAILED", session_id)
+    kx = _kx108_pre(v2id, child, exp_eah, apv_id, dh, "", mh, [scope_id], OP_BROWSER_READ,
+                    kxpre=st["kxpre"], physical_state_anchor=stored_psa,
+                    state_anchor_kind="PHYSICAL_PRE_STATE")
+    if not kx.get("verify_ok"):
+        return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE, "KX108_PRE_FAILED", session_id)
+    gate = kx.get("x108_gate", "")
+    if gate != "ALLOW":
+        return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE, "KX108_PRE_GATE:" + gate, session_id)
+    read_r = executor.read_page(selector)
+    if not read_r.get("ok"):
+        return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE,
+                         "READ_PAGE_FAILED:" + str(read_r.get("error", "")), session_id)
+    if read_r.get("closed"):
+        return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE, "PAGE_CLOSED_DURING_READ", session_id)
+    post_page_id = str(read_r.get("page_id") or "")
+    if post_page_id and post_page_id != stored_page_id:
+        return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE, "POST_PAGE_ID_DRIFT", session_id)
+    if selector is not None:
+        element_count = read_r.get("element_count")
+        if element_count is None:
+            return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE,
+                             "SELECTOR_COUNT_UNAVAILABLE", session_id)
+        if element_count == 0:
+            return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE, "SELECTOR_NO_MATCH", session_id)
+        if element_count > 1:
+            return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE, "SELECTOR_AMBIGUOUS", session_id)
+    text           = str(read_r.get("text") or "")
+    text_sha256    = _sha256(text.encode("utf-8"))
+    content_length = len(text)
+    post_url       = str(read_r.get("url") or "")
+    post_origin    = str(read_r.get("origin") or _url_origin(post_url))
+    return {
+        "status": EXECUTED_OK, "j5_phase": "EXECUTE",
+        "operation_type": OP_BROWSER_READ, "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "kx108_pre_gate": gate, "human_authorization_consumed": True,
+        "browser_session_id": stored_session_id, "page_id": stored_page_id,
+        "url": post_url, "origin": post_origin,
+        "title": read_r.get("title"),
+        "selector": selector, "read_scope": read_scope,
+        "text": text,
+        "text_sha256": text_sha256, "content_length": content_length,
+        "element_count": read_r.get("element_count"),
+        "proof_strength": "STRONG", "read_observed_proof": True,
+        "executor_provider": executor.EXECUTOR_PROVIDER,
+        "executor_backend": executor.EXECUTOR_BACKEND,
+        "receipt": _rcpt(_CAP_BRAD_EXECUTE, OP_BROWSER_READ, EXECUTED_OK, session_id,
+                          kx108_pre_gate=gate,
+                          browser_session_id=stored_session_id, page_id=stored_page_id,
+                          pre_url=stored_pre_url, url=post_url, origin=post_origin,
+                          selector=selector, read_scope=read_scope,
+                          text_sha256=text_sha256, content_length=content_length,
+                          proof_strength="STRONG", read_observed_proof=True,
+                          physical_state_anchor=stored_psa,
+                          state_anchor_kind="PHYSICAL_PRE_STATE"),
+    }
 
 
 # ============================
@@ -2215,6 +2466,8 @@ def execute_pc_capability_v2(capability_id: str, **kwargs) -> dict:
         _CAP_STAB_EXECUTE:   pc_v2_uia_select_tab_execute,
         _CAP_BNAV_PREPARE:   pc_v2_browser_navigate_prepare,
         _CAP_BNAV_EXECUTE:   pc_v2_browser_navigate_execute,
+        _CAP_BRAD_PREPARE:   pc_v2_browser_read_prepare,
+        _CAP_BRAD_EXECUTE:   pc_v2_browser_read_execute,
     }
     fn = _dispatch.get(capability_id)
     if fn is None: return {"status": "UNKNOWN_CAPABILITY_V2", "capability_id": capability_id, "known": list(_dispatch)}
