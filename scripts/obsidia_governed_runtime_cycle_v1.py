@@ -82,6 +82,8 @@ from periphery.feedback_memory_bridge_brody_readonly import build_memory_candida
 from periphery.os3_replay_runner import run_replay
 from periphery.os3_ticket import build_os3_ticket, ticket_is_valid
 from periphery.gencoin import compute_gencoin
+from sigma.contracts import DomainAggregate
+from sigma.guard import GuardX108
 from periphery.sigma_bridge import (
     run_bank_with_periphery,
     run_ecom_with_periphery,
@@ -176,29 +178,62 @@ def _resolve_domain_pipeline_with_extension(
     domain: str,
     domain_extension_resolver: Any = None,
 ) -> Callable[[Any, Any], Any]:
-    """Resolve canonical first, optional extension second, otherwise fail closed."""
+    """Resolve canonical first; extension may only build DomainAggregate.
+
+    SECURITY BOUNDARY:
+    a portable extension is NEVER allowed to return a decision envelope.
+    It may only construct the non-sovereign DomainAggregate input. The
+    coordinator then invokes the real GuardX108 itself, preserving KX108_ONLY.
+    """
     if is_supported_domain(domain):
         return resolve_domain_pipeline(domain)
 
     if not _extension_supports_domain(domain, domain_extension_resolver):
         raise GovernedRuntimeCycleError(f"NO_CANONICAL_DOMAIN_PIPELINE:{domain}")
 
-    fn = getattr(domain_extension_resolver, "resolve_domain_pipeline", None)
+    fn = getattr(domain_extension_resolver, "resolve_domain_aggregate_builder", None)
     if not callable(fn):
-        raise GovernedRuntimeCycleError("INVALID_DOMAIN_EXTENSION_RESOLVER")
+        raise GovernedRuntimeCycleError(
+            "INVALID_DOMAIN_EXTENSION_RESOLVER:"
+            "MISSING_RESOLVE_DOMAIN_AGGREGATE_BUILDER"
+        )
 
     try:
-        pipeline = fn(domain)
+        builder = fn(domain)
     except Exception as exc:
         raise GovernedRuntimeCycleError(
-            f"DOMAIN_EXTENSION_PIPELINE_RESOLUTION_FAILED:{domain}:{exc}"
+            f"DOMAIN_EXTENSION_AGGREGATE_BUILDER_RESOLUTION_FAILED:{domain}:{exc}"
         ) from exc
 
-    if not callable(pipeline):
+    if not callable(builder):
         raise GovernedRuntimeCycleError(
-            f"DOMAIN_EXTENSION_PIPELINE_NOT_CALLABLE:{domain}"
+            f"DOMAIN_EXTENSION_AGGREGATE_BUILDER_NOT_CALLABLE:{domain}"
         )
-    return pipeline
+
+    def _guarded_extension_pipeline(domain_state: Any, packet: Any):
+        try:
+            aggregate = builder(domain_state, packet)
+        except Exception as exc:
+            raise GovernedRuntimeCycleError(
+                f"DOMAIN_EXTENSION_AGGREGATE_BUILD_FAILED:{domain}:{exc}"
+            ) from exc
+
+        if not isinstance(aggregate, DomainAggregate):
+            raise GovernedRuntimeCycleError(
+                f"DOMAIN_EXTENSION_MUST_RETURN_DOMAIN_AGGREGATE:{domain}"
+            )
+
+        aggregate_domain = getattr(getattr(aggregate, "domain", None), "value", None)
+        if aggregate_domain != domain:
+            raise GovernedRuntimeCycleError(
+                f"DOMAIN_EXTENSION_AGGREGATE_DOMAIN_MISMATCH:{domain}:{aggregate_domain}"
+            )
+
+        # Sovereign decision is rendered here, by the real kernel Guard only.
+        return GuardX108().decide(aggregate)
+
+    _guarded_extension_pipeline.__name__ = f"run_{domain}_extension_guarded"
+    return _guarded_extension_pipeline
 
 
 class GovernedRuntimeCycleError(Exception):
@@ -509,6 +544,8 @@ def run_governed_runtime_cycle(
     #
     # Canonical bridge always has strict precedence. The optional extension
     # resolver is consulted only for a domain absent from _DOMAIN_PIPELINES.
+    # Extension code may build DomainAggregate only; GuardX108 is invoked by
+    # this coordinator wrapper, never by an extension-supplied decision path.
     pipeline = _resolve_domain_pipeline_with_extension(
         packet.domain,
         domain_extension_resolver,
