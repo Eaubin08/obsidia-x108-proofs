@@ -16,7 +16,8 @@ from app.semantic.lattice.french_grammar import parse_utterance
 from app.semantic.lattice.ir_projection import governable_summary
 
 
-@pytest.mark.parametrize("text,lemma", [("Explique le script qui sert à lancer P.", "lancer"),
+# "servir à" is SERVE_FOR since its approved APPLY (test_serve_for): a really unknown governor here
+@pytest.mark.parametrize("text,lemma", [("Explique le script qui contribue à lancer P.", "lancer"),
                                         ("Lance le script qui permet de tester P.", "tester")])
 def test_relative_infinitive_under_unknown_governor_is_not_asserted(text, lemma):
     f = parse_utterance(text)

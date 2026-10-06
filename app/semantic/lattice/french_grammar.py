@@ -2263,7 +2263,19 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                     prag, epi = "EMBEDDED", "NOT_APPLICABLE"
                     ambiguities.append(f"infinitive_under_unrecognized_governor:{u.id}")
                     _keep_governor_material(clause, d, u.id)
-                if parent_unit is not None:
+                rel_gov = next((x for (x, _) in new_units + clause.units if x.id == d.governor_unit), None) \
+                    if d.verb_form == "INFINITIVE" and d.governed == "prep" else None
+                if rel_gov is not None:
+                    # "la mémoire qui sert à parler": the infinitive is the content of the relative's
+                    # own known governor (SERVE_FOR), never an asserted action of the relative
+                    prag, epi = "EMBEDDED", "NOT_APPLICABLE"
+                    embedded_under = rel_gov.id
+                    serve = rel_gov.predicate == "SERVE_FOR"
+                    if serve:
+                        d.governed = "purpose"
+                    relations.append(LatticeRelation(RelationKind.EMBEDS.value, rel_gov.id, u.id,
+                                                     evidence="servir_a" if serve else "prep+inf"))
+                elif parent_unit is not None:
                     embedded_under = parent_unit.id
                     relations.append(LatticeRelation(RelationKind.EMBEDS.value, parent_unit.id,
                                                      u.id, evidence=clause.conn))
@@ -2325,8 +2337,13 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                         _keep_governor_material(clause, d, u.id)
                 if gov is not None:
                     embedded_under = gov.id
+                    serve = gov.predicate == "SERVE_FOR"
+                    if serve:
+                        # "X sert à Y": Y is X's expressed functional purpose (role PURPOSE),
+                        # never an occurrence nor a request of Y; provenance "servir_a"
+                        d.governed = "purpose"
                     relations.append(LatticeRelation(RelationKind.EMBEDS.value, gov.id, u.id,
-                                                     evidence="prep+inf"))
+                                                     evidence="servir_a" if serve else "prep+inf"))
             else:
                 prag, epi = _main_pragmatics(u, d, interrogative, ambiguities)
             if d.governed == "unknown_governor" and f"infinitive_under_unrecognized_governor:{u.id}" not in ambiguities:
@@ -3041,6 +3058,22 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             ambiguities.append(f"negated_scope_open:{u.id}")
             not_all.add(u.id)
             final_units[i] = replace(u, negation_confirmed=False)
+
+    # SERVE_FOR covers "servir à + INF" only. Another sense ("sert le repas", "sert de preuve")
+    # is reported, never closed as a functional purpose; a dative clitic ("te sert à") has no
+    # role yet (beneficiary / user / controller undecided) and is kept, frame open
+    drafts_of = {u.id: (c, d) for c in clauses for (u, d) in c.units}
+    for u in final_units:
+        if u.predicate != "SERVE_FOR" or u.id not in drafts_of:
+            continue
+        c, d = drafts_of[u.id]
+        if not any(r.source == u.id and r.evidence == "servir_a" for r in relations):
+            missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{u.span[0]}-{u.span[1]}:serve_for_sense_unsupported_of={u.id}")
+        k = d.head_index - 1
+        while k >= 0 and c.toks[k].low in {"ne", "n'"}:
+            k -= 1
+        if k >= 0 and c.toks[k].low in {"me", "te", "lui", "nous", "vous", "leur", "m'", "t'"}:
+            missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{c.toks[k].start}-{c.toks[k].end}:unresolved_clitic_of={u.id}")
 
     # SPEAK: a "de X" / "du fait" complement is not an object (no TOPIC role exists yet): it
     # is kept as reported content and the frame stays open ("Paul parle de KX108")

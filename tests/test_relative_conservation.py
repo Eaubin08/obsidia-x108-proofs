@@ -30,8 +30,8 @@ def _reported(f):
 
 
 @pytest.mark.parametrize("text,kept", [
-    # "qui te sert à parler" now holds a SPEAK unit (test_speak_predicate / test_detail_compare)
-    ("Explique la mémoire qui te sert à frobuler.", "qui te sert à frobuler"),
+    # "qui te sert à parler" is a SERVE_FOR relative now (test_serve_for): unit-less example
+    ("Explique la mémoire qui te frobule.", "qui te frobule"),
     ("Explique le document qui frobule P.", "qui frobule P"),
     ("Explique le document que Paul frobule.", "que Paul frobule"),
     ("Explique le document qui est utile.", "est utile"),
@@ -45,12 +45,13 @@ def test_unit_less_relative_is_kept_and_open(text, kept):
 
 
 def test_unknown_governor_relative_infinitive_stays_non_asserted():
-    f = parse_utterance("Explique le script qui sert à lancer P.")
+    # "servir à" is SERVE_FOR since its approved APPLY (test_serve_for): a really unknown governor here
+    f = parse_utterance("Explique le script qui contribue à lancer P.")
     u = f.units[-1]
     assert u.pragmatic == "EMBEDDED" and f"infinitive_under_unrecognized_governor:{u.id}" in f.ambiguities
     claims = {c.predicate_ref: c.occurrence_claim.value for c in build_frame_event_index(f).events()}
     assert claims.get(u.id) not in {"ASSERTED_REALIZED", "ASSERTED_NOT_REALIZED", "PROJECTED_FUTURE", "POSSIBLE"}
-    assert not _reported(f) and not f.closure
+    assert not _reported(f) and not f.closure  # governor material kept as unrecognized_governor_of
 
 
 @pytest.mark.parametrize("text", ["Explique le script qui lance P.", "Lance le test que Paul a écrit.",

@@ -46,6 +46,9 @@ LEMMAS: dict[str, tuple[str, str]] = {
     # communicative but never a report: no "que" embedding contract, no REPORTS
     # (SPEAK != SAY); its "de X" / "du fait que P" complements are kept open (french_grammar)
     "parler": ("SPEAK", "other"),
+    # functional, non-eventive: "X sert à Y" -> Y is X's expressed purpose (never CAUSE /
+    # ENABLES / AUTHORIZES, never an occurrence of Y); other "servir" senses are not covered
+    "servir": ("SERVE_FOR", "other"),
     "tester": ("VERIFY", "inspection"),
     "vérifier": ("VERIFY", "inspection"),
     "check": ("VERIFY", "inspection"),
@@ -153,6 +156,13 @@ _IRREGULAR: dict[str, dict[str, tuple[str, ...]]] = {
         "FUT": ("ferai", "feras", "fera", "ferons", "ferez", "feront"),
         "COND": ("ferais", "ferait", "ferions", "feriez", "feraient"),
         "SUBJ": ("fasse", "fasses", "fassions", "fassiez", "fassent"),
+    },
+    # "servir à + INF" only (SERVE_FOR); no IMP row: never an imperative request
+    "servir": {
+        "PRES": ("sers", "sert", "servons", "servez", "servent"),
+        "INF": ("servir",), "PP": ("servi",),
+        "IMPF": ("servais", "servait", "servaient"),
+        "FUT": ("servira", "serviront"), "COND": ("servirait", "serviraient"),
     },
     "pouvoir": {
         "PRES": ("peux", "peut", "pouvons", "pouvez", "peuvent"),
