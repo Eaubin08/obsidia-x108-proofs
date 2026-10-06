@@ -3121,7 +3121,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 complement_follows=(cmp_next := clause.conn is None and ci + 1 < len(clauses)
                                     and clauses[ci + 1].conn in {"si", "que"} and clauses[ci + 1].units
                                     and clauses[ci + 1].boundary is None)) \
-                and not (_copula_evidence(clause) and (in_seq or clause.conn in _COPULA_REPORTED_CONNS)):
+                and not (_copula_evidence(clause) and (in_seq or clause.conn in _COPULA_REPORTED_CONNS)) \
+                and not (clause.conn is None and not any(c.units for c in clauses) and any(
+                    t.low in {"que", "qu'", "qui"} and len(clause.toks) - k >= 3
+                    for k, t in enumerate(clause.toks) if k > 0)):
+            # (N8: "Le fichier que Marie ouvre disparaît": an utterance with no unit holding a
+            # relative followed by content is a predication with unknown verbs: reported)
             # (a "quand / lorsque" subordinate, a verbless preposed protasis ("Si P, lance R",
             # "Si possible, ...": a condition is never dropped, H11) or a relative ("qui est
             # utile") without any unit is always reported; so is
@@ -3318,6 +3323,28 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                         ambiguities.append(f"negated_scope_open:{u.id}")
                         negated_manner.add(u.id)
                 k = end + 1
+
+    # N8: an object relative on the sentence-initial NP ("Le test que Paul lance échoue",
+    # "... est prêt", "... et que Marie observe échoue"): the relative verb's object slot is
+    # the antecedent (gap), so material after its last verb is never its object; that material
+    # is the main predicate of the antecedent, reported (never dropped, never an object)
+    if clauses and not clauses[0].units and _bare_noun_phrase(clauses[0].toks):
+        for ci, clause in enumerate(clauses[1:], start=1):
+            if clause.conn != "rel" or not clause.conn_toks or clause.conn_toks[-1].low not in {"que", "qu'"} \
+                    or not clause.units or any(c.conn != "rel" for c in clauses[1:ci]):
+                continue
+            last_u, last_d = clause.units[-1]
+            k = max(last_d.lex_index, last_d.head_index) + 1
+            rest = [t for t in clause.toks[k:] if not t.is_punct]
+            if not rest or any(int(m.split(":")[1].split("-")[0]) < rest[-1].end
+                               and rest[0].start < int(m.split(":")[1].split("-")[1])
+                               for m in missing if m.count(":") >= 2 and "-" in m.split(":")[1]):
+                continue   # already reported (e.g. "unattached" after a compound relative)
+            clause.units[-1] = (replace(last_u, objects=tuple(a for a in last_u.objects
+                                                              if a.span is None or a.span[0] < rest[0].start)), last_d)
+            missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{rest[0].start}-{rest[-1].end}"
+                           f":main_predicate_after_relative_of={last_u.id}")
+            clause.toks = clause.toks[:k]
 
     # D5-N3 / S11 conservation: material left right after a unit's objects (or after its verb
     # when it has none) and consumed by no structure is reported, never dropped silently:
