@@ -943,111 +943,138 @@ def pc_v2_app_open_execute(
 # ============================
 # G2-A: UIA set_text governed
 # ============================
-_EDIT_CLASS_NAMES = frozenset({"Edit", "RichEdit20W", "RichEdit20A",
-                               "RichTextBox", "TMemo", "TEdit"})
+# G2-A-R: the governed target is a stable UIA identity (JarJar G2-0), never a window
+# title / control name (an Edit's name IS its mutable content). Values are only hashed in
+# anchors and receipts; the exact target text lives only in the persisted descriptor.
+_UIA_TEXT_CONTROL_TYPES = frozenset({"Edit", "Document"})
+_UIA_IDENTITY_PRIMARY = ("window_hwnd", "process_id", "runtime_id")
+_UIA_IDENTITY_GUARDS = ("native_handle", "automation_id", "control_type", "class_name",
+                        "framework_id", "parent_runtime_id")
 
 
-def _find_edit_control(controls, control_name):
-    matches = [c for c in controls
-               if c.get("name") == control_name
-               and c.get("class_name", "") in _EDIT_CLASS_NAMES]
-    if len(matches) == 1:
-        return matches[0]
+def _sha256_text(text: str) -> str:
+    return _sha256(text.encode("utf-8"))
+
+
+def _uia_identity_ok(identity) -> bool:
+    if not isinstance(identity, dict):
+        return False
+    hwnd, pid, rid = identity.get("window_hwnd"), identity.get("process_id"), identity.get("runtime_id")
+    return (isinstance(hwnd, int) and hwnd > 0 and isinstance(pid, int) and pid > 0
+            and isinstance(rid, list) and len(rid) > 0 and all(isinstance(x, int) for x in rid))
+
+
+def _uia_identity_matches(bound: dict, live: dict) -> bool:
+    """Exact: every primary field equal, every bound (non-empty) guard equal. No fuzzy match."""
+    if any(bound.get(k) != live.get(k) for k in _UIA_IDENTITY_PRIMARY):
+        return False
+    return all(live.get(k) == bound.get(k) for k in _UIA_IDENTITY_GUARDS if bound.get(k))
+
+
+def _uia_scope_id(identity: dict) -> str:
+    rid = ".".join(str(x) for x in identity["runtime_id"])
+    return "UIA_CONTROL:%d:%d:%s" % (identity["window_hwnd"], identity["process_id"], rid)
+
+
+def _uia_pre_state(identity: dict, control: dict, pre_value_sha256: str) -> tuple[dict, str]:
+    """PHYSICAL_PRE_STATE V1: observed pre-state only (never the target value)."""
+    snapshot = {
+        "anchor_schema": "UIA_SET_TEXT_PRE_STATE_V1",
+        "identity": {k: identity.get(k) for k in _UIA_IDENTITY_PRIMARY + _UIA_IDENTITY_GUARDS},
+        "enabled": bool(control.get("enabled")),
+        "is_password": bool(control.get("is_password")),
+        "is_read_only": control.get("is_read_only"),
+        "pre_value_sha256": pre_value_sha256,
+    }
+    return snapshot, _sha256(json.dumps(snapshot, sort_keys=True, ensure_ascii=False).encode("utf-8"))
+
+
+def _uia_writable_reason(control: dict):
+    ident = control.get("identity", {})
+    if ident.get("control_type") not in _UIA_TEXT_CONTROL_TYPES:
+        return "UNSUPPORTED_CONTROL_TYPE"
+    if control.get("is_password"):
+        return "PASSWORD_FIELD_REJECTED"
+    if control.get("is_read_only") is None or "value" not in (control.get("patterns") or []):
+        return "VALUE_PATTERN_REQUIRED"
+    if control.get("is_read_only"):
+        return "READONLY_FIELD_REJECTED"
+    if not control.get("enabled", False):
+        return "CONTROL_DISABLED"
     return None
 
 
 def pc_v2_uia_set_text_prepare(
-        window_title, control_name, target_value,
-        *, stores_base_dir, session_id="", executor=None):
+        window_hwnd, target_identity, target_value,
+        *, stores_base_dir, session_id="", executor=None, window_title="", control_label=""):
     if executor is None:
         return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE, "EXECUTOR_REQUIRED", session_id)
-    if not isinstance(window_title, str) or not window_title.strip():
-        return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE, "WINDOW_TITLE_REQUIRED", session_id)
-    if not isinstance(control_name, str) or not control_name.strip():
-        return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE, "CONTROL_NAME_REQUIRED", session_id)
+    if not isinstance(window_hwnd, int) or isinstance(window_hwnd, bool) or window_hwnd <= 0:
+        return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE, "WINDOW_HWND_REQUIRED", session_id)
+    if not _uia_identity_ok(target_identity) or target_identity.get("window_hwnd") != window_hwnd:
+        return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE, "STABLE_TARGET_IDENTITY_REQUIRED", session_id)
     if not isinstance(target_value, str):
         return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE, "TARGET_VALUE_REQUIRED", session_id)
-    window_title = window_title.strip()
-    control_name = control_name.strip()
     st = _stores(stores_base_dir)
-    ctrl_list = executor.list_controls(window_title)
-    if not ctrl_list.get("ok"):
+    listing = executor.list_controls_uia(window_hwnd)
+    if not listing.get("ok"):
         return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE,
-                         "WINDOW_NOT_FOUND:" + str(ctrl_list.get("error", "")), session_id)
-    controls = ctrl_list.get("controls", [])
-    ctrl = _find_edit_control(controls, control_name)
-    if ctrl is None:
-        multi = [c for c in controls if c.get("name") == control_name]
-        if len(multi) > 1:
-            return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE, "CONTROL_AMBIGUOUS", session_id)
+                         "WINDOW_NOT_FOUND:" + str(listing.get("error", "")), session_id)
+    matches = [c for c in listing.get("controls", [])
+               if c.get("identity", {}).get("runtime_id") == target_identity["runtime_id"]]
+    if not matches:
         return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE, "CONTROL_NOT_FOUND", session_id)
-    if not ctrl.get("enabled", False):
-        return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE, "CONTROL_DISABLED", session_id)
-    if not ctrl.get("visible", False):
-        return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE, "CONTROL_NOT_VISIBLE", session_id)
-    pre_read = executor.read_text(window_title, control_name)
-    if not pre_read.get("ok"):
+    if len(matches) > 1:
+        return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE, "CONTROL_AMBIGUOUS", session_id)
+    control = matches[0]
+    identity = dict(control["identity"])
+    if not _uia_identity_ok(identity) or not _uia_identity_matches(target_identity, identity):
+        return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE, "CONTROL_IDENTITY_MISMATCH", session_id)
+    reason = _uia_writable_reason(control)
+    if reason:
+        return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE, reason, session_id)
+    pre = executor.read_value_by_identity(identity)
+    if not pre.get("ok") or not pre.get("value_sha256"):
         return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE,
-                         "PRE_VALUE_READ_FAILED:" + str(pre_read.get("error", "")), session_id)
-    pre_value     = pre_read.get("text", "")
-    class_name    = ctrl.get("class_name", "")
-    automation_id = ctrl.get("automation_id", "")
-    bounds        = ctrl.get("bounds", {})
-    _psa_snapshot = {
-        "anchor_schema": "UIA_SET_TEXT_PRE_STATE_V0",
-        "window_title": window_title,
-        "control_name": control_name,
-        "class_name": class_name,
-        "automation_id": automation_id,
-        "bounds": bounds,
-        "enabled": ctrl.get("enabled", False),
-        "visible": ctrl.get("visible", False),
-        "pre_value": pre_value,
-        "target_value": target_value,
-    }
-    physical_state_anchor = _sha256(
-        json.dumps(_psa_snapshot, sort_keys=True, ensure_ascii=False).encode("utf-8")
-    )
+                         "PRE_VALUE_READ_FAILED:" + str(pre.get("error", "")), session_id)
+    pre_hash = pre["value_sha256"]
+    target_hash = _sha256_text(target_value)
+    _, physical_state_anchor = _uia_pre_state(identity, control, pre_hash)
     desc = {
-        "window_title": window_title,
-        "control_name": control_name,
-        "class_name": class_name,
-        "automation_id": automation_id,
-        "bounds": bounds,
-        "target_value": target_value,
-        "pre_value": pre_value,
-        "session_id": session_id,
         "operation_type": OP_UIA_SET_TEXT,
+        "target_identity": identity,
+        "target_value": target_value,          # exact text: persisted descriptor only
+        "target_value_sha256": target_hash,
+        "window_title": window_title,          # display / provenance only
+        "control_label": control_label,        # display / provenance only
+        "session_id": session_id,
         "physical_state_anchor": physical_state_anchor,
         "state_anchor_kind": "PHYSICAL_PRE_STATE",
     }
     eah   = _eah(OP_UIA_SET_TEXT, desc)
-    child = _v2id("chd", eah + window_title + control_name + target_value)
+    scope = _uia_scope_id(identity)
+    child = _v2id("chd", eah + scope + target_hash)
     v2id  = _v2id("v2x", eah + session_id + "UIA_SET_TEXT")
-    mh    = _sha16(json.dumps(desc, sort_keys=True))
+    mh    = _sha16(json.dumps({k: v for k, v in desc.items() if k != "target_value"}, sort_keys=True))
     dh    = _persist_desc(v2id, OP_UIA_SET_TEXT, eah, desc, st["v2exec"])
     return {
         "status": PREPARED_AWAITING_HUMAN_APPROVAL, "j5_phase": "PREPARE",
         "operation_type": OP_UIA_SET_TEXT, "jarvis_authority": JARVIS_AUTHORITY,
         "decision_authority": KX_DECISION_AUTHORITY,
         "execution_authority_hash": eah,
-        "window_title": window_title,
-        "control_name": control_name,
-        "class_name": class_name,
-        "automation_id": automation_id,
-        "target_value": target_value,
-        "pre_value": pre_value,
+        "target_identity": identity, "scope_id": scope,
+        "window_title": window_title, "control_label": control_label,
+        "target_value_sha256": target_hash, "pre_value_sha256": pre_hash,
         "physical_state_anchor": physical_state_anchor,
         "state_anchor_kind": "PHYSICAL_PRE_STATE",
         "v2_exec_id": v2id, "child_id": child, "manifest_hash": mh, "desc_hash": dh,
         "_stores_base_dir": str(stores_base_dir),
         "receipt": _rcpt(_CAP_UTEXT_PREPARE, OP_UIA_SET_TEXT,
                          PREPARED_AWAITING_HUMAN_APPROVAL, session_id,
-                         execution_authority_hash=eah,
-                         window_title=window_title, control_name=control_name,
-                         class_name=class_name, automation_id=automation_id,
-                         target_value=target_value, pre_value=pre_value,
-                         physical_state_anchor=physical_state_anchor),
+                         execution_authority_hash=eah, target_identity=identity, scope_id=scope,
+                         target_value_sha256=target_hash, pre_value_sha256=pre_hash,
+                         physical_state_anchor=physical_state_anchor,
+                         state_anchor_kind="PHYSICAL_PRE_STATE"),
     }
 
 
@@ -1073,43 +1100,39 @@ def pc_v2_uia_set_text_execute(
     dh    = prepared_result.get("desc_hash", "")
     st    = _stores(stores_base_dir)
     desc  = _load_desc(v2id, st["v2exec"])
-    if not desc or desc.get("eah") != exp_eah:
+    if not desc or desc.get("eah") != exp_eah or _eah(OP_UIA_SET_TEXT, desc.get("descriptor", {})) != exp_eah:
         return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE, "DESCRIPTOR_EAH_MISMATCH", session_id)
-    d             = desc["descriptor"]
-    window_title  = d["window_title"]
-    control_name  = d["control_name"]
-    target_value  = d["target_value"]
-    stored_psa    = d.get("physical_state_anchor", "")
-    stored_aid    = d.get("automation_id", "")
-    stored_cls    = d.get("class_name", "")
-    stored_pre    = d.get("pre_value", "")
-    ctrl_list = executor.list_controls(window_title)
-    if not ctrl_list.get("ok"):
+    d            = desc["descriptor"]
+    identity     = d.get("target_identity")
+    target_value = d.get("target_value")
+    target_hash  = d.get("target_value_sha256", "")
+    stored_psa   = d.get("physical_state_anchor", "")
+    if not _uia_identity_ok(identity) or not isinstance(target_value, str) \
+            or _sha256_text(target_value) != target_hash:
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE, "DESCRIPTOR_INVALID", session_id)
+    # TOCTOU: reacquire ONLY the prepared identity (no title / name / class fallback)
+    found = executor.find_control_by_identity(identity)
+    if not found.get("ok"):
         return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE,
-                         "WINDOW_NOT_FOUND:" + str(ctrl_list.get("error", "")), session_id)
-    cur_ctrl = _find_edit_control(ctrl_list.get("controls", []), control_name)
-    if cur_ctrl is None:
-        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE, "CONTROL_NOT_FOUND", session_id)
-    cur_aid = cur_ctrl.get("automation_id", "")
-    if stored_aid and cur_aid and stored_aid != cur_aid:
+                         "TARGET_IDENTITY_NOT_REACQUIRED:" + str(found.get("error", "")), session_id)
+    if not _uia_identity_matches(identity, found.get("identity", {})):
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE, "CONTROL_IDENTITY_DRIFTED", session_id)
+    reason = _uia_writable_reason(found)
+    if reason:
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE, reason, session_id)
+    pre = executor.read_value_by_identity(identity)
+    if not pre.get("ok") or not pre.get("value_sha256"):
         return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE,
-                         "CONTROL_IDENTITY_DRIFTED:automation_id_changed", session_id)
-    if stored_cls and cur_ctrl.get("class_name", "") != stored_cls:
-        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE,
-                         "CONTROL_IDENTITY_DRIFTED:class_name_changed", session_id)
-    cur_pre = executor.read_text(window_title, control_name)
-    if not cur_pre.get("ok"):
-        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE,
-                         "PRE_VALUE_READ_FAILED:" + str(cur_pre.get("error", "")), session_id)
-    if cur_pre.get("text", "") != stored_pre:
-        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE, "PRE_VALUE_DRIFTED", session_id)
-    cand_seed = window_title + control_name + target_value
-    apr    = _approval(v2id, child, exp_eah, cand_seed)
+                         "PRE_VALUE_READ_FAILED:" + str(pre.get("error", "")), session_id)
+    _, current_psa = _uia_pre_state(identity, found, pre["value_sha256"])
+    if current_psa != stored_psa:
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE, "PRE_STATE_DRIFT", session_id)
+    scope_id = _uia_scope_id(identity)
+    apr    = _approval(v2id, child, exp_eah, scope_id + target_hash)
     apv_id = apr["approval_id"]
     ar = _E.store_approval_artifact(apr, st["approval"])
     if ar.get("status") not in ("STORED", "IDEMPOTENT_ALREADY_EXISTS"):
         return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE, "APPROVAL_STORE_FAILED", session_id)
-    scope_id = "UIA_CONTROL:" + window_title + ":" + control_name
     kx = _kx108_pre(v2id, child, exp_eah, apv_id, dh, "", mh, [scope_id], OP_UIA_SET_TEXT,
                     kxpre=st["kxpre"],
                     physical_state_anchor=stored_psa,
@@ -1120,38 +1143,39 @@ def pc_v2_uia_set_text_execute(
     if gate != "ALLOW":
         return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE,
                          "KX108_PRE_GATE:" + gate, session_id)
-    ex = executor.set_text(window_title, control_name, target_value)
+    ex = executor.set_text_by_identity(identity, target_value)
     if not ex.get("ok"):
         return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE,
                          "EXECUTOR_ERROR:" + str(ex.get("error", "")), session_id)
-    post_read = executor.read_text(window_title, control_name)
-    if not post_read.get("ok"):
-        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE,
-                         "POST_VALUE_READ_FAILED:" + str(post_read.get("error", "")), session_id)
-    post_value = post_read.get("text", "")
-    if post_value != target_value:
-        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE,
-                         "REALIZED_STATE_MISMATCH:post_value_differs", session_id)
+    if ex.get("value_match") is not True or ex.get("readback_text_sha256") != target_hash \
+            or ex.get("requested_text_sha256") != target_hash \
+            or not _uia_identity_matches(identity, ex.get("target_identity") or {}):
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE, "REALIZED_STATE_MISMATCH", session_id)
+    # independent post-write observation of the SAME identity (executor success is not proof)
+    post = executor.read_value_by_identity(identity)
+    if not post.get("ok") or post.get("value_sha256") != target_hash:
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE, "REALIZED_STATE_MISMATCH", session_id)
     return {
         "status": EXECUTED_OK, "j5_phase": "EXECUTE",
         "operation_type": OP_UIA_SET_TEXT,
         "jarvis_authority": JARVIS_AUTHORITY, "decision_authority": KX_DECISION_AUTHORITY,
         "kx108_pre_gate": gate, "human_authorization_consumed": True,
-        "window_title": window_title, "control_name": control_name,
-        "target_value": target_value, "pre_value": stored_pre, "post_value": post_value,
+        "target_identity": identity, "scope_id": scope_id,
+        "target_value_sha256": target_hash, "pre_value_sha256": pre["value_sha256"],
+        "readback_value_sha256": post["value_sha256"],
         "proof_strength": "STRONG", "realized_state_verified": True,
         "executor_provider": executor.EXECUTOR_PROVIDER,
         "executor_backend": executor.EXECUTOR_BACKEND,
-        "executor_capability": "control.set_text",
+        "executor_capability": "control.set_text_by_identity",
         "receipt": _rcpt(_CAP_UTEXT_EXECUTE, OP_UIA_SET_TEXT, EXECUTED_OK, session_id,
-                         kx108_pre_gate=gate,
-                         window_title=window_title, control_name=control_name,
-                         target_value=target_value, pre_value=stored_pre,
-                         post_value=post_value, proof_strength="STRONG",
+                         kx108_pre_gate=gate, target_identity=identity, scope_id=scope_id,
+                         target_value_sha256=target_hash, pre_value_sha256=pre["value_sha256"],
+                         readback_value_sha256=post["value_sha256"], proof_strength="STRONG",
                          realized_state_verified=True,
+                         physical_state_anchor=stored_psa, state_anchor_kind="PHYSICAL_PRE_STATE",
                          executor_provider=executor.EXECUTOR_PROVIDER,
                          executor_backend=executor.EXECUTOR_BACKEND,
-                         executor_capability="control.set_text"),
+                         executor_capability="control.set_text_by_identity"),
     }
 
 

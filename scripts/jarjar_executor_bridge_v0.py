@@ -121,7 +121,7 @@ def self_check_bridge_v0() -> dict:
     return {"bridge_version": _BRIDGE_VERSION, "executor_provider": _EXECUTOR_PROVIDER,
             "executor_backend": _EXECUTOR_BACKEND, "openjarvis_authority": "NONE",
             "jarjar_authority": "NONE", "kx108_only": True, "human_approval_required": True,
-            "operations": ["MOVE_FILE", "CREATE_DIR", "ROLLBACK_MOVE_FILE", "APP_OPEN_RESOLVE", "APP_OPEN_BY_TARGET", "UIA_LIST_CONTROLS", "UIA_SET_TEXT", "UIA_READ_TEXT"],
+            "operations": ["MOVE_FILE", "CREATE_DIR", "ROLLBACK_MOVE_FILE", "APP_OPEN_RESOLVE", "APP_OPEN_BY_TARGET", "UIA_LIST_CONTROLS_BY_IDENTITY", "UIA_FIND_BY_IDENTITY", "UIA_READ_VALUE_BY_IDENTITY", "UIA_SET_TEXT_BY_IDENTITY"],
             "generic_shell_enabled": False, "arbitrary_filesystem": False,
             "makes_authorization_decisions": False, "is_execution_authority": False,
             "is_kx_authority": False, "new_parallel_mutation_engine": False}
@@ -144,10 +144,13 @@ class JarJarWindowsExecutor:
         from jarvis.windows import NativeWindowsBackend
         from jarvis.structured_ui import StructuredUIBackend
         from jarvis.integrations.uia_driver import UIADriver
+        from jarvis.integrations.uia_identity import StableUIAController
         from jarvis.contracts import ActionRequest
         self._ActionRequest = ActionRequest
         self._backend = NativeWindowsBackend(driver=Win32Driver())
-        self._ui_backend = StructuredUIBackend(driver=UIADriver())
+        # G2-A-R: governed UIA writes only through JarJar G2-0 stable identity
+        self._uia = StableUIAController()
+        self._ui_backend = StructuredUIBackend(driver=UIADriver(), identity_driver=self._uia)
 
     def _req(self, capability: str, **kwargs: str):
         return self._ActionRequest(capability=capability, arguments=dict(kwargs),
@@ -270,73 +273,40 @@ class JarJarWindowsExecutor:
 
 
 
-    # ── G2-A : UIA control operations ─────────────────────────────────────────
+    # ── G2-A-R : UIA operations by stable identity (JarJar G2-0) ───────────────
+    # No title / control-name targeting: an Edit's name is its mutable content.
+    # Values are reported as SHA-256 digests by JarJar; nothing here decides authority.
 
-    def list_controls(self, window_title: str) -> dict:
-        """Read-only. List UIA controls for window_title.
-        Returns serializable snapshot via StructuredUIBackend (control.list).
-        NEVER mutates UI state.
-        """
+    def _ui(self, capability: str, arguments: dict) -> dict:
         result = self._ui_backend.execute(
-            self._ActionRequest(capability="control.list",
-                                arguments={"window_title": window_title},
-                                source="obsidia_bridge_v1"))
+            self._ActionRequest(capability=capability, arguments=arguments, source="obsidia_bridge_v1"))
         if not result.ok:
-            return {"ok": False,
-                    "error": "CONTROL_LIST_FAILED:" + result.message,
-                    "executor": "StructuredUIBackend",
-                    "capability": "control.list"}
-        data = result.data or {}
-        return {"ok": True,
-                "window": data.get("window", window_title),
-                "controls": data.get("controls", []),
-                "executor": "StructuredUIBackend",
-                "capability": "control.list"}
+            return {"ok": False, "error": result.message,
+                    "executor": "StructuredUIBackend", "capability": capability}
+        return {"ok": True, **(result.data or {}),
+                "executor": "StructuredUIBackend", "capability": capability}
 
-    def set_text(self, window_title: str, control_name: str, value: str) -> dict:
-        """Write exact value into Edit control identified by window_title + control_name.
-        Physical mutation only. No authorization decisions.
-        """
-        result = self._ui_backend.execute(
-            self._ActionRequest(capability="control.set_text",
-                                arguments={"window_title": window_title,
-                                           "control_name": control_name,
-                                           "value": value},
-                                source="obsidia_bridge_v1"))
-        if not result.ok:
-            return {"ok": False,
-                    "error": "SET_TEXT_FAILED:" + result.message,
-                    "executor": "StructuredUIBackend",
-                    "capability": "control.set_text"}
-        return {"ok": True,
-                "window": window_title,
-                "control": control_name,
-                "value": value,
-                "executor": "StructuredUIBackend",
-                "capability": "control.set_text"}
+    def list_controls_uia(self, window_hwnd: int) -> dict:
+        """Read-only. Controls of the exact window with their stable UIA identity."""
+        return self._ui("control.list_uia", {"window_hwnd": window_hwnd})
 
-    def read_text(self, window_title: str, control_name: str) -> dict:
-        """Read current text from Edit control. Used for pre-value capture and post-write verification.
-        Read-only; never mutates.
-        """
-        result = self._ui_backend.execute(
-            self._ActionRequest(capability="control.read_text",
-                                arguments={"window_title": window_title,
-                                           "control_name": control_name,
-                                           "control_type": "Edit"},
-                                source="obsidia_bridge_v1"))
-        if not result.ok:
-            return {"ok": False,
-                    "error": "READ_TEXT_FAILED:" + result.message,
-                    "executor": "StructuredUIBackend",
-                    "capability": "control.read_text"}
-        data = result.data or {}
-        return {"ok": True,
-                "window": window_title,
-                "control": control_name,
-                "text": data.get("text", ""),
-                "executor": "StructuredUIBackend",
-                "capability": "control.read_text"}
+    def find_control_by_identity(self, identity: dict) -> dict:
+        """Read-only. Re-find exactly this identity (no fuzzy fallback); fails if it drifted."""
+        try:
+            data = self._uia.find_control_by_identity(identity)
+        except Exception as exc:
+            return {"ok": False, "error": "%s: %s" % (type(exc).__name__, exc),
+                    "executor": "StructuredUIBackend", "capability": "control.find_by_identity"}
+        return {**data, "executor": "StructuredUIBackend", "capability": "control.find_by_identity"}
+
+    def read_value_by_identity(self, identity: dict) -> dict:
+        """Read-only. SHA-256 of the exact control's value (password values are never read)."""
+        return self._ui("control.read_value", {"target_identity": identity})
+
+    def set_text_by_identity(self, identity: dict, exact_text: str) -> dict:
+        """Physical mutation only (ValuePattern.SetValue + same-identity readback proof)."""
+        return self._ui("control.set_text_by_identity", {"target_identity": identity, "text": exact_text})
+
 
 def make_windows_executor(*, jarjar_src=None) -> "JarJarWindowsExecutor":
     return JarJarWindowsExecutor(jarjar_src=jarjar_src)
