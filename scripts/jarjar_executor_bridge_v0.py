@@ -121,7 +121,7 @@ def self_check_bridge_v0() -> dict:
     return {"bridge_version": _BRIDGE_VERSION, "executor_provider": _EXECUTOR_PROVIDER,
             "executor_backend": _EXECUTOR_BACKEND, "openjarvis_authority": "NONE",
             "jarjar_authority": "NONE", "kx108_only": True, "human_approval_required": True,
-            "operations": ["MOVE_FILE", "CREATE_DIR", "ROLLBACK_MOVE_FILE", "APP_OPEN_RESOLVE", "APP_OPEN_BY_TARGET", "UIA_LIST_CONTROLS_BY_IDENTITY", "UIA_FIND_BY_IDENTITY", "UIA_READ_VALUE_BY_IDENTITY", "UIA_SET_TEXT_BY_IDENTITY", "UIA_DISCOVER_CONTROLS_BY_WINDOW_TITLE", "UIA_READ_CHECKED", "UIA_SET_CHECKED"],
+            "operations": ["MOVE_FILE", "CREATE_DIR", "ROLLBACK_MOVE_FILE", "APP_OPEN_RESOLVE", "APP_OPEN_BY_TARGET", "AUDIO_STATUS", "AUDIO_SET_VOLUME", "UIA_LIST_CONTROLS_BY_IDENTITY", "UIA_FIND_BY_IDENTITY", "UIA_READ_VALUE_BY_IDENTITY", "UIA_SET_TEXT_BY_IDENTITY", "UIA_DISCOVER_CONTROLS_BY_WINDOW_TITLE", "UIA_READ_CHECKED", "UIA_SET_CHECKED"],
             "generic_shell_enabled": False, "arbitrary_filesystem": False,
             "makes_authorization_decisions": False, "is_execution_authority": False,
             "is_kx_authority": False, "new_parallel_mutation_engine": False}
@@ -155,6 +155,34 @@ class JarJarWindowsExecutor:
     def _req(self, capability: str, **kwargs: str):
         return self._ActionRequest(capability=capability, arguments=dict(kwargs),
                                    source="obsidia_bridge_v1")
+
+    def audio_status(self) -> dict:
+        """Read-only physical master-volume observation."""
+        result = self._backend.execute(self._req("audio.status"))
+        if not result.ok:
+            return {"ok": False, "error": "AUDIO_STATUS_FAILED:" + result.message,
+                    "executor": self.EXECUTOR_BACKEND, "capability": "audio.status"}
+        volume = result.data.get("volume_percent")
+        muted = result.data.get("muted")
+        if not isinstance(volume, int):
+            return {"ok": False, "error": "AUDIO_STATUS_INVALID",
+                    "executor": self.EXECUTOR_BACKEND, "capability": "audio.status"}
+        return {"ok": True, "volume_percent": volume, "muted": bool(muted),
+                "executor": self.EXECUTOR_BACKEND, "capability": "audio.status"}
+
+    def set_volume(self, percent: int) -> dict:
+        """Physical mutation only. Authorization is external and KX108-only."""
+        if not isinstance(percent, int) or isinstance(percent, bool) or not 0 <= percent <= 100:
+            return {"ok": False, "error": "VOLUME_PERCENT_INVALID",
+                    "executor": self.EXECUTOR_BACKEND, "capability": "audio.set_volume"}
+        result = self._backend.execute(self._req("audio.set_volume", percent=percent))
+        if not result.ok:
+            return {"ok": False, "error": result.message,
+                    "executor": self.EXECUTOR_BACKEND, "capability": "audio.set_volume"}
+        observed = result.data.get("volume_percent")
+        return {"ok": True, "requested_percent": percent, "volume_percent": observed,
+                "muted": result.data.get("muted"),
+                "executor": self.EXECUTOR_BACKEND, "capability": "audio.set_volume"}
 
     def find_window(self, title: str) -> dict:
         """Read-only. Enumerate visible windows and return the first hwnd whose title
@@ -386,5 +414,111 @@ class JarJarWindowsExecutor:
                 "capability": "control.set_checked_by_identity"}
 
 
+
+# === G13 governed media ===
+def _g13_media_execute(self, capability: str) -> dict:
+    if capability not in {"media.play_pause", "media.next", "media.previous"}:
+        return {"ok": False, "error": "MEDIA_CAPABILITY_UNSUPPORTED"}
+    result = self._backend.execute(self._req(capability))
+    return {
+        "ok": bool(result.ok),
+        "message": result.message,
+        "data": dict(result.data or {}),
+        "executor": self.EXECUTOR_BACKEND,
+        "capability": capability,
+    }
+
+if not hasattr(JarJarWindowsExecutor, "media_execute"):
+    JarJarWindowsExecutor.media_execute = _g13_media_execute
+
+
 def make_windows_executor(*, jarjar_src=None) -> "JarJarWindowsExecutor":
     return JarJarWindowsExecutor(jarjar_src=jarjar_src)
+
+# === G13 governed connectivity ===
+def _g13_connectivity_status(self, family: str) -> dict:
+    capability = {"wifi": "wifi.status", "bluetooth": "bluetooth.status"}.get(family)
+    if capability is None:
+        return {"ok": False, "error": "CONNECTIVITY_FAMILY_UNSUPPORTED"}
+    result = self._backend.execute(self._req(capability))
+    return {
+        "ok": bool(result.ok),
+        "message": result.message,
+        "data": dict(result.data or {}),
+        "executor": self.EXECUTOR_BACKEND,
+        "capability": capability,
+    }
+
+
+def _g13_connectivity_set(self, family: str, enabled: bool) -> dict:
+    table = {
+        ("wifi", True): "wifi.enable",
+        ("wifi", False): "wifi.disable",
+        ("bluetooth", True): "bluetooth.enable",
+        ("bluetooth", False): "bluetooth.disable",
+    }
+    capability = table.get((family, bool(enabled)))
+    if capability is None:
+        return {"ok": False, "error": "CONNECTIVITY_MUTATION_UNSUPPORTED"}
+    result = self._backend.execute(self._req(capability))
+    return {
+        "ok": bool(result.ok),
+        "message": result.message,
+        "data": dict(result.data or {}),
+        "executor": self.EXECUTOR_BACKEND,
+        "capability": capability,
+    }
+
+
+if not hasattr(JarJarWindowsExecutor, "connectivity_status"):
+    JarJarWindowsExecutor.connectivity_status = _g13_connectivity_status
+if not hasattr(JarJarWindowsExecutor, "connectivity_set"):
+    JarJarWindowsExecutor.connectivity_set = _g13_connectivity_set
+
+# === G13 governed window control ===
+def _g13_window_control_by_hwnd(self, hwnd: int, action: str, monitor_index: int | None = None) -> dict:
+    if action in {"minimize", "maximize", "restore"}:
+        result = self._backend.driver._window_state_hwnd(int(hwnd), action)
+        return {"ok": True, "data": result, "action": action}
+    if action == "move_monitor":
+        if not isinstance(monitor_index, int) or monitor_index < 1:
+            return {"ok": False, "error": "MONITOR_INDEX_REQUIRED"}
+        result = self._backend.driver._move_window_to_monitor_hwnd(int(hwnd), monitor_index)
+        return {"ok": True, "data": result, "action": action}
+    return {"ok": False, "error": "WINDOW_CONTROL_UNSUPPORTED"}
+
+
+def _g13_window_observe(self, hwnd: int) -> dict:
+    try:
+        import win32con
+        import win32gui
+    except ImportError as exc:
+        return {"ok": False, "error": f"PYWIN32_MISSING:{exc}"}
+    if not win32gui.IsWindow(int(hwnd)):
+        return {"ok": False, "error": "WINDOW_NOT_FOUND"}
+
+    rect = win32gui.GetWindowRect(int(hwnd))
+    placement = win32gui.GetWindowPlacement(int(hwnd))
+    show_cmd = int(placement[1])
+    is_iconic = bool(win32gui.IsIconic(int(hwnd))) or show_cmd in {
+        win32con.SW_SHOWMINIMIZED,
+        win32con.SW_MINIMIZE,
+        win32con.SW_SHOWMINNOACTIVE,
+    }
+    is_zoomed = show_cmd == win32con.SW_SHOWMAXIMIZED
+
+    return {
+        "ok": True,
+        "hwnd": int(hwnd),
+        "title": win32gui.GetWindowText(int(hwnd)).strip(),
+        "is_iconic": is_iconic,
+        "is_zoomed": is_zoomed,
+        "show_cmd": show_cmd,
+        "rect": tuple(int(v) for v in rect),
+    }
+
+
+if not hasattr(JarJarWindowsExecutor, "window_control_by_hwnd"):
+    JarJarWindowsExecutor.window_control_by_hwnd = _g13_window_control_by_hwnd
+if not hasattr(JarJarWindowsExecutor, "window_observe"):
+    JarJarWindowsExecutor.window_observe = _g13_window_observe

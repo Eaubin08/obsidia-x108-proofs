@@ -31,6 +31,7 @@ OP_CREATE_DIR               = "V2_CREATE_DIR"
 GOVERNED_DELETE_FILE_STATUS = "DEFERRED_TO_V3_DESTRUCTIVE_OPERATIONS"
 OP_WINDOW_FOCUS             = "V2_WINDOW_FOCUS"
 OP_APP_OPEN                 = "V2_APP_OPEN"
+OP_AUDIO_VOLUME             = "V2_AUDIO_VOLUME"
 _CAP_CREATE_PREPARE = "PC_V2_CREATE_FILE_PREPARE"
 _CAP_CREATE_EXECUTE = "PC_V2_CREATE_FILE_EXECUTE"
 _CAP_MOVE_PREPARE   = "PC_V2_MOVE_FILE_PREPARE"
@@ -43,13 +44,15 @@ _CAP_WFOCUS_PREPARE = "PC_V2_WINDOW_FOCUS_PREPARE"
 _CAP_WFOCUS_EXECUTE = "PC_V2_WINDOW_FOCUS_EXECUTE"
 _CAP_AOPEN_PREPARE  = "PC_V2_APP_OPEN_PREPARE"
 _CAP_AOPEN_EXECUTE  = "PC_V2_APP_OPEN_EXECUTE"
+_CAP_AVOL_PREPARE   = "PC_V2_AUDIO_VOLUME_PREPARE"
+_CAP_AVOL_EXECUTE   = "PC_V2_AUDIO_VOLUME_EXECUTE"
 OP_UIA_SET_TEXT             = "V2_UIA_SET_TEXT"
 _CAP_UTEXT_PREPARE  = "PC_V2_UIA_SET_TEXT_PREPARE"
 _CAP_UTEXT_EXECUTE  = "PC_V2_UIA_SET_TEXT_EXECUTE"
 _CAP_SCHK_PREPARE   = "PC_V2_UIA_SET_CHECKED_PREPARE"
 _CAP_SCHK_EXECUTE   = "PC_V2_UIA_SET_CHECKED_EXECUTE"
 OP_UIA_SET_CHECKED  = "V2_UIA_SET_CHECKED"
-_CAPABILITY_IDS_V2 = (_CAP_CREATE_PREPARE, _CAP_CREATE_EXECUTE, _CAP_MOVE_PREPARE, _CAP_MOVE_EXECUTE, _CAP_PATCH_PREPARE, _CAP_PATCH_EXECUTE, _CAP_CDIR_PREPARE, _CAP_CDIR_EXECUTE, _CAP_WFOCUS_PREPARE, _CAP_WFOCUS_EXECUTE, _CAP_AOPEN_PREPARE, _CAP_AOPEN_EXECUTE, _CAP_UTEXT_PREPARE, _CAP_UTEXT_EXECUTE, _CAP_SCHK_PREPARE, _CAP_SCHK_EXECUTE)
+_CAPABILITY_IDS_V2 = (_CAP_CREATE_PREPARE, _CAP_CREATE_EXECUTE, _CAP_MOVE_PREPARE, _CAP_MOVE_EXECUTE, _CAP_PATCH_PREPARE, _CAP_PATCH_EXECUTE, _CAP_CDIR_PREPARE, _CAP_CDIR_EXECUTE, _CAP_WFOCUS_PREPARE, _CAP_WFOCUS_EXECUTE, _CAP_AOPEN_PREPARE, _CAP_AOPEN_EXECUTE, _CAP_AVOL_PREPARE, _CAP_AVOL_EXECUTE, _CAP_UTEXT_PREPARE, _CAP_UTEXT_EXECUTE, _CAP_SCHK_PREPARE, _CAP_SCHK_EXECUTE)
 PREPARED_AWAITING_HUMAN_APPROVAL = "PREPARED_AWAITING_HUMAN_APPROVAL"
 EXECUTED_OK = "EXECUTED_OK"
 PREPARE_REJECTED = "PREPARE_REJECTED"
@@ -1367,6 +1370,221 @@ def pc_v2_uia_set_checked_execute(
     }
 
 
+
+
+
+
+
+# ============================
+# GOVERNED_AUDIO_VOLUME
+# ============================
+def _audio_state_anchor(volume_percent: int, muted: bool) -> str:
+    raw = json.dumps(
+        {
+            "anchor_schema": "AUDIO_MASTER_VOLUME_PRE_STATE_V0",
+            "scope_id": "OS_AUDIO:MASTER_VOLUME",
+            "volume_percent": int(volume_percent),
+            "muted": bool(muted),
+        },
+        sort_keys=True,
+    ).encode()
+    return _sha256(raw)
+
+
+def pc_v2_audio_volume_prepare(
+        delta=None, percent=None, *, stores_base_dir, session_id="", executor=None):
+    if executor is None:
+        return _prep_rej(OP_AUDIO_VOLUME, _CAP_AVOL_PREPARE, "EXECUTOR_REQUIRED", session_id)
+    has_delta = isinstance(delta, int) and not isinstance(delta, bool)
+    has_percent = isinstance(percent, int) and not isinstance(percent, bool)
+    if has_delta == has_percent:
+        return _prep_rej(OP_AUDIO_VOLUME, _CAP_AVOL_PREPARE, "EXACTLY_ONE_VOLUME_TARGET_REQUIRED", session_id)
+
+    pre = executor.audio_status()
+    if not pre.get("ok"):
+        return _prep_rej(
+            OP_AUDIO_VOLUME, _CAP_AVOL_PREPARE,
+            "PRE_STATE_READ_FAILED:" + str(pre.get("error", "")), session_id,
+        )
+    before = pre.get("volume_percent")
+    muted = pre.get("muted")
+    if not isinstance(before, int) or not 0 <= before <= 100:
+        return _prep_rej(OP_AUDIO_VOLUME, _CAP_AVOL_PREPARE, "PRE_STATE_INVALID", session_id)
+
+    if has_delta:
+        target = max(0, min(100, before + int(delta)))
+        request_kind = "DELTA"
+        request_value = int(delta)
+    else:
+        if not 0 <= int(percent) <= 100:
+            return _prep_rej(OP_AUDIO_VOLUME, _CAP_AVOL_PREPARE, "TARGET_OUT_OF_RANGE", session_id)
+        target = int(percent)
+        request_kind = "ABSOLUTE"
+        request_value = int(percent)
+
+    scope_id = "OS_AUDIO:MASTER_VOLUME"
+    psa = _audio_state_anchor(before, bool(muted))
+    desc = {
+        "scope_id": scope_id,
+        "pre_volume_percent": before,
+        "pre_muted": bool(muted),
+        "target_volume_percent": target,
+        "request_kind": request_kind,
+        "request_value": request_value,
+        "physical_state_anchor": psa,
+        "session_id": session_id,
+        "operation_type": OP_AUDIO_VOLUME,
+    }
+    st = _stores(stores_base_dir)
+    eah = _eah(OP_AUDIO_VOLUME, desc)
+    child = _v2id("chd", eah + scope_id)
+    v2id = _v2id("v2x", eah + session_id)
+    mh = _sha16(json.dumps(desc, sort_keys=True))
+    dh = _persist_desc(v2id, OP_AUDIO_VOLUME, eah, desc, st["v2exec"])
+    return {
+        "status": PREPARED_AWAITING_HUMAN_APPROVAL,
+        "j5_phase": "PREPARE",
+        "operation_type": OP_AUDIO_VOLUME,
+        "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "execution_authority_hash": eah,
+        "v2_exec_id": v2id,
+        "child_id": child,
+        "manifest_hash": mh,
+        "desc_hash": dh,
+        "scope_id": scope_id,
+        "pre_volume_percent": before,
+        "target_volume_percent": target,
+        "physical_state_anchor": psa,
+        "_stores_base_dir": str(stores_base_dir),
+        "receipt": _rcpt(
+            _CAP_AVOL_PREPARE, OP_AUDIO_VOLUME,
+            PREPARED_AWAITING_HUMAN_APPROVAL, session_id,
+            execution_authority_hash=eah,
+            scope_id=scope_id,
+            pre_volume_percent=before,
+            target_volume_percent=target,
+            physical_state_anchor=psa,
+        ),
+    }
+
+
+def pc_v2_audio_volume_execute(
+        prepared_result, human_authorized_eah, human_authorization_reference,
+        *, stores_base_dir, session_id="", executor=None):
+    if prepared_result.get("j5_phase") != "PREPARE":
+        return _exec_rej(OP_AUDIO_VOLUME, _CAP_AVOL_EXECUTE, "PREPARE_PHASE_REQUIRED", session_id)
+    if prepared_result.get("status") != PREPARED_AWAITING_HUMAN_APPROVAL:
+        return _exec_rej(OP_AUDIO_VOLUME, _CAP_AVOL_EXECUTE, "PREPARED_AWAITING_HUMAN_APPROVAL_REQUIRED", session_id)
+    exp_eah = prepared_result.get("execution_authority_hash", "")
+    if not exp_eah or human_authorized_eah != exp_eah:
+        return _exec_rej(OP_AUDIO_VOLUME, _CAP_AVOL_EXECUTE, EAH_MISMATCH, session_id)
+    if not (human_authorization_reference or "").strip():
+        return _exec_rej(OP_AUDIO_VOLUME, _CAP_AVOL_EXECUTE, "HUMAN_AUTHORIZATION_REFERENCE_REQUIRED", session_id)
+    if executor is None:
+        return _exec_rej(OP_AUDIO_VOLUME, _CAP_AVOL_EXECUTE, "EXECUTOR_REQUIRED", session_id)
+
+    st = _stores(stores_base_dir)
+    v2id = prepared_result.get("v2_exec_id", "")
+    child = prepared_result.get("child_id", "")
+    mh = prepared_result.get("manifest_hash", "")
+    dh = prepared_result.get("desc_hash", "")
+    desc_rec = _load_desc(v2id, st["v2exec"])
+    if not desc_rec or desc_rec.get("eah") != exp_eah:
+        return _exec_rej(OP_AUDIO_VOLUME, _CAP_AVOL_EXECUTE, "DESCRIPTOR_EAH_MISMATCH", session_id)
+    desc = desc_rec.get("descriptor", {})
+    if _eah(OP_AUDIO_VOLUME, desc) != exp_eah:
+        return _exec_rej(OP_AUDIO_VOLUME, _CAP_AVOL_EXECUTE, "DESCRIPTOR_EAH_RECOMPUTE_MISMATCH", session_id)
+
+    scope_id = desc.get("scope_id", "")
+    target = desc.get("target_volume_percent")
+    before = desc.get("pre_volume_percent")
+    stored_psa = desc.get("physical_state_anchor", "")
+    if scope_id != "OS_AUDIO:MASTER_VOLUME" or not isinstance(target, int) or not 0 <= target <= 100:
+        return _exec_rej(OP_AUDIO_VOLUME, _CAP_AVOL_EXECUTE, "DESCRIPTOR_INVALID", session_id)
+
+    current = executor.audio_status()
+    if not current.get("ok"):
+        return _exec_rej(
+            OP_AUDIO_VOLUME, _CAP_AVOL_EXECUTE,
+            "PRE_STATE_READ_FAILED:" + str(current.get("error", "")), session_id,
+        )
+    current_volume = current.get("volume_percent")
+    current_muted = bool(current.get("muted"))
+    if not isinstance(current_volume, int):
+        return _exec_rej(OP_AUDIO_VOLUME, _CAP_AVOL_EXECUTE, "PRE_STATE_INVALID", session_id)
+    current_psa = _audio_state_anchor(current_volume, current_muted)
+    if current_psa != stored_psa:
+        return _exec_rej(OP_AUDIO_VOLUME, _CAP_AVOL_EXECUTE, "PRE_STATE_DRIFT", session_id)
+
+    apr = _approval(v2id, child, exp_eah, scope_id + ":" + str(target))
+    apv_id = apr["approval_id"]
+    ar = _E.store_approval_artifact(apr, st["approval"])
+    if ar.get("status") not in ("STORED", "IDEMPOTENT_ALREADY_EXISTS"):
+        return _exec_rej(OP_AUDIO_VOLUME, _CAP_AVOL_EXECUTE, "APPROVAL_STORE_FAILED", session_id)
+
+    kx = _kx108_pre(
+        v2id, child, exp_eah, apv_id, dh, "", mh, [scope_id], OP_AUDIO_VOLUME,
+        kxpre=st["kxpre"],
+        physical_state_anchor=stored_psa,
+        state_anchor_kind="PHYSICAL_PRE_STATE",
+    )
+    if not kx.get("verify_ok"):
+        return _exec_rej(OP_AUDIO_VOLUME, _CAP_AVOL_EXECUTE, "KX108_PRE_FAILED", session_id)
+    gate = kx.get("x108_gate", "")
+    if gate != "ALLOW":
+        return _exec_rej(OP_AUDIO_VOLUME, _CAP_AVOL_EXECUTE, "KX108_PRE_GATE:" + gate, session_id)
+
+    ex = executor.set_volume(target)
+    if not ex.get("ok"):
+        return _exec_rej(
+            OP_AUDIO_VOLUME, _CAP_AVOL_EXECUTE,
+            "JARJAR_EXECUTOR_FAILED:" + str(ex.get("error", "")), session_id,
+        )
+
+    post = executor.audio_status()
+    if not post.get("ok"):
+        return _exec_rej(OP_AUDIO_VOLUME, _CAP_AVOL_EXECUTE, "POST_STATE_READ_FAILED", session_id)
+    after = post.get("volume_percent")
+    if after != target:
+        return _exec_rej(
+            OP_AUDIO_VOLUME, _CAP_AVOL_EXECUTE,
+            "REALIZED_STATE_MISMATCH:expected=%s,got=%s" % (target, after),
+            session_id,
+        )
+
+    return {
+        "status": EXECUTED_OK,
+        "j5_phase": "EXECUTE",
+        "operation_type": OP_AUDIO_VOLUME,
+        "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "kx108_pre_gate": gate,
+        "human_authorization_consumed": True,
+        "scope_id": scope_id,
+        "pre_volume_percent": before,
+        "post_volume_percent": after,
+        "target_volume_percent": target,
+        "rollback_volume_percent": before,
+        "proof_strength": "STRONG",
+        "realized_state_verified": True,
+        "executor_provider": executor.EXECUTOR_PROVIDER,
+        "executor_backend": executor.EXECUTOR_BACKEND,
+        "executor_capability": "audio.set_volume",
+        "receipt": _rcpt(
+            _CAP_AVOL_EXECUTE, OP_AUDIO_VOLUME, EXECUTED_OK, session_id,
+            kx108_pre_gate=gate,
+            scope_id=scope_id,
+            pre_volume_percent=before,
+            post_volume_percent=after,
+            target_volume_percent=target,
+            rollback_volume_percent=before,
+            proof_strength="STRONG",
+            realized_state_verified=True,
+        ),
+    }
+
+
 # ============================
 # Dispatcher + self-check
 # ============================
@@ -1409,9 +1627,527 @@ def self_check_v2() -> dict:
         "generic_shell_enabled": GENERIC_SHELL_ENABLED,
         "governed_delete_file": GOVERNED_DELETE_FILE_STATUS,
         "capabilities": list(_CAPABILITY_IDS_V2),
-        "operations": [OP_CREATE_FILE, OP_MOVE_FILE, OP_APPLY_PATCH, OP_CREATE_DIR, OP_WINDOW_FOCUS, OP_APP_OPEN, OP_UIA_SET_TEXT, OP_UIA_SET_CHECKED],
+        "operations": [OP_CREATE_FILE, OP_MOVE_FILE, OP_APPLY_PATCH, OP_CREATE_DIR, OP_WINDOW_FOCUS, OP_APP_OPEN, OP_AUDIO_VOLUME, OP_UIA_SET_TEXT, OP_UIA_SET_CHECKED],
         "new_parallel_mutation_engine": False,
         "generic_write_file_enabled": False,
         "openjarvis_authority": JARVIS_AUTHORITY,
         "kx108_only": True,
+    }
+
+# === G13 governed media ===
+import uuid as _g13_uuid
+
+OP_MEDIA_CONTROL = "V2_MEDIA_CONTROL"
+_CAP_MEDIA_PREPARE = "PC_V2_MEDIA_CONTROL_PREPARE"
+_CAP_MEDIA_EXECUTE = "PC_V2_MEDIA_CONTROL_EXECUTE"
+
+def pc_v2_media_control_prepare(action, *, stores_base_dir, session_id="", executor=None):
+    if executor is None:
+        return _prep_rej(OP_MEDIA_CONTROL, _CAP_MEDIA_PREPARE, "EXECUTOR_REQUIRED", session_id)
+    allowed = {
+        "play_pause": "media.play_pause",
+        "next": "media.next",
+        "previous": "media.previous",
+    }
+    capability = allowed.get(str(action or "").strip().lower())
+    if capability is None:
+        return _prep_rej(OP_MEDIA_CONTROL, _CAP_MEDIA_PREPARE, "MEDIA_ACTION_UNSUPPORTED", session_id)
+
+    st = _stores(stores_base_dir)
+    invocation_id = _g13_uuid.uuid4().hex
+    desc = {
+        "action": action,
+        "capability": capability,
+        "session_id": session_id,
+        "invocation_id": invocation_id,
+        "operation_type": OP_MEDIA_CONTROL,
+    }
+    eah = _eah(OP_MEDIA_CONTROL, desc)
+    child = _v2id("chd", eah + capability + invocation_id)
+    v2id = _v2id("v2x", eah + session_id + invocation_id)
+    mh = _sha16(json.dumps(desc, sort_keys=True))
+    dh = _persist_desc(v2id, OP_MEDIA_CONTROL, eah, desc, st["v2exec"])
+    return {
+        "status": PREPARED_AWAITING_HUMAN_APPROVAL,
+        "j5_phase": "PREPARE",
+        "operation_type": OP_MEDIA_CONTROL,
+        "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "execution_authority_hash": eah,
+        "v2_exec_id": v2id,
+        "child_id": child,
+        "manifest_hash": mh,
+        "desc_hash": dh,
+        "capability": capability,
+        "_stores_base_dir": str(stores_base_dir),
+        "receipt": _rcpt(
+            _CAP_MEDIA_PREPARE,
+            OP_MEDIA_CONTROL,
+            PREPARED_AWAITING_HUMAN_APPROVAL,
+            session_id,
+            execution_authority_hash=eah,
+            capability=capability,
+        ),
+    }
+
+
+def pc_v2_media_control_execute(
+        prepared_result, human_authorized_eah, human_authorization_reference,
+        *, stores_base_dir, session_id="", executor=None):
+    if prepared_result.get("j5_phase") != "PREPARE":
+        return _exec_rej(OP_MEDIA_CONTROL, _CAP_MEDIA_EXECUTE, "PREPARE_PHASE_REQUIRED", session_id)
+    if prepared_result.get("status") != PREPARED_AWAITING_HUMAN_APPROVAL:
+        return _exec_rej(OP_MEDIA_CONTROL, _CAP_MEDIA_EXECUTE, "PREPARED_AWAITING_HUMAN_APPROVAL_REQUIRED", session_id)
+
+    exp_eah = prepared_result.get("execution_authority_hash", "")
+    if not exp_eah or human_authorized_eah != exp_eah:
+        return _exec_rej(OP_MEDIA_CONTROL, _CAP_MEDIA_EXECUTE, EAH_MISMATCH, session_id)
+    if not (human_authorization_reference or "").strip():
+        return _exec_rej(OP_MEDIA_CONTROL, _CAP_MEDIA_EXECUTE, "HUMAN_AUTHORIZATION_REFERENCE_REQUIRED", session_id)
+    if executor is None:
+        return _exec_rej(OP_MEDIA_CONTROL, _CAP_MEDIA_EXECUTE, "EXECUTOR_REQUIRED", session_id)
+
+    st = _stores(stores_base_dir)
+    v2id = prepared_result.get("v2_exec_id", "")
+    child = prepared_result.get("child_id", "")
+    mh = prepared_result.get("manifest_hash", "")
+    dh = prepared_result.get("desc_hash", "")
+    desc_rec = _load_desc(v2id, st["v2exec"])
+    if not desc_rec or desc_rec.get("eah") != exp_eah:
+        return _exec_rej(OP_MEDIA_CONTROL, _CAP_MEDIA_EXECUTE, "DESCRIPTOR_EAH_MISMATCH", session_id)
+
+    desc = desc_rec["descriptor"]
+    capability = desc["capability"]
+
+    apr = _approval(v2id, child, exp_eah, capability)
+    apv_id = apr["approval_id"]
+    ar = _E.store_approval_artifact(apr, st["approval"])
+    if ar.get("status") not in ("STORED", "IDEMPOTENT_ALREADY_EXISTS"):
+        return _exec_rej(OP_MEDIA_CONTROL, _CAP_MEDIA_EXECUTE, "APPROVAL_STORE_FAILED", session_id)
+
+    kx = _kx108_pre(
+        v2id, child, exp_eah, apv_id, dh, "", mh,
+        [f"OS_MEDIA:{capability}"], OP_MEDIA_CONTROL, kxpre=st["kxpre"],
+        physical_state_anchor="MEDIA_COMMAND",
+        state_anchor_kind="PHYSICAL_PRE_STATE",
+    )
+    if not kx.get("verify_ok"):
+        return _exec_rej(OP_MEDIA_CONTROL, _CAP_MEDIA_EXECUTE, "KX108_PRE_FAILED", session_id)
+    gate = kx.get("x108_gate", "")
+    if gate != "ALLOW":
+        return _exec_rej(OP_MEDIA_CONTROL, _CAP_MEDIA_EXECUTE, "KX108_PRE_GATE:" + gate, session_id)
+
+    ex = executor.media_execute(capability)
+    if not ex.get("ok"):
+        return _exec_rej(
+            OP_MEDIA_CONTROL, _CAP_MEDIA_EXECUTE,
+            "JARJAR_EXECUTOR_FAILED:" + str(ex.get("error") or ex.get("message") or ""),
+            session_id,
+        )
+
+    return {
+        "status": EXECUTED_OK,
+        "j5_phase": "EXECUTE",
+        "operation_type": OP_MEDIA_CONTROL,
+        "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "kx108_pre_gate": gate,
+        "human_authorization_consumed": True,
+        "capability": capability,
+        "executor_provider": executor.EXECUTOR_PROVIDER,
+        "executor_backend": executor.EXECUTOR_BACKEND,
+        "receipt": _rcpt(
+            _CAP_MEDIA_EXECUTE,
+            OP_MEDIA_CONTROL,
+            EXECUTED_OK,
+            session_id,
+            kx108_pre_gate=gate,
+            capability=capability,
+        ),
+    }
+
+# === G13 governed connectivity ===
+import uuid as _g13_conn_uuid
+import time as _g13_conn_time
+
+OP_CONNECTIVITY_CONTROL = "V2_CONNECTIVITY_CONTROL"
+_CAP_CONN_PREPARE = "PC_V2_CONNECTIVITY_CONTROL_PREPARE"
+_CAP_CONN_EXECUTE = "PC_V2_CONNECTIVITY_CONTROL_EXECUTE"
+
+
+def _g13_conn_observed_enabled(family, status):
+    data = status.get("data") or {}
+    if family == "wifi":
+        adapters = data.get("adapters") or []
+        if not adapters:
+            return None
+        states = [str(a.get("Status") or "").strip().casefold() for a in adapters]
+        if any(s == "disabled" for s in states):
+            return False
+        if any(s in {"up", "disconnected", "connected"} for s in states):
+            return True
+        return None
+
+    devices = data.get("devices") or []
+
+    def _bt_radio_candidate(d):
+        name = d.get("FriendlyName")
+        instance_id = d.get("InstanceId")
+        if not isinstance(name, str) or not isinstance(instance_id, str):
+            return False
+        folded = name.casefold()
+        if instance_id.upper().startswith("BTHENUM"):
+            return False
+        if any(tok in folded for tok in ("enumerator", "rfcomm", "protocol", "service", "avrcp", "gatt")):
+            return False
+        return (
+            any(tok in folded for tok in ("adapter", "radio", "bluetooth"))
+            or instance_id.upper().startswith(("USB\\\\", "PCI\\\\"))
+        )
+
+    radios = [d for d in devices if _bt_radio_candidate(d)]
+    if not radios:
+        return None
+    states = [str(d.get("Status") or "").strip().casefold() for d in radios]
+    if any(s == "ok" for s in states):
+        return True
+    if all(s and s != "ok" for s in states):
+        return False
+    return None
+
+
+def pc_v2_connectivity_prepare(family, enabled, *, stores_base_dir, session_id="", executor=None):
+    family = str(family or "").strip().lower()
+    if family not in {"wifi", "bluetooth"}:
+        return _prep_rej(OP_CONNECTIVITY_CONTROL, _CAP_CONN_PREPARE, "CONNECTIVITY_FAMILY_UNSUPPORTED", session_id)
+    if not isinstance(enabled, bool):
+        return _prep_rej(OP_CONNECTIVITY_CONTROL, _CAP_CONN_PREPARE, "ENABLED_BOOL_REQUIRED", session_id)
+    if executor is None:
+        return _prep_rej(OP_CONNECTIVITY_CONTROL, _CAP_CONN_PREPARE, "EXECUTOR_REQUIRED", session_id)
+
+    pre = executor.connectivity_status(family)
+    if not pre.get("ok"):
+        return _prep_rej(
+            OP_CONNECTIVITY_CONTROL, _CAP_CONN_PREPARE,
+            "PRE_STATE_READ_FAILED:" + str(pre.get("error") or pre.get("message") or ""),
+            session_id,
+        )
+
+    invocation_id = _g13_conn_uuid.uuid4().hex
+    pre_enabled = _g13_conn_observed_enabled(family, pre)
+    desc = {
+        "family": family,
+        "enabled": enabled,
+        "pre_enabled": pre_enabled,
+        "session_id": session_id,
+        "invocation_id": invocation_id,
+        "operation_type": OP_CONNECTIVITY_CONTROL,
+    }
+    eah = _eah(OP_CONNECTIVITY_CONTROL, desc)
+    child = _v2id("chd", eah + family + invocation_id)
+    v2id = _v2id("v2x", eah + session_id + invocation_id)
+    mh = _sha16(json.dumps(desc, sort_keys=True))
+    dh = _persist_desc(v2id, OP_CONNECTIVITY_CONTROL, eah, desc, _stores(stores_base_dir)["v2exec"])
+
+    return {
+        "status": PREPARED_AWAITING_HUMAN_APPROVAL,
+        "j5_phase": "PREPARE",
+        "operation_type": OP_CONNECTIVITY_CONTROL,
+        "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "execution_authority_hash": eah,
+        "v2_exec_id": v2id,
+        "child_id": child,
+        "manifest_hash": mh,
+        "desc_hash": dh,
+        "family": family,
+        "enabled": enabled,
+        "pre_enabled": pre_enabled,
+        "_stores_base_dir": str(stores_base_dir),
+        "receipt": _rcpt(
+            _CAP_CONN_PREPARE, OP_CONNECTIVITY_CONTROL,
+            PREPARED_AWAITING_HUMAN_APPROVAL, session_id,
+            execution_authority_hash=eah, family=family, enabled=enabled,
+            pre_enabled=pre_enabled,
+        ),
+    }
+
+
+def pc_v2_connectivity_execute(
+        prepared_result, human_authorized_eah, human_authorization_reference,
+        *, stores_base_dir, session_id="", executor=None):
+    if prepared_result.get("j5_phase") != "PREPARE":
+        return _exec_rej(OP_CONNECTIVITY_CONTROL, _CAP_CONN_EXECUTE, "PREPARE_PHASE_REQUIRED", session_id)
+    if prepared_result.get("status") != PREPARED_AWAITING_HUMAN_APPROVAL:
+        return _exec_rej(OP_CONNECTIVITY_CONTROL, _CAP_CONN_EXECUTE, "PREPARED_AWAITING_HUMAN_APPROVAL_REQUIRED", session_id)
+
+    exp_eah = prepared_result.get("execution_authority_hash", "")
+    if not exp_eah or human_authorized_eah != exp_eah:
+        return _exec_rej(OP_CONNECTIVITY_CONTROL, _CAP_CONN_EXECUTE, EAH_MISMATCH, session_id)
+    if not (human_authorization_reference or "").strip():
+        return _exec_rej(OP_CONNECTIVITY_CONTROL, _CAP_CONN_EXECUTE, "HUMAN_AUTHORIZATION_REFERENCE_REQUIRED", session_id)
+    if executor is None:
+        return _exec_rej(OP_CONNECTIVITY_CONTROL, _CAP_CONN_EXECUTE, "EXECUTOR_REQUIRED", session_id)
+
+    st = _stores(stores_base_dir)
+    v2id = prepared_result.get("v2_exec_id", "")
+    child = prepared_result.get("child_id", "")
+    mh = prepared_result.get("manifest_hash", "")
+    dh = prepared_result.get("desc_hash", "")
+    rec = _load_desc(v2id, st["v2exec"])
+    if not rec or rec.get("eah") != exp_eah:
+        return _exec_rej(OP_CONNECTIVITY_CONTROL, _CAP_CONN_EXECUTE, "DESCRIPTOR_EAH_MISMATCH", session_id)
+
+    desc = rec["descriptor"]
+    family = desc["family"]
+    enabled = bool(desc["enabled"])
+
+    pre_now = executor.connectivity_status(family)
+    if not pre_now.get("ok"):
+        return _exec_rej(OP_CONNECTIVITY_CONTROL, _CAP_CONN_EXECUTE, "PRE_STATE_RECHECK_FAILED", session_id)
+    pre_now_enabled = _g13_conn_observed_enabled(family, pre_now)
+    if desc.get("pre_enabled") is not None and pre_now_enabled != desc.get("pre_enabled"):
+        return _exec_rej(OP_CONNECTIVITY_CONTROL, _CAP_CONN_EXECUTE, "PRE_STATE_DRIFT", session_id)
+
+    apr = _approval(v2id, child, exp_eah, f"{family}:{enabled}")
+    apv_id = apr["approval_id"]
+    ar = _E.store_approval_artifact(apr, st["approval"])
+    if ar.get("status") not in ("STORED", "IDEMPOTENT_ALREADY_EXISTS"):
+        return _exec_rej(OP_CONNECTIVITY_CONTROL, _CAP_CONN_EXECUTE, "APPROVAL_STORE_FAILED", session_id)
+
+    kx = _kx108_pre(
+        v2id, child, exp_eah, apv_id, dh, "", mh,
+        [f"OS_CONNECTIVITY:{family}"], OP_CONNECTIVITY_CONTROL, kxpre=st["kxpre"],
+        physical_state_anchor=f"{family}:{pre_now_enabled}",
+        state_anchor_kind="PHYSICAL_PRE_STATE",
+    )
+    if not kx.get("verify_ok"):
+        return _exec_rej(OP_CONNECTIVITY_CONTROL, _CAP_CONN_EXECUTE, "KX108_PRE_FAILED", session_id)
+    gate = kx.get("x108_gate", "")
+    if gate != "ALLOW":
+        return _exec_rej(OP_CONNECTIVITY_CONTROL, _CAP_CONN_EXECUTE, "KX108_PRE_GATE:" + gate, session_id)
+
+    ex = executor.connectivity_set(family, enabled)
+    if not ex.get("ok"):
+        return _exec_rej(
+            OP_CONNECTIVITY_CONTROL, _CAP_CONN_EXECUTE,
+            "JARJAR_EXECUTOR_FAILED:" + str(ex.get("error") or ex.get("message") or ""),
+            session_id,
+        )
+
+    post = None
+    post_enabled = None
+    # Windows network/PnP state can settle asynchronously after the mutation.
+    # Re-read a bounded number of times; never convert an unresolved state into PASS.
+    for _attempt in range(6):
+        post = executor.connectivity_status(family)
+        if not post.get("ok"):
+            return _exec_rej(OP_CONNECTIVITY_CONTROL, _CAP_CONN_EXECUTE, "POST_STATE_READ_FAILED", session_id)
+        post_enabled = _g13_conn_observed_enabled(family, post)
+        if post_enabled is enabled:
+            break
+        _g13_conn_time.sleep(0.5)
+
+    if post_enabled is not enabled:
+        return _exec_rej(
+            OP_CONNECTIVITY_CONTROL, _CAP_CONN_EXECUTE,
+            "REALIZED_STATE_MISMATCH:" + str(post_enabled),
+            session_id,
+        )
+
+    return {
+        "status": EXECUTED_OK,
+        "j5_phase": "EXECUTE",
+        "operation_type": OP_CONNECTIVITY_CONTROL,
+        "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "kx108_pre_gate": gate,
+        "human_authorization_consumed": True,
+        "family": family,
+        "pre_enabled": pre_now_enabled,
+        "post_enabled": post_enabled,
+        "proof_strength": "STRONG",
+        "realized_state_verified": True,
+        "executor_provider": executor.EXECUTOR_PROVIDER,
+        "executor_backend": executor.EXECUTOR_BACKEND,
+        "receipt": _rcpt(
+            _CAP_CONN_EXECUTE, OP_CONNECTIVITY_CONTROL, EXECUTED_OK, session_id,
+            kx108_pre_gate=gate, family=family, enabled=enabled,
+            pre_enabled=pre_now_enabled, post_enabled=post_enabled,
+        ),
+    }
+
+# === G13 governed window control ===
+import uuid as _g13_window_uuid
+
+OP_WINDOW_CONTROL = "V2_WINDOW_CONTROL"
+_CAP_WINDOW_CONTROL_PREPARE = "PC_V2_WINDOW_CONTROL_PREPARE"
+_CAP_WINDOW_CONTROL_EXECUTE = "PC_V2_WINDOW_CONTROL_EXECUTE"
+
+
+def pc_v2_window_control_prepare(
+        action, title, *, stores_base_dir, session_id="", monitor_index=None, executor=None):
+    if executor is None:
+        return _prep_rej(OP_WINDOW_CONTROL, _CAP_WINDOW_CONTROL_PREPARE, "EXECUTOR_REQUIRED", session_id)
+
+    action = str(action or "").strip().lower()
+    if action not in {"minimize", "maximize", "restore", "move_monitor"}:
+        return _prep_rej(OP_WINDOW_CONTROL, _CAP_WINDOW_CONTROL_PREPARE, "WINDOW_ACTION_UNSUPPORTED", session_id)
+
+    if action == "move_monitor" and (not isinstance(monitor_index, int) or monitor_index < 1):
+        return _prep_rej(OP_WINDOW_CONTROL, _CAP_WINDOW_CONTROL_PREPARE, "MONITOR_INDEX_REQUIRED", session_id)
+
+    resolved = executor.find_window(str(title or "").strip())
+    if not resolved.get("ok"):
+        return _prep_rej(
+            OP_WINDOW_CONTROL, _CAP_WINDOW_CONTROL_PREPARE,
+            str(resolved.get("error") or "WINDOW_NOT_FOUND"), session_id,
+        )
+
+    invocation_id = _g13_window_uuid.uuid4().hex
+    hwnd = int(resolved["hwnd"])
+    obs = executor.window_observe(hwnd)
+    if not obs.get("ok"):
+        return _prep_rej(OP_WINDOW_CONTROL, _CAP_WINDOW_CONTROL_PREPARE, "WINDOW_PRE_STATE_READ_FAILED", session_id)
+
+    desc = {
+        "action": action,
+        "title": title,
+        "resolved_title": resolved.get("title") or title,
+        "hwnd": hwnd,
+        "monitor_index": monitor_index,
+        "pre_state": obs,
+        "session_id": session_id,
+        "invocation_id": invocation_id,
+        "operation_type": OP_WINDOW_CONTROL,
+    }
+    eah = _eah(OP_WINDOW_CONTROL, desc)
+    child = _v2id("chd", eah + str(hwnd) + invocation_id)
+    v2id = _v2id("v2x", eah + session_id + invocation_id)
+    mh = _sha16(json.dumps(desc, sort_keys=True, default=str))
+    dh = _persist_desc(v2id, OP_WINDOW_CONTROL, eah, desc, _stores(stores_base_dir)["v2exec"])
+
+    return {
+        "status": PREPARED_AWAITING_HUMAN_APPROVAL,
+        "j5_phase": "PREPARE",
+        "operation_type": OP_WINDOW_CONTROL,
+        "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "execution_authority_hash": eah,
+        "v2_exec_id": v2id,
+        "child_id": child,
+        "manifest_hash": mh,
+        "desc_hash": dh,
+        "action": action,
+        "resolved_title": desc["resolved_title"],
+        "hwnd": hwnd,
+        "monitor_index": monitor_index,
+        "receipt": _rcpt(
+            _CAP_WINDOW_CONTROL_PREPARE, OP_WINDOW_CONTROL,
+            PREPARED_AWAITING_HUMAN_APPROVAL, session_id,
+            action=action, resolved_title=desc["resolved_title"], hwnd=hwnd,
+            monitor_index=monitor_index,
+        ),
+    }
+
+
+def pc_v2_window_control_execute(
+        prepared_result, human_authorized_eah, human_authorization_reference,
+        *, stores_base_dir, session_id="", executor=None):
+    if prepared_result.get("status") != PREPARED_AWAITING_HUMAN_APPROVAL:
+        return _exec_rej(OP_WINDOW_CONTROL, _CAP_WINDOW_CONTROL_EXECUTE, "PREPARED_AWAITING_HUMAN_APPROVAL_REQUIRED", session_id)
+    if prepared_result.get("j5_phase") != "PREPARE":
+        return _exec_rej(OP_WINDOW_CONTROL, _CAP_WINDOW_CONTROL_EXECUTE, "PREPARE_PHASE_REQUIRED", session_id)
+
+    exp_eah = prepared_result.get("execution_authority_hash", "")
+    if human_authorized_eah != exp_eah:
+        return _exec_rej(OP_WINDOW_CONTROL, _CAP_WINDOW_CONTROL_EXECUTE, EAH_MISMATCH, session_id)
+    if not (human_authorization_reference or "").strip():
+        return _exec_rej(OP_WINDOW_CONTROL, _CAP_WINDOW_CONTROL_EXECUTE, "HUMAN_AUTHORIZATION_REFERENCE_REQUIRED", session_id)
+    if executor is None:
+        return _exec_rej(OP_WINDOW_CONTROL, _CAP_WINDOW_CONTROL_EXECUTE, "EXECUTOR_REQUIRED", session_id)
+
+    st = _stores(stores_base_dir)
+    v2id = prepared_result.get("v2_exec_id", "")
+    child = prepared_result.get("child_id", "")
+    mh = prepared_result.get("manifest_hash", "")
+    dh = prepared_result.get("desc_hash", "")
+    rec = _load_desc(v2id, st["v2exec"])
+    if not rec or rec.get("eah") != exp_eah:
+        return _exec_rej(OP_WINDOW_CONTROL, _CAP_WINDOW_CONTROL_EXECUTE, "DESCRIPTOR_EAH_MISMATCH", session_id)
+
+    desc = rec["descriptor"]
+    hwnd = int(desc["hwnd"])
+    action = desc["action"]
+    monitor_index = desc.get("monitor_index")
+
+    pre_now = executor.window_observe(hwnd)
+    if not pre_now.get("ok"):
+        return _exec_rej(OP_WINDOW_CONTROL, _CAP_WINDOW_CONTROL_EXECUTE, "WINDOW_PRE_STATE_DRIFT", session_id)
+
+    apr = _approval(v2id, child, exp_eah, f"{action}:{hwnd}")
+    apv_id = apr["approval_id"]
+    ar = _E.store_approval_artifact(apr, st["approval"])
+    if ar.get("status") not in ("STORED", "IDEMPOTENT_ALREADY_EXISTS"):
+        return _exec_rej(OP_WINDOW_CONTROL, _CAP_WINDOW_CONTROL_EXECUTE, "APPROVAL_STORE_FAILED", session_id)
+
+    kx = _kx108_pre(
+        v2id, child, exp_eah, apv_id, dh, "", mh,
+        [f"OS_WINDOW:{action}"], OP_WINDOW_CONTROL, kxpre=st["kxpre"],
+        physical_state_anchor=f"{hwnd}:{pre_now.get('is_iconic')}:{pre_now.get('is_zoomed')}:{pre_now.get('rect')}",
+        state_anchor_kind="PHYSICAL_PRE_STATE",
+    )
+    if not kx.get("verify_ok"):
+        return _exec_rej(OP_WINDOW_CONTROL, _CAP_WINDOW_CONTROL_EXECUTE, "KX108_PRE_FAILED", session_id)
+    gate = kx.get("x108_gate", "")
+    if gate != "ALLOW":
+        return _exec_rej(OP_WINDOW_CONTROL, _CAP_WINDOW_CONTROL_EXECUTE, "KX108_PRE_GATE:" + gate, session_id)
+
+    ex = executor.window_control_by_hwnd(hwnd, action, monitor_index)
+    if not ex.get("ok"):
+        return _exec_rej(
+            OP_WINDOW_CONTROL, _CAP_WINDOW_CONTROL_EXECUTE,
+            "JARJAR_EXECUTOR_FAILED:" + str(ex.get("error") or ""),
+            session_id,
+        )
+
+    post = executor.window_observe(hwnd)
+    if not post.get("ok"):
+        return _exec_rej(OP_WINDOW_CONTROL, _CAP_WINDOW_CONTROL_EXECUTE, "POST_STATE_READ_FAILED", session_id)
+
+    verified = False
+    if action == "minimize":
+        verified = post.get("is_iconic") is True
+    elif action == "maximize":
+        verified = post.get("is_zoomed") is True
+    elif action == "restore":
+        verified = post.get("is_iconic") is False and post.get("is_zoomed") is False
+    elif action == "move_monitor":
+        before_rect = tuple(desc.get("pre_state", {}).get("rect") or ())
+        after_rect = tuple(post.get("rect") or ())
+        verified = bool(before_rect and after_rect and before_rect != after_rect)
+
+    if not verified:
+        return _exec_rej(OP_WINDOW_CONTROL, _CAP_WINDOW_CONTROL_EXECUTE, "REALIZED_STATE_MISMATCH", session_id)
+
+    return {
+        "status": EXECUTED_OK,
+        "j5_phase": "EXECUTE",
+        "operation_type": OP_WINDOW_CONTROL,
+        "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "kx108_pre_gate": gate,
+        "human_authorization_consumed": True,
+        "action": action,
+        "resolved_title": desc.get("resolved_title"),
+        "hwnd": hwnd,
+        "monitor_index": monitor_index,
+        "proof_strength": "STRONG",
+        "realized_state_verified": True,
+        "post_state": post,
+        "receipt": _rcpt(
+            _CAP_WINDOW_CONTROL_EXECUTE, OP_WINDOW_CONTROL, EXECUTED_OK, session_id,
+            kx108_pre_gate=gate, action=action, hwnd=hwnd,
+            monitor_index=monitor_index, realized_state_verified=True,
+        ),
     }
