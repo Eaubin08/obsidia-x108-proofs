@@ -2549,8 +2549,10 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 # (F-B3G-1: a coordinated member's governor may live in an earlier clause)
                 gov = next((x for c2 in clauses for (x, _) in (new_units if c2 is clause else c2.units)
                             if x.id == d.governor_unit), None) if d.governor_unit is not None else None
-                if gov is not None and gov.predicate in {"FORGET", "HESITATE"} and d.governor_negated:
-                    # "n'oublie pas de lancer", "n'hésite pas à lancer": reminder / invitation
+                if gov is not None and gov.predicate in {"FORGET", "HESITATE"} and d.governor_negated \
+                        and gov.verb_form == "IMPERATIVE":
+                    # "n'oublie pas de lancer", "n'hésite pas à lancer": reminder / invitation, only
+                    # as a directive (imperative); "Paul n'a pas oublié de tester Q" is no request (N1)
                     prag, epi = "REQUESTED", "NOT_APPLICABLE"
                 else:
                     prag, epi = "EMBEDDED", "NOT_APPLICABLE"
