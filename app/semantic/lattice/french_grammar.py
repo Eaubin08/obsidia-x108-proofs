@@ -2698,8 +2698,14 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 and clause.conn_toks[0].low in {"sauf", "excepté", "excepte"}:
             # "sauf quand P": the exception is named too; no relation is chosen
             hosts = _scope_hosts(ci)
-            ambiguities.append(f"exception_condition_open:{h.id}"
-                               + (f":host={','.join(u.id for u in hosts)}" if hosts else ""))
+            if len(hosts) == 1:
+                # H17 A: one structural host: EXCEPTS; its temporal reading stays held
+                # (temporal_subordinate_open is not erased)
+                relations.append(LatticeRelation(RelationKind.EXCEPTS.value, h.id, hosts[0].id,
+                                                 evidence=" ".join(t.low for t in clause.conn_toks)))
+            else:
+                ambiguities.append(f"exception_condition_open:{h.id}"
+                                   + (f":host={','.join(u.id for u in hosts)}" if hosts else ""))
         elif conn == "quand" and h is not None and _adjacent_host(ci) is not None:
             # H05: "quand / lorsque P" temporally anchors its host (no order, condition or cause);
             # "pendant que P" overlaps it. Only a structurally adjacent host is related; a
@@ -2787,8 +2793,15 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             hosts = _scope_hosts(ci)
             if ci + 1 < len(clauses) and clauses[ci + 1].main_after_protasis and clauses[ci + 1].units:
                 hosts.append(clauses[ci + 1].units[0][0])   # forced main member after it: also open
-            ambiguities.append(f"exception_condition_open:{h.id}"
-                               + (f":host={','.join(u.id for u in hosts)}" if hosts else ""))
+            if len(hosts) == 1:
+                # H17 A: one structural host: EXCEPTS(exception -> host), "the host holds except
+                # when the exception holds" (never CONDITIONS, CAUSES, PREVENTS nor a negation;
+                # no occurrence, request or authority from the relation)
+                relations.append(LatticeRelation(RelationKind.EXCEPTS.value, h.id, hosts[0].id,
+                                                 evidence=" ".join(t.low for t in clause.conn_toks)))
+            else:
+                ambiguities.append(f"exception_condition_open:{h.id}"
+                                   + (f":host={','.join(u.id for u in hosts)}" if hosts else ""))
         elif prev_main is not None and not clause.attachment_ambiguous and conn in {
                 "mais", "puis", "et", "ou", "donc", "car", "avant_de", "apres", "alors"}:
             kind, src, tgt = {

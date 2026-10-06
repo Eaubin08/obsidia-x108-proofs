@@ -105,6 +105,10 @@ class FrameOccurrenceProjection:
         # decided by the missing relation, their occurrence stays unresolved
         self.exception_open = {x for a in frame.ambiguities if a.startswith("exception_condition_open:")
                                for part in a.split(":")[1:] for x in part.removeprefix("host=").split(",")}
+        # H17: a represented EXCEPTS(exception, host) decides no occurrence either: the host
+        # holds only outside the exception, the exception is a hypothesis
+        self.exception_open |= {m for r in frame.relations if r.kind == RelationKind.EXCEPTS.value
+                                for end in (r.source, r.target) for m in frame.relation_members(end)}
         self.temporal = {r.target for r in frame.relations
                          if r.kind == RelationKind.PRECEDES.value and r.evidence == "avant que"}
         # "après que Q": Q is the presupposed temporal anchor (source of PRECEDES), not asserted

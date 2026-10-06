@@ -85,6 +85,11 @@ class RelationKind(str, Enum):
     TEMPORAL_ANCHOR = "TEMPORAL_ANCHOR"
     OVERLAPS = "OVERLAPS"
     REFERS_TO = "REFERS_TO"
+    # H17: EXCEPTS(exception, host): the host holds except when the exception holds ("Paul
+    # lance R sauf si / à moins que Marie lance P"). Not a condition, cause, prevention nor a
+    # negation; creates no occurrence, request or authority; in no causal / temporal /
+    # embedding family.
+    EXCEPTS = "EXCEPTS"
 
 
 TEMPORAL_KINDS = frozenset({RelationKind.PRECEDES})
