@@ -738,10 +738,10 @@ _AUX_PERSON = {"ai": {"P1S"}, "as": {"P2S"}, "a": {"P3S"}, "avons": {"P1P"}, "av
                "suis": {"P1S"}, "es": {"P2S"}, "est": {"P3S"}, "sommes": {"P1P"}, "êtes": {"P2P"},
                "sont": {"P3P"}, "avais": {"P1S", "P2S"}, "avait": {"P3S"}, "avaient": {"P3P"}}
 # connectives after which a bare verb's subject stays open ("R si Paul lance P et exécute Q")
-_NO_SUBJECT_SHARE = {"que", "rel", "comparative", "si", "sans", "sans_que", "avant_que", "a_moins_que", "apres_que",
+_NO_SUBJECT_SHARE = {"que", "rel", "comparative", "si", "sans", "sans_que", "avant_que", "a_moins_que", "apres_que", "pour_que",
                      "quand", "wh"}
 # subordinates that never lend their auxiliary / modal / periphrasis to a following clause
-_NO_CHAIN_SHARE = {"que", "rel", "comparative", "apres_que", "quand", "wh"}
+_NO_CHAIN_SHARE = {"que", "rel", "comparative", "apres_que", "pour_que", "quand", "wh"}
 
 
 def _agrees_with_subject(tok: _Tok, host: "_Draft") -> bool:
@@ -995,7 +995,7 @@ _PERIPHRASES = {"NEAR_FUTURE", "RECENT_PAST", "PROGRESSIVE"}
 _SENTENCE_BOUNDARIES = {".", "!", "?", ";", ":"}
 # postposed subordinates after which a coordinated member may continue the subordinate or
 # the main clause ("R si P et Q", "R sauf si / à moins que P et Q"): never attached by proximity
-_POSTPOSED_ATTACH_CONNS = {"si", "a_moins_que", "avant_que", "apres_que", "sans_que"}
+_POSTPOSED_ATTACH_CONNS = {"si", "a_moins_que", "avant_que", "apres_que", "sans_que", "pour_que"}
 _MEMBER_NEGATORS = {"ne", "n'", "pas", "plus", "jamais"}
 
 
@@ -1290,6 +1290,11 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
             continue
         if low == "avant" and nxt is not None and nxt.low in {"que", "qu'"}:
             open_clause("avant_que", [t, nxt])
+            i += 2
+            continue
+        # D7: "pour que / afin que P": a purpose subordinate, never a relative nor "pour" object
+        if low in {"pour", "afin"} and nxt is not None and nxt.low in {"que", "qu'"}:
+            open_clause("pour_que", [t, nxt])
             i += 2
             continue
         if low in {"à", "a"} and nxt is not None and nxt.low == "moins" \
@@ -2272,6 +2277,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
 
     # ── pragmatic / epistemic by clause role ──
     main_heads: list[tuple[int, PredicateUnit]] = []
+    preposed_purposes: list[tuple[int, str]] = []   # D7: (clause index, purpose unit) awaiting its host
 
     def head_of(ci: int) -> PredicateUnit | None:
         return clauses[ci].units[0][0] if clauses[ci].units else None
@@ -2375,6 +2381,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                     evidence="que_unresolved_governance" if epi == UNRESOLVED_GOVERNANCE else "que"))
             elif clause.conn in {"avant_que", "a_moins_que"} and n == 0:
                 prag, epi = "HYPOTHETICAL", "HYPOTHETICAL"
+            elif clause.conn == "pour_que" and n == 0:
+                # D7 B: the purpose content (role PURPOSE): neither asserted nor requested; its
+                # host is resolved below (unique structural host only)
+                prag, epi = "EMBEDDED", "NOT_APPLICABLE"
+                d.governed = "purpose"
+                preposed_purposes.append((ci, u.id))
             elif clause.conn == "apres_que" and n == 0:
                 # temporal context of its host, presupposed by the construction, not asserted
                 # (the finite counterpart of "après avoir V")
@@ -2475,6 +2487,22 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 prag, epi = ("ASKED", "UNKNOWN") if interrogative else ("EMBEDDED", "NOT_APPLICABLE")
             elif d.governed in {"purpose", "temporal", "permission"}:
                 prag, epi = "EMBEDDED", "NOT_APPLICABLE"
+                if d.governed == "purpose":
+                    # D7 B: "Paul lance P pour tester Q": the purpose is embedded under its host
+                    # (EMBEDS host -> purpose, evidence "pour"; role PURPOSE) only when the host is
+                    # structurally unique: the one main unit before it in an uncoordinated clause.
+                    # Never a cause, condition or authority; no occurrence of the purpose.
+                    prior = [x for (x, _) in new_units if x.embedded_under is None]
+                    coordinated = ci > 0 and (clause.conn in {"et", "ou", "puis", "mais"}
+                                              or (clause.conn is None and clause.boundary == ","))
+                    if len(prior) == 1 and not coordinated:
+                        embedded_under = prior[0].id
+                        relations.append(LatticeRelation(RelationKind.EMBEDS.value, prior[0].id, u.id,
+                                                         evidence="pour"))
+                    elif not prior and n == 0 and (ci == 0 or clause.boundary in _SENTENCE_BOUNDARIES):
+                        preposed_purposes.append((ci, u.id))   # "Pour tester Q, lance P": below
+                    else:
+                        ambiguities.append(f"coordination_attachment_ambiguous:{u.id}")
             elif d.governed == "observation_target":
                 prag, epi = "EMBEDDED", "NOT_APPLICABLE"
                 gov = next((x for (x, _) in new_units + clause.units if x.id == d.governor_unit), None)
@@ -2606,7 +2634,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         # host of a following "puis" / "mais": only main clauses do. A clause of
         # ambiguous attachment is not known to be one.
         if clause.conn not in {"que", "rel", "comparative", "sans", "sans_que", "si",
-                               "avant_que", "a_moins_que", "apres_que", "quand", "wh", "car"} and clause.units                 and not clause.attachment_ambiguous:
+                               "avant_que", "a_moins_que", "apres_que", "pour_que", "quand", "wh", "car"} and clause.units                 and not clause.attachment_ambiguous:
             main_heads.append((ci, clause.units[0][0]))
 
     for group in complement_alternatives:
@@ -2782,6 +2810,18 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         if ci + 1 < len(clauses) and clauses[ci + 1].main_after_protasis and clauses[ci + 1].units:
             hosts.append(clauses[ci + 1].units[0][0])
         return hosts if len(hosts) > 1 else None
+
+    # D7: a preposed purpose ("Pour tester Q, lance P") is embedded under its structurally
+    # adjacent host only (never a farther / nearest one); otherwise its attachment is named
+    for ci, uid in preposed_purposes:
+        host = _adjacent_host(ci)
+        if host is None or len(_scope_hosts(ci)) != 1:   # "Pour T, lance P et exécute R": scope open
+            ambiguities.append(f"coordination_attachment_ambiguous:{uid}")
+            continue
+        evidence = "pour_que" if clauses[ci].conn == "pour_que" else "pour"
+        relations.append(LatticeRelation(RelationKind.EMBEDS.value, host.id, uid, evidence=evidence))
+        clauses[ci].units = [(replace(x, embedded_under=host.id) if x.id == uid else x, dd)
+                             for (x, dd) in clauses[ci].units]
 
     # ── inter-clause relations ──
     alternatives: list[list[PredicateUnit]] = []
