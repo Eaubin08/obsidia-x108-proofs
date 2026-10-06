@@ -3012,7 +3012,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                                 if u.span == (clause.toks[k].start, clause.toks[k].end)), None)
         elif clause.conn not in {"quand", "rel", "a_moins_que"} and not verbless_si(ci) and not _unanalyzed_predicative(
                 clause, in_sequence=(in_seq := clause.conn in _SEQUENCE_CONNECTIVES
-                                     or (clause.conn is None and any(c.units for c in clauses if c is not clause))),
+                                     or (clause.conn is None and any(c.units for c in clauses if c is not clause)))
+                # D8: an utterance with no unit at all ("Cette clé permet l'accès."): an unknown
+                # verb introducing a determiner argument is a predication, reported (never zero
+                # representation); "Le test rouge." stays an NP
+                or (clause.conn is None and not any(c.units for c in clauses)),
                 complement_follows=(cmp_next := clause.conn is None and ci + 1 < len(clauses)
                                     and clauses[ci + 1].conn in {"si", "que"} and clauses[ci + 1].units
                                     and clauses[ci + 1].boundary is None)) \
