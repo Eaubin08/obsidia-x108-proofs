@@ -38,7 +38,9 @@ def test_negated_have_to_content_is_never_a_request(text):
         assert claims[u.id] == "NO_ASSERTION"
     s = governable_summary(f)
     assert s["requested_world_actions"] == [] and s["confirmed_no_execute"] is False
-    assert f.constraints == () and not f.closure
+    # H16 A (requalified): both readings of "ne pas avoir à" are the canonical final reading
+    # (deontic_scope_open, non-blocking): closure is no longer held by it
+    assert f.constraints == () and f.closure
 
 
 def test_positive_have_to_is_unchanged():

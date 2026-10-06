@@ -18,23 +18,41 @@ from app.semantic.lattice.french_grammar import parse_utterance
 from app.semantic.lattice.ir_projection import governable_summary
 
 
-@pytest.mark.parametrize("text", ["T'as pas à lancer P.", "Tu n'as rien à lancer P.",
-                                  "N'est-il pas obligatoire de lancer P ?", "Il n'est pas obligatoire de lancer P.",
-                                  "N'est-il pas nécessaire de lancer P ?", "Il n'est pas nécessaire de lancer P."])
-def test_negated_deontic_surface_is_never_a_request(text):
+# H16 option A (requalified): "ne pas avoir à" and the negated necessity question keep both
+# readings canonically (deontic_scope_open, non-blocking); the declarative negated
+# "obligatoire / nécessaire de" is NOT_REQUIRED; the negated obligation question is a
+# question or request (gate kept). Never a prohibition in any case.
+@pytest.mark.parametrize("text,prag,mark,requested", [
+    ("T'as pas à lancer P.", "EMBEDDED", "deontic_scope_open", []),
+    ("Tu n'as rien à lancer P.", "EMBEDDED", "deontic_scope_open", []),
+    ("N'est-il pas nécessaire de lancer P ?", "EMBEDDED", "deontic_scope_open", []),
+    ("Il n'est pas obligatoire de lancer P.", "NOT_REQUIRED", None, []),
+    ("Il n'est pas nécessaire de lancer P.", "NOT_REQUIRED", None, []),
+    ("N'est-il pas obligatoire de lancer P ?", "INDIRECT_REQUEST", "question_or_request", ["EXECUTE"]),
+])
+def test_negated_deontic_surface_is_never_a_prohibition(text, prag, mark, requested):
     f = parse_utterance(text)
     (u,) = f.units
-    assert u.pragmatic == "EMBEDDED" and u.modality is None
-    assert f"deontic_scope_open:{u.id}" in f.ambiguities
+    assert u.pragmatic == prag and u.pragmatic != "FORBIDDEN"
+    if mark is not None:
+        assert f"{mark}:{u.id}" in f.ambiguities
     s = governable_summary(f)
-    assert s["requested_world_actions"] == [] and s["confirmed_no_execute"] is False
-    assert f.constraints == () and not f.closure
+    assert s["requested_world_actions"] == requested and s["confirmed_no_execute"] is False
+    assert f.constraints == () and f.closure
 
 
-@pytest.mark.parametrize("text", ["Il est nécessaire de lancer P.", "Est-il nécessaire de lancer P ?",
-                                  "Il est obligatoire de lancer P.", "Tu as à lancer P."])
-def test_positive_surfaces_keep_their_fail_closed_state(text):
+@pytest.mark.parametrize("text", ["Il est nécessaire de lancer P.", "Est-il nécessaire de lancer P ?"])
+def test_positive_necessity_keeps_its_fail_closed_state(text):
+    # H16 A: necessity is not an obligation
     f = parse_utterance(text)
     (u,) = f.units
     assert u.modality is None and u.pragmatic == "EMBEDDED" and not f.closure
     assert not any(a.startswith("deontic_scope_open") for a in f.ambiguities)
+
+
+@pytest.mark.parametrize("text", ["Il est obligatoire de lancer P.", "Tu as à lancer P."])
+def test_positive_obligation_surfaces_are_obligations(text):
+    # H16 A (requalified, formerly unrecognised governors): the existing obligation channel
+    f = parse_utterance(text)
+    (u,) = f.units
+    assert u.modality == "OBLIGATION" and u.pragmatic == "REQUESTED" and f.closure
