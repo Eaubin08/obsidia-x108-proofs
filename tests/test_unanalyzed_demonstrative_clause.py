@@ -22,16 +22,18 @@ MISSING = "unanalyzed_predicative_content:"
 
 
 @pytest.mark.parametrize("text,content", [
-    ("Ça parle de KX108 et Paul lance P.", "Ça parle de KX108"),
+    ("Ça parle de KX108 et Paul lance P.", "de KX108"),
     ("Cela concerne le build et Paul lance P.", "Cela concerne le build"),
     ("Ça marche et Paul lance P.", "Ça marche"),
     ("Ceci frobnique le test puis lance P.", "Ceci frobnique le test"),
-    ("Paul lance P et ça parle de KX108.", "ça parle de KX108"),
+    ("Paul lance P et ça parle de KX108.", "de KX108"),
     ("Lance P, cela concerne le build.", "cela concerne le build"),
-    ("Ça parle de KX108.", "Ça parle de KX108"),
+    ("Ça parle de KX108.", "de KX108"),
     ("Ça ne marche pas et Paul lance P.", "Ça ne marche pas"),
 ])
 def test_demonstrative_clause_is_named_missing(text, content):
+    # since SPEAK, "ça parle de KX108" is SPEAK(ça) whose "de KX108" complement is the kept,
+    # unanalyzed content (speak_complement_of); the frame stays open either way
     f = parse_utterance(text)
     spans = [tuple(int(x) for x in m.split(":")[1].split("-")) for m in f.missing if m.startswith(MISSING)]
     assert any(f.raw[a:b].rstrip(" .") == content for a, b in spans)
@@ -44,7 +46,8 @@ def test_demonstrative_clause_is_named_missing(text, content):
 def test_no_unit_gate_or_occurrence_is_created_for_it():
     f = parse_utterance("Ça parle de KX108 et Paul lance P.")
     ref = parse_utterance("Paul lance P.")
-    assert [(u.lemma, u.pragmatic, u.subject) for u in f.units] == [(u.lemma, u.pragmatic, u.subject) for u in ref.units]
+    # since SPEAK, "ça parle" is one non-reporting SPEAK unit (no world action, no event)
+    assert [(u.lemma, u.pragmatic, u.subject) for u in f.units] ==         [("parler", "ASSERTED", "ça")] + [(u.lemma, u.pragmatic, u.subject) for u in ref.units]
     gate = {k: v["requires_gate"] for k, v in project(f, ProjectionAxis.AUTHORITY).items()}
     assert not any(gate.values())
     assert len(build_frame_event_index(f).events()) == len(build_frame_event_index(ref).events())

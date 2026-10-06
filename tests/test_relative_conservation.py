@@ -30,7 +30,8 @@ def _reported(f):
 
 
 @pytest.mark.parametrize("text,kept", [
-    ("Explique la mémoire qui te sert à parler.", "qui te sert à parler"),
+    # "qui te sert à parler" now holds a SPEAK unit (test_speak_predicate / test_detail_compare)
+    ("Explique la mémoire qui te sert à frobuler.", "qui te sert à frobuler"),
     ("Explique le document qui frobule P.", "qui frobule P"),
     ("Explique le document que Paul frobule.", "que Paul frobule"),
     ("Explique le document qui est utile.", "est utile"),

@@ -28,8 +28,10 @@ FAMILIES = {
     "REMEMBER": ("se souvient", f"s{A}est souvenue", "se souviendra", "ne se souvient pas", "se souvient"),
     "DOUBT": ("se doute", f"s{A}est doutée", "se doutera", "ne se doute pas", "se doute"),
     "IMAGINE": (f"s{A}imagine", f"s{A}est imaginé", f"s{A}imaginera", f"ne s{A}imagine pas", f"s{A}imagine"),
-    "TALK_ABOUT_FACT": ("parle du fait", "a parlé du fait", "parlera du fait", "ne parle pas du fait", "parle du fait"),
 }
+# "parler" is a known non-reporting predicate since SPEAK: "parler du fait que X" left the
+# unknown-governor families for the known-governor contract (test_speak_about_fact_*)
+TALK_ABOUT_FACT = ("parle du fait", "a parlé du fait", "parlera du fait", "ne parle pas du fait", "parle du fait")
 
 
 def _analyse(text):
@@ -88,7 +90,6 @@ def test_conditional_scope_stays_visible(family):
     f"Elle s{A}imagine que {X}.",
     f"Paul te promet que Marie a lancé le test.",
     f"Le chef se souvient que {X}.",
-    f"Marie a parlé du fait que {X}.",
 ])
 def test_pronominal_and_clitic_variants(text):
     _assert_preserved(text)
@@ -107,8 +108,39 @@ def test_unbuildable_governor_never_promotes_complement_to_root(text):
     assert any(a.endswith(f":{x.id}") for a in frame.ambiguities), text
 
 
+def _assert_speak_preserved(text):
+    """SPEAK is known but has no "que" complement contract: X stays embedded under it,
+    never asserted, never reported, the governance named (frame open)."""
+    frame, index = _analyse(text)
+    x = _complement(frame)
+    (speak,) = [u for u in frame.units if u.predicate == "SPEAK"]
+    assert x.embedded_under == speak.id and x.pragmatic == "EMBEDDED", text
+    assert ("EMBEDS", speak.id, x.id) in {(r.kind, r.source, r.target) for r in frame.relations}, text
+    assert not any(r.kind == "REPORTS" for r in frame.relations), text
+    assert index.event_for(x.id).occurrence_status.value != ASSERTED, text
+    assert f"unresolved_complement_governance:{x.id}" in frame.ambiguities and not frame.closure, text
+    return frame, index, speak, x
+
+
+@pytest.mark.parametrize("form", range(3))
+def test_speak_about_fact_keeps_the_complement_embedded(form):
+    _, _, speak, _ = _assert_speak_preserved(f"Marie {TALK_ABOUT_FACT[form]} que {X}.")
+    if form == 1:
+        assert speak.tense_aspect in {"PAST", "PLUPERFECT"}
+    if form == 2:
+        assert speak.tense_aspect == "FUTURE"
+
+
+def test_speak_about_fact_negation_and_condition_stay_on_the_governor():
+    _, _, speak, x = _assert_speak_preserved(f"Marie {TALK_ABOUT_FACT[3]} que {X}.")
+    assert speak.polarity == "negative" and x.polarity == "positive"
+    frame, _, speak, _ = _assert_speak_preserved(f"Si Marie {TALK_ABOUT_FACT[4]} que {X}, Luc attend.")
+    assert speak.pragmatic == "HYPOTHETICAL"
+    assert "CONDITIONS" in {r.kind for r in frame.relations if r.source == speak.id}
+
+
 def test_lexical_fact_is_not_world_fact():
-    frame, index, _, x = _assert_preserved(f"Marie parle du fait que {X}.")
+    frame, index, _, x = _assert_speak_preserved(f"Marie parle du fait que {X}.")
     assert index.event_for(x.id).occurrence_status.value != ASSERTED
     # the noun "fait" is not a predicate and asserts nothing
     assert all(u.predicate != "DO" for u in frame.units)
@@ -188,6 +220,32 @@ def test_lost_governor_adversarial_matrix():
             metrics["FUTURE_LOST"] += 1
         if len([r for r in frame.relations if r.kind == "EMBEDS" and r.source == governor.id]) != 1:
             metrics["FIRST_MATCH"] += 1
+    # "parler du fait que": known SPEAK governor without a complement contract (same guarantees)
+    for (i, verb), subject, comp, place in product(enumerate(TALK_ABOUT_FACT[:4]), subjects, complements, placements):
+        subj = subject.lower() if place.startswith("Si") and subject in {"Elle", "Il"} else subject
+        text = place.format(c=f"{subj} {verb} que {comp}")
+        text = text[0].upper() + text[1:]
+        metrics["CASES"] += 1
+        frame, index = _analyse(text)
+        speaks = [u for u in frame.units if u.predicate == "SPEAK"]
+        if len(speaks) != 1:
+            metrics["LOST_GOVERNOR_COMPLEMENT_PROMOTION"] += 1
+            continue
+        speak = speaks[0]
+        inner = [u for u in frame.units if u.span[0] > speak.span[1] and u.predicate != "WAIT"]
+        head = min(inner, key=lambda u: u.span[0])
+        if head.embedded_under != speak.id or any(r.kind == "REPORTS" and r.source == speak.id for r in frame.relations):
+            metrics["LOST_GOVERNOR_COMPLEMENT_PROMOTION"] += 1
+            continue
+        metrics["PRESERVED_EMBEDDED_COMPLEMENTS"] += 1
+        for u in inner:
+            event = index.event_for(u.id)
+            if event is not None and event.occurrence_status.value == ASSERTED:
+                metrics["UNSUPPORTED_GOVERNOR_ASSERTED_COMPLEMENT"] += 1
+        if i == 3 and speak.polarity != "negative":
+            metrics["NEGATION_LOST"] += 1
+        if place.startswith("Si {c}") and "CONDITIONS" not in {r.kind for r in frame.relations if r.source == speak.id}:
+            metrics["CONDITION_LOST"] += 1
     for verb, expected, subject, place in product(supported, ("UNKNOWN",), subjects, placements[:1]):
         frame, index = _analyse(place.format(c=f"{subject} {verb} que {X}"))
         metrics["CASES"] += 1

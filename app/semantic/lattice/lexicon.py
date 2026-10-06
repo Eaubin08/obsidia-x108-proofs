@@ -43,6 +43,9 @@ LEMMAS: dict[str, tuple[str, str]] = {
     # distinct operations, never collapsed into EXPLAIN (lexical distinction kept)
     "détailler": ("DETAIL", "text_production"),
     "comparer": ("COMPARE", "text_production"),
+    # communicative but never a report: no "que" embedding contract, no REPORTS
+    # (SPEAK != SAY); its "de X" / "du fait que P" complements are kept open (french_grammar)
+    "parler": ("SPEAK", "other"),
     "tester": ("VERIFY", "inspection"),
     "vérifier": ("VERIFY", "inspection"),
     "check": ("VERIFY", "inspection"),
@@ -117,6 +120,7 @@ _ER_VERBS: dict[str, tuple[str, str | None]] = {
     "expliquer": ("expliqu", None),
     "détailler": ("détaill", None),
     "comparer": ("compar", None),
+    "parler": ("parl", None),
     "tester": ("test", None),
     "vérifier": ("vérifi", None),
     "confirmer": ("confirm", None),

@@ -388,6 +388,10 @@ def _known_complement_governor(ctoks: list[_Tok], toks: list[_Tok], que_at: int)
     while has_ne and k < len(ctoks) and lows[k] in _FR_NEGATORS:
         k += 1
     tail = lows[k:]
+    # "parle du fait que P", "parle de ce que P": a nominal complement head, as for an unknown
+    # governor (_unresolved_governor_index); never a relative over "le fait"
+    if len(tail) == 2 and tuple(tail) in _COMPLEMENT_HEADS:
+        return _clause_follows(toks, que_at)
     if tail and not (tail[0] in {"à", "au", "aux"} and len(tail) <= 4
                      and not any(_is_verb(ctoks, m) for m in range(k, len(ctoks)))):
         return False
@@ -2037,6 +2041,14 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     detached_sources: list[str] = []  # S12, merged into missing below
     ambiguities: list[str] = []
     lost_governors: list[tuple[tuple[int, int], str]] = []  # (governor span, governed unit)
+
+    def _keep_governor_material(clause: _Clause, d: _Draft, uid: str) -> None:
+        # "la mémoire sert à parler", "qui te sert à parler": the material of an unrecognised
+        # prepositional governor (its subject, clitics, verb, preposition) is kept, never dropped
+        material = [t for t in clause.toks[:d.head_index]
+                    if not t.is_punct and t.low not in _RELATIVE_PRONOUNS and t.low not in _CONNECTIVES]
+        if material:
+            lost_governors.append(((material[0].start, material[-1].end), uid))
     deixis = [t.low for t in toks if t.low in _DEIXIS and not t.hyphen_before]
     counter = 0
 
@@ -2250,6 +2262,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                     # expresses is not represented (named, frame open)
                     prag, epi = "EMBEDDED", "NOT_APPLICABLE"
                     ambiguities.append(f"infinitive_under_unrecognized_governor:{u.id}")
+                    _keep_governor_material(clause, d, u.id)
                 if parent_unit is not None:
                     embedded_under = parent_unit.id
                     relations.append(LatticeRelation(RelationKind.EMBEDS.value, parent_unit.id,
@@ -2309,6 +2322,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                     if gov is None:
                         d.governed = "unknown_prep"
                         ambiguities.append(f"infinitive_under_unrecognized_governor:{u.id}")
+                        _keep_governor_material(clause, d, u.id)
                 if gov is not None:
                     embedded_under = gov.id
                     relations.append(LatticeRelation(RelationKind.EMBEDS.value, gov.id, u.id,
@@ -3027,6 +3041,18 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             ambiguities.append(f"negated_scope_open:{u.id}")
             not_all.add(u.id)
             final_units[i] = replace(u, negation_confirmed=False)
+
+    # SPEAK: a "de X" / "du fait" complement is not an object (no TOPIC role exists yet): it
+    # is kept as reported content and the frame stays open ("Paul parle de KX108")
+    for i, u in enumerate(final_units):
+        if u.predicate != "SPEAK":
+            continue
+        de_args = [a for a in u.objects if a.span is not None
+                   and (a.text.split(" ", 1)[0] in {"de", "du", "des"} or a.text.startswith("d'"))]
+        if de_args:
+            final_units[i] = replace(u, objects=tuple(a for a in u.objects if a not in de_args))
+            missing.extend(f"{UNANALYZED_PREDICATIVE_CONTENT}:{a.span[0]}-{a.span[1]}:speak_complement_of={u.id}"
+                           for a in de_args)
 
     constraints = _constraints([u for u in final_units if u.id not in not_all])
     contradictions = _contradictions(final_units)

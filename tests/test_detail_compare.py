@@ -36,6 +36,9 @@ def test_compare_keeps_its_coordination(text, kind):
 def test_detail_never_closes_over_an_unanalyzed_relative():
     # the gate that made 299be951 unsafe: the unit-less relative must stay preserved and open
     f = parse_utterance("Détaille la mémoire qui te sert à parler.")
-    (u,) = f.units
+    u = f.units[0]
     assert (u.predicate, [a.text for a in u.objects]) == ("DETAIL", ["la mémoire"])
-    assert any(m.endswith(":unattached_relative_of=u1") for m in f.missing) and not f.closure
+    # since SPEAK the relative holds SPEAK (EMBEDDED, unknown governor "te sert à" kept)
+    s = next(x for x in parse_utterance("Détaille la mémoire qui te sert à parler.").units if x.predicate == "SPEAK")
+    kept = [m for m in f.missing if ":unattached_relative_of=u1" in m or f":unrecognized_governor_of={s.id}" in m]
+    assert kept and not f.closure
