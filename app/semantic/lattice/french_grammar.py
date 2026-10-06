@@ -1232,6 +1232,16 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
         nxt2 = toks[i + 2] if i + 2 < len(toks) else None
         low = t.low
 
+        # D5: a sentence-initial "apparemment" without its comma is the same detached
+        # evidential as "Apparemment, P": never fused into the subject ("apparemment marie"),
+        # never an unhedged realized assertion
+        if low == "apparemment" and not cur().toks and nxt is not None and not nxt.is_punct \
+                and (i == 0 or toks[i - 1].low in {".", "!", "?", ";"}):
+            cur().toks.append(t)
+            open_clause(None, [])
+            i += 1
+            continue
+
         if t.is_punct:
             if low == "?":
                 interrogative = True
@@ -1448,6 +1458,13 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
     lost_complement = False
     pending_source = None
     for c in clauses:
+        # D5: a clause-internal "apparemment" ("Marie a apparemment lancé P", "Marie lance
+        # apparemment P") is that clause's evidential (span kept); never subject / object material
+        inner = [k for k, t in enumerate(c.toks) if t.low == "apparemment" and k > 0]
+        if inner and c.evidential is None and len(c.toks) > 1:
+            t = c.toks[inner[0]]
+            c.evidential, c.evidential_span = _source_marker([t]), (t.start, t.end)
+            c.toks = c.toks[:inner[0]] + c.toks[inner[0] + 1:]
         has_verb = c.unresolved_governor is not None or any(
             _is_verb(c.toks, k) for k in range(len(c.toks)))
         # A clause opened by punctuation (conn None) holding only a source adverbial:
@@ -1455,6 +1472,13 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
         # ("P, selon Marie") the previous one.
         marker = _source_marker(c.toks) if c.conn is None else None
         span = (c.toks[0].start, c.toks[-1].end) if marker is not None else None
+        # D5: a source that opens a new sentence ("P. Apparemment, Q") marks Q, never the
+        # previous sentence
+        sentence_initial = not merged or c.boundary in {".", "!", "?", ";"}
+        if marker is not None and sentence_initial and merged:
+            pending_source = (marker, span)
+            merged.append(c)
+            continue
         if marker is not None and merged and merged[-1].units == [] and any(
                 _is_verb(merged[-1].toks, k) for k in range(len(merged[-1].toks))):
             if merged[-1].evidential is None:
