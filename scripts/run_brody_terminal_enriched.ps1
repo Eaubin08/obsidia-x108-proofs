@@ -91,9 +91,9 @@ function Print-Boundary {
   Write-Host "x108_mutation=$($Response.x108_mutation)"
 }
 
-Write-Host "BRODY TERMINAL ENRICHED - /api/brody/chat + OS Trad + IR + OS Reverse"
-Write-Host "Base: $Base"
-Write-Host "Type exit to quit."
+Write-Host "BRODY TERMINAL ENRICHED - /api/brody/chat + OS Trad + IR + OS Reverse" -ForegroundColor Cyan
+Write-Host "Base: $Base" -ForegroundColor DarkGray
+Write-Host "Type exit to quit." -ForegroundColor DarkGray
 
 while ($true) {
   Write-Host ""
