@@ -413,6 +413,42 @@ class JarJarWindowsExecutor:
                 "executor": "StructuredUIBackend",
                 "capability": "control.set_checked_by_identity"}
 
+    def read_selected_by_identity(self, target_identity: dict) -> dict:
+        result = self._ui_backend.execute(
+            self._ActionRequest(capability="control.read_selected",
+                                arguments={"target_identity": target_identity},
+                                source="obsidia_bridge_v1"))
+        if not result.ok:
+            return {"ok": False,
+                    "error": "READ_SELECTED_FAILED:" + result.message,
+                    "executor": "StructuredUIBackend",
+                    "capability": "control.read_selected"}
+        data = result.data or {}
+        return {"ok": True,
+                "is_selected": data.get("is_selected"),
+                "target_identity": target_identity,
+                "executor": "StructuredUIBackend",
+                "capability": "control.read_selected"}
+
+    def select_radio_by_identity(self, target_identity: dict) -> dict:
+        result = self._ui_backend.execute(
+            self._ActionRequest(capability="control.select_radio_by_identity",
+                                arguments={"target_identity": target_identity},
+                                source="obsidia_bridge_v1"))
+        if not result.ok:
+            return {"ok": False,
+                    "error": "SELECT_RADIO_FAILED:" + result.message,
+                    "executor": "StructuredUIBackend",
+                    "capability": "control.select_radio_by_identity"}
+        data = result.data or {}
+        return {"ok": True,
+                "mutation_performed": data.get("mutation_performed"),
+                "post_is_selected": data.get("post_is_selected"),
+                "realized_state_verified": data.get("realized_state_verified"),
+                "proof": data.get("proof"),
+                "executor": "StructuredUIBackend",
+                "capability": "control.select_radio_by_identity"}
+
 
 
 # === G13 governed media ===
