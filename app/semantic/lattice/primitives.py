@@ -17,17 +17,18 @@ from enum import Enum
 
 # Parser ambiguity markers that leave the meaning structure itself unresolved
 # (antecedent, attachment, governor, lost structure, bare "ne", unshared negated
-# scope, held temporal subordinate, held compound-modal occurrence, open act of a
-# negated question operator, possible positive / negative occurrence conflict, open
+# scope, held temporal subordinate, possible positive / negative occurrence conflict, open
 # scope of a postposed condition over a coordination): they block semantic closure. Speech-act readings kept by fail-closed doctrine
 # (ability_permission_or_request, desire_or_request, question_or_request) do not, nor
 # (H09 / H10) the open act of a negated question operator (negated_speech_act_open): a
 # speech-act ambiguity alone never blocks closure; the possible request keeps its gate.
+# Nor (H12 option B) modal_past_occurrence_open: "a voulu / a pu / a dû P" leaves the
+# occurrence of P canonically UNRESOLVED; that is the final reading, not an incompleteness.
 STRUCTURAL_AMBIGUITIES = frozenset({
     "ambiguous_antecedent", "coordination_attachment_ambiguous", "complement_governor_lost",
     "complement_structure_lost", "complement_under_unresolved_governor", "unresolved_complement_governance",
     "infinitive_under_unrecognized_governor", "bare_ne", "negated_scope_open",
-    "temporal_subordinate_open", "modal_past_occurrence_open", "know_how_scope_open",
+    "temporal_subordinate_open", "know_how_scope_open",
     "coordinated_subject_unrepresented", "subject_unresolved",
     "occurrence_conflict_open", "condition_scope_ambiguous",
     "deontic_scope_open", "exception_condition_open",
