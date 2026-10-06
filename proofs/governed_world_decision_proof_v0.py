@@ -112,12 +112,11 @@ def build_governed_world_decision_proof_v0(
         "proof_authority": False,
         "execution_authority": False,
     }
-    return GovernedWorldDecisionProofV0(
-        **body,
-        evidence_refs=tuple(body["evidence_refs"]),
-        provenance_refs=tuple(body["provenance_refs"]),
-        proof_hash=_canonical_hash(body),
-    )
+    packet = dict(body)
+    packet["evidence_refs"] = tuple(body["evidence_refs"])
+    packet["provenance_refs"] = tuple(body["provenance_refs"])
+    packet["proof_hash"] = _canonical_hash(body)
+    return GovernedWorldDecisionProofV0(**packet)
 
 
 def verify_governed_world_decision_proof_v0(
