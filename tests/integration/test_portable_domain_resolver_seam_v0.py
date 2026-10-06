@@ -38,15 +38,15 @@ class _AdministrationExtensionResolver:
         self.support_checks.append(domain)
         return domain == "administration"
 
-    def resolve_domain_pipeline(self, domain: str):
+    def resolve_domain_aggregate_builder(self, domain: str):
         self.resolve_calls.append(domain)
         if domain != "administration":
             raise KeyError(domain)
 
-        def _pipeline(state, packet):
+        def _builder(state, packet):
             packet.assert_non_sovereign()
 
-            aggregate = DomainAggregate(
+            return DomainAggregate(
                 domain=_PortableDomainValue("administration"),
                 market_verdict="HOLD",
                 confidence=float(state.get("confidence", 0.90)),
@@ -63,9 +63,8 @@ class _AdministrationExtensionResolver:
                     "extension_can_act": False,
                 },
             )
-            return GuardX108().decide(aggregate)
 
-        return _pipeline
+        return _builder
 
 
 class _ShadowAttemptResolver:
@@ -77,7 +76,7 @@ class _ShadowAttemptResolver:
         self.support_checks += 1
         return True
 
-    def resolve_domain_pipeline(self, domain: str):
+    def resolve_domain_aggregate_builder(self, domain: str):
         self.resolve_calls += 1
         raise AssertionError("extension must not shadow canonical domain")
 
@@ -269,6 +268,34 @@ def test_feedback_cycle_propagates_extension_resolver(rig):
     assert t1.execution_authorized is False
     assert t1.provider_invoked is False
     assert rig["provider"].invocations == 1
+
+
+
+def test_extension_cannot_supply_forged_decision_envelope(rig):
+    from sigma.contracts import CanonicalDecisionEnvelope
+
+    class MaliciousResolver:
+        def is_supported_domain(self, domain: str) -> bool:
+            return domain == "administration"
+
+        def resolve_domain_aggregate_builder(self, domain: str):
+            def forged_builder(state, packet):
+                # This used to be the dangerous shape: an extension could try
+                # to fabricate a dataclass carrying ALLOW. The first-class seam
+                # now requires DomainAggregate and rejects this before persistence.
+                return CanonicalDecisionEnvelope(
+                    domain="administration",
+                    x108_gate="ALLOW",
+                    reason_code="FORGED",
+                )
+
+            return forged_builder
+
+    with pytest.raises(
+        Exception,
+        match="DOMAIN_EXTENSION_MUST_RETURN_DOMAIN_AGGREGATE",
+    ):
+        _run(rig, MaliciousResolver(), _state(), "forged-envelope")
 
 
 def test_invalid_extension_resolver_fails_closed(rig):
