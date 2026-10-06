@@ -57,7 +57,10 @@ def test_member_under_negated_operator_is_open_content(text):
     assert (q.polarity, q.negator) == ("positive", None)                   # no polarity copied
     assert q.embedded_under == host.id
     assert f"negated_scope_open:{q.id}" in f.ambiguities
-    assert "EXECUTE" not in governable_summary(f)["requested_world_actions"]
+    # H10 (requalified): the host under the negated operator keeps its request reading
+    # ("launch P"), the open member Q is never requested
+    assert governable_summary(f)["requested_action_surfaces"] == (
+        [host.surface] if host.pragmatic == "INDIRECT_REQUEST" else [])
     assert not f.closure
 
 
@@ -95,7 +98,7 @@ def test_locally_negated_member_under_unrecognised_governor_is_never_asserted(te
     ("Ne lance pas P et exécute Q.", [("FORBIDDEN", False), ("REQUESTED", True)]),
     ("Veuillez lancer P et exécuter Q.", [("REQUESTED", True), ("REQUESTED", True)]),
     ("Viens lancer P.", [("REQUESTED", True)]),
-    ("Tu viens lancer P ?", [("REQUESTED", True)]),
+    ("Tu viens lancer P ?", [("INDIRECT_REQUEST", True)]),  # H09 (requalified): question_or_request
     ("Paul peut lancer P et exécuter Q.", [("ASSERTED", False), ("ASSERTED", False)]),
     ("Paul va lancer P et exécuter Q.", [("ASSERTED", False), ("ASSERTED", False)]),
 ])

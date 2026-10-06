@@ -34,7 +34,8 @@ def test_negative_question_matches_n7(text):
     (u,) = f.units
     assert (u.polarity, u.pragmatic) == ("negative", "INDIRECT_REQUEST") and f.constraints == ()
     s = governable_summary(f)
-    assert s["requested_world_actions"] == [] and s["confirmed_no_execute"] is False
+    # H10 (requalified): the request reading of the negated question operator keeps the gate
+    assert s["requested_world_actions"] == ["EXECUTE"] and s["confirmed_no_execute"] is False
     assert f"negated_speech_act_open:{u.id}" in f.ambiguities
 
 

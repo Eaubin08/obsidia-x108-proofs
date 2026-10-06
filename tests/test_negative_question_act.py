@@ -38,12 +38,14 @@ def test_negated_question_operator_is_never_a_prohibition(text, lemma, head):
     (u,) = f.units
     assert (u.lemma, u.polarity, [a.head for a in u.objects]) == (lemma, "negative", [head])  # content kept
     assert u.pragmatic != "FORBIDDEN" and u.pragmatic == "INDIRECT_REQUEST"
-    assert f.constraints == () and not _gate(f)[u.id]
+    # H10 (requalified): the request reading of a negated question operator is "do P": gate
+    # kept, never a prohibition; the speech-act ambiguity alone does not block closure
+    assert f.constraints == () and _gate(f)[u.id]
     s = governable_summary(f)
     assert s["confirmed_no_execute"] is False and s["negated_execute_surfaces"] == []
-    assert s["requested_world_actions"] == []
+    assert s["requested_world_actions"] == ["EXECUTE"]
     assert f"negated_speech_act_open:{u.id}" in f.ambiguities
-    assert not f.closure
+    assert f.closure
 
 
 def test_genuine_prohibition_is_kept():

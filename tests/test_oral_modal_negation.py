@@ -33,9 +33,12 @@ def test_oral_head_negation_is_kept(text, modality):
     f = parse_utterance(text)
     (u,) = f.units
     assert (u.modality, u.polarity, u.ne_omitted, u.negation_confirmed) == (modality, "negative", True, False)
-    assert not _gate(f)[u.id]
+    # H09 / H10 (requalified): a negated 2nd-person ability / obligation / desire question
+    # keeps its request reading ("do P"): gate; a know-how question has none
+    gated = modality != "KNOW_HOW" and text.endswith("?")
+    assert _gate(f)[u.id] is gated
     s = governable_summary(f)
-    assert s["confirmed_no_execute"] is False and s["requested_world_actions"] == []
+    assert s["confirmed_no_execute"] is False and s["requested_world_actions"] == (["EXECUTE"] if gated else [])
 
 
 @pytest.mark.parametrize("text", ["Tu peux pas lancer P ?", "Tu dois pas lancer P ?", "Tu peux pas ne pas lancer P ?"])
@@ -43,7 +46,10 @@ def test_oral_negated_question_operator_is_never_a_prohibition(text):
     f = parse_utterance(text)
     (u,) = f.units
     assert u.pragmatic == "INDIRECT_REQUEST" and f.constraints == ()
-    assert f"negated_speech_act_open:{u.id}" in f.ambiguities and not f.closure
+    assert f"negated_speech_act_open:{u.id}" in f.ambiguities
+    # H10 (requalified): the open act alone does not block closure; a negated content under
+    # the negated operator ("ne pas lancer") stays open (option A)
+    assert f.closure is ("ne pas" not in text)
 
 
 @pytest.mark.parametrize("text", ["Paul peut pas lancer P et exécuter Q.", "Tu peux pas lancer P et exécuter Q ?"])

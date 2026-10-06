@@ -44,10 +44,12 @@ def test_negated_impersonal_obligation_question_is_never_a_prohibition(text):
     f = parse_utterance(text)
     (u,) = f.units
     assert (u.modality, u.polarity, u.pragmatic) == ("OBLIGATION", "negative", "INDIRECT_REQUEST")
-    assert f.constraints == () and not _gate(f)[u.id]
+    # H10 (requalified): the request reading of a negated question operator is "do P": gate
+    # kept, never a prohibition; the speech-act ambiguity alone does not block closure
+    assert f.constraints == () and _gate(f)[u.id]
     s = governable_summary(f)
-    assert s["confirmed_no_execute"] is False and s["requested_world_actions"] == []
-    assert f"negated_speech_act_open:{u.id}" in f.ambiguities and not f.closure
+    assert s["confirmed_no_execute"] is False and s["requested_world_actions"] == ["EXECUTE"]
+    assert f"negated_speech_act_open:{u.id}" in f.ambiguities and f.closure
 
 
 @pytest.mark.parametrize("text,prag,gate", [("Il faut lancer P.", "REQUESTED", True),

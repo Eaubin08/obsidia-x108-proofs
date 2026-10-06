@@ -47,7 +47,13 @@ def test_infinitives_share_the_desire_modal(text, lead, tail):
         obj = u.objects[0].text if u.objects else ""
         ref_f, ref_gate, ref_events = _view(f"{lead} {u.lemma} {obj}".rstrip() + tail)
         assert _signature(u, gate, events) == _signature(ref_f.units[0], ref_gate, ref_events)
-        assert u.modality == "DESIRE" and u.pragmatic != "REQUESTED" and not gate[u.id]
+        # H09 (requalified): a 2nd-person desire question is a question or an invitation
+        # (desire_or_request): possible request, gate kept, never a definitive REQUESTED
+        if tail == " ?":
+            assert u.modality == "DESIRE" and u.pragmatic == "INDIRECT_REQUEST" and gate[u.id]
+            assert f"desire_or_request:{u.id}" in f.ambiguities
+        else:
+            assert u.modality == "DESIRE" and u.pragmatic != "REQUESTED" and not gate[u.id]
     for u in f.units[1:]:
         if u.id in events:
             assert events[u.id].occurrence_derivation.provenance["shared_modality"] == coord.id
