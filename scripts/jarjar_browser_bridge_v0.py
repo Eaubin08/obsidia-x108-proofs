@@ -149,6 +149,31 @@ class JarJarBrowserExecutor:
         out.update(data)
         return out
 
+    def inspect_radio(self, selector: str) -> dict:
+        """Inspect one supported radio target. No mutation."""
+        from jarvis.contracts import ActionRequest
+        result = self._backend.execute(
+            ActionRequest("browser.inspect_radio", {"selector": selector}))
+        if not result.ok:
+            return {"ok": False, "error": "INSPECT_RADIO_FAILED:" + result.message,
+                    "executor": self.EXECUTOR_BACKEND}
+        data = result.data or {}
+        out = {"ok": True, "executor": self.EXECUTOR_BACKEND}
+        out.update(data)
+        return out
+
+    def select_radio(self, radio_identity: dict) -> dict:
+        """Select an approved radio target. This is not click(selector)."""
+        from jarvis.contracts import ActionRequest
+        result = self._backend.execute(ActionRequest("browser.select_radio", dict(radio_identity or {})))
+        if not result.ok:
+            return {"ok": False, "error": "SELECT_RADIO_FAILED:" + result.message,
+                    "executor": self.EXECUTOR_BACKEND}
+        data = result.data or {}
+        out = {"ok": True, "executor": self.EXECUTOR_BACKEND}
+        out.update(data)
+        return out
+
     def navigate(self, requested_url: str) -> dict:
         """Execute physical navigation. Returns execution evidence only."""
         from jarvis.contracts import ActionRequest

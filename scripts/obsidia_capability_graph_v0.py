@@ -535,6 +535,22 @@ _GRAPH: "dict[str, dict]" = {
                      "human_authorized_eah": "exact EAH from PREPARE"},
         availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
         notes="V2 BROWSER SET_CHECKED EXECUTE: TOCTOU state drift check, no-op or semantic set_checked, fail closed on side effects, post-state proof. STRONG. KX108_ONLY."),
+    "PC_V2_BROWSER_SELECT_RADIO_PREPARE": _cap(
+        "PC_V2_BROWSER_SELECT_RADIO_PREPARE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_NONE,
+        route=ROUTE_NATIVE,
+        input_shape={"selector": "str", "semantic_intent": "bounded non-empty str",
+                     "semantic_risk": "LOW|MEDIUM|HIGH"},
+        availability="AVAILABLE", proof_status="J5_PREPARE_ONLY",
+        notes="V2 BROWSER SELECT_RADIO PREPARE: inspect exact main-frame input[type=radio], bind identity+radio_group_identity+risk. Positive selection only. No generic click. KX108_ONLY."),
+    "PC_V2_BROWSER_SELECT_RADIO_EXECUTE": _cap(
+        "PC_V2_BROWSER_SELECT_RADIO_EXECUTE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_WRITE_GOVERNED,
+        route=ROUTE_STAGE4_GOVERNED,
+        input_shape={"prepared_result": "PC_V2_BROWSER_SELECT_RADIO_PREPARE output",
+                     "human_authorized_eah": "exact EAH from PREPARE"},
+        availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
+        notes="V2 BROWSER SELECT_RADIO EXECUTE: TOCTOU group/state drift check, no-op or semantic check, fail closed on side effects, post checked=true proof. Peer deselection proof deferred V1. STRONG. KX108_ONLY."),
 }
 
 _CAPABILITY_IDS = tuple(_GRAPH.keys())

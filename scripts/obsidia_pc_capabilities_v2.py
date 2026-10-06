@@ -77,6 +77,10 @@ OP_BROWSER_SET_CHECKED = "V2_BROWSER_SET_CHECKED"
 _CAP_BCHK_PREPARE = "PC_V2_BROWSER_SET_CHECKED_PREPARE"
 _CAP_BCHK_EXECUTE = "PC_V2_BROWSER_SET_CHECKED_EXECUTE"
 
+OP_BROWSER_SELECT_RADIO = "V2_BROWSER_SELECT_RADIO"
+_CAP_BRDO_PREPARE = "PC_V2_BROWSER_SELECT_RADIO_PREPARE"
+_CAP_BRDO_EXECUTE = "PC_V2_BROWSER_SELECT_RADIO_EXECUTE"
+
 _SENSITIVE_SELECTOR_PATTERNS = (
     "type=password", 'type="password"', "type=hidden", 'type="hidden"',
 )
@@ -85,7 +89,7 @@ def _is_sensitive_selector(selector: str) -> bool:
     sl = selector.lower().replace(" ", "")
     return any(p.replace(" ", "") in sl for p in _SENSITIVE_SELECTOR_PATTERNS)
 OP_UIA_SET_CHECKED  = "V2_UIA_SET_CHECKED"
-_CAPABILITY_IDS_V2 = (_CAP_CREATE_PREPARE, _CAP_CREATE_EXECUTE, _CAP_MOVE_PREPARE, _CAP_MOVE_EXECUTE, _CAP_PATCH_PREPARE, _CAP_PATCH_EXECUTE, _CAP_CDIR_PREPARE, _CAP_CDIR_EXECUTE, _CAP_WFOCUS_PREPARE, _CAP_WFOCUS_EXECUTE, _CAP_AOPEN_PREPARE, _CAP_AOPEN_EXECUTE, _CAP_AVOL_PREPARE, _CAP_AVOL_EXECUTE, _CAP_UTEXT_PREPARE, _CAP_UTEXT_EXECUTE, _CAP_SCHK_PREPARE, _CAP_SCHK_EXECUTE, _CAP_SRAD_PREPARE, _CAP_SRAD_EXECUTE, _CAP_STAB_PREPARE, _CAP_STAB_EXECUTE, _CAP_BNAV_PREPARE, _CAP_BNAV_EXECUTE, _CAP_BRAD_PREPARE, _CAP_BRAD_EXECUTE, _CAP_BLINK_PREPARE, _CAP_BLINK_EXECUTE, _CAP_BDISC_PREPARE, _CAP_BDISC_EXECUTE, _CAP_BCHK_PREPARE, _CAP_BCHK_EXECUTE)
+_CAPABILITY_IDS_V2 = (_CAP_CREATE_PREPARE, _CAP_CREATE_EXECUTE, _CAP_MOVE_PREPARE, _CAP_MOVE_EXECUTE, _CAP_PATCH_PREPARE, _CAP_PATCH_EXECUTE, _CAP_CDIR_PREPARE, _CAP_CDIR_EXECUTE, _CAP_WFOCUS_PREPARE, _CAP_WFOCUS_EXECUTE, _CAP_AOPEN_PREPARE, _CAP_AOPEN_EXECUTE, _CAP_AVOL_PREPARE, _CAP_AVOL_EXECUTE, _CAP_UTEXT_PREPARE, _CAP_UTEXT_EXECUTE, _CAP_SCHK_PREPARE, _CAP_SCHK_EXECUTE, _CAP_SRAD_PREPARE, _CAP_SRAD_EXECUTE, _CAP_STAB_PREPARE, _CAP_STAB_EXECUTE, _CAP_BNAV_PREPARE, _CAP_BNAV_EXECUTE, _CAP_BRAD_PREPARE, _CAP_BRAD_EXECUTE, _CAP_BLINK_PREPARE, _CAP_BLINK_EXECUTE, _CAP_BDISC_PREPARE, _CAP_BDISC_EXECUTE, _CAP_BCHK_PREPARE, _CAP_BCHK_EXECUTE, _CAP_BRDO_PREPARE, _CAP_BRDO_EXECUTE)
 PREPARED_AWAITING_HUMAN_APPROVAL = "PREPARED_AWAITING_HUMAN_APPROVAL"
 EXECUTED_OK = "EXECUTED_OK"
 PREPARE_REJECTED = "PREPARE_REJECTED"
@@ -2951,6 +2955,319 @@ def pc_v2_browser_set_checked_execute(
     }
 
 
+def _browser_radio_identity(inspected: dict) -> dict:
+    keys = (
+        "browser_session_id", "page_id", "url", "origin", "selector",
+        "element_count", "tag_name", "type", "role", "name", "id",
+        "form_owner", "checked", "radio_group_identity", "metadata_sha256",
+        "visible", "enabled", "closed", "main_frame",
+    )
+    return {k: inspected.get(k) for k in keys}
+
+
+def _browser_radio_pre_state_anchor(identity: dict):
+    snapshot = {
+        "anchor_schema": "BROWSER_SELECT_RADIO_PRE_STATE_V1",
+        "browser_session_id": identity.get("browser_session_id") or "",
+        "page_id": identity.get("page_id") or "",
+        "pre_url": identity.get("url") or "",
+        "pre_origin": identity.get("origin") or "",
+        "selector": identity.get("selector") or "",
+        "checked": identity.get("checked"),
+        "radio_group_identity": identity.get("radio_group_identity") or "",
+        "metadata_sha256": identity.get("metadata_sha256") or "",
+    }
+    return snapshot, _sha256(json.dumps(snapshot, sort_keys=True, ensure_ascii=False).encode("utf-8"))
+
+
+def _validate_radio_identity(identity: dict) -> str:
+    if not identity.get("browser_session_id"):
+        return "PAGE_IDENTITY_MISSING:browser_session_id"
+    if not identity.get("page_id"):
+        return "PAGE_IDENTITY_MISSING:page_id"
+    if identity.get("closed"):
+        return "PAGE_CLOSED"
+    if identity.get("element_count") != 1:
+        return "SELECTOR_COUNT_NOT_EXACTLY_ONE"
+    if identity.get("tag_name") != "input":
+        return "UNSUPPORTED_RADIO_TARGET"
+    if identity.get("type") != "radio":
+        return "UNSUPPORTED_RADIO_TARGET"
+    if identity.get("visible") is not True:
+        return "ELEMENT_NOT_VISIBLE"
+    if identity.get("enabled") is not True:
+        return "ELEMENT_NOT_ENABLED"
+    if identity.get("main_frame") is not True:
+        return "IFRAME_UNSUPPORTED"
+    if not isinstance(identity.get("checked"), bool):
+        return "RADIO_STATE_UNREADABLE"
+    if not identity.get("name") or not identity.get("radio_group_identity"):
+        return "RADIO_GROUP_IDENTITY_INVALID"
+    return ""
+
+
+def _validate_radio_semantics(semantic_intent, semantic_risk) -> str:
+    if not isinstance(semantic_intent, str) or not semantic_intent.strip():
+        return "SEMANTIC_INTENT_REQUIRED"
+    if len(semantic_intent.strip()) > 160:
+        return "SEMANTIC_INTENT_TOO_LONG"
+    if semantic_risk not in {"LOW", "MEDIUM", "HIGH"}:
+        return "SEMANTIC_RISK_INVALID"
+    return ""
+
+
+def _same_radio_identity(a: dict, b: dict) -> bool:
+    for key in ("browser_session_id", "page_id", "url", "origin", "selector",
+                "tag_name", "type", "role", "name", "id", "form_owner",
+                "radio_group_identity", "metadata_sha256"):
+        if str(a.get(key) or "") != str(b.get(key) or ""):
+            return False
+    return a.get("element_count") == b.get("element_count")
+
+
+def pc_v2_browser_select_radio_prepare(
+        selector, semantic_intent, semantic_risk,
+        *, stores_base_dir, session_id="", executor=None):
+    if executor is None:
+        return _prep_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_PREPARE, "EXECUTOR_REQUIRED", session_id)
+    if not isinstance(selector, str) or not selector.strip():
+        return _prep_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_PREPARE, "SELECTOR_REQUIRED", session_id)
+    reason = _validate_radio_semantics(semantic_intent, semantic_risk)
+    if reason:
+        return _prep_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_PREPARE, reason, session_id)
+    selector = selector.strip()
+    semantic_intent = semantic_intent.strip()
+    st = _stores(stores_base_dir)
+    inspected = executor.inspect_radio(selector)
+    if not inspected.get("ok"):
+        return _prep_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_PREPARE,
+                         "INSPECT_RADIO_FAILED:" + str(inspected.get("error", "")), session_id)
+    identity = _browser_radio_identity(inspected)
+    reason = _validate_radio_identity(identity)
+    if reason:
+        return _prep_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_PREPARE, reason, session_id)
+    _, physical_state_anchor = _browser_radio_pre_state_anchor(identity)
+    desc = {
+        "operation_type": OP_BROWSER_SELECT_RADIO,
+        "public_action": "BROWSER_SELECT_RADIO",
+        "browser_session_id": identity["browser_session_id"],
+        "page_id": identity["page_id"],
+        "pre_url": identity["url"],
+        "pre_origin": identity["origin"],
+        "selector": selector,
+        "element_identity": identity,
+        "radio_group_identity": identity["radio_group_identity"],
+        "desired_selected": True,
+        "semantic_intent": semantic_intent,
+        "semantic_risk": semantic_risk,
+        "peer_deselection_proof": "DEFER_V1",
+        "popup_policy": "FAIL_CLOSED",
+        "new_page_policy": "FAIL_CLOSED",
+        "download_policy": "FAIL_CLOSED",
+        "navigation_policy": "FAIL_CLOSED",
+        "main_frame_only": True,
+        "session_id": session_id,
+        "physical_state_anchor": physical_state_anchor,
+        "state_anchor_kind": "PHYSICAL_PRE_STATE",
+    }
+    eah = _eah(OP_BROWSER_SELECT_RADIO, desc)
+    scope = _sha16(
+        f"BROWSER_SELECT_RADIO:{selector}:{identity.get('metadata_sha256')}:{identity.get('radio_group_identity')}:{semantic_intent}:{semantic_risk}"
+    )
+    child = _v2id("chd", eah + scope + "BROWSER_SELECT_RADIO")
+    v2id = _v2id("v2x", eah + session_id + "BROWSER_SELECT_RADIO")
+    mh = _sha16(json.dumps(desc, sort_keys=True))
+    dh = _persist_desc(v2id, OP_BROWSER_SELECT_RADIO, eah, desc, st["v2exec"])
+    return {
+        "status": PREPARED_AWAITING_HUMAN_APPROVAL,
+        "j5_phase": "PREPARE",
+        "operation_type": OP_BROWSER_SELECT_RADIO,
+        "public_action": "BROWSER_SELECT_RADIO",
+        "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "execution_authority_hash": eah,
+        "browser_session_id": identity["browser_session_id"],
+        "page_id": identity["page_id"],
+        "pre_url": identity["url"],
+        "pre_origin": identity["origin"],
+        "selector": selector,
+        "current_checked": identity["checked"],
+        "desired_selected": True,
+        "radio_group_identity": identity["radio_group_identity"],
+        "semantic_intent": semantic_intent,
+        "semantic_risk": semantic_risk,
+        "peer_deselection_proof": "DEFER_V1",
+        "element_identity": identity,
+        "physical_state_anchor": physical_state_anchor,
+        "state_anchor_kind": "PHYSICAL_PRE_STATE",
+        "v2_exec_id": v2id,
+        "child_id": child,
+        "manifest_hash": mh,
+        "desc_hash": dh,
+        "_stores_base_dir": str(stores_base_dir),
+        "receipt": _rcpt(
+            _CAP_BRDO_PREPARE, OP_BROWSER_SELECT_RADIO,
+            PREPARED_AWAITING_HUMAN_APPROVAL, session_id,
+            execution_authority_hash=eah,
+            browser_session_id=identity["browser_session_id"],
+            page_id=identity["page_id"],
+            selector=selector,
+            current_checked=identity["checked"],
+            desired_selected=True,
+            radio_group_identity=identity["radio_group_identity"],
+            semantic_intent=semantic_intent,
+            semantic_risk=semantic_risk,
+            metadata_sha256=identity.get("metadata_sha256"),
+            physical_state_anchor=physical_state_anchor,
+            state_anchor_kind="PHYSICAL_PRE_STATE",
+        ),
+    }
+
+
+def pc_v2_browser_select_radio_execute(
+        prepared_result, human_authorized_eah, human_authorization_reference,
+        *, stores_base_dir, session_id="", executor=None):
+    if prepared_result.get("j5_phase") != "PREPARE":
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, "PREPARE_PHASE_REQUIRED", session_id)
+    if prepared_result.get("status") != PREPARED_AWAITING_HUMAN_APPROVAL:
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE,
+                         "PREPARED_AWAITING_HUMAN_APPROVAL_REQUIRED", session_id)
+    exp_eah = prepared_result.get("execution_authority_hash", "")
+    if not exp_eah or human_authorized_eah != exp_eah:
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, EAH_MISMATCH, session_id)
+    if not (human_authorization_reference or "").strip():
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE,
+                         "HUMAN_AUTHORIZATION_REFERENCE_REQUIRED", session_id)
+    if executor is None:
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, "EXECUTOR_REQUIRED", session_id)
+    v2id = prepared_result.get("v2_exec_id", "")
+    child = prepared_result.get("child_id", "")
+    mh = prepared_result.get("manifest_hash", "")
+    dh = prepared_result.get("desc_hash", "")
+    st = _stores(stores_base_dir)
+    desc_rec = _load_desc(v2id, st["v2exec"])
+    desc_eah_ok = (desc_rec and desc_rec.get("eah") == exp_eah
+                   and _eah(OP_BROWSER_SELECT_RADIO, desc_rec.get("descriptor", {})) == exp_eah)
+    if not desc_eah_ok:
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, "DESCRIPTOR_EAH_MISMATCH", session_id)
+    d = desc_rec["descriptor"]
+    identity = dict(d.get("element_identity") or {})
+    selector = d.get("selector", "")
+    toctou = executor.inspect_radio(selector)
+    if not toctou.get("ok"):
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE,
+                         "TOCTOU_INSPECT_FAILED:" + str(toctou.get("error", "")), session_id)
+    current_identity = _browser_radio_identity(toctou)
+    reason = _validate_radio_identity(current_identity)
+    if reason:
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, reason, session_id)
+    if not _same_radio_identity(identity, current_identity):
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, "ELEMENT_IDENTITY_DRIFT", session_id)
+    if current_identity.get("checked") is not identity.get("checked"):
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, "PRE_CHECKED_DRIFT", session_id)
+    _, current_psa = _browser_radio_pre_state_anchor(current_identity)
+    if current_psa != d.get("physical_state_anchor", ""):
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, "PRE_STATE_DRIFT", session_id)
+    semantic_intent = d.get("semantic_intent", "")
+    semantic_risk = d.get("semantic_risk", "")
+    reason = _validate_radio_semantics(semantic_intent, semantic_risk)
+    if reason:
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, reason, session_id)
+    scope_id = _sha16(
+        f"BROWSER_SELECT_RADIO:{selector}:{identity.get('metadata_sha256')}:{identity.get('radio_group_identity')}:{semantic_intent}:{semantic_risk}"
+    )
+    apr = _approval(v2id, child, exp_eah, scope_id + "BROWSER_SELECT_RADIO")
+    apv_id = apr["approval_id"]
+    ar = _E.store_approval_artifact(apr, st["approval"])
+    if ar.get("status") not in ("STORED", "IDEMPOTENT_ALREADY_EXISTS"):
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, "APPROVAL_STORE_FAILED", session_id)
+    kx = _kx108_pre(v2id, child, exp_eah, apv_id, dh, "", mh, [scope_id], OP_BROWSER_SELECT_RADIO,
+                    kxpre=st["kxpre"], physical_state_anchor=d.get("physical_state_anchor", ""),
+                    state_anchor_kind="PHYSICAL_PRE_STATE")
+    if not kx.get("verify_ok"):
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, "KX108_PRE_FAILED", session_id)
+    gate = kx.get("x108_gate", "")
+    if gate != "ALLOW":
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, "KX108_PRE_GATE:" + gate, session_id)
+    act = executor.select_radio(identity)
+    if not act.get("ok"):
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE,
+                         "SELECT_RADIO_FAILED:" + str(act.get("error", "")), session_id)
+    for flag, reason_code in (("navigation_detected", "UNEXPECTED_NAVIGATION"),
+                              ("popup_detected", "UNEXPECTED_POPUP"),
+                              ("new_page_detected", "UNEXPECTED_NEW_PAGE"),
+                              ("download_detected", "UNEXPECTED_DOWNLOAD")):
+        if act.get(flag):
+            return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, reason_code, session_id)
+    post = executor.inspect_radio(selector)
+    if not post.get("ok"):
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE,
+                         "POST_INSPECT_FAILED:" + str(post.get("error", "")), session_id)
+    post_identity = _browser_radio_identity(post)
+    if not post_identity.get("browser_session_id"):
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, "POST_SESSION_ID_MISSING", session_id)
+    if not post_identity.get("page_id"):
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, "POST_PAGE_ID_MISSING", session_id)
+    if post_identity.get("browser_session_id") != identity.get("browser_session_id"):
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, "POST_SESSION_ID_DRIFT", session_id)
+    if post_identity.get("page_id") != identity.get("page_id"):
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, "POST_PAGE_ID_DRIFT", session_id)
+    if not _same_radio_identity({**identity, "checked": post_identity.get("checked")}, post_identity):
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, "POST_ELEMENT_IDENTITY_DRIFT", session_id)
+    if post_identity.get("radio_group_identity") != identity.get("radio_group_identity"):
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, "POST_RADIO_GROUP_DRIFT", session_id)
+    if post_identity.get("checked") is not True:
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, REALIZED_STATE_MISMATCH, session_id)
+    return {
+        "status": EXECUTED_OK,
+        "j5_phase": "EXECUTE",
+        "operation_type": OP_BROWSER_SELECT_RADIO,
+        "public_action": "BROWSER_SELECT_RADIO",
+        "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "kx108_pre_gate": gate,
+        "human_authorization_consumed": True,
+        "selector": selector,
+        "pre_url": identity.get("url"),
+        "post_url": post_identity.get("url"),
+        "browser_session_id": post_identity.get("browser_session_id"),
+        "page_id": post_identity.get("page_id"),
+        "current_checked": post_identity.get("checked"),
+        "desired_selected": True,
+        "radio_group_identity": post_identity.get("radio_group_identity"),
+        "semantic_intent": semantic_intent,
+        "semantic_risk": semantic_risk,
+        "peer_deselection_proof": "DEFER_V1",
+        "mutation_performed": bool(act.get("mutation_performed")),
+        "proof_strength": "STRONG",
+        "realized_state_verified": True,
+        "independent_post_read": True,
+        "navigation_detected": False,
+        "popup_detected": False,
+        "new_page_detected": False,
+        "download_detected": False,
+        "executor_provider": executor.EXECUTOR_PROVIDER,
+        "executor_backend": executor.EXECUTOR_BACKEND,
+        "receipt": _rcpt(
+            _CAP_BRDO_EXECUTE, OP_BROWSER_SELECT_RADIO, EXECUTED_OK, session_id,
+            kx108_pre_gate=gate,
+            selector=selector,
+            desired_selected=True,
+            current_checked=post_identity.get("checked"),
+            radio_group_identity=post_identity.get("radio_group_identity"),
+            semantic_intent=semantic_intent,
+            semantic_risk=semantic_risk,
+            peer_deselection_proof="DEFER_V1",
+            mutation_performed=bool(act.get("mutation_performed")),
+            proof_strength="STRONG",
+            realized_state_verified=True,
+            independent_post_read=True,
+            physical_state_anchor=d.get("physical_state_anchor", ""),
+            state_anchor_kind="PHYSICAL_PRE_STATE",
+        ),
+    }
+
+
 # ============================
 # GOVERNED_BROWSER_READ
 # ============================
@@ -3399,6 +3716,8 @@ def execute_pc_capability_v2(capability_id: str, **kwargs) -> dict:
         _CAP_BDISC_EXECUTE:  pc_v2_browser_set_disclosure_execute,
         _CAP_BCHK_PREPARE:   pc_v2_browser_set_checked_prepare,
         _CAP_BCHK_EXECUTE:   pc_v2_browser_set_checked_execute,
+        _CAP_BRDO_PREPARE:   pc_v2_browser_select_radio_prepare,
+        _CAP_BRDO_EXECUTE:   pc_v2_browser_select_radio_execute,
     }
     fn = _dispatch.get(capability_id)
     if fn is None: return {"status": "UNKNOWN_CAPABILITY_V2", "capability_id": capability_id, "known": list(_dispatch)}
@@ -3420,7 +3739,7 @@ def self_check_v2() -> dict:
         "generic_shell_enabled": GENERIC_SHELL_ENABLED,
         "governed_delete_file": GOVERNED_DELETE_FILE_STATUS,
         "capabilities": list(_CAPABILITY_IDS_V2),
-        "operations": [OP_CREATE_FILE, OP_MOVE_FILE, OP_APPLY_PATCH, OP_CREATE_DIR, OP_WINDOW_FOCUS, OP_APP_OPEN, OP_AUDIO_VOLUME, OP_UIA_SET_TEXT, OP_UIA_SET_CHECKED, OP_UIA_SELECT_RADIO, OP_UIA_SELECT_TAB, OP_BROWSER_NAVIGATE, OP_BROWSER_READ, OP_BROWSER_ACTIVATE_LINK, OP_BROWSER_SET_DISCLOSURE, OP_BROWSER_SET_CHECKED],
+        "operations": [OP_CREATE_FILE, OP_MOVE_FILE, OP_APPLY_PATCH, OP_CREATE_DIR, OP_WINDOW_FOCUS, OP_APP_OPEN, OP_AUDIO_VOLUME, OP_UIA_SET_TEXT, OP_UIA_SET_CHECKED, OP_UIA_SELECT_RADIO, OP_UIA_SELECT_TAB, OP_BROWSER_NAVIGATE, OP_BROWSER_READ, OP_BROWSER_ACTIVATE_LINK, OP_BROWSER_SET_DISCLOSURE, OP_BROWSER_SET_CHECKED, OP_BROWSER_SELECT_RADIO],
         "new_parallel_mutation_engine": False,
         "generic_write_file_enabled": False,
         "openjarvis_authority": JARVIS_AUTHORITY,
