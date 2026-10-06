@@ -122,6 +122,33 @@ class JarJarBrowserExecutor:
         out.update(data)
         return out
 
+    def inspect_checkbox(self, selector: str) -> dict:
+        """Inspect one supported checkbox target. No mutation."""
+        from jarvis.contracts import ActionRequest
+        result = self._backend.execute(
+            ActionRequest("browser.inspect_checkbox", {"selector": selector}))
+        if not result.ok:
+            return {"ok": False, "error": "INSPECT_CHECKBOX_FAILED:" + result.message,
+                    "executor": self.EXECUTOR_BACKEND}
+        data = result.data or {}
+        out = {"ok": True, "executor": self.EXECUTOR_BACKEND}
+        out.update(data)
+        return out
+
+    def set_checkbox(self, checkbox_identity: dict, target_checked: bool) -> dict:
+        """Set an approved checkbox target state. This is not click(selector)."""
+        from jarvis.contracts import ActionRequest
+        args = dict(checkbox_identity or {})
+        args["target_checked"] = target_checked
+        result = self._backend.execute(ActionRequest("browser.set_checked", args))
+        if not result.ok:
+            return {"ok": False, "error": "SET_CHECKBOX_FAILED:" + result.message,
+                    "executor": self.EXECUTOR_BACKEND}
+        data = result.data or {}
+        out = {"ok": True, "executor": self.EXECUTOR_BACKEND}
+        out.update(data)
+        return out
+
     def navigate(self, requested_url: str) -> dict:
         """Execute physical navigation. Returns execution evidence only."""
         from jarvis.contracts import ActionRequest
