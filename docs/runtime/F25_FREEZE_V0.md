@@ -63,7 +63,14 @@ Main native baseline:
 run 37508621493
 ```
 
-Native hardened branch confirmation is tracked separately because the global workflow already has inherited baseline failures.
+Native hardened branch confirmation:
+
+```text
+11 failed, 12451 passed, 46 skipped, 207 deselected
+run 37526855143 / job 112485940506
+```
+
+This is baseline-equivalent: current main has the same 11 failures and 12443 passes. F2.5 adds eight passing focused tests and introduces zero new failure.
 
 ## Change control
 
