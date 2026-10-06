@@ -1051,6 +1051,31 @@ def _bare_infinitive(clause: _Clause, d0: "_Draft") -> bool:
         and all(t.low in _MEMBER_NEGATORS for t in clause.toks[:d0.head_index])
 
 
+def _continues_prep_chain(prev: _Clause, clause: _Clause) -> bool:
+    """N4: "... apprend à tester Q et à lancer R": the member opens with the same preposition
+    (+ only its negation) and an infinitive, and the previous clause holds a governed
+    "prep (+ negation) + infinitive" with that preposition. Structural only, no proximity."""
+    fam = {"à": "à", "a": "à", "de": "de", "d'": "de"}
+    toks = clause.toks
+    if not toks or toks[0].low not in fam:
+        return False
+    j = 1
+    while j < len(toks) and toks[j].low in _MEMBER_NEGATORS:
+        j += 1
+    if j >= len(toks) or not _is_verb(toks, j) or "INF" not in _feats(toks[j]):
+        return False
+    pt = prev.toks
+    for k in range(len(pt) - 1):
+        if fam.get(pt[k].low) == fam[toks[0].low] and k > 0 and _is_verb(pt, k - 1) or (
+                fam.get(pt[k].low) == fam[toks[0].low] and k > 0 and pt[k - 1].low in _MEMBER_NEGATORS):
+            m = k + 1
+            while m < len(pt) and pt[m].low in _MEMBER_NEGATORS:
+                m += 1
+            if m < len(pt) and _is_verb(pt, m) and "INF" in _feats(pt[m]):
+                return True
+    return False
+
+
 def _continues_protasis_modal(prev: _Clause, clause: _Clause) -> bool:
     """H11 option C: "R si Paul veut lancer P et exécuter Q": a bare infinitive (infinitive
     morphology only, no subject, no imperative reading) after a modal chain of the protasis
@@ -2201,6 +2226,10 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         prev, clause = clauses[k - 1], clauses[k]
         if prev.conn != "si" or clause.boundary is not None or not clause.conn_toks \
                 or clause.conn_toks[0].low not in {"et", "ou"}:
+            continue
+        if _continues_prep_chain(prev, clause):
+            # N4: "Si Paul apprend à tester Q et à lancer R, ...": the member continues the
+            # protasis' prep-governed chain (shared below), never a protasis predicate of its own
             continue
         head = prev.protasis_head or prev
         hi = next(j for j, c in enumerate(clauses) if c is head)
