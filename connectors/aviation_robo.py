@@ -941,7 +941,7 @@ def evaluate_local_gate(packet: dict[str, Any] | None = None) -> dict[str, Any]:
 
 
 def run_flight_flow(api_base: str = DEFAULT_API_BASE, once: bool = False):
-    print("[AERO][START] connector=DOMAIN_SENSOR problem=critical_trajectory_validation route=API_BRIDGE_ONLY kernel=TRUE_AUTHORITY_3001")
+    print(_color("[AERO][START]", COLORS["AERO"]) + " connector=DOMAIN_SENSOR problem=critical_trajectory_validation route=API_BRIDGE_ONLY kernel=TRUE_AUTHORITY_3001")
     _api_key = os.environ.get("OBSIDIA_API_KEY", "")
     _headers = {"X-API-Key": _api_key} if _api_key else {}
 
@@ -963,9 +963,9 @@ def run_flight_flow(api_base: str = DEFAULT_API_BASE, once: bool = False):
                 data = res.json().get("data", res.json())
                 _print_domain_readable_surface("AERO", data)
             else:
-                print(f"⚠️ [AERO] API error: {res.status_code} {res.text[:250]}")
+                print(_color("[AERO][API ERROR]", COLORS["HOLD"]) + f" status={res.status_code} {res.text[:250]}")
         except Exception as e:
-            print(f"❌ [AERO] Connection error: {e}")
+            print(_color("[AERO][CONNECTION ERROR]", COLORS["BLOCK"]) + f" {e}")
 
         if once:
             break
