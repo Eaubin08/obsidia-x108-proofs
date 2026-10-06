@@ -884,16 +884,33 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
         # chain (same governor, same negation, same open status); never a root injunction.
         # A bare member ("sert à tester Q et lancer R") is not licensed to share: its attachment
         # stays open and named, its possible request exposed fail-closed (no proximity sharing).
-        prep_of = lambda c, d: c.toks[d.lex_index - 1].low if 0 < d.lex_index <= len(c.toks) else None
         family_of = {"à": "à", "a": "à", "de": "de", "d'": "de"}
+
+        def prep_of(c, d):
+            # N2: the governing preposition, skipping only the infinitive's own negation
+            # ("de ne pas tester", "à ne jamais tester"); never further back
+            k = d.lex_index - 1
+            while 0 <= k < len(c.toks) and c.toks[k].low in _MEMBER_NEGATORS:
+                k -= 1
+            return c.toks[k].low if 0 <= k < len(c.toks) else None
         if gov_prev is not None and gov_prev.governed in {"prep", "unknown_governor"} \
                 and gov_prev.verb_form == "INFINITIVE" and family_of.get(prep_of(prev, gov_prev)) \
                 and same_family and (linked or disjoined or sequenced) \
                 and (prev.conn not in _NO_CHAIN_SHARE or prev.conn == "rel") \
                 and d0.verb_form in {"INFINITIVE", "IMPERATIVE"} and d0.modality is None and d0.subject is None:
             lead = [t.low for t in clause.toks[:d0.lex_index]]
-            if lead and family_of.get(lead[-1]) == family_of[prep_of(prev, gov_prev)] \
-                    and all(x in _MEMBER_NEGATORS for x in lead[:-1]) and "INF" in _feats(d0.lex):
+            # the member's own preposition: first, then only its negation ("et de ne pas lancer R")
+            own = lead[0] if lead and family_of.get(lead[0]) and all(x in _MEMBER_NEGATORS for x in lead[1:]) \
+                else None
+            if own is not None and family_of[own] != family_of[prep_of(prev, gov_prev)] \
+                    and "INF" in _feats(d0.lex):
+                # N3: "apprend à tester Q et de lancer R": a mismatched preposition licenses no
+                # sharing and no other governor, never a root request: attachment open, named
+                d0.verb_form, d0.tense = "INFINITIVE", "NONE"
+                clause.attachment_ambiguous = True
+                clause.share_family = family
+                return
+            if own is not None and "INF" in _feats(d0.lex):
                 # (a repeated preposition cannot open a main clause: also after a relative)
                 d0.verb_form, d0.tense = "INFINITIVE", "NONE"
                 d0.governed, d0.governor_unit = gov_prev.governed, gov_prev.governor_unit
