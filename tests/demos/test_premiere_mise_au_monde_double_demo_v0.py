@@ -46,7 +46,7 @@ def test_gps_and_brody_gms_share_the_same_governed_proof_boundary():
     assert "INERTIAL_MISSING" in gps_result.proof.evidence_refs or gps_result.x108_gate in {"HOLD", "BLOCK", "ALLOW"}
 
     assert cognitive_result.path == "BRODY_GMS_COGNITIVE"
-    assert cognitive_result.domain_id == "enterprise"
+    assert cognitive_result.domain_id == "meta"
 
 
 def test_gps_blocker_remains_visible_and_fail_closed():
