@@ -152,6 +152,55 @@ def is_supported_domain(domain: str) -> bool:
     return domain in _DOMAIN_PIPELINES
 
 
+def _extension_supports_domain(domain: str, domain_extension_resolver: Any = None) -> bool:
+    """Consult an optional non-canonical domain extension after built-ins.
+
+    Canonical built-in domains always win in the coordinator. The extension
+    cannot shadow them because it is consulted only after is_supported_domain()
+    returned False.
+    """
+    if domain_extension_resolver is None:
+        return False
+    fn = getattr(domain_extension_resolver, "is_supported_domain", None)
+    if not callable(fn):
+        raise GovernedRuntimeCycleError("INVALID_DOMAIN_EXTENSION_RESOLVER")
+    try:
+        return bool(fn(domain))
+    except Exception as exc:
+        raise GovernedRuntimeCycleError(
+            f"DOMAIN_EXTENSION_SUPPORT_CHECK_FAILED:{domain}:{exc}"
+        ) from exc
+
+
+def _resolve_domain_pipeline_with_extension(
+    domain: str,
+    domain_extension_resolver: Any = None,
+) -> Callable[[Any, Any], Any]:
+    """Resolve canonical first, optional extension second, otherwise fail closed."""
+    if is_supported_domain(domain):
+        return resolve_domain_pipeline(domain)
+
+    if not _extension_supports_domain(domain, domain_extension_resolver):
+        raise GovernedRuntimeCycleError(f"NO_CANONICAL_DOMAIN_PIPELINE:{domain}")
+
+    fn = getattr(domain_extension_resolver, "resolve_domain_pipeline", None)
+    if not callable(fn):
+        raise GovernedRuntimeCycleError("INVALID_DOMAIN_EXTENSION_RESOLVER")
+
+    try:
+        pipeline = fn(domain)
+    except Exception as exc:
+        raise GovernedRuntimeCycleError(
+            f"DOMAIN_EXTENSION_PIPELINE_RESOLUTION_FAILED:{domain}:{exc}"
+        ) from exc
+
+    if not callable(pipeline):
+        raise GovernedRuntimeCycleError(
+            f"DOMAIN_EXTENSION_PIPELINE_NOT_CALLABLE:{domain}"
+        )
+    return pipeline
+
+
 class GovernedRuntimeCycleError(Exception):
     """Erreur de transport / de contrat. Jamais un refus de gouvernance."""
 
@@ -385,6 +434,7 @@ def run_governed_runtime_cycle(
     source_context: Any = None,
     source_agent_id: str = "",
     source_agent_layer: str = "",
+    domain_extension_resolver: Any = None,
 ) -> GovernedRuntimeCycleResult:
     """
     Exécute un cycle gouverné interne complet.
@@ -440,7 +490,15 @@ def run_governed_runtime_cycle(
     # Le refus n'est PAS une décision : aucun verdict n'est rendu, aucun
     # record n'est produit, x108_gate garde sa valeur de refus par défaut
     # et decision_rendered reste False.
-    if not is_supported_domain(packet.domain):
+    canonical_domain = is_supported_domain(packet.domain)
+    extension_domain = False
+    if not canonical_domain:
+        extension_domain = _extension_supports_domain(
+            packet.domain,
+            domain_extension_resolver,
+        )
+
+    if not canonical_domain and not extension_domain:
         result.execution_authorization_reason = (
             f"{REFUSED_UNSUPPORTED_DOMAIN}:{packet.domain}"
         )
@@ -448,7 +506,13 @@ def run_governed_runtime_cycle(
         return result
 
     # ── 3. Décision KX108 SOUVERAINE réelle (GuardX108) ──────────────────
-    pipeline = resolve_domain_pipeline(packet.domain)
+    #
+    # Canonical bridge always has strict precedence. The optional extension
+    # resolver is consulted only for a domain absent from _DOMAIN_PIPELINES.
+    pipeline = _resolve_domain_pipeline_with_extension(
+        packet.domain,
+        domain_extension_resolver,
+    )
     envelope = pipeline(domain_state, packet)
 
     result.decision_rendered = True
@@ -676,6 +740,7 @@ def run_governed_feedback_cycle(
     execution_payload: Optional[dict[str, Any]] = None,
     agent_context_store_dir: Optional[Path] = None,
     decision_store_dir: Optional[Path] = None,
+    domain_extension_resolver: Any = None,
 ) -> GovernedRuntimeCycleResult:
     """
     Re-enter the loop from a finished cycle (t1 after t0).
@@ -703,4 +768,5 @@ def run_governed_feedback_cycle(
         source_context=next_context,
         source_agent_id="FEEDBACK_REENTRY",
         source_agent_layer="FEEDBACK_MEMORY",
+        domain_extension_resolver=domain_extension_resolver,
     )
