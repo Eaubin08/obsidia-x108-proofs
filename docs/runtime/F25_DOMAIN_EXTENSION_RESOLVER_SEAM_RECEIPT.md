@@ -24,7 +24,7 @@ otherwise
 
 The extension cannot shadow an existing canonical domain because it is never consulted for one.
 
-## Cross-repository proof
+## Dedicated cross-repository proof
 
 Consumer/proof repository:
 `Eaubin08/cssa-v01--entreprise-universelle-domaien-obsidia-`
@@ -61,13 +61,50 @@ Observed:
 - no resolver -> unsupported Administration refused before decision;
 - feedback cycle propagates the resolver and requires a fresh decision.
 
-## Native branch CI
+## Native X108 Periphery CI — baseline-equivalent
 
-`X108 Periphery CI` run 37524473637 is the native all-tests/protected-files workflow for this branch.
-Its final status must be recorded separately once complete.
+F2.5 branch run:
+- run: 37524473637
+- job: 112477856271
+- result: `11 failed, 12450 passed, 46 skipped, 207 deselected`.
+
+Current-main baseline run used for comparison:
+- run: 37508621493
+- job: 112423614411
+- result: `11 failed, 12443 passed, 46 skipped, 207 deselected`.
+
+The 11 failures are the same baseline failures in both runs:
+- Brody/memory/Graphiti API route-registration audit;
+- Sigma/bus route audit;
+- two Lean tests missing `lake` in CI;
+- five batch-execution/environment-sensitive failures;
+- branching-ledger identity expectation;
+- git-worktree test missing CI git author identity.
+
+F2.5 adds seven integration tests; the pass count increases by exactly seven:
+
+```text
+12450 - 12443 = 7
+```
+
+No new failing test is introduced by the resolver seam.
+
+Therefore the native suite is recorded as:
+`BASELINE_EQUIVALENT_NO_NEW_FAILURES`
+
+rather than falsely described as globally green.
+
+## Branch delta
+
+Against main, the F2.5 branch contains only:
+- one runtime coordinator modification;
+- one focused integration test file;
+- architecture/proof documentation.
+
+GuardX108, sigma contracts, canonical domain bridges and proof kernels are not modified.
 
 ## Claim boundary
 
-`SOURCE_LEVEL_FIRST_CLASS_RESOLVER_SEAM_CROSS_REPO_PROVEN`
+`SOURCE_LEVEL_FIRST_CLASS_RESOLVER_SEAM_PROVEN_NO_NEW_REGRESSION`
 
 No claim of merge to main is made by this receipt.
