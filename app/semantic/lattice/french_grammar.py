@@ -733,6 +733,10 @@ _COMPOUND_TENSE = {"PRESENT": "PAST", "PAST": "PLUPERFECT", "FUTURE": "FUTURE", 
 _PERSON_FEATS = {"je": {"P1S"}, "j'": {"P1S"}, "tu": {"P2S"}, "il": {"P3S"}, "elle": {"P3S"},
                  "on": {"P3S"}, "c'": {"P3S"}, "ça": {"P3S"}, "ca": {"P3S"}, "cela": {"P3S"},
                  "nous": {"P1P"}, "vous": {"P2P"}, "ils": {"P3P"}, "elles": {"P3P"}}
+# D3: person of the written avoir / être auxiliary forms (their analyses carry no person)
+_AUX_PERSON = {"ai": {"P1S"}, "as": {"P2S"}, "a": {"P3S"}, "avons": {"P1P"}, "avez": {"P2P"}, "ont": {"P3P"},
+               "suis": {"P1S"}, "es": {"P2S"}, "est": {"P3S"}, "sommes": {"P1P"}, "êtes": {"P2P"},
+               "sont": {"P3P"}, "avais": {"P1S", "P2S"}, "avait": {"P3S"}, "avaient": {"P3P"}}
 # connectives after which a bare verb's subject stays open ("R si Paul lance P et exécute Q")
 _NO_SUBJECT_SHARE = {"que", "rel", "comparative", "si", "sans", "sans_que", "avant_que", "a_moins_que", "apres_que",
                      "quand", "wh"}
@@ -901,6 +905,29 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
             d0.governed = None
             clause.subject_host = host
             clause.shared_subject_host = prev.shared_subject_host or prev
+            clause.share_family = family
+            return
+        # D3: "Paul a lancé P et a lancé / n'a pas lancé Q": a compound member with its own
+        # auxiliary agreeing with the host's explicit subject shares that subject (agreement
+        # read on the auxiliary; no proximity fallback)
+        aux = clause.toks[d0.head_index] if d0.head_index < len(clause.toks) else None
+        host_aux = prev.toks[host.head_index].low if host is not None and host.head_index < len(prev.toks) else None
+        want = _PERSON_FEATS.get(host.subject) if host is not None else None
+        if want is None and host is not None and host.head_index != host.lex_index:
+            want = _AUX_PERSON.get(host_aux)
+        if same_family and (linked or sequenced or disjoined) and host is not None \
+                and prev.conn not in _NO_SUBJECT_SHARE and aux is not None \
+                and d0.head_index != d0.lex_index and _pred(aux) in {"HAVE", "BE"} \
+                and all(t.low in {"ne", "n'"} for t in clause.toks[:d0.head_index]) \
+                and d0.subject is None and d0.modality is None and aux.low in _AUX_PERSON:
+            if want is not None and _AUX_PERSON[aux.low] == want:
+                d0.subject, d0.subject_person = host.subject, host.subject_person
+                clause.subject_host = host
+                clause.shared_subject_host = prev.shared_subject_host or prev
+            else:
+                # "Paul a lancé P et ont lancé Q": no agreement: never shared, named
+                d0.governed = "subject_unresolved"
+                clause.subject_unresolved_chain = True
             clause.share_family = family
             return
         # "Paul lance P et exécutent Q": no agreement, and the form has no imperative
@@ -3021,6 +3048,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             u1 = replace(u1, action_agent="UNKNOWN",
                          role="MENTION" if u1.role == "THIRD_PARTY_ACTION" else u1.role)
         c1.units[0] = (u1, d1)
+        # D3: members that shared this subject ("Paul et Nadia ont lancé P et ont lancé Q") hold
+        # the whole coordinated subject, never its last member
+        for c2 in clauses:
+            if c2.shared_subject_host is c1 and c2.units:
+                u2, d2 = c2.units[0]
+                c2.units[0] = (replace(u2, subject=u1.subject, action_agent=u1.action_agent), d2)
         if person:
             missing.append(f"coordinated_subject_unrepresented:{np0[0].start}-{np0[-1].end}:subject_of={u1.id}")
             ambiguities.append(f"coordinated_subject_unrepresented:{u1.id}")
@@ -3718,7 +3751,11 @@ def _occurrence_conflict_candidates(clauses: list[_Clause]) -> list[str]:
         if u.polarity == "negative" and not (u.negation_confirmed and u.negator == "pas"):
             continue
         conn = {id(t) for t in c.conn_toks}
-        sig = tuple(t.low for t in c.toks if id(t) not in conn and t.low not in {"ne", "n'", "pas"})
+        # D4: the subject is compared as the unit's subject, written or shared ("Paul a lancé P
+        # et n'a pas lancé P"), never as surface words
+        subj = set((u.subject or "").split())
+        sig = (u.subject, tuple(t.low for t in c.toks if id(t) not in conn
+                                and t.low not in {"ne", "n'", "pas"} | subj))
         rows.append((sig, u))
     out = []
     for i, (sig_a, a) in enumerate(rows):
