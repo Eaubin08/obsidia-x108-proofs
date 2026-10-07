@@ -46,8 +46,8 @@ def test_cttc_real_nominal_is_nominal_under_frozen_p4_classifier():
 
     assert result["overall_classification"] == "NOMINAL"
     assert result["first_anomaly"] is None
-    assert result["position_count"] == 149
-    assert result["transition_count"] == 148
+    assert result["position_count"] == 150
+    assert result["transition_count"] == 149
     assert result["max_observed"]["ecef_step_m"] < freeze["thresholds"]["ecef_step_m"]
     assert result["max_observed"]["clock_residual_s"] < freeze["thresholds"]["clock_residual_s"]
     assert result["max_observed"]["receiver_gap_s"] < freeze["thresholds"]["receiver_gap_s"]
