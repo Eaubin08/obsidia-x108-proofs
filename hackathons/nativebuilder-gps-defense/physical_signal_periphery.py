@@ -169,7 +169,7 @@ def observation_to_domain_payload(envelope: dict[str, Any]) -> dict[str, Any]:
         "g_load": float(obs.get("g_load", 1.0) or 1.0),
         "spoof_score": float(obs.get("spoof_score", 0.0) or 0.0),
         "replay_window_detected": bool(obs.get("replay_window_detected", False)),
-        "sensor_attested": envelope.get("eligible_for_physical_claim") is True,
+        "sensor_attested": envelope.get("sensor_attestation_proven") is True,
         "gps_available": bool(obs),
         "inertial_available": bool(obs.get("inertial_available", False)),
         "radio_available": bool(obs.get("radio_available", False)),
@@ -177,7 +177,7 @@ def observation_to_domain_payload(envelope: dict[str, Any]) -> dict[str, Any]:
         "source_conflict_score": float(obs.get("source_conflict_score", 0.0) or 0.0),
         "time_skew_score": float(obs.get("time_skew_score", 0.0) or 0.0),
         "brownout_score": float(obs.get("brownout_score", 0.0) or 0.0),
-        "attestation_ready": envelope.get("eligible_for_physical_claim") is True,
+        "attestation_ready": envelope.get("sensor_attestation_proven") is True,
         "rollback_possible": True,
         "authorized_route_hash": envelope.get("truth_reference", {}).get("route_hash", envelope.get("input_hash")),
     }
