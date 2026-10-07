@@ -187,8 +187,12 @@ def _check(request: CognitiveResolutionRequest, cand: CognitiveResolutionCandida
     return None
 
 
-def _derive(request: CognitiveResolutionRequest, cand: CognitiveResolutionCandidate) -> StateEntry:
+def _derive(request: CognitiveResolutionRequest, cand: CognitiveResolutionCandidate, origin: StateEntry) -> StateEntry:
     proposal = cand.proposed_resolution
+    # structural fields come only from the origin / request; candidate additions stay unverified
+    origin_contradictions = list((origin.payload or {}).get("contradictions") or [])         if isinstance(origin.payload, dict) else []
+    extra_contradictions = [c for c in cand.contradictions if c not in origin_contradictions]
+    extra_provenance = [p for p in cand.provenance_refs if p not in request.provenance_refs]
     payload = {
         "derived_from_state_id": request.origin_state_id, "resolution_request_id": request.request_id,
         "resolution_candidate_id": cand.candidate_id, "provider_ref": cand.provider_ref,
@@ -201,15 +205,15 @@ def _derive(request: CognitiveResolutionRequest, cand: CognitiveResolutionCandid
             **{k: v for k, v in proposal.items() if k in _DESCRIPTIVE_KEYS},
             "evidence_refs": list(cand.evidence_refs), "context_refs": list(cand.context_refs),
             "assumptions": list(cand.assumptions), "confidence_class": cand.confidence_class.value,
+            "provenance_refs": extra_provenance, "candidate_contradictions": extra_contradictions,
             "is_truth": False, "is_authority": False, "is_durable_knowledge": False,
         },
-        "contradictions": list(cand.contradictions),
+        "contradictions": origin_contradictions,
         "validation_verdict": V.ACCEPT_AS_STRUCTURED_CONTEXT.value,
         "physical_chronology_established": False, "world_fact_established": False,
         "structured_context_is_truth": False,
     }
-    provenance = tuple(dict.fromkeys((*request.provenance_refs, *cand.provenance_refs,
-                                      "app.cognition.b7.validation")))
+    provenance = tuple(dict.fromkeys((*request.provenance_refs, "app.cognition.b7.validation")))
     return StateEntry(state_id=f"b7:{cand.candidate_id}", state_type="B7_STRUCTURED_CONTEXT",
                       source_ref=f"app.cognition.b7:{request.request_id}", payload=payload, provenance=provenance,
                       uncertainty=cand.remaining_unknowns,
@@ -228,7 +232,7 @@ def validate_candidate(request: CognitiveResolutionRequest, candidate: Cognitive
     if candidate.candidate_kind == RequiredCandidateKind.WORLD_REFERENCE_HYPOTHESIS:
         # B7 V1 has no admissible world / domain evidence source: a hypothesis never becomes context
         return ValidationResult(V.STILL_UNRESOLVED, ("no_admissible_world_evidence",), (candidate,))
-    return ValidationResult(V.ACCEPT_AS_STRUCTURED_CONTEXT, (), (candidate,), _derive(request, candidate))
+    return ValidationResult(V.ACCEPT_AS_STRUCTURED_CONTEXT, (), (candidate,), _derive(request, candidate, origin))
 
 
 def validate_candidates(request: CognitiveResolutionRequest, candidates: Iterable[CognitiveResolutionCandidate], *,
