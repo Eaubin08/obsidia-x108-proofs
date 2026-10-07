@@ -639,3 +639,112 @@ def test_t_cross_attacks_rejected(change, bad):
     key = {"allowed_role_ids": "roles_all", "provenance_refs": "provenance_kx108", "problem_refs": "problem_refs_sibling"}[change]
     res = _t_run(bad, request=_dc.replace(req, **forgeries[key]))
     assert res is None or (res.verdict == m.CognitiveValidationVerdict.REJECT and res.derived_state is None)
+
+
+# ── B7-U: relation type closure (D-B7-P6) + trusted result issuance (D-B7-P7) ─────────────────
+import copy as _copy
+import pickle as _pickle
+
+_REL = {"kind": "sequence", "source": "u1", "target": "u2"}
+
+
+def _u_origin():
+    e = _t_origin()
+    payload = _json.loads(_canonical_json(e.payload))
+    payload["semantic_frame"]["relations"] = [dict(_REL)]
+    return _StateEntry(**{**{f: getattr(e, f) for f in ("state_id", "state_type", "source_ref", "provenance", "uncertainty",
+                                                         "status", "visibility", "tags", "summary")}, "payload": payload})
+
+
+_BAD_RELATIONS = [{}, "", 0, False, None, "sequence", dict(_REL), [42], [False], [None], [[]], [{"kind": "sequence"}],
+                  [dict(_REL, extra="x")], [{"kind": "sequence", "source": "u1", "target": 2}],
+                  [{"kind": ["sequence"], "source": "u1", "target": "u2"}]]
+
+
+@pytest.mark.parametrize("bad", _BAD_RELATIONS, ids=range(len(_BAD_RELATIONS)))
+def test_u_relations_is_list_of_exact_relation_objects(bad):
+    import app.cognition.b7 as m
+    res = _t_run({"relations": bad}, origin=_u_origin())
+    assert res is None or (res.verdict == m.CognitiveValidationVerdict.REJECT and res.derived_state is None)
+
+
+@pytest.mark.parametrize("rels", [[dict(_REL)], []])
+def test_u_valid_relations_positive_control(rels):
+    import app.cognition.b7 as m
+    res = _t_run({"relations": rels}, origin=_u_origin())
+    assert res.verdict == m.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+    assert res.derived_state.payload["validated"]["relations"] == rels
+
+
+def _u_real():
+    res = _t_run({})
+    assert res.derived_state is not None
+    return res
+
+
+def test_u_real_gate_result_is_trusted():
+    import app.cognition.b7 as m
+    res = _u_real()
+    assert m.admit_trusted_context(res) is res.derived_state
+
+
+def _u_forgeries():
+    import app.cognition.b7 as m
+    from app.cognition.b7.validation import ValidationResult
+    A = m.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+    real = _u_real()
+    d = real.derived_state
+    evil = _dc.replace(d, payload={**d.payload, "decision_authority": "self", "emits_act": True, "memory_write": True,
+                                   "kernel_mutation": True, "world_fact_established": True,
+                                   "physical_chronology_established": True, "provenance": "kx108:verified_decision"})
+    spoof = _dc.replace(d, payload={**d.payload, "resolution_request_id": "b7req_" + "0" * 64,
+                                    "resolution_candidate_id": "b7cand_" + "0" * 64, "provider_ref": "kx108",
+                                    "role_ref": "KX108", "derived_from_state_id": "kx108:decision"})
+    return {
+        "manual_canonical_looking": ValidationResult(A, (), real.candidates, d),
+        "manual_authority": ValidationResult(A, (), (), evil),
+        "manual_lineage": ValidationResult(A, (), real.candidates, spoof),
+        "rewrapped_real_state": ValidationResult(real.verdict, real.reasons, real.candidates, real.derived_state),
+        "replace_derived": _dc.replace(real, derived_state=evil),
+        "replace_noop": _dc.replace(real),
+        "copy": _copy.copy(real),
+        "deepcopy": _copy.deepcopy(real),
+        "pickle_roundtrip": _pickle.loads(_pickle.dumps(real)),
+    }
+
+
+@pytest.mark.parametrize("name", list(_u_forgeries()))
+def test_u_forged_or_reconstructed_results_are_never_trusted(name):
+    import app.cognition.b7 as m
+    with pytest.raises(ValueError):
+        m.admit_trusted_context(_u_forgeries()[name])
+
+
+def test_u_raw_b6_context_packet_is_not_trusted_by_b7():
+    import app.cognition.b7 as m
+    from app.harness.state_explicit.context_assembly import assemble_context
+    from app.harness.state_explicit.registry import WorkingStateRegistry
+    reg = WorkingStateRegistry()
+    reg.register(_t_origin())
+    packet = assemble_context("Lance-le.", reg, capability_matrix={"categories": ["PURE_RESPONSE"],
+                                                                    "matrix": {"PURE_RESPONSE": {"brody_may": ["repondre"]}}})
+    with pytest.raises(ValueError):
+        m.admit_trusted_context(packet)
+
+
+def test_u_issued_non_accept_results_and_multi_candidate_are_not_trusted():
+    import app.cognition.b7 as m
+    origin = _t_origin()
+    req = m.detect_unresolved(origin)[0]
+    good = m.translate(raw_candidate(req), req)
+    bad_raw = raw_candidate(req)
+    bad_raw["proposed_resolution"] = {"mention": "u2:le", "antecedent": "Marie"}
+    bad = m.translate(bad_raw, req)
+    rejected = m.validate_candidate(req, bad, origin=origin, provider_roles=PROVIDERS)
+    multi = m.validate_candidates(req, (good, good), origin=origin, provider_roles=PROVIDERS)
+    for res in (rejected, multi):
+        assert res.verdict != m.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+        with pytest.raises(ValueError):
+            m.admit_trusted_context(res)
+    single = m.validate_candidates(req, (good,), origin=origin, provider_roles=PROVIDERS)
+    assert m.admit_trusted_context(single) is single.derived_state
