@@ -68,6 +68,7 @@ def run_brody_real_response_pipeline(
     x108_root: str | None = None,
     limit: int = 8,
     max_items: int = 6,
+    state_context_packet: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     _load()
     action_id = f"brody_real_{uuid.uuid4().hex[:12]}"
@@ -76,6 +77,10 @@ def run_brody_real_response_pipeline(
     r["action_id"] = action_id
     r["language"] = language
     r["timestamp"] = datetime.now(timezone.utc).isoformat()
+    # B6 optional seam: an explicit State-Explicit Harness ContextPacket (readonly, KX108_ONLY)
+    # is attached as-is when supplied; without it the pipeline is unchanged
+    if state_context_packet is not None:
+        r["b6_state_context_packet"] = dict(state_context_packet)
 
     # ------------------------------------------------------------
     # PRE-REASONING CAUSAL GATE
