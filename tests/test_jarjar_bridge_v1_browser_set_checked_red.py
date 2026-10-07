@@ -68,7 +68,7 @@ def _ex(pre=None, post=None, act=None):
     ex.EXECUTOR_BACKEND = "BrowserBackend"
     pre = pre or _chk()
     post = post or _chk(checked=True)
-    ex.inspect_checkbox.side_effect = [pre, pre, post, post, post]
+    ex.inspect_checkbox.side_effect = [pre, pre, pre, post, post]
     ex.set_checkbox.return_value = act or {
         "ok": True,
         "mutation_performed": pre["checked"] is not True,

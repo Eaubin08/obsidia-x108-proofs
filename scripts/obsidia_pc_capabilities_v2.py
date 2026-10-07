@@ -336,7 +336,8 @@ def _build_browser_set_checked_envelope(*, stores: dict, executor, v2id: str, ch
                                         post_identity: Optional[dict] = None, act: Optional[dict] = None,
                                         proof_strength: str = "NONE",
                                         realized_state_verified: bool = False,
-                                        mutation_performed: bool = False) -> tuple[dict, str]:
+                                        mutation_performed: bool = False,
+                                        toctou_phase: str = "") -> tuple[dict, str]:
     request_ref = {
         "public_action": "BROWSER_SET_CHECKED",
         "selector_hash": _ref_hash(selector),
@@ -395,6 +396,8 @@ def _build_browser_set_checked_envelope(*, stores: dict, executor, v2id: str, ch
     if current_state_ref is not None:
         realized_state["current_state_hash"] = _ref_hash(current_state_ref)
         realized_state["current_state_ref"] = current_state_ref
+    if toctou_phase:
+        realized_state["toctou_phase"] = toctou_phase
     if post_state_ref is not None:
         realized_state["post_state_hash"] = _ref_hash(post_state_ref)
         realized_state["post_state_ref"] = post_state_ref
@@ -2869,6 +2872,21 @@ def pc_v2_browser_set_disclosure_execute(
     gate = kx.get("x108_gate", "")
     if gate != "ALLOW":
         return _exec_rej(OP_BROWSER_SET_DISCLOSURE, _CAP_BDISC_EXECUTE, "KX108_PRE_GATE:" + gate, session_id)
+    final_toctou = executor.inspect_disclosure(selector)
+    if not final_toctou.get("ok"):
+        return _exec_rej(OP_BROWSER_SET_DISCLOSURE, _CAP_BDISC_EXECUTE,
+                         "FINAL_TOCTOU_INSPECT_FAILED:" + str(final_toctou.get("error", "")), session_id)
+    final_identity = _browser_disclosure_identity(final_toctou)
+    reason = _validate_disclosure_identity(final_identity)
+    if reason:
+        return _exec_rej(OP_BROWSER_SET_DISCLOSURE, _CAP_BDISC_EXECUTE, reason, session_id)
+    if not _same_disclosure_identity(identity, final_identity):
+        return _exec_rej(OP_BROWSER_SET_DISCLOSURE, _CAP_BDISC_EXECUTE, "LATE_ELEMENT_IDENTITY_DRIFT", session_id)
+    if final_identity.get("current_expanded") is not identity.get("current_expanded"):
+        return _exec_rej(OP_BROWSER_SET_DISCLOSURE, _CAP_BDISC_EXECUTE, "LATE_PRE_STATE_DRIFT", session_id)
+    _, final_psa = _browser_disclosure_pre_state_anchor(final_identity)
+    if final_psa != d.get("physical_state_anchor", ""):
+        return _exec_rej(OP_BROWSER_SET_DISCLOSURE, _CAP_BDISC_EXECUTE, "LATE_PRE_STATE_DRIFT", session_id)
     act = executor.set_disclosure(identity, bool(target_expanded))
     if not act.get("ok"):
         return _exec_rej(OP_BROWSER_SET_DISCLOSURE, _CAP_BDISC_EXECUTE,
@@ -3159,7 +3177,8 @@ def pc_v2_browser_set_checked_execute(
             runtime_receipt=runtime_receipt, outcome=_CRE.OUTCOME_TOCTOU_ABORTED,
             failure_stage=_CRE.STAGE_TOCTOU, dispatch_boundary=_CRE.DISPATCH_PRE_FAILURE,
             physical_effect_dispatched=False, executor_status=_CRE.STATUS_NOT_REACHED,
-            execution_state="NOT_DISPATCHED", reason_code=reason_code, current_identity=current_identity)
+            execution_state="NOT_DISPATCHED", reason_code=reason_code, current_identity=current_identity,
+            toctou_phase="PRE_AUTHORIZATION")
         return _with_canonical_failure(_exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, reason_code, session_id), envelope, store_status)
     if current_identity.get("checked") is not identity.get("checked"):
         reason_code = "PRE_CHECKED_DRIFT"
@@ -3171,7 +3190,8 @@ def pc_v2_browser_set_checked_execute(
             runtime_receipt=runtime_receipt, outcome=_CRE.OUTCOME_TOCTOU_ABORTED,
             failure_stage=_CRE.STAGE_TOCTOU, dispatch_boundary=_CRE.DISPATCH_PRE_FAILURE,
             physical_effect_dispatched=False, executor_status=_CRE.STATUS_NOT_REACHED,
-            execution_state="NOT_DISPATCHED", reason_code=reason_code, current_identity=current_identity)
+            execution_state="NOT_DISPATCHED", reason_code=reason_code, current_identity=current_identity,
+            toctou_phase="PRE_AUTHORIZATION")
         return _with_canonical_failure(_exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, reason_code, session_id), envelope, store_status)
     _, current_psa = _browser_checkbox_pre_state_anchor(current_identity)
     if current_psa != d.get("physical_state_anchor", ""):
@@ -3184,7 +3204,8 @@ def pc_v2_browser_set_checked_execute(
             runtime_receipt=runtime_receipt, outcome=_CRE.OUTCOME_TOCTOU_ABORTED,
             failure_stage=_CRE.STAGE_TOCTOU, dispatch_boundary=_CRE.DISPATCH_PRE_FAILURE,
             physical_effect_dispatched=False, executor_status=_CRE.STATUS_NOT_REACHED,
-            execution_state="NOT_DISPATCHED", reason_code=reason_code, current_identity=current_identity)
+            execution_state="NOT_DISPATCHED", reason_code=reason_code, current_identity=current_identity,
+            toctou_phase="PRE_AUTHORIZATION")
         return _with_canonical_failure(_exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, reason_code, session_id), envelope, store_status)
     semantic_intent = d.get("semantic_intent", "")
     semantic_risk = d.get("semantic_risk", "")
@@ -3219,6 +3240,35 @@ def pc_v2_browser_set_checked_execute(
             execution_state="NOT_DISPATCHED", reason_code=reason_code, apr=apr, kx=kx,
             current_identity=current_identity)
         return _with_canonical_failure(_exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, reason_code, session_id), envelope, store_status)
+    final_toctou = executor.inspect_checkbox(selector)
+    if not final_toctou.get("ok"):
+        return _exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE,
+                         "FINAL_TOCTOU_INSPECT_FAILED:" + str(final_toctou.get("error", "")), session_id)
+    final_identity = _browser_checkbox_identity(final_toctou)
+    reason = _validate_checkbox_identity(final_identity)
+    if reason:
+        return _exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, reason, session_id)
+    final_reason_code = ""
+    if not _same_checkbox_identity(identity, final_identity):
+        final_reason_code = "LATE_ELEMENT_IDENTITY_DRIFT"
+    elif final_identity.get("checked") is not identity.get("checked"):
+        final_reason_code = "LATE_PRE_CHECKED_DRIFT"
+    else:
+        _, final_psa = _browser_checkbox_pre_state_anchor(final_identity)
+        if final_psa != d.get("physical_state_anchor", ""):
+            final_reason_code = "LATE_PRE_STATE_DRIFT"
+    if final_reason_code:
+        runtime_receipt = _rcpt(_CAP_BCHK_EXECUTE, OP_BROWSER_SET_CHECKED, EXECUTE_REJECTED, session_id, reason=final_reason_code)
+        envelope, store_status = _build_browser_set_checked_envelope(
+            stores=st, executor=executor, v2id=v2id, child=child, exp_eah=exp_eah, mh=mh, dh=dh,
+            descriptor=d, identity=identity, selector=selector, target_checked=target_checked,
+            semantic_intent=semantic_intent, semantic_risk=semantic_risk,
+            runtime_receipt=runtime_receipt, outcome=_CRE.OUTCOME_TOCTOU_ABORTED,
+            failure_stage=_CRE.STAGE_TOCTOU, dispatch_boundary=_CRE.DISPATCH_PRE_FAILURE,
+            physical_effect_dispatched=False, executor_status=_CRE.STATUS_NOT_REACHED,
+            execution_state="NOT_DISPATCHED", reason_code=final_reason_code, apr=apr, kx=kx,
+            current_identity=final_identity, toctou_phase="POST_AUTHORIZATION_PRE_EXECUTION")
+        return _with_canonical_failure(_exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, final_reason_code, session_id), envelope, store_status)
     act = executor.set_checkbox(identity, bool(target_checked))
     if not act.get("ok"):
         reason_code = "SET_CHECKBOX_FAILED:" + str(act.get("error", ""))
@@ -3663,6 +3713,21 @@ def pc_v2_browser_select_radio_execute(
     gate = kx.get("x108_gate", "")
     if gate != "ALLOW":
         return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, "KX108_PRE_GATE:" + gate, session_id)
+    final_toctou = executor.inspect_radio(selector)
+    if not final_toctou.get("ok"):
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE,
+                         "FINAL_TOCTOU_INSPECT_FAILED:" + str(final_toctou.get("error", "")), session_id)
+    final_identity = _browser_radio_identity(final_toctou)
+    reason = _validate_radio_identity(final_identity)
+    if reason:
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, reason, session_id)
+    if not _same_radio_identity(identity, final_identity):
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, "LATE_ELEMENT_IDENTITY_DRIFT", session_id)
+    if final_identity.get("checked") is not identity.get("checked"):
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, "LATE_PRE_CHECKED_DRIFT", session_id)
+    _, final_psa = _browser_radio_pre_state_anchor(final_identity)
+    if final_psa != d.get("physical_state_anchor", ""):
+        return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE, "LATE_PRE_STATE_DRIFT", session_id)
     act = executor.select_radio(identity)
     if not act.get("ok"):
         return _exec_rej(OP_BROWSER_SELECT_RADIO, _CAP_BRDO_EXECUTE,
@@ -4058,6 +4123,29 @@ def pc_v2_browser_select_option_execute(
     gate = kx.get("x108_gate", "")
     if gate != "ALLOW":
         return _exec_rej(OP_BROWSER_SELECT_OPTION, _CAP_BOPT_EXECUTE, "KX108_PRE_GATE:" + gate, session_id)
+    final_toctou = executor.inspect_select(select_selector)
+    if not final_toctou.get("ok"):
+        return _exec_rej(OP_BROWSER_SELECT_OPTION, _CAP_BOPT_EXECUTE,
+                         "FINAL_TOCTOU_INSPECT_FAILED:" + str(final_toctou.get("error", "")), session_id)
+    final_identity = _browser_select_identity(final_toctou)
+    reason = _validate_select_identity(final_identity)
+    if reason:
+        return _exec_rej(OP_BROWSER_SELECT_OPTION, _CAP_BOPT_EXECUTE, reason, session_id)
+    if not _same_select_identity(identity, final_identity):
+        return _exec_rej(OP_BROWSER_SELECT_OPTION, _CAP_BOPT_EXECUTE, "LATE_SELECT_IDENTITY_DRIFT", session_id)
+    if not _same_physical_option(final_identity.get("current_selected_option"), identity.get("current_selected_option")):
+        return _exec_rej(OP_BROWSER_SELECT_OPTION, _CAP_BOPT_EXECUTE, "LATE_PRE_SELECTED_DRIFT", session_id)
+    try:
+        final_option = _resolve_select_option(
+            list(final_toctou.get("options") or []),
+            **{"option_" + option_identity.get("match_kind"): option_identity.get("match_value")})
+    except ValueError as exc:
+        return _exec_rej(OP_BROWSER_SELECT_OPTION, _CAP_BOPT_EXECUTE, str(exc), session_id)
+    if not _same_option_identity(final_option, option_identity):
+        return _exec_rej(OP_BROWSER_SELECT_OPTION, _CAP_BOPT_EXECUTE, "LATE_OPTION_IDENTITY_DRIFT", session_id)
+    _, final_psa = _browser_select_pre_state_anchor(final_identity)
+    if final_psa != d.get("physical_state_anchor", ""):
+        return _exec_rej(OP_BROWSER_SELECT_OPTION, _CAP_BOPT_EXECUTE, "LATE_PRE_STATE_DRIFT", session_id)
     act = executor.select_option(identity, option_identity)
     if not act.get("ok"):
         return _exec_rej(OP_BROWSER_SELECT_OPTION, _CAP_BOPT_EXECUTE,
@@ -4396,6 +4484,23 @@ def pc_v2_browser_set_field_value_execute(
     gate = kx.get("x108_gate", "")
     if gate != "ALLOW":
         return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "KX108_PRE_GATE:" + gate, session_id)
+    final_toctou = executor.inspect_field(selector)
+    if not final_toctou.get("ok"):
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE,
+                         "FINAL_TOCTOU_INSPECT_FAILED:" + str(final_toctou.get("error", "")), session_id)
+    final_identity = _browser_field_identity(final_toctou)
+    reason = _validate_field_identity(final_identity)
+    if reason:
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, reason, session_id)
+    if not _same_field_identity(identity, final_identity):
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "LATE_FIELD_IDENTITY_DRIFT", session_id)
+    if final_identity.get("current_value_sha256") != identity.get("current_value_sha256"):
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "LATE_PRE_VALUE_HASH_DRIFT", session_id)
+    if final_identity.get("current_value_length") != identity.get("current_value_length"):
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "LATE_PRE_VALUE_LENGTH_DRIFT", session_id)
+    _, final_psa = _browser_field_pre_state_anchor(final_identity)
+    if final_psa != d.get("physical_state_anchor", ""):
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "LATE_PRE_STATE_DRIFT", session_id)
     act = executor.set_field_value(identity, target_value)
     if not act.get("ok"):
         return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE,
@@ -4856,6 +4961,19 @@ def pc_v2_browser_submit_get_navigation_execute(
     gate = kx.get("x108_gate", "")
     if gate != "ALLOW":
         return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE, "KX108_PRE_GATE:" + gate, session_id)
+    final_toctou = executor.inspect_form_submission(form_selector, submitter_selector)
+    if not final_toctou.get("ok"):
+        return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE,
+                         "FINAL_TOCTOU_INSPECT_FAILED:" + str(final_toctou.get("error", "")), session_id)
+    final_identity = _browser_form_submission_identity(final_toctou)
+    reason = _validate_form_submission_identity(final_identity)
+    if reason:
+        return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE, reason, session_id)
+    if not _same_form_submission_identity(identity, final_identity):
+        return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE, "LATE_FORM_SUBMISSION_IDENTITY_DRIFT", session_id)
+    final_psa = final_identity.get("physical_state_anchor") or _browser_form_pre_state_anchor(final_identity)
+    if final_psa != d.get("physical_state_anchor", ""):
+        return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE, "LATE_PRE_STATE_DRIFT", session_id)
     act = executor.submit_get_navigation(identity)
     execution_state = act.get("execution_state") or ("NOT_DISPATCHED" if not act.get("ok") else "")
     if not act.get("ok"):

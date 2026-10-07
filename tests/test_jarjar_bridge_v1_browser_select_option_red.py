@@ -87,7 +87,7 @@ def _ex(pre=None, post=None, act=None):
     pre = pre or _select()
     target = _opt("pro", "Pro", index=1)
     post = post or _select(selected=target)
-    ex.inspect_select.side_effect = [pre, pre, post, post, post]
+    ex.inspect_select.side_effect = [pre, pre, pre, post, post]
     ex.select_option.return_value = act or {
         "ok": True,
         "mutation_performed": pre["current_selected_option"].get("option_value") != "pro",

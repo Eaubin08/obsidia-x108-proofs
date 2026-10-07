@@ -68,18 +68,19 @@ class CheckboxExecutor:
     EXECUTOR_PROVIDER = "JARJAR"
     EXECUTOR_BACKEND = "BrowserBackend"
 
-    def __init__(self, *, initial=False, post=True, action_ok=True, mutation=True, drift=False):
+    def __init__(self, *, initial=False, post=True, action_ok=True, mutation=True, drift=False, drift_after_inspect=1):
         self.initial = initial
         self.post = post
         self.action_ok = action_ok
         self.mutation = mutation
         self.drift = drift
+        self.drift_after_inspect = drift_after_inspect
         self.inspect_calls = 0
         self.mutation_calls = 0
 
     def inspect_checkbox(self, _selector):
         self.inspect_calls += 1
-        if self.drift and self.inspect_calls > 1:
+        if self.drift and self.inspect_calls > self.drift_after_inspect:
             return _checkbox_identity(checked=not self.initial, metadata="meta-r8b7-drift")
         if self.inspect_calls == 1 or not self.mutation_calls:
             return _checkbox_identity(checked=self.initial)
@@ -245,9 +246,9 @@ class SubmitExecutor:
         }
 
 
-def _run_checkbox(tmp_path, monkeypatch, *, gate="ALLOW", initial=False, target=True, post=True, action_ok=True, mutation=True, drift=False):
+def _run_checkbox(tmp_path, monkeypatch, *, gate="ALLOW", initial=False, target=True, post=True, action_ok=True, mutation=True, drift=False, drift_after_inspect=1):
     _install_kx_gate(monkeypatch, gate)
-    ex = CheckboxExecutor(initial=initial, post=post, action_ok=action_ok, mutation=mutation, drift=drift)
+    ex = CheckboxExecutor(initial=initial, post=post, action_ok=action_ok, mutation=mutation, drift=drift, drift_after_inspect=drift_after_inspect)
     prep = PC2.pc_v2_browser_set_checked_prepare(
         "input#agree", target, "r8b7_certify", "LOW", stores_base_dir=tmp_path / "s", session_id=SESSION_ID, executor=ex
     )
@@ -297,9 +298,10 @@ def test_e2e_success_mutation_noop_hold_block_executor_fail_and_mismatch(tmp_pat
     assert b5["replay_verdict"] == B5.VERDICT_MATCH and b6["reconciliation_status"] == B6.STATUS_MISMATCH
 
 
-def test_e2e_toctou_abort_currently_stops_before_kx_decision_replay(tmp_path, monkeypatch):
+def test_e2e_toctou_early_abort_stops_before_kx_decision_replay(tmp_path, monkeypatch):
     ex, result = _run_checkbox(tmp_path, monkeypatch, drift=True)
     assert result["canonical_receipt_envelope"]["realized_state"]["outcome"] == CRE.OUTCOME_TOCTOU_ABORTED
+    assert result["canonical_receipt_envelope"]["realized_state"]["toctou_phase"] == "PRE_AUTHORIZATION"
     assert result["canonical_receipt_envelope"]["realized_state"]["current_state_hash"]
     assert ex.mutation_calls == 0
     b3 = B3.replay_action_evidence(result["action_evidence_id"], stores_base_dir=tmp_path / "s")
@@ -308,6 +310,25 @@ def test_e2e_toctou_abort_currently_stops_before_kx_decision_replay(tmp_path, mo
     assert b3["replay_verdict"] in {B3.VERDICT_VERIFIED, B3.VERDICT_VERIFIED_WITH_LIMITS}
     assert b5["replay_verdict"] == B5.VERDICT_INCOMPLETE
     assert "APPROVAL_ID_MISSING" in b5["missing_inputs"]
+    assert b6["reconciliation_status"] == B6.STATUS_NOT_REALIZED
+
+
+def test_e2e_toctou_late_abort_is_replayable_after_kx_before_dispatch(tmp_path, monkeypatch):
+    ex, result = _run_checkbox(tmp_path, monkeypatch, drift=True, drift_after_inspect=2)
+    envelope = result["canonical_receipt_envelope"]
+    assert envelope["realized_state"]["outcome"] == CRE.OUTCOME_TOCTOU_ABORTED
+    assert envelope["realized_state"]["toctou_phase"] == "POST_AUTHORIZATION_PRE_EXECUTION"
+    assert envelope["authorization"]["approval_id"] != CRE.STATUS_NOT_REACHED
+    assert envelope["authorization"]["kx108_pre_decision_record_id"] != CRE.STATUS_NOT_REACHED
+    assert envelope["authorization"]["binder_verdict_status"] == "OBSERVED_INLINE"
+    assert envelope["execution"]["executor_status"] == CRE.STATUS_NOT_REACHED
+    assert envelope["execution"]["physical_effect_dispatched"] is False
+    assert ex.mutation_calls == 0
+    b3, b5, b6 = _certify(tmp_path / "s", result["action_evidence_id"])
+    assert b3["replay_verdict"] in {B3.VERDICT_VERIFIED, B3.VERDICT_VERIFIED_WITH_LIMITS}
+    assert b5["replay_verdict"] == B5.VERDICT_MATCH
+    assert b5["historical_kx108_verdict"] == "ALLOW"
+    assert b5["replayed_kx108_verdict"] == "ALLOW"
     assert b6["reconciliation_status"] == B6.STATUS_NOT_REALIZED
 
 

@@ -67,7 +67,7 @@ def _ex(pre=None, post=None, act=None):
     ex.EXECUTOR_BACKEND = "BrowserBackend"
     pre = pre or _disc()
     post = post or _disc(expanded=True)
-    ex.inspect_disclosure.side_effect = [pre, pre, post, post, post]
+    ex.inspect_disclosure.side_effect = [pre, pre, pre, post, post]
     ex.set_disclosure.return_value = act or {
         "ok": True,
         "mutation_performed": pre["current_expanded"] is not True,

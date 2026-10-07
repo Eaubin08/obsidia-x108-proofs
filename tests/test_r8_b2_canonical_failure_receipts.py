@@ -50,7 +50,7 @@ def _checkbox_executor(pre=None, post=None, act=None):
     ex.EXECUTOR_BACKEND = "BrowserBackend"
     pre = pre or _chk()
     post = post or _chk(checked=True)
-    ex.inspect_checkbox.side_effect = [pre, pre, post]
+    ex.inspect_checkbox.side_effect = [pre, pre, pre, post]
     ex.set_checkbox.return_value = act or {
         "ok": True,
         "mutation_performed": pre["checked"] is not True,
@@ -230,7 +230,7 @@ def _submit_executor(act):
     ex.EXECUTOR_PROVIDER = "JARJAR"
     ex.EXECUTOR_BACKEND = "BrowserBackend"
     pre = _form()
-    ex.inspect_form_submission.side_effect = [pre, pre]
+    ex.inspect_form_submission.side_effect = [pre, pre, pre]
     ex.submit_get_navigation.return_value = act
     return ex
 

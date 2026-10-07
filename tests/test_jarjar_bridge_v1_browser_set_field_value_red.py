@@ -76,7 +76,7 @@ def _ex(pre=None, post=None, act=None):
     ex.EXECUTOR_BACKEND = "BrowserBackend"
     pre = pre or _field()
     post = post or _field(value_hash=NEW_HASH, value_length=3)
-    ex.inspect_field.side_effect = [pre, pre, post, post, post]
+    ex.inspect_field.side_effect = [pre, pre, pre, post, post]
     ex.set_field_value.return_value = act or {
         "ok": True,
         "mutation_performed": pre["current_value_sha256"] != NEW_HASH,
