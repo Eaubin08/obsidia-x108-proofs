@@ -1,0 +1,43 @@
+{
+  "schema": "ENTERPRISE_OFFICE_FULL_LOOP_E2E_V0_REGISTRY",
+  "status": "PROVEN",
+  "date": "2026-10-07",
+  "branch": "feat/enterprise-office-full-loop-e2e-v0",
+  "base": "feat/native-work-to-action-projection-v0",
+  "counts": {
+    "source_observations": 12,
+    "source_packets": 12,
+    "interpretation_candidates": 12,
+    "intake_policy_instructions": 12,
+    "committed_cases": 3,
+    "canonical_native_mutations": 12,
+    "work_projections": 3,
+    "action_candidates": 2,
+    "no_action": 1,
+    "sandbox_executions": 2,
+    "execution_receipts": 2,
+    "receipt_replay_ok": 2,
+    "duplicate_execution_blocks": 2,
+    "network_calls": 0,
+    "real_external_effects": 0
+  },
+  "safety": {
+    "truth_manifest_used_for_routing": false,
+    "execution_mode": "SANDBOX_DETERMINISTIC",
+    "external_network_capable": false,
+    "side_effect_free": true,
+    "decision_authority": "KX108_ONLY",
+    "main_merge": false
+  },
+  "determinism_boundary": {
+    "stable_intent_deterministic": true,
+    "runtime_evidence_time_bound": true,
+    "runtime_receipts_replayable": true,
+    "runtime_receipts_immutable": true
+  },
+  "functional_proof": {
+    "workflow_run": 37639234164,
+    "result": "117 passed in 2.44s"
+  },
+  "next_unresolved_boundary": "MONDE_OBSIDIA_NATIVE_READ_MODEL_V0"
+}
