@@ -12,6 +12,7 @@ if str(_SCRIPTS) not in sys.path: sys.path.insert(0, str(_SCRIPTS))
 import obsidia_batch_execution as _E
 import obsidia_kx108_decision_store as _DS
 import obsidia_sealed_evidence_v0 as _SEV
+import obsidia_canonical_receipt_envelope_v1 as _CRE
 PC_CAPABILITY_V2_VERSION             = "V2"
 PC_CAPABILITY_V2_MODE                = "GOVERNED_WRITE"
 PC_CAPABILITY_IS_EXECUTION_AUTHORITY = False
@@ -120,7 +121,7 @@ def _v2id(prefix: str, seed: str) -> str: return f"{prefix}-{_sha256(seed.encode
 def _stores(stores_base) -> dict:
     base = Path(stores_base)
     dirs = {}
-    for n in ("v2exec","approval","kxpre","kxpost","sar","sre","rollback"):
+    for n in ("v2exec","approval","kxpre","kxpost","sar","sre","rollback","receipts"):
         d = base / n; d.mkdir(parents=True, exist_ok=True); dirs[n] = d
     return dirs
 
@@ -288,6 +289,9 @@ def _exec_rej(op, cap, reason, sid="") -> dict:
             "decision_authority": KX_DECISION_AUTHORITY,
             "reason": reason,
             "receipt": _rcpt(cap, op, EXECUTE_REJECTED, sid, reason=reason)}
+
+def _ref_hash(value) -> str:
+    return _CRE.compute_ref_hash(value)
 
 # ============================================================
 # GOVERNED_CREATE_FILE
@@ -2919,7 +2923,105 @@ def pc_v2_browser_set_checked_execute(
         return _exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, "POST_INDETERMINATE_STATE_UNPROVABLE", session_id)
     if post_identity.get("checked") is not bool(target_checked):
         return _exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, REALIZED_STATE_MISMATCH, session_id)
-    return {
+    runtime_receipt = _rcpt(
+        _CAP_BCHK_EXECUTE, OP_BROWSER_SET_CHECKED, EXECUTED_OK, session_id,
+        kx108_pre_gate=gate,
+        selector=selector,
+        target_checked=bool(target_checked),
+        current_checked=post_identity.get("checked"),
+        indeterminate_status=post_identity.get("indeterminate_status"),
+        semantic_intent=semantic_intent,
+        semantic_risk=semantic_risk,
+        mutation_performed=bool(act.get("mutation_performed")),
+        proof_strength="STRONG",
+        realized_state_verified=True,
+        independent_post_read=True,
+        physical_state_anchor=d.get("physical_state_anchor", ""),
+        state_anchor_kind="PHYSICAL_PRE_STATE",
+    )
+    executor_input_ref = {
+        "public_action": "BROWSER_SET_CHECKED",
+        "selector": selector,
+        "element_identity_hash": identity.get("metadata_sha256"),
+        "target_checked": bool(target_checked),
+        "semantic_intent": semantic_intent,
+        "semantic_risk": semantic_risk,
+        "physical_state_anchor": d.get("physical_state_anchor", ""),
+    }
+    post_state_ref = {
+        "browser_session_id": post_identity.get("browser_session_id"),
+        "page_id": post_identity.get("page_id"),
+        "post_url": post_identity.get("url"),
+        "element_identity_hash": post_identity.get("metadata_sha256"),
+        "checked": post_identity.get("checked"),
+        "indeterminate_status": post_identity.get("indeterminate_status"),
+    }
+    kx_record = kx.get("record") or {}
+    envelope = _CRE.build_canonical_receipt_envelope(
+        capability=_CAP_BCHK_EXECUTE,
+        operation_type=OP_BROWSER_SET_CHECKED,
+        request_ref={
+            "public_action": "BROWSER_SET_CHECKED",
+            "selector_hash": _ref_hash(selector),
+            "target_checked": bool(target_checked),
+            "semantic_intent": semantic_intent,
+            "semantic_risk": semantic_risk,
+        },
+        session_ref={"session_id": session_id, "v2_exec_id": v2id, "child_id": child},
+        prepare={
+            "descriptor_ref": v2id,
+            "descriptor_hash": dh,
+            "physical_state_anchor": d.get("physical_state_anchor", ""),
+            "state_anchor_kind": "PHYSICAL_PRE_STATE",
+            "manifest_hash": mh,
+        },
+        authorization={
+            "execution_authority_hash": exp_eah,
+            "approval_id": apv_id,
+            "approval_status": apr.get("approval_status"),
+            "approved_by": apr.get("approved_by"),
+            "approval_record_hash": apr.get("approval_record_hash"),
+            "kx108_pre_decision_record_id": kx.get("decision_record_id", ""),
+            "kx108_pre_decision_record_hash": kx_record.get("decision_record_hash", ""),
+            "kx108_verdict": gate,
+            "binder_verdict_status": "OBSERVED_INLINE",
+            "binder_verdict_ref": "NOT_SEPARATELY_PERSISTED",
+        },
+        execution={
+            "executor_kind": executor.EXECUTOR_PROVIDER,
+            "executor_backend": executor.EXECUTOR_BACKEND,
+            "executor_operation": "browser.set_checkbox",
+            "executor_input_hash": _ref_hash(executor_input_ref),
+            "executor_input_ref": executor_input_ref,
+            "mutation_performed": bool(act.get("mutation_performed")),
+            "execution_state": "POSTCONDITION_CONFIRMED",
+        },
+        realized_state={
+            "proof_strength": "STRONG",
+            "realized_state_verified": True,
+            "mutation_performed": bool(act.get("mutation_performed")),
+            "post_state_hash": _ref_hash(post_state_ref),
+            "post_state_ref": post_state_ref,
+            "execution_state": "POSTCONDITION_CONFIRMED",
+            "uncertainty_state": "NONE",
+            "uncertainty_reason": "",
+        },
+        receipt={
+            "existing_runtime_receipt_id": runtime_receipt.get("receipt_id"),
+            "existing_receipt_hash": _ref_hash(runtime_receipt),
+            "existing_receipt_ref": "runtime_result.receipt",
+        },
+        replay={
+            "physical_replay_allowed": False,
+            "evidence_replay_allowed": True,
+        },
+        privacy={
+            "redaction_policy": "HASHES_AND_REFS_ONLY",
+            "plaintext_sensitive_data_present": False,
+        },
+    )
+    envelope_store = _CRE.store_canonical_receipt_envelope(envelope, st["receipts"])
+    result = {
         "status": EXECUTED_OK,
         "j5_phase": "EXECUTE",
         "operation_type": OP_BROWSER_SET_CHECKED,
@@ -2948,23 +3050,12 @@ def pc_v2_browser_set_checked_execute(
         "download_detected": False,
         "executor_provider": executor.EXECUTOR_PROVIDER,
         "executor_backend": executor.EXECUTOR_BACKEND,
-        "receipt": _rcpt(
-            _CAP_BCHK_EXECUTE, OP_BROWSER_SET_CHECKED, EXECUTED_OK, session_id,
-            kx108_pre_gate=gate,
-            selector=selector,
-            target_checked=bool(target_checked),
-            current_checked=post_identity.get("checked"),
-            indeterminate_status=post_identity.get("indeterminate_status"),
-            semantic_intent=semantic_intent,
-            semantic_risk=semantic_risk,
-            mutation_performed=bool(act.get("mutation_performed")),
-            proof_strength="STRONG",
-            realized_state_verified=True,
-            independent_post_read=True,
-            physical_state_anchor=d.get("physical_state_anchor", ""),
-            state_anchor_kind="PHYSICAL_PRE_STATE",
-        ),
+        "canonical_receipt_envelope": envelope,
+        "action_evidence_id": envelope["action_evidence_id"],
+        "canonical_receipt_store_status": envelope_store.get("status"),
+        "receipt": runtime_receipt,
     }
+    return result
 
 
 def _browser_radio_identity(inspected: dict) -> dict:
