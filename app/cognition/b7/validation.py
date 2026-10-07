@@ -290,9 +290,12 @@ def validate_candidates(request: CognitiveResolutionRequest, candidates: Iterabl
 
 
 def register_derived(registry: WorkingStateRegistry, result: ValidationResult) -> StateEntry:
-    """Register the NEW derived working entry; duplicate ids fail closed (no overwrite)."""
-    if result.verdict != V.ACCEPT_AS_STRUCTURED_CONTEXT or result.derived_state is None:
-        raise ValueError("only an accepted result produces working state")
+    """Register the NEW derived working entry; duplicate ids fail closed (no overwrite).
+
+    B7-V: same issuance boundary as admit_trusted_context -- only an ACCEPT result issued by this gate."""
+    if not (isinstance(result, ValidationResult) and _is_issued(result)
+            and result.verdict == V.ACCEPT_AS_STRUCTURED_CONTEXT and isinstance(result.derived_state, StateEntry)):
+        raise ValueError("only an ACCEPT result issued by the B7 gate produces working state")
     return registry.register(result.derived_state)
 
 
