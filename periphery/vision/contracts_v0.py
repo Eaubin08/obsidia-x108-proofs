@@ -137,7 +137,26 @@ def real_image_to_modality_observation_v0(item: RealImageObservationV0) -> Modal
         "media_type": item.asset.media_type,
         "device_ref": item.capture_context.device_ref,
         "optics_ref": item.capture_context.optics_ref,
+        "author_ref": item.capture_context.author_ref,
+        "application_ref": item.capture_context.application_ref,
+        "consent_ref": item.capture_context.consent_ref,
         "capture_parameters": dict(item.capture_context.capture_parameters),
+        "primitives": [
+            {
+                "primitive_id": p.primitive_id,
+                "primitive_kind": p.primitive_kind,
+                "label": p.label,
+                "confidence": p.confidence,
+                "geometry_ref": p.geometry_ref,
+                "mask_ref": p.mask_ref,
+                "depth_ref": p.depth_ref,
+                "motion_ref": p.motion_ref,
+                "text_value": p.text_value,
+                "feature_refs": list(p.feature_refs),
+                "evidence_refs": list(p.evidence_refs),
+            }
+            for p in item.primitives
+        ],
         "primitive_refs": [p.primitive_id for p in item.primitives],
         "physical_signal_refs": list(item.physical_signal_refs),
         "prior_state_refs": list(item.prior_state_refs),
@@ -163,7 +182,6 @@ def real_image_to_modality_observation_v0(item: RealImageObservationV0) -> Modal
 
 
 def real_image_to_world_observation_v0(item: RealImageObservationV0) -> WorldObservationV0:
-    return __import__(
-        "periphery.multimodal.bridge_v0",
-        fromlist=["modality_to_world_observation"],
-    ).modality_to_world_observation(real_image_to_modality_observation_v0(item))
+    from periphery.multimodal.bridge_v0 import modality_to_world_observation
+
+    return modality_to_world_observation(real_image_to_modality_observation_v0(item))
