@@ -1,6 +1,6 @@
 # F24 — Global Regression / Negative Tests V0
 
-Status: IMPLEMENTED / VALIDATION REQUIRED
+Status: VERIFIED / NO F24 REGRESSION
 
 ## Purpose
 
@@ -109,3 +109,13 @@ No F24 hardening changes:
 F25 — Public Freeze / Release Candidate.
 
 No F25 freeze before F24 validation.
+
+## Verification finale
+
+- Code SHA vérifié: `accb5c0a0902c29de04ca59b56859e9324e611d9`
+- GitHub Actions run: `37575196459`
+- Résultat global: `12556 passed / 11 failed / 46 skipped / 207 deselected`
+- Failures F24 visibles: `0`
+- Les 11 failures restantes correspondent aux familles baseline historiques.
+
+**Verdict:** F24 `VERIFIED`.
