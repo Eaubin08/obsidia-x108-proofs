@@ -1,6 +1,6 @@
 # F15 — Physical Evidence Plane V0
 
-Status: IMPLEMENTED / VALIDATION REQUIRED
+Status: IMPLEMENTED / REVALIDATION — F15 TESTS PASS
 
 ## Purpose
 
@@ -66,3 +66,14 @@ All F15 objects are:
 F16 — Vision / Real Image V0.
 
 No F16 runtime before F15 validation.
+
+## CI observation
+
+Run `37560271802`: `12506 passed / 12 failed / 46 skipped / 207 deselected`.
+
+- F15 failures: `0`
+- 11 failures: historical baseline families
+- 1 additional failure: `TestApprovalConcurrency.test_concurrent_identical_content_idempotent`
+- the same concurrency failure is present on the contract-only and test commits, with no F15 code path in that test.
+
+A fresh CI run is requested by this documentation-only commit before freezing F15, to distinguish an unrelated nondeterministic baseline failure from an actual regression.
