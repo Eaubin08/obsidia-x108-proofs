@@ -1210,8 +1210,16 @@ def _split_relative_main(clauses: list[_Clause], raw: str) -> list[_Clause]:
         if not rest or rest[0].is_punct or rest[0].low in set(_CONNECTIVES) | {"et", "ou", "puis", "mais", "qui", "que"}:
             # the main predicate was not found after the relative chain: named, frame open
             # (N5-R: a following consequent never proves that a protasis predicate exists)
-            if ante.conn == "si" or not any(c.conn not in {"rel", "et", "ou", "puis"}
-                                            for c in out[chain_end + 1:chain_end + 2]):
+            nxt = out[chain_end + 1] if chain_end + 1 < len(out) else None
+            if ante.conn != "si" and nxt is not None and nxt.conn is None and nxt.boundary == "," \
+                    and nxt.toks and _is_verb(nxt.toks, 0) and "IMP" in _feats(nxt.toks[0]) \
+                    and {"P3S", "P3P"} & _feats(nxt.toks[0]):
+                # C3: "Le script qui teste P, lance Q.": imperative or main predicate of the
+                # antecedent is not decided (H11 option C): attachment open and named, the
+                # possible request exposed, never a definitive REQUESTED
+                nxt.attachment_ambiguous = nxt.rel_member_possible_request = True
+            elif ante.conn == "si" or not any(c.conn not in {"rel", "et", "ou", "puis"}
+                                              for c in out[chain_end + 1:chain_end + 2]):
                 ante.rel_main_unresolved = True
             k = chain_end + 1
             continue
