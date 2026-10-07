@@ -360,7 +360,7 @@ class NativeSourceRegistryV0:
             raise ValueError(reason)
         directory = self._revocation_dir(revocation.source_id)
         directory.mkdir(parents=True, exist_ok=True)
-        path = directory / f"{revocation.revocation_id}.json"
+        path = directory / f"{filesystem_component_v0(revocation.revocation_id)}.json"
         if path.exists():
             existing = json.loads(path.read_text(encoding="utf-8"))
             if existing != revocation.to_dict():
