@@ -231,3 +231,73 @@ def test_existing_structured_relation_is_admissible(b7):
     res = _verdict(b7, e, req, remaining_unknowns=[], proposed_resolution={
         "mention": "u3:le", "antecedent": "p", "relations": [{"kind": "CAUSES", "source": "u2", "target": "u1"}]})
     assert res.verdict == b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+
+
+# ── B7-M: structured temporal refs, string-only descriptives, separated derived payload ─────────
+def _tm(deixis=(), raw="Le script est prêt demain. Lance-le."):
+    return make_entry(raw, unresolved_references=("u2:le",), units=("u1", "u2"), uncertainty=(),
+                      unit_objects={"u1": ["le script"]}, deixis=deixis)
+
+
+@pytest.mark.parametrize("extra", [{"times": ["script"]}, {"times": ["prêt"]}, {"times": ["lance"]},
+                                   {"times": ["mai"]}, {"times": ["2035-01-01"]}, {"times": ["demain"]},
+                                   {"anchor": "le script est"}, {"anchor": "script"}, {"anchor": "demain"},
+                                   {"anchor": "u1"}])
+def test_m1_raw_text_temporal_claims_rejected(b7, extra):
+    e = _tm()                                                              # no structured deixis
+    (req,) = b7.detect_unresolved(e)
+    res = _verdict(b7, e, req, remaining_unknowns=[],
+                   proposed_resolution={"mention": "u2:le", "antecedent": "le script", **extra})
+    assert res.verdict != b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+
+
+@pytest.mark.parametrize("extra", [{"times": ["demain"]}, {"anchor": "demain"}, {"times": ["Demain"]}])
+def test_m1_structured_deixis_is_admissible(b7, extra):
+    e = _tm(deixis=("demain",))
+    (req,) = b7.detect_unresolved(e)
+    res = _verdict(b7, e, req, remaining_unknowns=[],
+                   proposed_resolution={"mention": "u2:le", "antecedent": "le script", **extra})
+    assert res.verdict == b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+    assert res.derived_state.payload["physical_chronology_established"] is False
+
+
+@pytest.mark.parametrize("extra", [{"times": ["script"]}, {"anchor": "le script est"}])
+def test_m1_structured_deixis_set_is_closed(b7, extra):
+    e = _tm(deixis=("demain",))
+    (req,) = b7.detect_unresolved(e)
+    res = _verdict(b7, e, req, remaining_unknowns=[],
+                   proposed_resolution={"mention": "u2:le", "antecedent": "le script", **extra})
+    assert res.verdict != b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+
+
+@pytest.mark.parametrize("extra", [{"quoted_text": {"decision_authority": "SELF"}},
+                                   {"characterization": {"participants": ["Nadia"]}},
+                                   {"hypothesis": {"world_fact": "bridge collapsed"}},
+                                   {"quoted_text": ["HOLD"]}, {"characterization": 3}, {"hypothesis": True}])
+def test_m2_descriptive_values_are_strings_only(b7, extra):
+    e = _tm()
+    (req,) = b7.detect_unresolved(e)
+    res = _verdict(b7, e, req, remaining_unknowns=[],
+                   proposed_resolution={"mention": "u2:le", "antecedent": "le script", **extra})
+    assert res.verdict == b7.CognitiveValidationVerdict.REJECT
+
+
+def test_m3_derived_payload_separates_validated_from_unverified(b7):
+    e = _tm(deixis=("demain",))
+    (req,) = b7.detect_unresolved(e)
+    res = _verdict(b7, e, req, remaining_unknowns=[], proposed_resolution={
+        "mention": "u2:le", "antecedent": "le script", "times": ["demain"], "quoted_text": "ALLOW",
+        "characterization": "Nadia is participant", "hypothesis": "world fact is certain"},
+        evidence_refs=["proof:verified_by_kx108"], context_refs=["memory:durable_fact_42"],
+        assumptions=["this is definitely true"])
+    assert res.verdict == b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+    p = res.derived_state.payload
+    assert p["validated"] == {"mention": "u2:le", "antecedent": "le script", "times": ["demain"]}
+    u = p["unverified_descriptive"]
+    assert u["quoted_text"] == "ALLOW" and u["characterization"] == "Nadia is participant"
+    assert u["hypothesis"] == "world fact is certain"
+    assert u["evidence_refs"] == ["proof:verified_by_kx108"] and u["context_refs"] == ["memory:durable_fact_42"]
+    assert u["assumptions"] == ["this is definitely true"]
+    assert (u["is_truth"], u["is_authority"], u["is_durable_knowledge"]) == (False, False, False)
+    for leaked in ("proposed_resolution", "evidence_refs", "context_refs", "assumptions", "quoted_text"):
+        assert leaked not in p

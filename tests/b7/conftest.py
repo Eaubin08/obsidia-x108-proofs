@@ -28,7 +28,7 @@ def b7():
 def make_entry(raw: str = "x", *, status: StateStatus = StateStatus.OPEN, state_id: str = "sens:frame",
                state_type: str = "SENS_FRAME", missing=(), ambiguities=(), unresolved_references=(),
                contradictions=(), reasons=(), units=("u1",), uncertainty=None, extra=None,
-               unit_objects=None) -> StateEntry:
+               unit_objects=None, deixis=()) -> StateEntry:
     """A synthetic B6 SENS_FRAME entry carrying exactly the given explicit markers.
 
     ``unit_objects`` ({unit_id: [object texts]}) gives SENS-shaped structured referents; under the
@@ -41,7 +41,7 @@ def make_entry(raw: str = "x", *, status: StateStatus = StateStatus.OPEN, state_
                                             or reasons), "reasons": list(reasons)},
         "semantic_frame": {"raw": raw, "units": [{"id": u, "objects": [{"text": t} for t in (unit_objects or {}).get(u, ())]}
                                      for u in units], "oblique_arguments": [],
-                           "deixis": [], "constraints": [], "evidence_needs": [], "presupposed_referents": []},
+                           "deixis": list(deixis), "constraints": [], "evidence_needs": [], "presupposed_referents": []},
         "requested_world_actions": [], "requested_is_authorized": False,
     }
     payload.update(extra or {})

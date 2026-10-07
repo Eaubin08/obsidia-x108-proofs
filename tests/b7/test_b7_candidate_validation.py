@@ -125,8 +125,9 @@ def test_t24_other_explicit_never_accepts(b7, entry_factory, raw_candidate_facto
 
 # ── temporal / world (T33, T40) ─────────────────────────────────────────────
 def test_t33_linguistic_time_is_not_physical_chronology(b7, entry_factory, raw_candidate_factory, providers):
+    # requalified 2026-10-07 (STRUCTURED_TEMPORAL_REFERENCE_ONLY): "hier" is SENS-structured deixis
     e = entry_factory("Paul a lancé P hier quand Nadia part.", ambiguities=("temporal_scope_ambiguous:u2:host=u1",),
-                      units=("u1", "u2"), uncertainty=())
+                      units=("u1", "u2"), uncertainty=(), deixis=("hier",))
     (req,) = b7.detect_unresolved(e)
     assert b7.ForbiddenOperation.ESTABLISH_PHYSICAL_CHRONOLOGY in req.forbidden_operations
     base = dict(candidate_kind="TEMPORAL_REFERENCE_INTERPRETATION", remaining_unknowns=[])
