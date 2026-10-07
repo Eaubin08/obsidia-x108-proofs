@@ -36,6 +36,12 @@ from periphery.world_calls.external_runtime_activation_policy_v0 import (  # noq
 from periphery.world_calls.live_sovereign_ticket_v0 import (  # noqa: E402
     issue_live_sovereign_ticket_v0,
 )
+from scripts.kernel.kx108_runtime_link_facts_v1 import (  # noqa: E402
+    MISSING_RUNTIME_LINK_REAL_EXECUTION,
+    MISSING_RUNTIME_LINK_WORLD_ACTUATION,
+    runtime_link_facts,
+    world_action_bounded_executor_contract_present,
+)
 
 
 def canonical_hash(value):
@@ -492,3 +498,15 @@ def test_receipt_tamper_breaks_verification_and_replay(tmp_path):
     ok, reason = verify_execution_receipt_v0(stored)
     assert ok is False
     assert reason == "EXECUTION_RECEIPT_HASH_MISMATCH"
+
+
+
+def test_runtime_facts_show_executor_contract_without_real_activation():
+    facts = runtime_link_facts()
+    assert world_action_bounded_executor_contract_present() is True
+    assert facts["world_action_bounded_executor_contract_present"] is True
+    assert facts["world_action_runtime_activated"] is False
+    assert facts["execution_authority"] is False
+    assert facts["emits_act"] is False
+    assert MISSING_RUNTIME_LINK_WORLD_ACTUATION in facts["missing_runtime_links"]
+    assert MISSING_RUNTIME_LINK_REAL_EXECUTION in facts["missing_runtime_links"]
