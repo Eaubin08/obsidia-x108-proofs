@@ -51,7 +51,9 @@ ONE_IDENTITY != ONE_TEMPORALITY · LOGICAL_ORDER != PHYSICAL_TIME · TIME_VALUE 
 VALID_TIME != RECORDED_AT · SOURCE_TIME != VALID_TIME · OBSERVED_TIME != RECORDED_AT ·
 SERIALIZATION_ORDER != CAUSAL_ORDER · SERIALIZATION_ORDER != PHYSICAL_TIME ·
 SAME_KNOWLEDGE_SLOT != SAME_TEMPORAL_FRAME · UNKNOWN_VALUE != TEMPORAL_RELATION_UNKNOWN ·
-ONE_OBJECT, MANY_TEMPORAL_PROJECTIONS, NO_AUTOMATIC_FUSION.
+ONE_OBJECT, MANY_TEMPORAL_PROJECTIONS, NO_AUTOMATIC_FUSION · RECEIVED_ORDER != WORLD_ORDER ·
+RECORDED_ORDER != WORLD_ORDER · SERIALIZATION_ORDER != WORLD_ORDER · TRANSFORM_EXISTS !=
+TRANSFORM_ADMISSIBLE · TEMPORALLY_INDETERMINATE != UNKNOWN != FALSE != NO_ASSERTION != CONTESTED.
 
 ## 3. Identities and bounds (O-6)
 
@@ -174,19 +176,39 @@ needs ordered participants puts that order in typed claim content, never in the 
   Source / observed / recorded / proof timestamps also carry their frame.
 - The frame is **not** part of KnowledgeSlot identity: one semantic question may have several
   temporal projections (`SAME_KNOWLEDGE_SLOT != SAME_TEMPORAL_FRAME`).
+- **V1 rule (D-B8-R5-1..R5-3, human doctrine 2026-10-07): `TEMPORALLY_COMPARABLE(A, B) =
+  (A.temporal_frame_ref == B.temporal_frame_ref)`** — no second branch
+  (`B8_V1_CROSS_FRAME_COMPARISON_SUPPORTED=NO`). Frame identity is explicit identity, never inferred
+  from names, labels, clock similarity, recency, source identity or similar values; no implicit
+  conversion (`CROSS_FRAME_RAW_TIME_COMPARISON=FORBIDDEN`, `IMPLICIT_TEMPORAL_FRAME_CONVERSION=0`).
 - `TemporalTransformRef{source_frame, target_frame, transform_id, transform_version, provenance,
-  validity_scope, exactness}`: an explicit audited conversion contract (not implemented in B8).
-- `TEMPORALLY_COMPARABLE(A, B)` = TRUE only if `A.temporal_frame_ref == B.temporal_frame_ref`, or an
-  admissible TemporalTransformRef between the frames is referenced whose exactness decides the
-  relation needed. Never inferred from names, labels, recency, source identity or similar values;
-  no implicit conversion (`CROSS_FRAME_RAW_TIME_COMPARISON=FORBIDDEN`,
-  `IMPLICIT_TEMPORAL_FRAME_CONVERSION=0`).
+  validity_scope, exactness}` is `RESERVED_FOR_FUTURE_TEMPORAL_LAYER` with **no normative effect in
+  V1**: `TEMPORAL_TRANSFORM_ADMISSION_AUTHORITY_V1=NONE`,
+  `TEMPORAL_TRANSFORM_STATE_CHANGE_AUTHORITY_V1=NONE`, `TEMPORAL_TRANSFORM_QUERY_FUSION_V1=FORBIDDEN`,
+  `TRANSFORM_REF_CAN_ENABLE_V1_TRANSITION=NO`. Its presence in a request (or as provenance metadata)
+  never makes two frames comparable and never affects T6, T9, G2, G3, G4, CURRENT_KNOWLEDGE,
+  CURRENT_UNKNOWN or CURRENT_EPISTEMIC_VIEW; no human approval, confidence, source reputation,
+  registry presence, name matching or clock similarity activates a transform. Consequently, by
+  construction: no inversion (A → B never implies B → A), no composition / chained search / graph
+  closure (A → B, B → C never imply A → C), no frame equivalence from cycles, no boundary
+  reinterpretation, and no dependency on a transform version (`IMPLICIT_TRANSFORM_INVERSION=0`,
+  `IMPLICIT_TRANSFORM_COMPOSITION=0`, `TRANSFORM_CYCLE_IMPLIES_FRAME_IDENTITY=NO`,
+  `TRANSFORM_VERSION_SILENT_SUBSTITUTION=0`, `V1_REPLAY_DEPENDS_ON_TRANSFORM_VERSION=NO`).
+- Receipts record the temporal comparison basis of each relation they rely on as `SAME_FRAME` or
+  `TEMPORALLY_INDETERMINATE`; `CROSS_FRAME_TRANSFORMED` is never a successful V1 basis. Replay applies
+  the same rule (frame ids equal, or indeterminate).
 - Interval relations — `overlaps(a, b)` = a.start < b.end ∧ b.start < a.end; `contains(a, b)` =
   a.start ≤ b.start ∧ b.end ≤ a.end; `difference(a, b)` = the 0, 1 or 2 exact half-open remainders;
-  intersection, coverage, ordering — are defined **only** after `TEMPORALLY_COMPARABLE` and inside
-  one admissible common frame. Otherwise the relation is `INDETERMINATE` and every state-changing
-  operation depending on it fails closed (HELD / REJECTED `temporal_relation_indeterminate`); an
-  uncertain transform that cannot decide the relation exactly is also INDETERMINATE.
+  intersection, coverage, ordering — are defined **only** inside one frame (V1: same frame id),
+  with V1 half-open `[start, end)` boundaries (`BOUNDARY_SEMANTICS_AMBIGUITY=0`). Otherwise the relation
+  is `TEMPORALLY_INDETERMINATE` and every state-changing operation depending on it fails closed
+  (HELD / REJECTED `temporal_relation_indeterminate`). In particular T6 with a current PROMOTED claim
+  on the slot in another frame cannot prove the slot temporally free → HELD
+  (`INCOMPARABLE_TEMPORAL_OCCUPANCY_CAUSES_UNSAFE_PROMOTION=0`); T9, G2, G3 and G4 across frames →
+  HELD; no cross-frame subtraction, clipping, approximation or conversion
+  (`CROSS_FRAME_INTERVAL_DIFFERENCE=FORBIDDEN`).
+- `TEMPORALLY_INDETERMINATE` means only that B8 cannot establish the required temporal relation under
+  V1 contracts; it is not UNKNOWN, FALSE, NO_ASSERTION or CONTESTED.
 - Claims or gaps in incomparable frames on one slot are `TEMPORALLY_INCOMPARABLE`: neither
   overlapping, nor disjoint, nor conflicting, nor superseding (`UNRELATED_TEMPORAL_FRAMES_CAN_COEXIST
   =YES`, `INCOMPARABLE_FRAME_CLAIMS_AUTO_CONFLICT=NO`).
@@ -196,8 +218,12 @@ needs ordered participants puts that order in typed claim content, never in the 
   indeterminate is a temporal indeterminacy, not an EpistemicGap about A or B (none is created
   unless explicitly recorded).
 - These structures are provisional contract-level forms that must stay mappable to the future
-  MMonde / F12 TimeEnvelope; B8 is not a universal-time subsystem
-  (`TEMPORAL_FRAME_COMPATIBILITY_WITH_MMONDE=YES`).
+  MMonde / F12 TimeEnvelope; B8 implements neither TimeEnvelope nor transform admission and creates no
+  universal clock (`TEMPORAL_FRAME_COMPATIBILITY_WITH_MMONDE=YES`, `B8_COMPETING_GLOBAL_TIME_SUBSYSTEM=NO`).
+- **B8-DT01 TEMPORAL_TRANSFORM_ADMISSION** (DEFERRED_NON_BLOCKING): a future temporal layer / MMonde may
+  define transform authority, typed verifier, direction, invertibility, composition, versioning,
+  validity, uncertainty, revocation and receipts; only after that contract is independently proven
+  may a future B8 version consume cross-frame temporal relations.
 
 ### 5.2 Slot state and concurrency (D-B8-R2-3, D-B8-R3-3)
 
@@ -236,7 +262,8 @@ expected slot revision. Two requests prepared on the same revision can never bot
   sequence may be `INCOMPARABLE_CAUSALLY` (valid). An explicit admissible causal relation X → Y is
   never discarded because raw timestamps from other frames look reversed
   (`TIMESTAMP_OVERRIDES_CAUSAL_LINK=NO`); such an inconsistency may be recorded separately.
-- Canonical B8 history order is never the numerical order of `recorded_at`.
+- Canonical B8 history order is never the numerical order of `recorded_at`, and the order in which
+  Obsidia receives, records or commits information never implies world order or causal order.
 - Backdating = attempting to insert or rewrite a logical transition before an already committed
   causal / revision predecessor. It is prevented structurally: every mutating request binds
   `expected_slot_revision` and its object's expected version / state (§5.2, §9.1), so a request can
@@ -534,3 +561,9 @@ No duplicate promotion engine survives canonical B8.
   TEMPORALLY_COMPARABLE with INDETERMINATE fail-closed, frame outside slot identity, T6 / T9 / G2 /
   G3 / G4 comparability guards, §5.3 serialization vs causality, §9.3 / §10 / §10.1 frame-qualified
   queries and view. Status stays DRAFT_FOR_AUDIT.
+- Independent temporal certification R5 of 03c31d48: REMEDIATE_SPEC for D-B8-R5-1 (transform direction /
+  composition / cycles undefined), D-B8-R5-2 (transform version not bound to transitions / replay),
+  D-B8-R5-3 (transform admissibility authority undefined). Human doctrine: B8 V1 admits no cross-frame
+  transform; same-frame comparisons only; TemporalTransformRef reserved (B8-DT01 deferred). Remediation:
+  §2 world-order laws, §5.1 V1 comparability rule, reserved transform, receipt comparison basis,
+  indeterminacy semantics, §5.3 reception / commit order != world order. Status stays DRAFT_FOR_AUDIT.
