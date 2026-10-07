@@ -1,6 +1,6 @@
 # F14 — Physical Signal Periphery V0
 
-Status: IMPLEMENTED / VALIDATION REQUIRED
+Status: VERIFIED / NO F14 REGRESSION
 
 ## Purpose
 
@@ -69,3 +69,13 @@ F15 — Physical Evidence Plane V0:
 - provenance != authenticity.
 
 No F15 runtime before F14 validation.
+
+## Verification finale
+
+- Code SHA vérifié: `815dd5621e5a36503f774d8f12e5b496c56d8451`
+- GitHub Actions run: `37559565597`
+- Résultat global: `12501 passed / 11 failed / 46 skipped / 207 deselected`
+- Failures F14 visibles: `0`
+- Les 11 failures restantes correspondent aux familles baseline historiques.
+
+**Verdict:** F14 `VERIFIED`.
