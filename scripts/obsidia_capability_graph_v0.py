@@ -396,6 +396,21 @@ _GRAPH: "dict[str, dict]" = {
                      "human_authorized_eah": "exact EAH from PREPARE"},
         availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
         notes="V2 APP_OPEN EXECUTE: EAH+human approval+KX108+inventory drift check+PID verify. KX108_ONLY."),
+    "PC_V2_AUDIO_VOLUME_PREPARE": _cap(
+        "PC_V2_AUDIO_VOLUME_PREPARE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_NONE,
+        route=ROUTE_NATIVE,
+        input_shape={"target_percent": "int 0..100 xor delta_percent int"},
+        availability="AVAILABLE", proof_status="J5_PREPARE_ONLY",
+        notes="V2 AUDIO_VOLUME PREPARE: read current volume as physical pre-state, bind exact target or delta. KX108_ONLY."),
+    "PC_V2_AUDIO_VOLUME_EXECUTE": _cap(
+        "PC_V2_AUDIO_VOLUME_EXECUTE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_WRITE_GOVERNED,
+        route=ROUTE_STAGE4_GOVERNED,
+        input_shape={"prepared_result": "PC_V2_AUDIO_VOLUME_PREPARE output",
+                     "human_authorized_eah": "exact EAH from PREPARE"},
+        availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
+        notes="V2 AUDIO_VOLUME EXECUTE: EAH+human approval+KX108+pre-state drift check+post volume proof. KX108_ONLY."),
     "PC_V2_UIA_SET_TEXT_PREPARE": _cap(
         "PC_V2_UIA_SET_TEXT_PREPARE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
         mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_NONE,
@@ -584,6 +599,23 @@ _GRAPH: "dict[str, dict]" = {
                      "target_value": "plaintext supplied at execute and hash-checked"},
         availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
         notes="V2 BROWSER SET_FIELD_VALUE EXECUTE: TOCTOU field/value drift checks, no-op or semantic fill, fail closed on side effects, post hash proof. STRONG. KX108_ONLY."),
+    "PC_V2_BROWSER_SUBMIT_GET_NAV_PREPARE": _cap(
+        "PC_V2_BROWSER_SUBMIT_GET_NAV_PREPARE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_NONE,
+        route=ROUTE_NATIVE,
+        input_shape={"form_selector": "str", "submitter_selector": "str",
+                     "semantic_intent": "bounded non-empty str", "semantic_risk": "LOW|MEDIUM|HIGH",
+                     "submission_class": "NORMAL_GET_NAVIGATION"},
+        availability="AVAILABLE", proof_status="J5_PREPARE_ONLY",
+        notes="V2 BROWSER SUBMIT GET NAV PREPARE: exact same-origin GET form + exact submitter + hash-only manifest. No generic submit/click, no POST/XHR/login/payment. KX108_ONLY."),
+    "PC_V2_BROWSER_SUBMIT_GET_NAV_EXECUTE": _cap(
+        "PC_V2_BROWSER_SUBMIT_GET_NAV_EXECUTE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_WRITE_GOVERNED,
+        route=ROUTE_STAGE4_GOVERNED,
+        input_shape={"prepared_result": "PC_V2_BROWSER_SUBMIT_GET_NAV_PREPARE output",
+                     "human_authorized_eah": "exact EAH from PREPARE"},
+        availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
+        notes="V2 BROWSER SUBMIT GET NAV EXECUTE: TOCTOU form/submitter/manifest drift checks, observed GET request + same-origin navigation proof, explicit dispatched-outcome-uncertain state. No retry/replay. KX108_ONLY."),
 }
 
 _CAPABILITY_IDS = tuple(_GRAPH.keys())

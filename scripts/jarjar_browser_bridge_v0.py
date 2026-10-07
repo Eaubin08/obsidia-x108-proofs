@@ -228,6 +228,35 @@ class JarJarBrowserExecutor:
         out.update(data)
         return out
 
+    def inspect_form_submission(self, form_selector: str, submitter_selector: str) -> dict:
+        """Inspect one bounded GET form submission target. No mutation."""
+        from jarvis.contracts import ActionRequest
+        result = self._backend.execute(ActionRequest("browser.inspect_form_submission", {
+            "form_selector": form_selector,
+            "submitter_selector": submitter_selector,
+        }))
+        if not result.ok:
+            return {"ok": False, "error": "INSPECT_FORM_SUBMISSION_FAILED:" + result.message,
+                    "executor": self.EXECUTOR_BACKEND}
+        data = result.data or {}
+        out = {"ok": True, "executor": self.EXECUTOR_BACKEND}
+        out.update(data)
+        return out
+
+    def submit_get_navigation(self, form_submission_identity: dict) -> dict:
+        """Activate an approved GET form submitter. This is not generic submit/click."""
+        from jarvis.contracts import ActionRequest
+        result = self._backend.execute(
+            ActionRequest("browser.submit_get_navigation", dict(form_submission_identity or {})))
+        if not result.ok:
+            return {"ok": False, "error": "SUBMIT_GET_NAVIGATION_FAILED:" + result.message,
+                    "executor": self.EXECUTOR_BACKEND,
+                    "execution_state": "NOT_DISPATCHED"}
+        data = result.data or {}
+        out = {"ok": True, "executor": self.EXECUTOR_BACKEND}
+        out.update(data)
+        return out
+
     def navigate(self, requested_url: str) -> dict:
         """Execute physical navigation. Returns execution evidence only."""
         from jarvis.contracts import ActionRequest

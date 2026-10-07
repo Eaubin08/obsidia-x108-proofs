@@ -89,6 +89,10 @@ OP_BROWSER_SET_FIELD_VALUE = "V2_BROWSER_SET_FIELD_VALUE"
 _CAP_BFLD_PREPARE = "PC_V2_BROWSER_SET_FIELD_VALUE_PREPARE"
 _CAP_BFLD_EXECUTE = "PC_V2_BROWSER_SET_FIELD_VALUE_EXECUTE"
 
+OP_BROWSER_SUBMIT_GET_NAV = "V2_BROWSER_SUBMIT_FORM_NAVIGATION"
+_CAP_BSUB_PREPARE = "PC_V2_BROWSER_SUBMIT_GET_NAV_PREPARE"
+_CAP_BSUB_EXECUTE = "PC_V2_BROWSER_SUBMIT_GET_NAV_EXECUTE"
+
 _SENSITIVE_SELECTOR_PATTERNS = (
     "type=password", 'type="password"', "type=hidden", 'type="hidden"',
 )
@@ -97,7 +101,7 @@ def _is_sensitive_selector(selector: str) -> bool:
     sl = selector.lower().replace(" ", "")
     return any(p.replace(" ", "") in sl for p in _SENSITIVE_SELECTOR_PATTERNS)
 OP_UIA_SET_CHECKED  = "V2_UIA_SET_CHECKED"
-_CAPABILITY_IDS_V2 = (_CAP_CREATE_PREPARE, _CAP_CREATE_EXECUTE, _CAP_MOVE_PREPARE, _CAP_MOVE_EXECUTE, _CAP_PATCH_PREPARE, _CAP_PATCH_EXECUTE, _CAP_CDIR_PREPARE, _CAP_CDIR_EXECUTE, _CAP_WFOCUS_PREPARE, _CAP_WFOCUS_EXECUTE, _CAP_AOPEN_PREPARE, _CAP_AOPEN_EXECUTE, _CAP_AVOL_PREPARE, _CAP_AVOL_EXECUTE, _CAP_UTEXT_PREPARE, _CAP_UTEXT_EXECUTE, _CAP_SCHK_PREPARE, _CAP_SCHK_EXECUTE, _CAP_SRAD_PREPARE, _CAP_SRAD_EXECUTE, _CAP_STAB_PREPARE, _CAP_STAB_EXECUTE, _CAP_BNAV_PREPARE, _CAP_BNAV_EXECUTE, _CAP_BRAD_PREPARE, _CAP_BRAD_EXECUTE, _CAP_BLINK_PREPARE, _CAP_BLINK_EXECUTE, _CAP_BDISC_PREPARE, _CAP_BDISC_EXECUTE, _CAP_BCHK_PREPARE, _CAP_BCHK_EXECUTE, _CAP_BRDO_PREPARE, _CAP_BRDO_EXECUTE, _CAP_BOPT_PREPARE, _CAP_BOPT_EXECUTE, _CAP_BFLD_PREPARE, _CAP_BFLD_EXECUTE)
+_CAPABILITY_IDS_V2 = (_CAP_CREATE_PREPARE, _CAP_CREATE_EXECUTE, _CAP_MOVE_PREPARE, _CAP_MOVE_EXECUTE, _CAP_PATCH_PREPARE, _CAP_PATCH_EXECUTE, _CAP_CDIR_PREPARE, _CAP_CDIR_EXECUTE, _CAP_WFOCUS_PREPARE, _CAP_WFOCUS_EXECUTE, _CAP_AOPEN_PREPARE, _CAP_AOPEN_EXECUTE, _CAP_AVOL_PREPARE, _CAP_AVOL_EXECUTE, _CAP_UTEXT_PREPARE, _CAP_UTEXT_EXECUTE, _CAP_SCHK_PREPARE, _CAP_SCHK_EXECUTE, _CAP_SRAD_PREPARE, _CAP_SRAD_EXECUTE, _CAP_STAB_PREPARE, _CAP_STAB_EXECUTE, _CAP_BNAV_PREPARE, _CAP_BNAV_EXECUTE, _CAP_BRAD_PREPARE, _CAP_BRAD_EXECUTE, _CAP_BLINK_PREPARE, _CAP_BLINK_EXECUTE, _CAP_BDISC_PREPARE, _CAP_BDISC_EXECUTE, _CAP_BCHK_PREPARE, _CAP_BCHK_EXECUTE, _CAP_BRDO_PREPARE, _CAP_BRDO_EXECUTE, _CAP_BOPT_PREPARE, _CAP_BOPT_EXECUTE, _CAP_BFLD_PREPARE, _CAP_BFLD_EXECUTE, _CAP_BSUB_PREPARE, _CAP_BSUB_EXECUTE)
 PREPARED_AWAITING_HUMAN_APPROVAL = "PREPARED_AWAITING_HUMAN_APPROVAL"
 EXECUTED_OK = "EXECUTED_OK"
 PREPARE_REJECTED = "PREPARE_REJECTED"
@@ -4006,6 +4010,363 @@ def pc_v2_browser_set_field_value_execute(
     }
 
 
+_BROWSER_SUBMIT_ACCEPTED_CLASS = "NORMAL_GET_NAVIGATION"
+_BROWSER_SUBMIT_REJECTED_CLASSES = {
+    "LOGIN", "MESSAGE_SEND", "PURCHASE", "PAYMENT", "DESTRUCTIVE", "CONSENT", "UNKNOWN",
+}
+_BROWSER_SUBMIT_STATES = {
+    "NOT_DISPATCHED", "DISPATCHED", "RESPONSE_OBSERVED",
+    "POSTCONDITION_CONFIRMED", "DISPATCHED_OUTCOME_UNCERTAIN",
+}
+
+
+def _browser_form_submission_identity(inspected: dict) -> dict:
+    keys = (
+        "browser_session_id", "page_id", "url", "origin", "closed",
+        "form_selector", "form_count", "form_tag", "form_action", "resolved_action",
+        "resolved_action_hash", "resolved_action_endpoint", "method", "target",
+        "enctype", "name", "id", "autocomplete", "same_origin_action",
+        "submitter_selector", "submitter_count", "submitter_tag", "submitter_type",
+        "submitter_name", "submitter_value_sha256", "submitter_value_length",
+        "submitter_form_owner", "submitter_belongs_to_form", "submitter_visible",
+        "submitter_enabled", "submitter_text_sha256", "field_manifest_hash",
+        "field_count", "contains_password", "contains_otp_sensitive",
+        "contains_payment_sensitive", "metadata_sha256",
+        "submitter_metadata_sha256", "main_frame_only", "physical_state_anchor",
+        "redirect_policy", "expected_effect",
+    )
+    return {key: inspected.get(key) for key in keys}
+
+
+def _browser_form_pre_state_anchor(identity: dict) -> str:
+    snapshot = {
+        "anchor_schema": "BROWSER_SUBMIT_FORM_NAVIGATION_PRE_STATE_V1",
+        "browser_session_id": identity.get("browser_session_id") or "",
+        "page_id": identity.get("page_id") or "",
+        "url": identity.get("url") or "",
+        "origin": identity.get("origin") or "",
+        "form_selector": identity.get("form_selector") or "",
+        "submitter_selector": identity.get("submitter_selector") or "",
+        "form_metadata_sha256": identity.get("metadata_sha256") or "",
+        "submitter_metadata_sha256": identity.get("submitter_metadata_sha256") or "",
+        "field_manifest_hash": identity.get("field_manifest_hash") or "",
+    }
+    return _sha256(json.dumps(snapshot, sort_keys=True, ensure_ascii=False).encode("utf-8"))
+
+
+def _validate_submit_semantics(semantic_intent, semantic_risk, submission_class) -> str:
+    if not isinstance(semantic_intent, str) or not semantic_intent.strip():
+        return "SEMANTIC_INTENT_REQUIRED"
+    if len(semantic_intent.strip()) > 160:
+        return "SEMANTIC_INTENT_TOO_LONG"
+    if semantic_risk not in {"LOW", "MEDIUM", "HIGH"}:
+        return "SEMANTIC_RISK_INVALID"
+    if submission_class != _BROWSER_SUBMIT_ACCEPTED_CLASS:
+        if submission_class in _BROWSER_SUBMIT_REJECTED_CLASSES:
+            return "SUBMISSION_CLASS_UNSUPPORTED"
+        return "SUBMISSION_CLASS_INVALID"
+    return ""
+
+
+def _validate_form_submission_identity(identity: dict) -> str:
+    if not identity.get("browser_session_id"):
+        return "SESSION_ID_MISSING"
+    if not identity.get("page_id"):
+        return "PAGE_ID_MISSING"
+    if identity.get("closed"):
+        return "PAGE_CLOSED"
+    if identity.get("main_frame_only") is not True:
+        return "IFRAME_UNSUPPORTED"
+    if identity.get("form_count") != 1:
+        return "FORM_COUNT_NOT_ONE"
+    if identity.get("submitter_count") != 1:
+        return "SUBMITTER_COUNT_NOT_ONE"
+    if identity.get("form_tag") != "form":
+        return "FORM_TAG_REQUIRED"
+    if str(identity.get("method") or "").lower() != "get":
+        return "FORM_METHOD_NOT_GET"
+    if str(identity.get("target") or "").lower() in {"_blank", "_parent", "_top"}:
+        return "FORM_TARGET_NEW_CONTEXT_UNSUPPORTED"
+    if identity.get("same_origin_action") is not True:
+        return "CROSS_ORIGIN_ACTION_UNSUPPORTED"
+    submitter_class = f"{identity.get('submitter_tag')}:{identity.get('submitter_type')}"
+    if submitter_class not in {"button:submit", "input:submit", "input:image"}:
+        return "UNSUPPORTED_SUBMITTER_TARGET"
+    if identity.get("submitter_visible") is not True:
+        return "SUBMITTER_NOT_VISIBLE"
+    if identity.get("submitter_enabled") is not True:
+        return "SUBMITTER_NOT_ENABLED"
+    if identity.get("submitter_belongs_to_form") is not True:
+        return "SUBMITTER_FORM_OWNER_MISMATCH"
+    if identity.get("contains_password") is True:
+        return "PASSWORD_FORM_DEFERRED"
+    if identity.get("contains_otp_sensitive") is True:
+        return "OTP_FORM_DEFERRED"
+    if identity.get("contains_payment_sensitive") is True:
+        return "PAYMENT_FORM_DEFERRED"
+    if not identity.get("field_manifest_hash"):
+        return "FIELD_MANIFEST_HASH_MISSING"
+    return ""
+
+
+def _same_form_submission_identity(a: dict, b: dict) -> bool:
+    for key in (
+        "browser_session_id", "page_id", "url", "origin",
+        "form_selector", "form_count", "form_tag", "form_action", "resolved_action",
+        "resolved_action_hash", "resolved_action_endpoint", "method", "target",
+        "enctype", "name", "id", "autocomplete", "same_origin_action",
+        "submitter_selector", "submitter_count", "submitter_tag", "submitter_type",
+        "submitter_name", "submitter_value_sha256", "submitter_value_length",
+        "submitter_form_owner", "submitter_belongs_to_form",
+        "submitter_text_sha256", "metadata_sha256", "submitter_metadata_sha256",
+        "field_manifest_hash", "field_count", "main_frame_only",
+    ):
+        if a.get(key) != b.get(key):
+            return False
+    return True
+
+
+def pc_v2_browser_submit_get_navigation_prepare(
+        form_selector, submitter_selector, semantic_intent, semantic_risk, submission_class,
+        *, stores_base_dir, session_id="", executor=None):
+    if executor is None:
+        return _prep_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_PREPARE, "EXECUTOR_REQUIRED", session_id)
+    if not isinstance(form_selector, str) or not form_selector.strip():
+        return _prep_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_PREPARE, "FORM_SELECTOR_REQUIRED", session_id)
+    if not isinstance(submitter_selector, str) or not submitter_selector.strip():
+        return _prep_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_PREPARE, "SUBMITTER_SELECTOR_REQUIRED", session_id)
+    reason = _validate_submit_semantics(semantic_intent, semantic_risk, submission_class)
+    if reason:
+        return _prep_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_PREPARE, reason, session_id)
+    form_selector = form_selector.strip()
+    submitter_selector = submitter_selector.strip()
+    semantic_intent = semantic_intent.strip()
+    st = _stores(stores_base_dir)
+    inspected = executor.inspect_form_submission(form_selector, submitter_selector)
+    if not inspected.get("ok"):
+        return _prep_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_PREPARE,
+                         "INSPECT_FORM_SUBMISSION_FAILED:" + str(inspected.get("error", "")), session_id)
+    identity = _browser_form_submission_identity(inspected)
+    reason = _validate_form_submission_identity(identity)
+    if reason:
+        return _prep_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_PREPARE, reason, session_id)
+    physical_state_anchor = identity.get("physical_state_anchor") or _browser_form_pre_state_anchor(identity)
+    desc = {
+        "operation_type": OP_BROWSER_SUBMIT_GET_NAV,
+        "public_action": "BROWSER_SUBMIT_FORM_NAVIGATION_V0",
+        "form_submission_identity": identity,
+        "form_selector": form_selector,
+        "submitter_selector": submitter_selector,
+        "resolved_action_hash": identity.get("resolved_action_hash"),
+        "resolved_action_endpoint": identity.get("resolved_action_endpoint"),
+        "method": "GET",
+        "field_manifest_hash": identity.get("field_manifest_hash"),
+        "semantic_intent": semantic_intent,
+        "semantic_risk": semantic_risk,
+        "submission_class": submission_class,
+        "expected_effect": "NAVIGATION",
+        "redirect_policy": "SAME_ORIGIN_REDIRECT_CHAIN",
+        "main_frame_only": True,
+        "plaintext_form_data_persisted": False,
+        "replay_physical_action_allowed": False,
+        "idempotency_assumed": False,
+        "physical_state_anchor": physical_state_anchor,
+        "state_anchor_kind": "PHYSICAL_PRE_STATE",
+    }
+    eah = _eah(OP_BROWSER_SUBMIT_GET_NAV, desc)
+    scope = _sha16(
+        f"BROWSER_SUBMIT_FORM_NAVIGATION_V0:{form_selector}:{submitter_selector}:{identity.get('metadata_sha256')}:{identity.get('submitter_metadata_sha256')}:{identity.get('field_manifest_hash')}:{semantic_intent}:{semantic_risk}:{submission_class}"
+    )
+    child = _v2id("chd", eah + scope + "BROWSER_SUBMIT_FORM_NAVIGATION_V0")
+    v2id = _v2id("v2x", eah + session_id + "BROWSER_SUBMIT_FORM_NAVIGATION_V0")
+    mh = _sha16(json.dumps(desc, sort_keys=True))
+    dh = _persist_desc(v2id, OP_BROWSER_SUBMIT_GET_NAV, eah, desc, st["v2exec"])
+    return {
+        "status": PREPARED_AWAITING_HUMAN_APPROVAL,
+        "j5_phase": "PREPARE",
+        "operation_type": OP_BROWSER_SUBMIT_GET_NAV,
+        "public_action": "BROWSER_SUBMIT_FORM_NAVIGATION_V0",
+        "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "execution_authority_hash": eah,
+        "form_selector": form_selector,
+        "submitter_selector": submitter_selector,
+        "form_submission_identity": identity,
+        "field_manifest_hash": identity.get("field_manifest_hash"),
+        "resolved_action_hash": identity.get("resolved_action_hash"),
+        "resolved_action_endpoint": identity.get("resolved_action_endpoint"),
+        "semantic_intent": semantic_intent,
+        "semantic_risk": semantic_risk,
+        "submission_class": submission_class,
+        "redirect_policy": "SAME_ORIGIN_REDIRECT_CHAIN",
+        "physical_state_anchor": physical_state_anchor,
+        "state_anchor_kind": "PHYSICAL_PRE_STATE",
+        "v2_exec_id": v2id,
+        "child_id": child,
+        "manifest_hash": mh,
+        "desc_hash": dh,
+        "_stores_base_dir": str(stores_base_dir),
+        "plaintext_form_data_persisted": False,
+        "receipt": _rcpt(
+            _CAP_BSUB_PREPARE, OP_BROWSER_SUBMIT_GET_NAV,
+            PREPARED_AWAITING_HUMAN_APPROVAL, session_id,
+            execution_authority_hash=eah,
+            form_identity_hash=identity.get("metadata_sha256"),
+            submitter_identity_hash=identity.get("submitter_metadata_sha256"),
+            field_manifest_hash=identity.get("field_manifest_hash"),
+            resolved_action_hash=identity.get("resolved_action_hash"),
+            resolved_action_endpoint=identity.get("resolved_action_endpoint"),
+            semantic_intent=semantic_intent,
+            semantic_risk=semantic_risk,
+            submission_class=submission_class,
+            plaintext_form_data_persisted=False,
+            replay_physical_action_allowed=False,
+        ),
+    }
+
+
+def _submit_dispatched_result_status(execution_state: str) -> str:
+    if execution_state == "POSTCONDITION_CONFIRMED":
+        return EXECUTED_OK
+    if execution_state in {"DISPATCHED", "RESPONSE_OBSERVED", "DISPATCHED_OUTCOME_UNCERTAIN"}:
+        return "EXECUTED_OUTCOME_UNCERTAIN"
+    return EXECUTE_REJECTED
+
+
+def pc_v2_browser_submit_get_navigation_execute(
+        prepared_result, human_authorized_eah, human_authorization_reference,
+        *, stores_base_dir, session_id="", executor=None):
+    if prepared_result.get("j5_phase") != "PREPARE":
+        return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE, "PREPARE_PHASE_REQUIRED", session_id)
+    if prepared_result.get("status") != PREPARED_AWAITING_HUMAN_APPROVAL:
+        return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE,
+                         "PREPARED_AWAITING_HUMAN_APPROVAL_REQUIRED", session_id)
+    exp_eah = prepared_result.get("execution_authority_hash", "")
+    if not exp_eah or human_authorized_eah != exp_eah:
+        return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE, EAH_MISMATCH, session_id)
+    if not (human_authorization_reference or "").strip():
+        return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE,
+                         "HUMAN_AUTHORIZATION_REFERENCE_REQUIRED", session_id)
+    if executor is None:
+        return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE, "EXECUTOR_REQUIRED", session_id)
+    v2id = prepared_result.get("v2_exec_id", "")
+    child = prepared_result.get("child_id", "")
+    mh = prepared_result.get("manifest_hash", "")
+    dh = prepared_result.get("desc_hash", "")
+    st = _stores(stores_base_dir)
+    desc_rec = _load_desc(v2id, st["v2exec"])
+    desc_eah_ok = (desc_rec and desc_rec.get("eah") == exp_eah
+                   and _eah(OP_BROWSER_SUBMIT_GET_NAV, desc_rec.get("descriptor", {})) == exp_eah)
+    if not desc_eah_ok:
+        return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE, "DESCRIPTOR_EAH_MISMATCH", session_id)
+    d = desc_rec["descriptor"]
+    identity = dict(d.get("form_submission_identity") or {})
+    form_selector = d.get("form_selector", "")
+    submitter_selector = d.get("submitter_selector", "")
+    toctou = executor.inspect_form_submission(form_selector, submitter_selector)
+    if not toctou.get("ok"):
+        return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE,
+                         "TOCTOU_INSPECT_FAILED:" + str(toctou.get("error", "")), session_id)
+    current_identity = _browser_form_submission_identity(toctou)
+    reason = _validate_form_submission_identity(current_identity)
+    if reason:
+        return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE, reason, session_id)
+    if not _same_form_submission_identity(identity, current_identity):
+        return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE, "FORM_SUBMISSION_IDENTITY_DRIFT", session_id)
+    current_psa = current_identity.get("physical_state_anchor") or _browser_form_pre_state_anchor(current_identity)
+    if current_psa != d.get("physical_state_anchor", ""):
+        return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE, "PRE_STATE_DRIFT", session_id)
+    reason = _validate_submit_semantics(d.get("semantic_intent", ""), d.get("semantic_risk", ""), d.get("submission_class", ""))
+    if reason:
+        return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE, reason, session_id)
+    scope_id = _sha16(
+        f"BROWSER_SUBMIT_FORM_NAVIGATION_V0:{form_selector}:{submitter_selector}:{identity.get('metadata_sha256')}:{identity.get('submitter_metadata_sha256')}:{identity.get('field_manifest_hash')}:{d.get('semantic_intent')}:{d.get('semantic_risk')}:{d.get('submission_class')}"
+    )
+    apr = _approval(v2id, child, exp_eah, scope_id + "BROWSER_SUBMIT_FORM_NAVIGATION_V0")
+    apv_id = apr["approval_id"]
+    ar = _E.store_approval_artifact(apr, st["approval"])
+    if ar.get("status") not in ("STORED", "IDEMPOTENT_ALREADY_EXISTS"):
+        return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE, "APPROVAL_STORE_FAILED", session_id)
+    kx = _kx108_pre(v2id, child, exp_eah, apv_id, dh, "", mh, [scope_id], OP_BROWSER_SUBMIT_GET_NAV,
+                    kxpre=st["kxpre"], physical_state_anchor=d.get("physical_state_anchor", ""),
+                    state_anchor_kind="PHYSICAL_PRE_STATE")
+    if not kx.get("verify_ok"):
+        return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE, "KX108_PRE_FAILED", session_id)
+    gate = kx.get("x108_gate", "")
+    if gate != "ALLOW":
+        return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE, "KX108_PRE_GATE:" + gate, session_id)
+    act = executor.submit_get_navigation(identity)
+    execution_state = act.get("execution_state") or ("NOT_DISPATCHED" if not act.get("ok") else "")
+    if not act.get("ok"):
+        return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE,
+                         "SUBMIT_GET_NAVIGATION_FAILED:" + str(act.get("error", "")), session_id)
+    if execution_state not in _BROWSER_SUBMIT_STATES:
+        return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE, "EXECUTION_STATE_INVALID", session_id)
+    if execution_state == "NOT_DISPATCHED":
+        return _exec_rej(OP_BROWSER_SUBMIT_GET_NAV, _CAP_BSUB_EXECUTE, "NOT_DISPATCHED", session_id)
+    status = _submit_dispatched_result_status(execution_state)
+    proof_ok = execution_state == "POSTCONDITION_CONFIRMED"
+    result = {
+        "status": status,
+        "j5_phase": "EXECUTE",
+        "operation_type": OP_BROWSER_SUBMIT_GET_NAV,
+        "public_action": "BROWSER_SUBMIT_FORM_NAVIGATION_V0",
+        "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "kx108_pre_gate": gate,
+        "human_authorization_consumed": True,
+        "form_selector": form_selector,
+        "submitter_selector": submitter_selector,
+        "field_manifest_hash": identity.get("field_manifest_hash"),
+        "resolved_action_hash": identity.get("resolved_action_hash"),
+        "resolved_action_endpoint": identity.get("resolved_action_endpoint"),
+        "request_observed": bool(act.get("request_observed")),
+        "request_method": act.get("request_method"),
+        "request_url_hash": act.get("request_url_hash"),
+        "request_endpoint": act.get("request_endpoint"),
+        "request_fingerprint": act.get("request_fingerprint"),
+        "response_observed": bool(act.get("response_observed")),
+        "response_status": act.get("response_status"),
+        "response_url_hash": act.get("response_url_hash"),
+        "final_url_hash": act.get("final_url_hash"),
+        "final_url_endpoint": act.get("final_url_endpoint"),
+        "execution_state": execution_state,
+        "uncertain_reason": act.get("uncertain_reason", ""),
+        "transport_proof": act.get("transport_proof") or ("STRONG" if act.get("request_observed") else "NONE"),
+        "navigation_proof": act.get("navigation_proof") or ("STRONG" if proof_ok else "UNCERTAIN"),
+        "application_proof": False,
+        "proof_strength": "STRONG" if proof_ok else "UNCERTAIN",
+        "realized_state_verified": bool(proof_ok),
+        "redirect_policy": "SAME_ORIGIN_REDIRECT_CHAIN",
+        "automatic_retry": False,
+        "replay_physical_action_allowed": False,
+        "idempotency_assumed": False,
+        "plaintext_form_data_returned": False,
+        "executor_provider": executor.EXECUTOR_PROVIDER,
+        "executor_backend": executor.EXECUTOR_BACKEND,
+    }
+    result["receipt"] = _rcpt(
+        _CAP_BSUB_EXECUTE, OP_BROWSER_SUBMIT_GET_NAV, status, session_id,
+        kx108_pre_gate=gate,
+        form_identity_hash=identity.get("metadata_sha256"),
+        submitter_identity_hash=identity.get("submitter_metadata_sha256"),
+        field_manifest_hash=identity.get("field_manifest_hash"),
+        resolved_action_hash=identity.get("resolved_action_hash"),
+        request_url_hash=act.get("request_url_hash"),
+        request_fingerprint=act.get("request_fingerprint"),
+        response_status=act.get("response_status"),
+        response_url_hash=act.get("response_url_hash"),
+        final_url_hash=act.get("final_url_hash"),
+        execution_state=execution_state,
+        transport_proof=result["transport_proof"],
+        navigation_proof=result["navigation_proof"],
+        application_proof=False,
+        replay_physical_action_allowed=False,
+        plaintext_form_data_returned=False,
+    )
+    return result
+
+
 # ============================
 # GOVERNED_BROWSER_READ
 # ============================
@@ -4460,6 +4821,8 @@ def execute_pc_capability_v2(capability_id: str, **kwargs) -> dict:
         _CAP_BOPT_EXECUTE:   pc_v2_browser_select_option_execute,
         _CAP_BFLD_PREPARE:   pc_v2_browser_set_field_value_prepare,
         _CAP_BFLD_EXECUTE:   pc_v2_browser_set_field_value_execute,
+        _CAP_BSUB_PREPARE:   pc_v2_browser_submit_get_navigation_prepare,
+        _CAP_BSUB_EXECUTE:   pc_v2_browser_submit_get_navigation_execute,
     }
     fn = _dispatch.get(capability_id)
     if fn is None: return {"status": "UNKNOWN_CAPABILITY_V2", "capability_id": capability_id, "known": list(_dispatch)}
@@ -4481,7 +4844,7 @@ def self_check_v2() -> dict:
         "generic_shell_enabled": GENERIC_SHELL_ENABLED,
         "governed_delete_file": GOVERNED_DELETE_FILE_STATUS,
         "capabilities": list(_CAPABILITY_IDS_V2),
-        "operations": [OP_CREATE_FILE, OP_MOVE_FILE, OP_APPLY_PATCH, OP_CREATE_DIR, OP_WINDOW_FOCUS, OP_APP_OPEN, OP_AUDIO_VOLUME, OP_UIA_SET_TEXT, OP_UIA_SET_CHECKED, OP_UIA_SELECT_RADIO, OP_UIA_SELECT_TAB, OP_BROWSER_NAVIGATE, OP_BROWSER_READ, OP_BROWSER_ACTIVATE_LINK, OP_BROWSER_SET_DISCLOSURE, OP_BROWSER_SET_CHECKED, OP_BROWSER_SELECT_RADIO, OP_BROWSER_SELECT_OPTION, OP_BROWSER_SET_FIELD_VALUE],
+        "operations": [OP_CREATE_FILE, OP_MOVE_FILE, OP_APPLY_PATCH, OP_CREATE_DIR, OP_WINDOW_FOCUS, OP_APP_OPEN, OP_AUDIO_VOLUME, OP_UIA_SET_TEXT, OP_UIA_SET_CHECKED, OP_UIA_SELECT_RADIO, OP_UIA_SELECT_TAB, OP_BROWSER_NAVIGATE, OP_BROWSER_READ, OP_BROWSER_ACTIVATE_LINK, OP_BROWSER_SET_DISCLOSURE, OP_BROWSER_SET_CHECKED, OP_BROWSER_SELECT_RADIO, OP_BROWSER_SELECT_OPTION, OP_BROWSER_SET_FIELD_VALUE, OP_BROWSER_SUBMIT_GET_NAV],
         "new_parallel_mutation_engine": False,
         "generic_write_file_enabled": False,
         "openjarvis_authority": JARVIS_AUTHORITY,
