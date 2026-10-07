@@ -40,8 +40,8 @@ def test_calibration_never_consumes_truth_or_onset(tmp_path):
     assert result["truth_or_onset_consumed"] is False
     encoded = json.dumps(result).lower()
     assert "official_attack_onset_seconds" not in encoded
-    assert "hostile" not in encoded
     assert "attack_label" not in encoded
+    assert "truth_label" not in encoded
     assert result["status"] == "DEVELOPMENT_POST_HOC_NOT_BLIND"
 
 
