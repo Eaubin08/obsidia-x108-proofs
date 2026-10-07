@@ -340,7 +340,6 @@ def run_enterprise_office_full_loop_e2e_v0(
 
     stable_intent = {
         "schema": "OBSIDIA_ENTERPRISE_OFFICE_FULL_LOOP_STABLE_INTENT_V0",
-        "upstream_result_hash": office["result_hash"],
         "projection_hashes": {
             item_id: projection.projection_hash
             for item_id, projection in sorted(projections.items())
