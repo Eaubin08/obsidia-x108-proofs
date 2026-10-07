@@ -200,3 +200,34 @@ def test_descriptive_quoted_text_remains_allowed(b7):
     res = _verdict(b7, e, req, remaining_unknowns=[],
                    proposed_resolution={"mention": "u2:le", "antecedent": "le script", "quoted_text": "ALLOW"})
     assert res.verdict == b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+
+
+# ── B7-L: relations are admissible only as existing structured relations ───────────────────────
+def _rel_entry():
+    frame = {"raw": "Paul lance P parce que Nadia a lancé Q. Lance-le.", "oblique_arguments": [],
+             "units": [{"id": "u1", "subject": "paul", "objects": [{"text": "p"}]},
+                       {"id": "u2", "subject": "nadia", "objects": [{"text": "q"}]}, {"id": "u3", "objects": []}],
+             "relations": [{"kind": "CAUSES", "source": "u2", "target": "u1", "evidence": "parce que"}]}
+    return make_entry(frame["raw"], unresolved_references=("u3:le",), units=("u1", "u2", "u3"), uncertainty=(),
+                      extra={"semantic_frame": frame})
+
+
+@pytest.mark.parametrize("rel", [{"kind": "CAUSES", "source": "u1", "target": "u2"},             # reversed
+                                 {"kind": "PREVENTS", "source": "u2", "target": "u1"},           # other kind
+                                 {"source": "u2", "target": "u1"},                                # kind missing
+                                 {"kind": "CAUSES", "source": "u2", "target": "u1", "note": "x"},  # extra key
+                                 {"kind": "CAUSES", "source": "u1", "target": "u3"}])            # invented
+def test_invented_relation_between_existing_units_rejected(b7, rel):
+    e = _rel_entry()
+    (req,) = b7.detect_unresolved(e)
+    res = _verdict(b7, e, req, remaining_unknowns=[],
+                   proposed_resolution={"mention": "u3:le", "antecedent": "p", "relations": [rel]})
+    assert res.verdict == b7.CognitiveValidationVerdict.REJECT
+
+
+def test_existing_structured_relation_is_admissible(b7):
+    e = _rel_entry()
+    (req,) = b7.detect_unresolved(e)
+    res = _verdict(b7, e, req, remaining_unknowns=[], proposed_resolution={
+        "mention": "u3:le", "antecedent": "p", "relations": [{"kind": "CAUSES", "source": "u2", "target": "u1"}]})
+    assert res.verdict == b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
