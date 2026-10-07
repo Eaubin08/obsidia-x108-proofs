@@ -1,6 +1,6 @@
 # F16 — Vision / Real Image V0
 
-Status: IMPLEMENTED / VALIDATION REQUIRED
+Status: VERIFIED / NO F16 REGRESSION
 
 ## Purpose
 
@@ -94,3 +94,13 @@ It is the canonical real-image evidence contract needed before any such speciali
 F17 — GMS Trajectory Adapter V0.
 
 No F17 runtime before F16 validation.
+
+## Verification finale
+
+- Code SHA vérifié: `3d25f98700787dba0749f89db5036b1e9907955f`
+- GitHub Actions run: `37561714266`
+- Résultat global: `12513 passed / 11 failed / 46 skipped / 207 deselected`
+- Failures F16 visibles: `0`
+- Les 11 failures restantes correspondent aux familles baseline historiques.
+
+**Verdict:** F16 `VERIFIED`.
