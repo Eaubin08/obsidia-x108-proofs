@@ -14,6 +14,30 @@ function Convert-ReceiverTime([string]$line) {
     if ($line -match "Current receiver time:\s*(\d+)\s*s") { return [int]$matches[1] }
     return $null
 }
+function EcefPoint($p) {
+    if ($null -eq $p) { return $null }
+    $a = 6378137.0
+    $f = 1.0 / 298.257223563
+    $e2 = $f * (2.0 - $f)
+    $lat = $p.lat * [math]::PI / 180.0
+    $lon = $p.lon * [math]::PI / 180.0
+    $n = $a / [math]::Sqrt(1.0 - $e2 * [math]::Sin($lat) * [math]::Sin($lat))
+    return [pscustomobject]@{
+        x = ($n + $p.height_m) * [math]::Cos($lat) * [math]::Cos($lon)
+        y = ($n + $p.height_m) * [math]::Cos($lat) * [math]::Sin($lon)
+        z = ($n * (1.0 - $e2) + $p.height_m) * [math]::Sin($lat)
+    }
+}
+function EcefDistanceMeters($a,$b) {
+    if ($null -eq $a -or $null -eq $b) { return $null }
+    $ea = EcefPoint $a
+    $eb = EcefPoint $b
+    return [math]::Sqrt(
+        [math]::Pow($ea.x-$eb.x,2) +
+        [math]::Pow($ea.y-$eb.y,2) +
+        [math]::Pow($ea.z-$eb.z,2)
+    )
+}
 function HaversineMeters($a,$b) {
     if ($null -eq $a -or $null -eq $b) { return $null }
     $r=6371000.0; $p1=$a.lat*[math]::PI/180; $p2=$b.lat*[math]::PI/180
@@ -64,7 +88,9 @@ $summary=[ordered]@{
     first_post_onset_position=$postFirst
     final_position=$final
     onset_boundary_displacement_m=if($preLast -and $postFirst){[math]::Round((HaversineMeters $preLast $postFirst),3)}else{$null}
+    onset_boundary_ecef_delta_m=if($preLast -and $postFirst){[math]::Round((EcefDistanceMeters $preLast $postFirst),3)}else{$null}
     prelast_to_final_displacement_m=if($preLast -and $final){[math]::Round((HaversineMeters $preLast $final),3)}else{$null}
+    prelast_to_final_ecef_delta_m=if($preLast -and $final){[math]::Round((EcefDistanceMeters $preLast $final),3)}else{$null}
     claim_boundary="POST_RUN_OBSERVATION_ONLY_NO_CAUSAL_ATTRIBUTION"
 }
 
