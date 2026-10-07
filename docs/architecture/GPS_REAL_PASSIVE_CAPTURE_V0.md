@@ -1,6 +1,6 @@
 # GPS Real Passive Capture V0
 
-Status: IMPLEMENTED / VALIDATION REQUIRED / PHYSICAL RUN STILL REQUIRED
+Status: SOFTWARE VERIFIED / PHYSICAL CLOSURE OPEN
 
 ## Purpose
 
@@ -136,3 +136,20 @@ python hackathons/nativebuilder-gps-defense/physical_signal_cli.py \
 ```
 
 The placeholders must be replaced by evidence from the actual local capture session. They must not be fabricated for closure.
+
+
+## Software verification
+
+- Verified code HEAD: `4b78fba47c6435e3c709b399a546fe6221c4636e`
+- GitHub Actions run: `37582290732`
+- Global result: `12570 passed / 11 failed / 46 skipped / 207 deselected`
+- P2-specific failures: `0`
+- The 11 failures match the historical non-P2 baseline families.
+
+Local operator validation on Windows also reported:
+
+```text
+14 passed in 3.08s
+```
+
+**Verdict:** P2 software admission path is `VERIFIED`. P2 physical closure remains `OPEN` until an actual local passive GNSS capture is produced and admitted through this path.
