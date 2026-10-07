@@ -193,7 +193,7 @@ def generate_packet() -> dict:
             request=request,
             human_approval=approval,
             evidence_refs=[
-                "pilot:GOOGLE_CALENDAR_REAL_ADAPTER_V0",
+                "pilot:GMAIL_DRAFT_REAL_ADAPTER_V0",
                 "authorization:CHAT_EXPLICIT_GO_2026-10-07",
             ],
             context_store_dir=root / "contexts",
@@ -204,7 +204,7 @@ def generate_packet() -> dict:
 
         now = datetime.datetime.now(datetime.timezone.utc)
         policy = build_activation_policy_v0(
-            policy_id="google-calendar-real-pilot-v0",
+            policy_id="gmail-draft-real-pilot-v0",
             environment="REAL_PROVIDER_PILOT",
             enabled=True,
             allowed_operations=[
