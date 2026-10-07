@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from typing import Any, Iterable, Mapping
 
 from app.cognition.b7.contracts import (CandidateStatus, CognitiveResolutionCandidate, CognitiveResolutionRequest,
-                                        CognitiveValidationVerdict, RequiredCandidateKind)
+                                        CognitiveValidationVerdict, RequiredCandidateKind, candidate_identity)
 from app.harness.state_explicit.context_assembly import ContextPacket
 from app.harness.state_explicit.contracts import StateEntry, StateStatus, Visibility
 from app.harness.state_explicit.registry import WorkingStateRegistry
@@ -133,6 +133,11 @@ def _check(request: CognitiveResolutionRequest, cand: CognitiveResolutionCandida
     """First failing structural / conservation check, or None."""
     if cand.candidate_status != CandidateStatus.READY_FOR_VALIDATION:
         return "candidate_not_translated"
+    try:
+        if (cand.candidate_id, cand.candidate_digest) != candidate_identity(cand):
+            return "candidate_identity_mismatch"     # content changed after translation, or forged identity
+    except (ValueError, TypeError):
+        return "candidate_identity_mismatch"
     if cand.request_id != request.request_id:
         return "request_id_mismatch"
     if cand.origin_state_id != request.origin_state_id or origin.state_id != request.origin_state_id:

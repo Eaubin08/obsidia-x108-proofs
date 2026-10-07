@@ -212,7 +212,22 @@ class CognitiveResolutionCandidate:
         return d
 
 
+_IDENTITY_EXCLUDED = frozenset({"candidate_id", "candidate_digest", "candidate_status", "proposed_resolution_json"})
+
+
+def candidate_identity(candidate: "CognitiveResolutionCandidate") -> tuple[str, str]:
+    """(candidate_id, candidate_digest) bound to the canonical typed candidate content.
+
+    Identity payload = every typed field except the identity fields themselves and the lifecycle
+    status (gate-checked separately); proposed_resolution is included in parsed canonical form.
+    Strict canonical JSON + sha256 (same digest helper as the rest of B7); no repr, no randomness."""
+    payload = {f: _plain(getattr(candidate, f)) for f in candidate.__dataclass_fields__ if f not in _IDENTITY_EXCLUDED}
+    payload["proposed_resolution"] = candidate.proposed_resolution
+    candidate_digest = digest(payload, "b7dig_")
+    return "b7cand_" + candidate_digest[len("b7dig_"):], candidate_digest
+
+
 __all__ = ["BOUNDARY", "MAX_CANDIDATE_CHARS", "MAX_REQUEST_CHARS", "CandidateStatus", "CognitiveValidationVerdict",
            "UnresolvedKind", "RequiredCandidateKind", "ForbiddenOperation", "ConfidenceClass", "CognitiveRole",
            "ROLE_RIGHTS", "DEFAULT_FORBIDDEN_OPERATIONS", "required_candidate_kind_for", "forbidden_operations_for",
-           "CognitiveResolutionRequest", "CognitiveResolutionCandidate", "digest"]
+           "CognitiveResolutionRequest", "CognitiveResolutionCandidate", "digest", "candidate_identity"]

@@ -6,11 +6,12 @@ bounded. Identity mismatches with the request are left to the validation gate.
 """
 from __future__ import annotations
 
+import dataclasses
 from typing import Any, Mapping
 
 from app.cognition.b7.contracts import (MAX_CANDIDATE_CHARS, CandidateStatus, CognitiveResolutionCandidate,
                                         CognitiveResolutionRequest, CognitiveRole, ConfidenceClass,
-                                        RequiredCandidateKind, digest)
+                                        RequiredCandidateKind, candidate_identity)
 from app.harness.state_explicit.contracts import canonical_json
 
 _STR = ("request_id", "origin_state_id", "original_state_digest", "provider_ref")
@@ -40,8 +41,8 @@ def _build(raw: Mapping[str, Any], request: CognitiveResolutionRequest,
             raise ValueError(f"{name} must be a list of strings")
     if not isinstance(raw["proposed_resolution"], Mapping):
         raise ValueError("proposed_resolution must be a mapping")
-    return CognitiveResolutionCandidate(
-        candidate_id=digest(raw, "b7cand_"), request_id=raw["request_id"], origin_state_id=raw["origin_state_id"],
+    draft = CognitiveResolutionCandidate(
+        candidate_id="b7cand_pending", request_id=raw["request_id"], origin_state_id=raw["origin_state_id"],
         original_state_digest=raw["original_state_digest"],
         candidate_kind=RequiredCandidateKind(raw["candidate_kind"]), proposer_role=CognitiveRole(raw["proposer_role"]),
         provider_ref=raw["provider_ref"], resolves=tuple(raw["resolves"]),
@@ -49,7 +50,9 @@ def _build(raw: Mapping[str, Any], request: CognitiveResolutionRequest,
         evidence_refs=tuple(raw["evidence_refs"]), context_refs=tuple(raw["context_refs"]),
         provenance_refs=tuple(raw["provenance_refs"]), confidence_class=ConfidenceClass(raw["confidence_class"]),
         remaining_unknowns=tuple(raw["remaining_unknowns"]), contradictions=tuple(raw["contradictions"]),
-        assumptions=tuple(raw["assumptions"]), candidate_status=status, candidate_digest=digest(text, "b7dig_"))
+        assumptions=tuple(raw["assumptions"]), candidate_status=status, candidate_digest="b7dig_pending")
+    candidate_id, candidate_digest = candidate_identity(draft)     # the single canonical identity path
+    return dataclasses.replace(draft, candidate_id=candidate_id, candidate_digest=candidate_digest)
 
 
 def propose(raw: Mapping[str, Any], request: CognitiveResolutionRequest) -> CognitiveResolutionCandidate:
