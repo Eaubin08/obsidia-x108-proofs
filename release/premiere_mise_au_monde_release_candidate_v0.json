@@ -1,0 +1,88 @@
+{
+  "schema": "OBSIDIA_PREMIERE_MISE_AU_MONDE_RELEASE_CANDIDATE_V0",
+  "status": "RELEASE_CANDIDATE_VALIDATION_REQUIRED",
+  "decision_authority": "KX108_ONLY",
+  "authority_invariants": {
+    "intelligence_is_authority": false,
+    "domain_is_authority": false,
+    "proof_is_permission": false,
+    "world_state_is_memory": false,
+    "world_state_is_cognition": false,
+    "observation_is_truth": false,
+    "allowed_to_decide": false,
+    "allowed_to_act": false
+  },
+  "verified_phases": [
+    "F12_SITUATED_WORLD_DYNAMICS",
+    "F13_MEASUREMENT_EVIDENCE",
+    "F14_PHYSICAL_SIGNAL_PERIPHERY",
+    "F15_PHYSICAL_EVIDENCE_PLANE",
+    "F16_VISION_REAL_IMAGE",
+    "F17_GMS_TRAJECTORY_ADAPTER",
+    "F18_SCIENCE_CONSTRAINT_ENGINE",
+    "F19_PHYSICAL_THERMODYNAMICS_ADAPTER",
+    "F20_CROSS_MODAL_COHERENCE",
+    "F21_GPS_PHYSICAL_WORLD_CLOSURE",
+    "F22_REAL_E2E_DEMONSTRATIONS",
+    "F24_GLOBAL_REGRESSION_NEGATIVE_TESTS"
+  ],
+  "public_claims": [
+    {
+      "id": "recorded_real_gnss",
+      "status": "SUPPORTED",
+      "wording": "A real NOAA/NGS RINEX observation traversed the recorded-real GPS chain and remained fail-closed when live attestation and multisource corroboration were not proven.",
+      "proof_level": "RECORDED_REAL_GNSS"
+    },
+    {
+      "id": "recorded_real_rf",
+      "status": "SUPPORTED",
+      "wording": "A public recorded GNSS I/Q dataset was processed through GNSS-SDR and traversed the recorded-real RF chain while remaining bounded to recorded evidence.",
+      "proof_level": "RECORDED_REAL_RF"
+    },
+    {
+      "id": "canonical_replay",
+      "status": "SUPPORTED",
+      "wording": "Stored recorded-real GPS artifacts can be re-ingested through the current canonical world, domain and reality-authenticity contracts without claim promotion."
+    },
+    {
+      "id": "kx108_authority",
+      "status": "SUPPORTED",
+      "wording": "The first-world periphery, domain bridges, scientific layers and proof layers do not gain decision or action authority; decision authority remains KX108_ONLY."
+    }
+  ],
+  "forbidden_claims": [
+    "LIVE_GNSS_CLOSED",
+    "LIVE_RF_CLOSED",
+    "HOSTILE_LIVE_SPOOFING_RESISTANCE_PROVEN",
+    "CAUSAL_SPOOFING_ATTRIBUTION_PROVEN",
+    "PRODUCTION_AVIATION_CERTIFIED",
+    "PRODUCTION_DEFENSE_CERTIFIED",
+    "PRIVATE_SENSOR_ATTESTATION_PROVEN",
+    "IMU_RADAR_CORROBORATION_PROVEN",
+    "PHYSICAL_AUTHENTICITY_GLOBALLY_PROVEN",
+    "GENERAL_WORLD_MODEL_COMPLETE",
+    "GENERAL_SCIENCE_SOLVER_COMPLETE",
+    "GMS_SEMANTIC_TRUTH_PROVEN",
+    "VISION_RECONSTRUCTION_TRUTH_PROVEN"
+  ],
+  "known_limits": [
+    "Recorded evidence is not live sensor attestation.",
+    "Different source identifiers do not by themselves prove causal independence.",
+    "Cross-modal agreement does not prove truth or causality.",
+    "Scientific possibility and impossibility remain bounded to declared models and evidence.",
+    "Vision observations remain candidate representations and do not reconstruct hidden reality as truth.",
+    "GPS hostile RF work remains partial and does not support spoofing-resistance claims.",
+    "F23 Monde UI is outside this repository release chain and is not part of this release candidate."
+  ],
+  "validation": {
+    "f24_code_sha": "accb5c0a0902c29de04ca59b56859e9324e611d9",
+    "f24_run_id": 37575196459,
+    "global_result": {
+      "passed": 12556,
+      "failed_historical_baseline": 11,
+      "skipped": 46,
+      "deselected": 207,
+      "new_failures": 0
+    }
+  }
+}
