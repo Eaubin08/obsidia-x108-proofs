@@ -115,6 +115,7 @@ def build_real_qwen_semantic_smoke_report(
             "qwen_status": qwen.get("status"),
             "qwen_output_sha256": qwen_hash,
             "local_model_tokens": tokens,
+            "qwen_elapsed_ms": qwen.get("elapsed_ms"),
             "semantic_interpretation_accepted": False,
             "expected_roles_match": False,
             "brody_context_attached": False,
@@ -210,9 +211,24 @@ def build_real_qwen_semantic_smoke_report(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument(
+        "--timeout-seconds",
+        type=float,
+        default=90.0,
+        help="Per-probe local Qwen inference timeout. Loopback only.",
+    )
     args = parser.parse_args()
 
-    report = build_real_qwen_semantic_smoke_report()
+    def _timed_qwen_call(raw_utterance: str) -> dict[str, Any]:
+        return qwen_semantic_roles_call_v0(
+            raw_utterance,
+            timeout=max(1.0, float(args.timeout_seconds)),
+        )
+
+    report = build_real_qwen_semantic_smoke_report(
+        qwen_call_fn=_timed_qwen_call,
+    )
+    report["qwen_timeout_seconds"] = max(1.0, float(args.timeout_seconds))
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(
         json.dumps(report, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
