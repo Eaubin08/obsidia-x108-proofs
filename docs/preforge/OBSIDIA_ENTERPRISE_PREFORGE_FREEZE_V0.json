@@ -1,6 +1,6 @@
 {
   "schema": "OBSIDIA_ENTERPRISE_PREFORGE_FREEZE_V0",
-  "status": "PREFORGE_CANDIDATE",
+  "status": "PREFORGE_PROVEN",
   "date": "2026-10-07",
   "repositories": {
     "obsidia": {
@@ -68,11 +68,16 @@
       "role": "READONLY_PROJECTION",
       "branch": "feat/native-operations-world-projection-v0",
       "base": "feat/premiere-mise-au-monde-final-ui-v0",
-      "head_at_manifest_creation": "94f0b73f6720413b2e2c13ad3faccb6df5ee3e70",
-      "proof_status": "CI_PENDING_AT_MANIFEST_CREATION",
+      "head_at_manifest_creation": "8aaec21138772803a22cf69f08d7a5d8dc4fcf37",
+      "proof_status": "WINDOWS_AND_LINUX_SUCCESS",
       "canonical_truth": false,
       "allowed_to_decide": false,
-      "allowed_to_act": false
+      "allowed_to_act": false,
+      "workflow_run": 37621379882,
+      "proof": {
+        "ubuntu": "SUCCESS (npm build + npm test; 26 pass, 0 fail, 1 skipped)",
+        "windows": "SUCCESS (npm build + 27/27 tests + Windows updater checks)"
+      }
     }
   },
   "canonical_stack": [
@@ -184,5 +189,23 @@
       "physical device actuation",
       "main merge"
     ]
+  },
+  "preforge_proof": {
+    "workflow_run": 37621413321,
+    "result": "153 passed in 1.10s",
+    "protected_files_changed": 0,
+    "chain_compare_base": "feat/world-action-gmail-draft-adapter-v0",
+    "commits_ahead": 48,
+    "windows_portability_fix": {
+      "issue": "Canonical IDs containing ':' were unsafe as Windows filesystem components",
+      "resolution": "Canonical IDs remain unchanged; storage components are deterministically filesystem-encoded",
+      "covered_surfaces": [
+        "native source registration/revocation",
+        "source observations/packets",
+        "native CRM/TASK entity directories",
+        "Monde canonical-ID projection"
+      ],
+      "regression_required": true
+    }
   }
 }
