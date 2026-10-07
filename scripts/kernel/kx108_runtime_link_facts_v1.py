@@ -64,6 +64,13 @@ FEEDBACK_CONTEXT_ADAPTER_PATH = (
 
 DECISION_STORE_PATH = "scripts/obsidia_kx108_decision_store.py"
 
+WORLD_ACTION_PRE_EXECUTION_CONTEXT_PATH = (
+    "scripts/obsidia_world_action_pre_execution_context_v0.py"
+)
+WORLD_ACTION_PRE_EXECUTION_PRODUCER_PATH = (
+    "scripts/obsidia_world_action_pre_execution_v0.py"
+)
+
 # Multi-domain proof surfaces.
 MULTIDOMAIN_PROOF_PATH = (
     "tests/integration/test_canonical_governed_runtime_multidomain_v1.py"
@@ -166,6 +173,29 @@ def agent_decision_record_rail_present() -> bool:
     )
 
 
+
+def world_action_pre_execution_rail_present() -> bool:
+    """True when canonical external PRE context, producer and decision phase exist.
+
+    This proves only that the KX108 PRE checkpoint is present. It does not
+    activate egress and does not make world_action_runtime_activated true.
+    """
+    if not (
+        _exists(WORLD_ACTION_PRE_EXECUTION_CONTEXT_PATH)
+        and _exists(WORLD_ACTION_PRE_EXECUTION_PRODUCER_PATH)
+        and _exists(DECISION_STORE_PATH)
+    ):
+        return False
+    store_source = (_REPO_ROOT / DECISION_STORE_PATH).read_text(
+        encoding="utf-8"
+    )
+    return (
+        "WORLD_ACTION_PRE_DECISION_PHASE" in store_source
+        and "persist_kx108_world_action_pre_execution_decision"
+        in store_source
+    )
+
+
 def runtime_internal_end_to_end_validated() -> bool:
     """
     Internal governed runtime, end to end — agent through verified KX108
@@ -264,6 +294,15 @@ def runtime_link_facts() -> dict:
 
         "agent_decision_record_rail_present":
             agent_decision_record_rail_present(),
+
+        "world_action_pre_execution_rail_present":
+            world_action_pre_execution_rail_present(),
+
+        "world_action_pre_execution_context_path":
+            WORLD_ACTION_PRE_EXECUTION_CONTEXT_PATH,
+
+        "world_action_pre_execution_producer_path":
+            WORLD_ACTION_PRE_EXECUTION_PRODUCER_PATH,
 
         "runtime_internal_end_to_end_validated":
             runtime_internal_end_to_end_validated(),
