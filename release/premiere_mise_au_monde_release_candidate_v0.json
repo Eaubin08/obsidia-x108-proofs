@@ -1,6 +1,6 @@
 {
   "schema": "OBSIDIA_PREMIERE_MISE_AU_MONDE_RELEASE_CANDIDATE_V0",
-  "status": "RELEASE_CANDIDATE_VALIDATION_REQUIRED",
+  "status": "FROZEN",
   "decision_authority": "KX108_ONLY",
   "authority_invariants": {
     "intelligence_is_authority": false,
@@ -79,6 +79,15 @@
     "f24_run_id": 37575196459,
     "global_result": {
       "passed": 12556,
+      "failed_historical_baseline": 11,
+      "skipped": 46,
+      "deselected": 207,
+      "new_failures": 0
+    },
+    "f25_code_sha": "afefb316f400473388967b22acbcabd91d08ac67",
+    "f25_run_id": 37575789814,
+    "f25_global_result": {
+      "passed": 12562,
       "failed_historical_baseline": 11,
       "skipped": 46,
       "deselected": 207,
