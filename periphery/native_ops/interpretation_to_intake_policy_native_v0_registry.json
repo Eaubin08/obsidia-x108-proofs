@@ -1,6 +1,6 @@
 {
   "schema": "INTERPRETATION_TO_INTAKE_POLICY_NATIVE_V0_REGISTRY",
-  "status": "PROVEN_FUNCTIONAL_PENDING_FINAL_HEAD_RERUN",
+  "status": "PROVEN",
   "date": "2026-10-07",
   "branch": "feat/interpretation-to-intake-policy-native-v0",
   "base": "feat/source-interpretation-native-v0",
@@ -49,5 +49,10 @@
     "kernel_mutation": false,
     "emits_act": false,
     "main_merge": false
+  },
+  "final_freeze_proof": {
+    "workflow_run": 37627281103,
+    "result": "91 passed in 1.70s",
+    "tested_head": "dba8fe7f24cf25fa2d6a5c1f8619c38ca9678774"
   }
 }
