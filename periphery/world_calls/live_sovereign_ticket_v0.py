@@ -127,6 +127,8 @@ def verify_live_sovereign_ticket_v0(
     *,
     now: str | None = None,
 ) -> tuple[bool, Optional[str]]:
+    if not isinstance(ticket, LiveSovereignTicketV0):
+        return False, "LIVE_TICKET_TYPE_INVALID"
     if ticket.schema != SCHEMA:
         return False, "LIVE_TICKET_SCHEMA_INVALID"
     if ticket.decision_authority != DECISION_AUTHORITY:
