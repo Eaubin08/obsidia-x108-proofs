@@ -700,6 +700,198 @@ def detect_live_passive_receiver() -> dict[str, Any]:
     }
 
 
+
+def live_gnss_sdr_capture_to_observation_envelope_v0(
+    run_dir: Path,
+    capture_file: Path,
+    config_file: Path,
+    receiver_id: str,
+    capture_started_at: str,
+    capture_completed_at: str,
+) -> dict[str, Any]:
+    """Admit an operator-produced passive GNSS capture without inventing attestation.
+
+    This function does not capture RF. It only validates and binds a capture that
+    already exists on the local machine together with GNSS-SDR output and the
+    configuration used to process it.
+    """
+    receiver_id = receiver_id.strip()
+    capture_started_at = capture_started_at.strip()
+    capture_completed_at = capture_completed_at.strip()
+    if not receiver_id or receiver_id.upper() == "UNKNOWN":
+        raise ValueError("live capture requires a bound receiver_id")
+    if not capture_started_at or not capture_completed_at:
+        raise ValueError("live capture requires explicit start and completion timestamps")
+    if not capture_file.is_file():
+        raise ValueError("live capture file does not exist")
+    if capture_file.stat().st_size <= 0:
+        raise ValueError("live capture file is empty")
+    if not config_file.is_file():
+        raise ValueError("live capture requires the exact receiver/GNSS-SDR config file")
+
+    stdout_path = run_dir / "gnss_sdr_run_stdout_modern.log"
+    if not stdout_path.is_file():
+        raise ValueError("live capture requires GNSS-SDR stdout evidence")
+
+    parsed = parse_gnss_sdr_stdout(stdout_path)
+    if parsed["run_time_seconds"] <= 0:
+        raise ValueError("live capture requires a completed GNSS-SDR run")
+    if not parsed["tracked_satellites"] and not parsed["nav_message_satellites"]:
+        raise ValueError("live capture has no GNSS tracking/NAV evidence")
+
+    capture_hash = sha256_file(capture_file)
+    config_hash = sha256_file(config_file)
+    output_files = {
+        "stdout_log": stdout_path,
+        "gnss_sdr_log": run_dir / "gnss-sdr.log",
+        "observables_dat": run_dir / "observables.dat",
+        "pvt_dat": run_dir / "PVT.dat",
+        "rinex_obs": next(iter(run_dir.glob("*.??O")), None),
+        "rinex_nav": next(iter(run_dir.glob("*.??N")), None),
+        "geojson": next(iter(run_dir.glob("PVT_*.geojson")), None),
+        "gpx": next(iter(run_dir.glob("PVT_*.gpx")), None),
+        "kml": next(iter(run_dir.glob("PVT_*.kml")), None),
+    }
+    output_hashes = {
+        key: sha256_file(path)
+        for key, path in output_files.items()
+        if path is not None and path.exists()
+    }
+
+    last_position = parsed.get("last_position", {}) or {}
+    pvt = {
+        "lat_deg": last_position.get("lat_deg", 0.0),
+        "lon_deg": last_position.get("lon_deg", 0.0),
+        "altitude_m": last_position.get("altitude_m", 0.0),
+        "speed_kt": parsed.get("ground_speed_kt", 0.0),
+        "observations": last_position.get("observations", 0),
+        "fix_time_utc": last_position.get("time_utc", "UNKNOWN"),
+    }
+    observables = {
+        "pvt": pvt,
+        "cn0_dbhz": parsed["avg_cn0_dbhz"],
+        "max_cn0_dbhz": parsed["max_cn0_dbhz"],
+        "tracked_satellites": parsed["tracked_satellites"],
+        "nav_message_satellites": parsed["nav_message_satellites"],
+        "tracking_channels": parsed["tracking_channels"],
+        "cn0_by_prn_dbhz": parsed["cn0_by_prn_dbhz"],
+        "first_fix": parsed["first_fix"],
+        "position_count": parsed["position_count"],
+        "last_velocity_mps": parsed["last_velocity_mps"],
+        "loss_of_lock_count": parsed["loss_of_lock_count"],
+        "run_time_seconds": parsed["run_time_seconds"],
+        "freshness_ms": 0,
+        "g_load": 1.0,
+        "spoof_score": 0.0,
+        "replay_window_detected": False,
+        "inertial_available": False,
+        "radio_available": True,
+        "trajectory_drift_score": 0.0,
+        "source_conflict_score": 0.0,
+        "time_skew_score": 0.0,
+        "brownout_score": 0.0,
+    }
+    limitations = [
+        "LOCAL_PASSIVE_CAPTURE",
+        "NO_SENSOR_PRIVATE_KEY_ATTESTATION",
+        "RECEIVER_IDENTITY_BOUND_NOT_CRYPTOGRAPHICALLY_ATTESTED",
+        "NO_INERTIAL_CORROBORATION",
+    ]
+    if parsed["position_count"] <= 0 and parsed["first_fix"] is None:
+        limitations.append("NO_PVT_FIX")
+
+    return {
+        "observation_id": f"live-passive-{capture_hash[:16]}",
+        "source_type": "LIVE_PASSIVE_GNSS_SDR_CAPTURE",
+        "proof_level": "REAL_PASSIVE_GNSS",
+        "eligible_for_physical_claim": True,
+        "sensor_attestation_proven": False,
+        "live_capture_observed": True,
+        "synthetic": False,
+        "dataset_name": "LOCAL_PASSIVE_GNSS_CAPTURE",
+        "dataset_version": capture_started_at,
+        "license": "LOCAL_OPERATOR",
+        "official_url": "LOCAL_CAPTURE",
+        "capture_timestamp": capture_started_at,
+        "capture_completed_at": capture_completed_at,
+        "processing_timestamp": str(int(time.time() * 1000)),
+        "receiver": {
+            "receiver_id": receiver_id,
+            "receiver_identity_bound": True,
+            "receiver_identity_verified": False,
+            "sensor_attestation_proven": False,
+            "config_file": str(config_file),
+            "config_sha256": config_hash,
+        },
+        "constellation": ["G"],
+        "satellites": parsed["tracked_satellites"],
+        "observables": observables,
+        "truth_reference": {
+            "route_hash": capture_hash,
+            "labels_used_by_pipeline": False,
+        },
+        "input_hash": capture_hash,
+        "processor_name": "obsidia-live-passive-gnss-sdr-admission-v0",
+        "processor_version": "v0",
+        "processor_config_hash": config_hash,
+        "observables_hash": sha256_obj(observables),
+        "domain_state_hash": "UNKNOWN",
+        "parent_receipt_id": "UNKNOWN",
+        "limitations": limitations,
+        "provenance": {
+            "capture_file": str(capture_file),
+            "capture_sha256": capture_hash,
+            "capture_size_bytes": capture_file.stat().st_size,
+            "capture_started_at": capture_started_at,
+            "capture_completed_at": capture_completed_at,
+            "receiver_id": receiver_id,
+            "config_file": str(config_file),
+            "config_sha256": config_hash,
+            "run_dir": str(run_dir),
+            "output_hashes": output_hashes,
+            "parsed_stdout": parsed,
+        },
+    }
+
+
+def run_live_gnss_sdr_capture_v0(
+    run_dir: Path,
+    capture_file: Path,
+    config_file: Path,
+    receiver_id: str,
+    capture_started_at: str,
+    capture_completed_at: str,
+    kernel_endpoint: str,
+) -> dict[str, Any]:
+    envelope = live_gnss_sdr_capture_to_observation_envelope_v0(
+        run_dir=run_dir,
+        capture_file=capture_file,
+        config_file=config_file,
+        receiver_id=receiver_id,
+        capture_started_at=capture_started_at,
+        capture_completed_at=capture_completed_at,
+    )
+    gate = physical_reality_gate(envelope)
+    payload = observation_to_domain_payload(envelope)
+    p4_20 = evaluate_path_fidelity(payload).to_dict()
+    x108 = GpsX108Gate().evaluate(payload)
+    http_probe = _http_post_json(kernel_endpoint, x108.get("ir_payload", payload))
+    return {
+        "mode": "REAL_PASSIVE_GNSS_CAPTURE",
+        "proof_level": "REAL_PASSIVE_GNSS",
+        "physical_gate": asdict(gate),
+        "observation_envelope": envelope,
+        "domain_payload": payload,
+        "p4_20_evidence": p4_20,
+        "x108_result": x108,
+        "kernel_http_evidence": http_probe,
+        "claim_boundary": (
+            "Observed local capture is physical evidence, but receiver identity and "
+            "sensor attestation remain unproven unless independently established."
+        ),
+    }
+
+
 def run_live_passive() -> dict[str, Any]:
     detection = detect_live_passive_receiver()
     now = str(int(time.time() * 1000))
@@ -789,11 +981,23 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--license", default="UNKNOWN")
     parser.add_argument("--kernel-endpoint", default="http://127.0.0.1:3001/kernel/ragnarok")
     parser.add_argument("--live-passive", action="store_true")
+    parser.add_argument("--live-gnss-sdr-run", type=Path)
+    parser.add_argument("--live-capture-file", type=Path)
+    parser.add_argument("--live-receiver-id")
+    parser.add_argument("--capture-started-at")
+    parser.add_argument("--capture-completed-at")
     parser.add_argument("--blind-benchmark", type=Path)
     parser.add_argument("--out", type=Path)
     args = parser.parse_args(argv)
 
-    selected = sum(bool(x) for x in [args.physical_observation, args.rinex, args.gnss_sdr_run, args.live_passive, args.blind_benchmark])
+    selected = sum(bool(x) for x in [
+        args.physical_observation,
+        args.rinex,
+        args.gnss_sdr_run,
+        args.live_passive,
+        args.live_gnss_sdr_run,
+        args.blind_benchmark,
+    ])
     if selected != 1:
         parser.error("select exactly one mode")
 
@@ -821,6 +1025,23 @@ def main(argv: list[str] | None = None) -> int:
         )
     elif args.live_passive:
         result = run_live_passive()
+    elif args.live_gnss_sdr_run:
+        if not args.live_capture_file or not args.config_file:
+            parser.error("--live-gnss-sdr-run requires --live-capture-file and --config-file")
+        if not args.live_receiver_id or not args.capture_started_at or not args.capture_completed_at:
+            parser.error(
+                "--live-gnss-sdr-run requires --live-receiver-id, "
+                "--capture-started-at, and --capture-completed-at"
+            )
+        result = run_live_gnss_sdr_capture_v0(
+            run_dir=args.live_gnss_sdr_run,
+            capture_file=args.live_capture_file,
+            config_file=args.config_file,
+            receiver_id=args.live_receiver_id,
+            capture_started_at=args.capture_started_at,
+            capture_completed_at=args.capture_completed_at,
+            kernel_endpoint=args.kernel_endpoint,
+        )
     else:
         result = run_blind_benchmark(args.blind_benchmark)
 

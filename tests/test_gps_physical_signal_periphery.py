@@ -157,3 +157,144 @@ def test_explicit_sensor_attestation_can_be_carried_without_changing_authority()
 
     assert payload["sensor_attested"] is True
     assert payload["attestation_ready"] is True
+
+
+def _write_minimal_live_gnss_sdr_run(tmp_path):
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    stdout = run_dir / "gnss_sdr_run_stdout_modern.log"
+    stdout.write_text(
+        "\n".join([
+            "Tracking of GPS L1 C/A signal started on channel 0 for satellite GPS PRN 1",
+            "New GPS NAV message received on channel 0: GPS PRN 1, CN0=42.0 dB-Hz",
+            "Total GNSS-SDR run time: 2.0 [seconds]",
+        ]),
+        encoding="utf-8",
+    )
+    capture = tmp_path / "capture.iq"
+    capture.write_bytes(b"real-local-capture-bytes")
+    config = tmp_path / "receiver.conf"
+    config.write_text("SignalSource.item_type=ishort\n", encoding="utf-8")
+    return run_dir, capture, config
+
+
+def test_live_capture_admission_requires_bound_receiver_and_nonempty_capture(tmp_path):
+    mod = load_module()
+    run_dir, capture, config = _write_minimal_live_gnss_sdr_run(tmp_path)
+
+    try:
+        mod.live_gnss_sdr_capture_to_observation_envelope_v0(
+            run_dir=run_dir,
+            capture_file=capture,
+            config_file=config,
+            receiver_id="UNKNOWN",
+            capture_started_at="2026-10-07T05:00:00Z",
+            capture_completed_at="2026-10-07T05:00:02Z",
+        )
+    except ValueError as exc:
+        assert "receiver_id" in str(exc)
+    else:
+        raise AssertionError("unbound receiver id must fail closed")
+
+    capture.write_bytes(b"")
+    try:
+        mod.live_gnss_sdr_capture_to_observation_envelope_v0(
+            run_dir=run_dir,
+            capture_file=capture,
+            config_file=config,
+            receiver_id="receiver:local:1",
+            capture_started_at="2026-10-07T05:00:00Z",
+            capture_completed_at="2026-10-07T05:00:02Z",
+        )
+    except ValueError as exc:
+        assert "empty" in str(exc)
+    else:
+        raise AssertionError("empty live capture must fail closed")
+
+
+def test_live_capture_admission_requires_gnss_tracking_or_nav_evidence(tmp_path):
+    mod = load_module()
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    (run_dir / "gnss_sdr_run_stdout_modern.log").write_text(
+        "Total GNSS-SDR run time: 2.0 [seconds]\n",
+        encoding="utf-8",
+    )
+    capture = tmp_path / "capture.iq"
+    capture.write_bytes(b"capture")
+    config = tmp_path / "receiver.conf"
+    config.write_text("cfg", encoding="utf-8")
+
+    try:
+        mod.live_gnss_sdr_capture_to_observation_envelope_v0(
+            run_dir=run_dir,
+            capture_file=capture,
+            config_file=config,
+            receiver_id="receiver:local:1",
+            capture_started_at="2026-10-07T05:00:00Z",
+            capture_completed_at="2026-10-07T05:00:02Z",
+        )
+    except ValueError as exc:
+        assert "GNSS tracking/NAV evidence" in str(exc)
+    else:
+        raise AssertionError("file existence alone must not become REAL_PASSIVE_GNSS")
+
+
+def test_live_capture_admission_binds_capture_config_and_keeps_attestation_false(tmp_path):
+    mod = load_module()
+    run_dir, capture, config = _write_minimal_live_gnss_sdr_run(tmp_path)
+
+    envelope = mod.live_gnss_sdr_capture_to_observation_envelope_v0(
+        run_dir=run_dir,
+        capture_file=capture,
+        config_file=config,
+        receiver_id="receiver:local:1",
+        capture_started_at="2026-10-07T05:00:00Z",
+        capture_completed_at="2026-10-07T05:00:02Z",
+    )
+
+    assert envelope["proof_level"] == "REAL_PASSIVE_GNSS"
+    assert envelope["eligible_for_physical_claim"] is True
+    assert envelope["live_capture_observed"] is True
+    assert envelope["sensor_attestation_proven"] is False
+    assert envelope["input_hash"] == mod.sha256_file(capture)
+    assert envelope["processor_config_hash"] == mod.sha256_file(config)
+    assert envelope["receiver"]["receiver_id"] == "receiver:local:1"
+    assert envelope["receiver"]["receiver_identity_bound"] is True
+    assert envelope["receiver"]["receiver_identity_verified"] is False
+    assert "NO_SENSOR_PRIVATE_KEY_ATTESTATION" in envelope["limitations"]
+
+    payload = mod.observation_to_domain_payload(envelope)
+    assert payload["sensor_attested"] is False
+    assert payload["attestation_ready"] is False
+
+
+def test_live_capture_run_reaches_gps_chain_but_does_not_gain_attestation(tmp_path, monkeypatch):
+    mod = load_module()
+    run_dir, capture, config = _write_minimal_live_gnss_sdr_run(tmp_path)
+
+    monkeypatch.setattr(
+        mod,
+        "_http_post_json",
+        lambda url, payload: {
+            "endpoint": url,
+            "status_http": "NOT_CALLED_IN_TEST",
+            "payload_sha256": mod.sha256_obj(payload),
+        },
+    )
+    result = mod.run_live_gnss_sdr_capture_v0(
+        run_dir=run_dir,
+        capture_file=capture,
+        config_file=config,
+        receiver_id="receiver:local:1",
+        capture_started_at="2026-10-07T05:00:00Z",
+        capture_completed_at="2026-10-07T05:00:02Z",
+        kernel_endpoint="http://127.0.0.1:3001/kernel/ragnarok",
+    )
+
+    assert result["mode"] == "REAL_PASSIVE_GNSS_CAPTURE"
+    assert result["proof_level"] == "REAL_PASSIVE_GNSS"
+    assert result["domain_payload"]["sensor_attested"] is False
+    assert result["domain_payload"]["attestation_ready"] is False
+    assert result["physical_gate"]["decision_authority"] == "KX108_ONLY"
+    assert result["x108_result"]["domain"] == "gps_defense_aviation"

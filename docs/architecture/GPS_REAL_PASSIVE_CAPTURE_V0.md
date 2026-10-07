@@ -1,0 +1,235 @@
+# GPS Real Passive Capture V0
+
+Status: SOFTWARE VERIFIED / DOCKER RUNTIME READY / PHYSICAL CLOSURE BLOCKED_HARDWARE
+
+## Purpose
+
+P2 continues the post-freeze GPS plan after verified receiver-readiness P1.
+
+P2 does **not** invent a receiver runtime and does not claim a live capture already exists. It adds the admission boundary for a passive GNSS capture that is actually produced on the local machine and processed by the existing GNSS-SDR path.
+
+## Search-before-build result
+
+Existing reusable pieces:
+- `physical_signal_periphery.py`
+- GNSS-SDR stdout parser
+- recorded RF normalization
+- Physical Reality Gate
+- GPS domain adapter / X108 gate
+- capture/config/source hashing
+- `REAL_PASSIVE_GNSS` proof level
+
+Not found as an existing runtime:
+- a complete RTL-SDR acquisition runtime;
+- a complete HackRF acquisition runtime;
+- a hidden hardware-specific live receiver stack.
+
+Therefore P2 does not create a second SDR stack.
+
+## New admission path
+
+```text
+physical receiver
+      ↓
+operator-produced passive capture
+      ↓
+capture file + exact config + receiver ref
+      ↓
+GNSS-SDR run/output
+      ↓
+live_gnss_sdr_capture_to_observation_envelope_v0
+      ↓
+REAL_PASSIVE_GNSS
+      ↓
+Physical Reality Gate
+      ↓
+GPS Domain / KX108
+```
+
+## Fail-closed admission requirements
+
+A capture cannot be promoted merely because a file exists.
+
+The admission contract requires:
+- non-empty capture file;
+- immutable capture SHA-256;
+- explicit capture start time;
+- explicit capture completion time;
+- bound receiver identifier;
+- exact processing/receiver configuration file;
+- configuration SHA-256;
+- completed GNSS-SDR run;
+- GNSS tracking or NAV evidence in GNSS-SDR output.
+
+Missing any required element fails closed.
+
+## Claim boundary
+
+`REAL_PASSIVE_GNSS` means a local passive GNSS capture has been admitted with bound capture/config/output evidence.
+
+It does **not** mean:
+- receiver identity is cryptographically attested;
+- sensor private-key attestation exists;
+- multisource corroboration exists;
+- physical authenticity is globally proven;
+- spoofing resistance is proven;
+- causal hostile-RF attribution is proven.
+
+The envelope therefore keeps:
+
+```text
+live_capture_observed = true
+sensor_attestation_proven = false
+receiver_identity_bound = true
+receiver_identity_verified = false
+```
+
+unless a later independent mechanism proves more.
+
+## Authority
+
+Unchanged:
+- KX108_ONLY
+- physical capture != decision
+- physical evidence != Binder permission
+- claim eligibility != sensor attestation
+- capture provenance != canonical truth
+
+## Validation split
+
+### Software validation
+
+Tests can prove that:
+- fake/missing capture state fails closed;
+- capture/config hashes are bound;
+- GNSS-SDR evidence is required;
+- the GPS chain receives the admitted envelope;
+- no sensor attestation is synthesized.
+
+### Physical validation
+
+Software tests cannot prove that the user's hardware has actually captured live RF.
+
+P2 can only be physically closed after a local run produces:
+- the capture file;
+- exact receiver/config identity;
+- GNSS-SDR output;
+- resulting P2 evidence artifact.
+
+Until that run exists:
+
+`P2 SOFTWARE = IMPLEMENTED`
+
+`P2 PHYSICAL CLOSURE = OPEN`
+
+## Example local invocation
+
+```powershell
+python hackathons/nativebuilder-gps-defense/physical_signal_cli.py \
+  --live-gnss-sdr-run "<GNSS_SDR_RUN_DIR>" \
+  --live-capture-file "<CAPTURE_FILE>" \
+  --config-file "<EXACT_CONFIG_FILE>" \
+  --live-receiver-id "<RECEIVER_ID>" \
+  --capture-started-at "<ISO8601_START>" \
+  --capture-completed-at "<ISO8601_END>" \
+  --out artifacts/gps_real_passive_capture_result.json
+```
+
+The placeholders must be replaced by evidence from the actual local capture session. They must not be fabricated for closure.
+
+
+## Software verification
+
+- Verified code HEAD: `4b78fba47c6435e3c709b399a546fe6221c4636e`
+- GitHub Actions run: `37582290732`
+- Global result: `12570 passed / 11 failed / 46 skipped / 207 deselected`
+- P2-specific failures: `0`
+- The 11 failures match the historical non-P2 baseline families.
+
+Local operator validation on Windows also reported:
+
+```text
+14 passed in 3.08s
+```
+
+**Verdict:** P2 software admission path is `VERIFIED`. P2 physical closure remains `OPEN` until an actual local passive GNSS capture is produced and admitted through this path.
+
+
+## Local physical readiness audit — 2026-10-07
+
+User-local Windows audit on the P2 branch reported:
+
+- local branch updated to `36f8c14a`;
+- P2 targeted suite: `14 passed in 3.08s`;
+- Docker CLI present;
+- Docker context: `desktop-linux`;
+- Docker engine unavailable: `dockerDesktopLinuxEngine` named pipe not found;
+- native `gnss-sdr` not present in PATH;
+- no GNSS/SDR/HackRF/RTL/u-blox device found by PresentOnly PnP enumeration;
+- no serial/COM ports reported;
+- broader USB inventory contained Bluetooth, integrated camera, generic HID/USB devices and a Pixel 8a, but no confirmed GNSS/SDR receiver.
+
+Current physical blockers:
+
+```text
+DOCKER_DESKTOP_LINUX_ENGINE_NOT_RUNNING
+NO_CONFIRMED_GNSS_SDR_RECEIVER
+NO_SERIAL_RECEIVER_PORT
+GNSS_SDR_NATIVE_NOT_INSTALLED
+```
+
+These blockers do not invalidate P2 software verification. They prevent only the physical promotion to `REAL_PASSIVE_GNSS`.
+
+Next closure order:
+
+1. start Docker Desktop Linux engine and verify the existing GNSS-SDR container;
+2. connect or identify an actual GNSS/SDR receiver;
+3. produce a passive capture;
+4. admit it through P2 with bound capture/config/receiver evidence.
+
+
+## Runtime unblock — 2026-10-07
+
+Docker Desktop Linux engine was started successfully.
+
+Verified locally:
+
+```text
+Docker Server Version: 29.4.3
+Operating System: Docker Desktop
+Kernel: WSL2
+Architecture: x86_64
+GNSS-SDR container: carlesfernandez/docker-gnsssdr:latest
+GNSS-SDR version: 0.0.21.git-next-2a7214a4f
+```
+
+Runtime blocker removed:
+
+`DOCKER_DESKTOP_LINUX_ENGINE_NOT_RUNNING -> RESOLVED`
+
+Remaining physical blocker:
+
+`NO_CONFIRMED_GNSS_SDR_RECEIVER`
+
+P2 remains physically open until an actual receiver is connected and a passive capture is produced.
+
+
+## Historical archive audit — 2026-10-07
+
+A preserved local Git bundle and the archived `obsidia-gps-rf-work` tree were audited after P2 software verification.
+
+Recovered bundle references included:
+- `hackathon-gps-physical-real-gnss-v0` at `6a16d0261567a228d6aa69a30b13355276cd9116`;
+- `p76-gps-terrain-portable-reconciliation` at `7bd1019e42fa485b5d51bc738fec43194a4a4646`.
+
+The supposedly "real GNSS" historical branch does not contain a closed local live receiver path. Its own historical artifacts state that no local GNSS/SDR receiver was confirmed and that live physical ingestion remained blocked.
+
+The archived `obsidia-gps-rf-work` corpus contains extensive recorded-RF work (FGI, TEXBAT, TUNI, pass7/pass8, blinded evaluations), but the concrete GNSS-SDR receiver configurations found in that archive use:
+
+`SignalSource.implementation=File_Signal_Source`
+
+No recovered RTL-SDR, HackRF, u-blox, Osmosdr, UHD, PlutoSDR, LimeSDR, serial receiver, or equivalent live source configuration was found.
+
+Historical `REAL_PASSIVE_GNSS` adapter code was contract-level/readiness logic and depended on configured candidate environment variables; it was not evidence of a live capture. P1 intentionally hardened this boundary.
+
+**Archive verdict:** no forgotten local live receiver implementation or live capture proof was recovered. The remaining P2 blocker is genuinely physical hardware/capture, not missing software history.
