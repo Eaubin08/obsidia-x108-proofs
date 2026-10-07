@@ -104,7 +104,15 @@ def test_v2_caps_authority_class():
         cap = G.get_capability(cid)
         assert cap["authority_class"] == "KX108_ONLY", cid
         assert cap["grants_authority"] is False, cid
-        assert cap["family"] == "PC_GOVERNED_WRITE", cid
+        expected_family = (
+            "PC_GOVERNED_READ"
+            if cid in {
+                "PC_V2_BROWSER_READ_PREPARE",
+                "PC_V2_BROWSER_READ_EXECUTE",
+            }
+            else "PC_GOVERNED_WRITE"
+        )
+        assert cap["family"] == expected_family, cid
 
 
 def test_v2_execute_caps_rw_governed():
@@ -677,4 +685,3 @@ def test_dispatcher_routes_create_dir_prepare(v2_world):
     )
     assert out["status"] == PC2.PREPARED_AWAITING_HUMAN_APPROVAL
     assert out["operation_type"] == PC2.OP_CREATE_DIR
-
