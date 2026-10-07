@@ -3423,6 +3423,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{content[0].start}-{content[-1].end}:{link}"
                        + (f":governed_by={governed_by.id}" if governed_by is not None else "")
                        + (f":ops={','.join(ops)}" if ops else ""))
+        if clause.main_after_relative and not clause.units and clause.evidential_span is not None:
+            # F-EV: the source / evidential of an unresolved main predicate is kept, as a
+            # detached source of that unresolved content (never silently dropped)
+            missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{clause.evidential_span[0]}-"
+                           f"{clause.evidential_span[1]}:detached_source_of="
+                           f"unresolved:{content[0].start}-{content[-1].end}:source={clause.evidential}")
 
     for (g_start, g_end), uid in lost_governors:
         missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{g_start}-{g_end}:unrecognized_governor_of={uid}")
