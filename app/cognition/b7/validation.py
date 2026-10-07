@@ -16,6 +16,7 @@ from typing import Any, Iterable, Mapping
 from app.cognition.b7.contracts import (CandidateStatus, CognitiveResolutionCandidate, CognitiveResolutionRequest,
                                         CognitiveValidationVerdict, RequiredCandidateKind, candidate_identity,
                                         origin_full_digest, request_identity)
+from app.cognition.b7.detector import detect_unresolved
 from app.harness.state_explicit.context_assembly import ContextPacket
 from app.harness.state_explicit.contracts import StateEntry, StateStatus, Visibility
 from app.harness.state_explicit.registry import WorkingStateRegistry
@@ -149,6 +150,10 @@ def _check(request: CognitiveResolutionRequest, cand: CognitiveResolutionCandida
     if (origin_full_digest(origin) != request.origin_full_digest
             or request_identity(request.origin_state_id, request.origin_full_digest, field, marker) != request.request_id):
         return "origin_identity_mismatch"     # B7-S: full-width origin binding, independently recomputed
+    if request not in detect_unresolved(origin):
+        # B7-T: VALID REQUEST_ID != VALID REQUEST BODY. The request must equal, field for field, a request
+        # the canonical detector builds from this origin (one problem ref, policy derived, never caller-set)
+        return "request_identity_mismatch"
     if cand.candidate_kind != request.required_candidate_kind:
         return "candidate_kind_mismatch"
     if cand.proposer_role not in request.allowed_role_ids:
@@ -170,6 +175,10 @@ def _check(request: CognitiveResolutionRequest, cand: CognitiveResolutionCandida
     if not set(origin_contradictions) <= set(cand.contradictions):
         return "contradiction_hidden"
     proposal = cand.proposed_resolution
+    for k in _REFERENT_LISTS + _TIME_LISTS:
+        # JSON ITERABLE != SEMANTIC COLLECTION: exactly a list of strings (empty allowed, as before)
+        if k in proposal and not (isinstance(proposal[k], list) and all(isinstance(x, str) for x in proposal[k])):
+            return "semantic_collection_not_list_of_strings"
     if any(proposal.get(k) not in (None, False) for k in _FORBIDDEN_CLAIMS):
         return "forbidden_claim"
     if set(proposal) - _VALIDATED_KEYS - _DESCRIPTIVE_KEYS - set(_FORBIDDEN_CLAIMS):
@@ -177,12 +186,12 @@ def _check(request: CognitiveResolutionRequest, cand: CognitiveResolutionCandida
     if any(not isinstance(proposal[k], str) for k in _DESCRIPTIVE_KEYS if k in proposal):
         return "descriptive_value_not_string"
     referents = [proposal[k] for k in _REFERENT_SCALARS if k in proposal]
-    referents += [v for k in _REFERENT_LISTS for v in proposal.get(k) or []]
+    referents += [v for k in _REFERENT_LISTS for v in proposal.get(k, [])]
     anaphor_units = frozenset(m.split(":", 1)[0] for m in markers if ":" in m)
     if not all(_referent_admissible(v, origin, anaphor_units) for v in referents):
         return "unsupported_content_invented"
     times = [proposal[k] for k in _TIME_SCALARS if k in proposal]
-    times += [v for k in _TIME_LISTS for v in proposal.get(k) or []]
+    times += [v for k in _TIME_LISTS for v in proposal.get(k, [])]
     if not all(_time_admissible(v, origin) for v in times):
         return "unsupported_content_invented"
     units = _origin_units(origin)

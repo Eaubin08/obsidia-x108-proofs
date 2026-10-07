@@ -618,7 +618,8 @@ def test_t_forged_request_body_with_valid_id_rejected(name):
     assert forged.request_id == req.request_id
     res = _t_run({}, request=forged)
     assert res is None or (res.verdict == m.CognitiveValidationVerdict.REJECT and res.derived_state is None
-                           and res.reasons == ("request_identity_mismatch",))
+                           # a forged first problem_ref already breaks the B7-S request_id recomputation
+                           and res.reasons[0] in ("request_identity_mismatch", "origin_identity_mismatch"))
 
 
 def test_t_every_request_field_is_covered_by_the_mutation_matrix():

@@ -148,7 +148,13 @@ def test_t40_world_hypothesis_without_evidence_stays_unresolved(b7, entry_factor
     cand = b7.translate(raw_candidate_factory(req, candidate_kind="WORLD_REFERENCE_HYPOTHESIS", proposer_role="INVESTIGATOR",
                                               proposed_resolution={"hypothesis": "le capteur"}, evidence_refs=[],
                                               remaining_unknowns=[], confidence_class="HIGH"), req)
-    assert _verdict(b7, req, cand, e, providers).verdict == b7.CognitiveValidationVerdict.STILL_UNRESOLVED
+    # requalified by B7-T (canonical request policy): no explicit marker maps to WORLD_OR_PHYSICAL_REFERENCE
+    # (M1-M10), so this hand-built request is not one the detector would construct and is now REJECTed
+    # (stricter than STILL_UNRESOLVED); the invariant under test -- a world hypothesis never becomes
+    # structured context -- is unchanged
+    res = _verdict(b7, req, cand, e, providers)
+    assert res.verdict == b7.CognitiveValidationVerdict.REJECT and res.reasons == ("request_identity_mismatch",)
+    assert res.derived_state is None
 
 
 # ── translator, strict JSON, bounds (T26-T28) ───────────────────────────────
