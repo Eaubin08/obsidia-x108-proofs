@@ -574,6 +574,152 @@ P6 TP/TN/FP/FN benchmark matrix
 P7 Controlled live hostile test
 ```
 
+## POST-FREEZE — RESERVED TRACKS FROM ORIGINAL PLANS
+
+The GPS continuation P1→P7 is the current active path, but it is not the whole post-V0 roadmap.
+
+The following tracks are preserved explicitly so they are not lost while GPS is being closed.
+
+### R1 — UNIVERSALITY PROOF
+
+Goal:
+- prove that domain laws change while the constitutional pipeline does not;
+- compare at least a physical domain and a semantic/cognitive domain;
+- keep X108 world/domain agnostic;
+- never infer universality from a single successful domain.
+
+Minimum evidence:
+- GPS / physical path;
+- Brody/GMS/SENS semantic path;
+- same governance invariants;
+- same KX108 authority boundary;
+- explicit differences in domain laws.
+
+### R2 — COMPUTATIONAL THERMODYNAMICS
+
+Separate from physical thermodynamics.
+
+Potential scope:
+- compute cost;
+- friction;
+- stability;
+- irreversibility heuristics;
+- resource/energy accounting where actually measured.
+
+Rules:
+- computational entropy != physical entropy;
+- observation/recommendation only;
+- no decision or ACT authority.
+
+### R3 — DEEP PHYSICAL / SCIENCE ENGINES
+
+Step-by-step, never as a monolithic physics brain.
+
+Reserved families:
+- mechanics;
+- geometry;
+- energy;
+- physical thermodynamics;
+- information;
+- time / space;
+- other specialized scientific engines only when justified.
+
+Each engine must remain model/constraint bounded and confront predictions with measurements.
+
+### R4 — VISION / VIDEO / PHYSICALLY INFORMED GENERATION
+
+F16 closed real-image observation only.
+
+Still reserved:
+- video temporal continuity;
+- scene evolution;
+- analysis ↔ synthesis;
+- physically informed generation;
+- transformation provenance;
+- explicit separation between observed, simulated and generated content.
+
+Generated imagery never becomes observed truth.
+
+### R5 — MULTIMODAL EXPANSION
+
+F20 closed the coherence contract, not every modality runtime.
+
+Reserved integrations:
+- audio / voice;
+- video;
+- IMU;
+- radar;
+- UWB;
+- Wi-Fi / SDR / satellite;
+- machine telemetry;
+- body-state inputs where justified.
+
+Every modality keeps its own clock, frame, latency, precision, uncertainty and provenance.
+
+### R6 — SENS / COGNITION CONTINUATION
+
+SENS/Cognition remains an independent active chantier and must not be rebuilt inside GPS.
+
+Preserve the handoff:
+`SENS / GMS -> MMonde -> Domain -> KX108`
+
+Before future integration:
+- audit the latest SENS freeze/HEAD;
+- preserve ReviewJoin / Semantic Closure boundaries;
+- keep memory_write=False;
+- keep emits_act=False;
+- keep kernel_mutation=False;
+- keep KX108_ONLY.
+
+### R7 — LIFE / BIOLOGY MODEL
+
+Explicitly reserved as a separate family.
+
+Possible later scope:
+- organisms;
+- biological state;
+- behavior;
+- ecosystems;
+- BodyState where justified.
+
+Rules:
+- biology/domain laws remain outside Kernel;
+- life model != physical model collapsed into one ontology;
+- same constitutional transport/governance, different domain laws.
+
+### R8 — OTHER DOMAINS
+
+Reserved:
+- Trading;
+- Bank / Finance;
+- future industrial / robotic / organizational domains.
+
+Each domain must reuse the same constitutional boundaries without forcing domain-specific laws into Kernel.
+
+### R9 — BODY / OXYGEN / EDUCATION RESEARCH
+
+Preserved as future research, outside the current first-world/GPS closure:
+- BodyState;
+- Oxygen / education / learning-world work;
+- governed continuous learning experiments.
+
+No current GPS milestone depends on these.
+
+## BEFORE CONTINUING P1 — COMPLETENESS CHECK
+
+The project-plan audit found no reason to stop the current GPS P1 path, but the following items must remain visible:
+
+1. GPS P1→P7 closes the **physical benchmark**, not the entire post-V0 roadmap.
+2. Universality proof remains an explicit future validation objective.
+3. Computational thermodynamics remains separate and still unclosed.
+4. Real-image observation is closed; physically informed generation/video are not.
+5. Cross-modal contracts are closed; full modality runtimes are not.
+6. SENS/Cognition is a separate active chantier; reconnect only from its latest stable freeze.
+7. Life/biology and other domains remain reserved future families.
+8. For GPS P2/P3, calibration/configuration evidence must be explicit; if a reusable CalibrationReceipt / physical-coherence object is justified by the implementation, search-before-build before creating one.
+9. GPS hostile-RF evaluation must include an explicit pre-attack baseline acceptance criterion before TP/TN/FP/FN scoring.
+10. No public universality, live, spoofing-resistance, causal-attribution or certification claim may be promoted from the current recorded-real freeze.
+
 ## Rule of forge
 
 SEARCH BEFORE BUILD.
