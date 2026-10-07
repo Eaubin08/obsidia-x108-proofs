@@ -27,8 +27,8 @@ No threshold adjustment was made for CTTC.
 
 ## Result
 
-- positions: `149`
-- transitions: `148`
+- positions: `150`
+- transitions: `149`
 - overall classification: `NOMINAL`
 - ANOMALY transitions: `0`
 - UNKNOWN transitions: `0`
