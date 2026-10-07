@@ -4,7 +4,7 @@ from __future__ import annotations
 
 def _setup(b7, entry_factory):
     e = entry_factory("Le script et le test sont prêts. Lance-le.", unresolved_references=("u2:le",),
-                      units=("u1", "u2"), uncertainty=())
+                      units=("u1", "u2"), uncertainty=(), unit_objects={"u1": ["le script", "le test"]})
     (req,) = b7.detect_unresolved(e)
     return e, req
 

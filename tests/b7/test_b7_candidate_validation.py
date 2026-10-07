@@ -98,7 +98,8 @@ def test_t6_to_t10_content_conservation(b7, coref_entry, raw_candidate_factory, 
 
 def test_t7_hidden_contradiction_rejected(b7, entry_factory, raw_candidate_factory, providers):
     e = entry_factory("Le script est prêt. Lance-le.", unresolved_references=("u2:le",), units=("u1", "u2"),
-                      contradictions=("EXECUTE(p):requested_and_forbidden:u1/u2",), uncertainty=())
+                      contradictions=("EXECUTE(p):requested_and_forbidden:u1/u2",), uncertainty=(),
+                      unit_objects={"u1": ["le script"]})
     req = next(r for r in b7.detect_unresolved(e) if r.unresolved_kind == b7.UnresolvedKind.COREFERENCE)
     hidden = b7.translate(raw_candidate_factory(req, remaining_unknowns=[]), req)
     kept = b7.translate(raw_candidate_factory(req, remaining_unknowns=[],

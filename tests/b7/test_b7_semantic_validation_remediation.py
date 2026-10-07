@@ -13,8 +13,9 @@ def _verdict(b7, entry, request, **overrides):
     return b7.validate_candidate(request, cand, origin=entry, provider_roles=PROVIDERS)
 
 
-def _coref(raw, uncertainty=(), marker="u2:le"):
-    e = make_entry(raw, unresolved_references=(marker,), units=("u1", "u2"), uncertainty=uncertainty)
+def _coref(raw, uncertainty=(), marker="u2:le", structured=None):
+    e = make_entry(raw, unresolved_references=(marker,), units=("u1", "u2"), uncertainty=uncertainty,
+                   unit_objects=structured)
     return e
 
 
@@ -38,12 +39,43 @@ def test_d_b7_1_substring_coincidence_is_rejected(b7, raw, extra):
         b7.CognitiveValidationVerdict.REJECT
 
 
+# requalified 2026-10-07 (human doctrine option A, STRUCTURED_REFERENT_ONLY): formerly ACCEPT from raw text
 @pytest.mark.parametrize("antecedent", ["le script", "Le Script", "LE SCRIPT"])
-def test_d_b7_1_exact_bounded_referent_still_accepted(b7, antecedent):
+def test_option_a_unstructured_exact_referent_not_accepted(b7, antecedent):
     e = _coref("Le script est prêt. Lance-le.")
     (req,) = b7.detect_unresolved(e)
     proposal = {"mention": "u2:le", "antecedent": antecedent}
+    assert _verdict(b7, e, req, remaining_unknowns=[], proposed_resolution=proposal).verdict != \
+        b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+
+
+@pytest.mark.parametrize("antecedent", ["le script", "Le Script", "LE SCRIPT"])
+def test_option_a_structured_referent_accepted(b7, antecedent):
+    e = _coref("Le script est prêt. Lance-le.", structured={"u1": ["le script"]})
+    (req,) = b7.detect_unresolved(e)
+    proposal = {"mention": "u2:le", "antecedent": antecedent}
     assert _verdict(b7, e, req, remaining_unknowns=[], proposed_resolution=proposal).verdict == \
+        b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+
+
+@pytest.mark.parametrize("raw,field,value", [("Le test est prêt. Lance-le.", "antecedent", "le test"),
+                                             ("Le script de Paul est prêt. Lance-le.", "participants", ["Paul"]),
+                                             ("Marie dit que le script est prêt. Lance-le.", "sources", ["Marie"]),
+                                             ("Paul le mange. Lance-le.", "antecedent", "le mange")])
+def test_option_a_raw_text_never_establishes_a_referent(b7, raw, field, value):
+    e = _coref(raw)
+    (req,) = b7.detect_unresolved(e)
+    proposal = {"mention": "u2:le"} if field == "antecedent" else {"mention": "u2:le", "antecedent": "le script"}
+    proposal[field] = value
+    assert _verdict(b7, e, req, remaining_unknowns=[], proposed_resolution=proposal).verdict != \
+        b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+
+
+def test_option_a_lexicon_is_irrelevant_to_structured_referents(b7):
+    e = _coref("Paul prend la lance. Lance-le.", structured={"u1": ["la lance"]})
+    (req,) = b7.detect_unresolved(e)
+    assert _verdict(b7, e, req, remaining_unknowns=[],
+                    proposed_resolution={"mention": "u2:le", "antecedent": "la lance"}).verdict == \
         b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
 
 
@@ -66,7 +98,7 @@ def test_d_b7_1_structured_referent_first(b7):
 # ── D-B7-2: only the exact canonical unresolved item may be removed ─────────
 def test_d_b7_2_unrelated_uncertainties_sharing_the_marker_are_kept(b7):
     unc = ("unresolved_reference:u2:le", "ambiguous_antecedent:u2:le:other_problem", "subject_unresolved:u2:le_x")
-    e = _coref("Le script est prêt. Lance-le.", uncertainty=unc)
+    e = _coref("Le script est prêt. Lance-le.", uncertainty=unc, structured={"u1": ["le script"]})
     (req,) = b7.detect_unresolved(e)
     assert _verdict(b7, e, req, remaining_unknowns=[]).verdict == b7.CognitiveValidationVerdict.REJECT
     res = _verdict(b7, e, req, remaining_unknowns=list(unc[1:]))
@@ -77,11 +109,12 @@ def test_d_b7_2_unrelated_uncertainties_sharing_the_marker_are_kept(b7):
 @pytest.mark.parametrize("marker,other", [("u2:l", "unresolved_reference:u2:la"), ("u2:l", "u2:la"),
                                           ("u2:le", "unresolved_reference:u2:les"), ("u2:le", "xu2:le")])
 def test_d_b7_2_prefix_suffix_collisions_are_kept(b7, marker, other):
-    e = _coref("Le script est prêt. Lance-le.", uncertainty=(f"unresolved_reference:{marker}", other), marker=marker)
+    e = _coref("Le script est prêt. Lance-le.", uncertainty=(f"unresolved_reference:{marker}", other), marker=marker,
+               structured={"u1": ["le script"]})
     (req,) = b7.detect_unresolved(e)
     proposal = {"mention": marker, "antecedent": "le script"}
-    assert _verdict(b7, e, req, remaining_unknowns=[], proposed_resolution=proposal).verdict == \
-        b7.CognitiveValidationVerdict.REJECT
+    res = _verdict(b7, e, req, remaining_unknowns=[], proposed_resolution=proposal)
+    assert res.verdict == b7.CognitiveValidationVerdict.REJECT and res.reasons == ("unresolved_content_lost",)
 
 
 def test_d_b7_2_exact_real_sens_forms_are_removable(b7):
@@ -91,13 +124,15 @@ def test_d_b7_2_exact_real_sens_forms_are_removable(b7):
     keep = [u for u in e.uncertainty if u not in (mention, f"frame:unresolved_reference:{mention}")]
     before = (e.content_digest, e.uncertainty)
     res = _verdict(b7, e, req, remaining_unknowns=keep, proposed_resolution={"mention": mention, "antecedent": "le script"})
-    assert res.verdict == b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+    # requalified (structured-referent-only): real SENS structures no referent here, so the candidate is
+    # rejected on the referent rule — the exact uncertainty forms already passed the conservation check
+    assert res.verdict == b7.CognitiveValidationVerdict.REJECT and res.reasons == ("unsupported_content_invented",)
     assert (e.content_digest, e.uncertainty) == before                                  # origin never mutated
 
 
 def test_d_b7_2_sibling_markers_survive_one_resolution(b7):
     e = make_entry("Le script est prêt. Lance-le.", unresolved_references=("u2:le",), units=("u1", "u2"),
-                   ambiguities=("bare_ne:u1", "subject_unresolved:u2"))
+                   ambiguities=("bare_ne:u1", "subject_unresolved:u2"), unit_objects={"u1": ["le script"]})
     req = next(r for r in b7.detect_unresolved(e) if r.unresolved_kind == b7.UnresolvedKind.COREFERENCE)
     assert _verdict(b7, e, req, remaining_unknowns=[]).verdict == b7.CognitiveValidationVerdict.REJECT
     res = _verdict(b7, e, req, remaining_unknowns=["bare_ne:u1", "subject_unresolved:u2"])
@@ -118,13 +153,14 @@ def test_d_b7_1a_verb_headed_fallback_rejected(b7, raw, antecedent):
     assert res.verdict == b7.CognitiveValidationVerdict.REJECT
 
 
+# requalified 2026-10-07 (option A): the former "legitimate fallback" ACCEPT came from raw text only
 @pytest.mark.parametrize("raw,antecedent", [("Le script est prêt. Lance-le.", "le script"),
                                             ("Le test est prêt. Lance-le.", "le test")])
-def test_d_b7_1a_legitimate_fallback_controls(b7, raw, antecedent):
+def test_option_a_former_fallback_controls_not_accepted(b7, raw, antecedent):
     e = _coref(raw)
     (req,) = b7.detect_unresolved(e)
     res = _verdict(b7, e, req, remaining_unknowns=[], proposed_resolution={"mention": "u2:le", "antecedent": antecedent})
-    assert res.verdict == b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+    assert res.verdict != b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
 
 
 def test_d_b7_1b_structured_set_is_closed(b7):

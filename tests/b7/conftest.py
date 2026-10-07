@@ -27,15 +27,20 @@ def b7():
 
 def make_entry(raw: str = "x", *, status: StateStatus = StateStatus.OPEN, state_id: str = "sens:frame",
                state_type: str = "SENS_FRAME", missing=(), ambiguities=(), unresolved_references=(),
-               contradictions=(), reasons=(), units=("u1",), uncertainty=None, extra=None) -> StateEntry:
-    """A synthetic B6 SENS_FRAME entry carrying exactly the given explicit markers."""
+               contradictions=(), reasons=(), units=("u1",), uncertainty=None, extra=None,
+               unit_objects=None) -> StateEntry:
+    """A synthetic B6 SENS_FRAME entry carrying exactly the given explicit markers.
+
+    ``unit_objects`` ({unit_id: [object texts]}) gives SENS-shaped structured referents; under the
+    STRUCTURED_REFERENT_ONLY amendment (2026-10-07) only such referents are admissible in B7."""
     payload = {
         "raw": raw,
         "missing": list(missing), "ambiguities": list(ambiguities),
         "unresolved_references": list(unresolved_references), "contradictions": list(contradictions),
         "semantic_closure": {"closed": not (missing or ambiguities or unresolved_references or contradictions
                                             or reasons), "reasons": list(reasons)},
-        "semantic_frame": {"raw": raw, "units": [{"id": u} for u in units], "oblique_arguments": [],
+        "semantic_frame": {"raw": raw, "units": [{"id": u, "objects": [{"text": t} for t in (unit_objects or {}).get(u, ())]}
+                                     for u in units], "oblique_arguments": [],
                            "deixis": [], "constraints": [], "evidence_needs": [], "presupposed_referents": []},
         "requested_world_actions": [], "requested_is_authorized": False,
     }
@@ -57,9 +62,11 @@ def entry_factory():
 
 @pytest.fixture
 def coref_entry():
-    """'Le script est prêt. Lance-le.' with one explicit unresolved reference and one other open item."""
+    """'Le script est prêt. Lance-le.' with one explicit unresolved reference, one other open item and
+    the structured referent "le script" (requalified 2026-10-07: structured-referent-only doctrine)."""
     return make_entry("Le script est prêt. Lance-le.", unresolved_references=("u2:le",), units=("u1", "u2"),
-                      uncertainty=("unresolved_reference:u2:le", "other_open_item"))
+                      uncertainty=("unresolved_reference:u2:le", "other_open_item"),
+                      unit_objects={"u1": ["le script"]})
 
 
 def raw_candidate(request, **overrides) -> dict:
