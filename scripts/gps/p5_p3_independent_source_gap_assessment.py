@@ -6,6 +6,11 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from periphery.cross_modal.contracts_v0 import build_cross_modal_coherence_report_v0
 from periphery.gps_physical.corroboration_v0 import (
