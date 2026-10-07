@@ -70,8 +70,18 @@ RECEIPT_DIR = (
     / "Obsidia"
     / "world_action_execution_receipts"
 )
+RECONCILIATION_DIR = (
+    Path(os.environ.get("LOCALAPPDATA", ""))
+    / "Obsidia"
+    / "world_action_reconciliations"
+)
+
+RECONCILIATION_SCHEMA = "WORLD_ACTION_RECONCILIATION_V0"
+RECONCILIATION_CONFIRMED_SUCCESS = "CONFIRMED_SUCCESS"
+RECONCILIATION_CONFIRMED_NO_EFFECT = "CONFIRMED_NO_EFFECT"
 
 _RECEIPT_ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,128}$")
+_RECONCILIATION_ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,128}$")
 
 
 def _hash(value: Any) -> str:
@@ -160,6 +170,25 @@ class WorldActionExecutionReceiptV0:
     recovery_state: str
     decision_authority: str
     receipt_hash: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
+class WorldActionReconciliationV0:
+    schema: str
+    reconciliation_id: str
+    created_at: str
+    unknown_receipt_id: str
+    unknown_receipt_hash: str
+    idempotency_key: str
+    resolution: str
+    provider_verification_ref: str
+    human_review_ref: str
+    decision_authority: str
+    is_execution_authority: bool
+    reconciliation_hash: str
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -326,6 +355,212 @@ def replay_execution_receipt_v0(
     return True, None
 
 
+def _reconciliation_payload(
+    value: Mapping[str, Any],
+) -> dict[str, Any]:
+    return {
+        key: value[key]
+        for key in (
+            "schema",
+            "reconciliation_id",
+            "created_at",
+            "unknown_receipt_id",
+            "unknown_receipt_hash",
+            "idempotency_key",
+            "resolution",
+            "provider_verification_ref",
+            "human_review_ref",
+            "decision_authority",
+            "is_execution_authority",
+        )
+    }
+
+
+def verify_reconciliation_v0(
+    reconciliation: WorldActionReconciliationV0 | Mapping[str, Any] | None,
+) -> tuple[bool, Optional[str]]:
+    if reconciliation is None:
+        return False, "RECONCILIATION_MISSING"
+    data = (
+        reconciliation.to_dict()
+        if isinstance(reconciliation, WorldActionReconciliationV0)
+        else dict(reconciliation)
+    )
+    if data.get("schema") != RECONCILIATION_SCHEMA:
+        return False, "RECONCILIATION_SCHEMA_INVALID"
+    if data.get("decision_authority") != DECISION_AUTHORITY:
+        return False, "RECONCILIATION_AUTHORITY_INVALID"
+    if data.get("is_execution_authority") is not False:
+        return False, "RECONCILIATION_CANNOT_AUTHORIZE_EXECUTION"
+    if data.get("resolution") not in {
+        RECONCILIATION_CONFIRMED_SUCCESS,
+        RECONCILIATION_CONFIRMED_NO_EFFECT,
+    }:
+        return False, "RECONCILIATION_RESOLUTION_INVALID"
+    if not data.get("provider_verification_ref"):
+        return False, "RECONCILIATION_PROVIDER_VERIFICATION_REQUIRED"
+    if not data.get("human_review_ref"):
+        return False, "RECONCILIATION_HUMAN_REVIEW_REQUIRED"
+    expected = _hash(_reconciliation_payload(data))
+    if data.get("reconciliation_hash") != expected:
+        return False, "RECONCILIATION_HASH_MISMATCH"
+    return True, None
+
+
+def _reconciliation_path(
+    reconciliation_id: str,
+    store_dir: Optional[Path] = None,
+) -> Path:
+    if (
+        not reconciliation_id
+        or not _RECONCILIATION_ID_RE.match(reconciliation_id)
+    ):
+        raise ValueError("INVALID_RECONCILIATION_ID")
+    return (
+        store_dir or RECONCILIATION_DIR
+    ) / f"{reconciliation_id}.json"
+
+
+def store_reconciliation_v0(
+    reconciliation: WorldActionReconciliationV0,
+    store_dir: Optional[Path] = None,
+) -> dict[str, Any]:
+    ok, reason = verify_reconciliation_v0(reconciliation)
+    if not ok:
+        return {"status": "REJECTED", "reason": reason}
+    path = _reconciliation_path(
+        reconciliation.reconciliation_id,
+        store_dir,
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps(
+        reconciliation.to_dict(),
+        ensure_ascii=False,
+        indent=2,
+    )
+    tmp = path.parent / (
+        f".{path.name}.{os.getpid()}."
+        f"{hashlib.sha256((payload + str(id(reconciliation))).encode('utf-8')).hexdigest()[:16]}.tmp"
+    )
+    tmp.write_text(payload, encoding="utf-8")
+    try:
+        os.link(tmp, path)
+        return {
+            "status": "STORED",
+            "reconciliation_id": reconciliation.reconciliation_id,
+        }
+    except FileExistsError:
+        if path.read_text(encoding="utf-8") == payload:
+            return {
+                "status": "IDEMPOTENT_EXISTING_IDENTICAL",
+                "reconciliation_id": reconciliation.reconciliation_id,
+            }
+        return {
+            "status": "IMMUTABILITY_VIOLATION",
+            "reconciliation_id": reconciliation.reconciliation_id,
+        }
+    finally:
+        try:
+            tmp.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+def reconcile_unknown_outcome_v0(
+    *,
+    unknown_receipt_id: str,
+    resolution: str,
+    provider_verification_ref: str,
+    human_review_ref: str,
+    receipt_store_dir: Optional[Path] = None,
+    reconciliation_store_dir: Optional[Path] = None,
+    now: str | None = None,
+) -> WorldActionReconciliationV0:
+    receipt = load_execution_receipt_v0(
+        unknown_receipt_id,
+        receipt_store_dir,
+    )
+    ok, reason = verify_execution_receipt_v0(receipt)
+    if not ok:
+        raise ValueError(f"UNKNOWN_RECEIPT_INVALID:{reason}")
+    if receipt.get("provider_outcome_status") != OUTCOME_UNKNOWN:
+        raise ValueError("RECONCILIATION_REQUIRES_UNKNOWN_OUTCOME")
+    if resolution not in {
+        RECONCILIATION_CONFIRMED_SUCCESS,
+        RECONCILIATION_CONFIRMED_NO_EFFECT,
+    }:
+        raise ValueError("RECONCILIATION_RESOLUTION_INVALID")
+    if not provider_verification_ref:
+        raise ValueError("RECONCILIATION_PROVIDER_VERIFICATION_REQUIRED")
+    if not human_review_ref:
+        raise ValueError("RECONCILIATION_HUMAN_REVIEW_REQUIRED")
+
+    observed = datetime.datetime.fromisoformat(
+        now or datetime.datetime.now(datetime.timezone.utc).isoformat()
+    )
+    if observed.tzinfo is None:
+        raise ValueError("RECONCILIATION_TIME_MUST_BE_TIMEZONE_AWARE")
+
+    seed = {
+        "unknown_receipt_hash": receipt["receipt_hash"],
+        "resolution": resolution,
+        "provider_verification_ref": provider_verification_ref,
+        "human_review_ref": human_review_ref,
+        "created_at": observed.isoformat(),
+    }
+    reconciliation_id = f"wareconcile-{_hash(seed)[:32]}"
+    payload = {
+        "schema": RECONCILIATION_SCHEMA,
+        "reconciliation_id": reconciliation_id,
+        "created_at": observed.isoformat(),
+        "unknown_receipt_id": receipt["receipt_id"],
+        "unknown_receipt_hash": receipt["receipt_hash"],
+        "idempotency_key": receipt["idempotency_key"],
+        "resolution": resolution,
+        "provider_verification_ref": provider_verification_ref,
+        "human_review_ref": human_review_ref,
+        "decision_authority": DECISION_AUTHORITY,
+        "is_execution_authority": False,
+    }
+    payload["reconciliation_hash"] = _hash(
+        _reconciliation_payload(payload)
+    )
+    reconciliation = WorldActionReconciliationV0(**payload)
+    stored = store_reconciliation_v0(
+        reconciliation,
+        reconciliation_store_dir,
+    )
+    if stored.get("status") not in {
+        "STORED",
+        "IDEMPOTENT_EXISTING_IDENTICAL",
+    }:
+        raise ValueError(
+            f"RECONCILIATION_STORE_FAILED:{stored.get('status')}"
+        )
+    return reconciliation
+
+
+def _reconciliations_for_receipt(
+    receipt_id: str,
+    store_dir: Optional[Path],
+) -> list[dict[str, Any]]:
+    root = store_dir or RECONCILIATION_DIR
+    if not root.exists():
+        return []
+    matches: list[dict[str, Any]] = []
+    for path in sorted(root.glob("*.json")):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        if data.get("unknown_receipt_id") != receipt_id:
+            continue
+        ok, _ = verify_reconciliation_v0(data)
+        if ok:
+            matches.append(data)
+    return matches
+
+
 def _receipts_for_idempotency(
     idempotency_key: str,
     store_dir: Optional[Path],
@@ -349,19 +584,35 @@ def _receipts_for_idempotency(
 
 def _prior_execution_block_reason(
     idempotency_key: str,
-    store_dir: Optional[Path],
+    receipt_store_dir: Optional[Path],
+    reconciliation_store_dir: Optional[Path],
 ) -> Optional[str]:
-    previous = _receipts_for_idempotency(idempotency_key, store_dir)
+    previous = _receipts_for_idempotency(
+        idempotency_key,
+        receipt_store_dir,
+    )
     if any(
         item.get("provider_outcome_status") == OUTCOME_CONFIRMED_SUCCESS
         for item in previous
     ):
         return "DUPLICATE_CONFIRMED_EXECUTION_BLOCK"
-    if any(
-        item.get("provider_outcome_status") == OUTCOME_UNKNOWN
-        for item in previous
-    ):
-        return "UNKNOWN_PRIOR_OUTCOME_RECONCILIATION_REQUIRED"
+
+    for item in previous:
+        if item.get("provider_outcome_status") != OUTCOME_UNKNOWN:
+            continue
+        reconciliations = _reconciliations_for_receipt(
+            item["receipt_id"],
+            reconciliation_store_dir,
+        )
+        if not reconciliations:
+            return "UNKNOWN_PRIOR_OUTCOME_RECONCILIATION_REQUIRED"
+        if any(
+            rec.get("resolution") == RECONCILIATION_CONFIRMED_SUCCESS
+            for rec in reconciliations
+        ):
+            return "RECONCILED_CONFIRMED_EXECUTION_DUPLICATE_BLOCK"
+        # CONFIRMED_NO_EFFECT clears the unknown-outcome retry block.
+
     if any(
         item.get("provider_outcome_status") == OUTCOME_PROVIDER_REJECTED
         for item in previous
@@ -398,6 +649,7 @@ def execute_bounded_connector_v0(
     observed_target_prestate_hash: str,
     adapter: ConnectorAdapterV0,
     receipt_store_dir: Optional[Path] = None,
+    reconciliation_store_dir: Optional[Path] = None,
     now: str | None = None,
 ) -> BoundedExecutorResultV0:
     """Execute only a deterministic sandbox adapter after exact revalidation."""
@@ -475,6 +727,7 @@ def execute_bounded_connector_v0(
     prior_block = _prior_execution_block_reason(
         ticket.idempotency_key,
         receipt_store_dir,
+        reconciliation_store_dir,
     )
     if prior_block:
         return BoundedExecutorResultV0(
