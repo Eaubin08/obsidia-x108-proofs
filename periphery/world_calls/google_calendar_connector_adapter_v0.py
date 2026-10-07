@@ -333,7 +333,7 @@ def _real_receipt_payload(value: Mapping[str, Any]) -> dict[str, Any]:
 
 def ingest_google_calendar_provider_result_v0(
     *,
-    invocation: GoogleCalendarInvocationEnvelopeV0,
+    invocation: GoogleCalendarInvocationEnvelopeV0 | Mapping[str, Any],
     provider_event_id: str,
     provider_status: str,
     readback_verified: bool,
@@ -344,6 +344,11 @@ def ingest_google_calendar_provider_result_v0(
     ok, reason = verify_invocation_v0(invocation)
     if not ok:
         raise ValueError(f"INVALID_GOOGLE_CALENDAR_INVOCATION:{reason}")
+    invocation_data = (
+        invocation.to_dict()
+        if isinstance(invocation, GoogleCalendarInvocationEnvelopeV0)
+        else dict(invocation)
+    )
     if not provider_event_id:
         raise ValueError("GOOGLE_CALENDAR_PROVIDER_EVENT_ID_REQUIRED")
     if provider_status != "confirmed":
@@ -358,7 +363,7 @@ def ingest_google_calendar_provider_result_v0(
     _parse_time(observed_at)
     event_hash = hashlib.sha256(provider_event_id.encode("utf-8")).hexdigest()
     seed = {
-        "invocation_hash": invocation.invocation_hash,
+        "invocation_hash": invocation_data["invocation_hash"],
         "provider_event_id_sha256": event_hash,
         "observed_at": observed_at,
     }
@@ -366,13 +371,13 @@ def ingest_google_calendar_provider_result_v0(
     payload = {
         "schema": REAL_RECEIPT_SCHEMA,
         "receipt_id": receipt_id,
-        "invocation_id": invocation.invocation_id,
-        "invocation_hash": invocation.invocation_hash,
-        "action_id": invocation.action_id,
-        "sovereign_ticket_hash": invocation.sovereign_ticket_hash,
-        "world_action_request_hash": invocation.world_action_request_hash,
-        "connector_call_hash": invocation.connector_call_hash,
-        "idempotency_key": invocation.idempotency_key,
+        "invocation_id": invocation_data["invocation_id"],
+        "invocation_hash": invocation_data["invocation_hash"],
+        "action_id": invocation_data["action_id"],
+        "sovereign_ticket_hash": invocation_data["sovereign_ticket_hash"],
+        "world_action_request_hash": invocation_data["world_action_request_hash"],
+        "connector_call_hash": invocation_data["connector_call_hash"],
+        "idempotency_key": invocation_data["idempotency_key"],
         "provider": "GOOGLE_CALENDAR",
         "provider_event_id_sha256": event_hash,
         "provider_status": provider_status,
