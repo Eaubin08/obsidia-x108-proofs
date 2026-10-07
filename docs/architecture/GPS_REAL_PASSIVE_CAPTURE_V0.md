@@ -212,3 +212,24 @@ Remaining physical blocker:
 `NO_CONFIRMED_GNSS_SDR_RECEIVER`
 
 P2 remains physically open until an actual receiver is connected and a passive capture is produced.
+
+
+## Historical archive audit — 2026-10-07
+
+A preserved local Git bundle and the archived `obsidia-gps-rf-work` tree were audited after P2 software verification.
+
+Recovered bundle references included:
+- `hackathon-gps-physical-real-gnss-v0` at `6a16d0261567a228d6aa69a30b13355276cd9116`;
+- `p76-gps-terrain-portable-reconciliation` at `7bd1019e42fa485b5d51bc738fec43194a4a4646`.
+
+The supposedly "real GNSS" historical branch does not contain a closed local live receiver path. Its own historical artifacts state that no local GNSS/SDR receiver was confirmed and that live physical ingestion remained blocked.
+
+The archived `obsidia-gps-rf-work` corpus contains extensive recorded-RF work (FGI, TEXBAT, TUNI, pass7/pass8, blinded evaluations), but the concrete GNSS-SDR receiver configurations found in that archive use:
+
+`SignalSource.implementation=File_Signal_Source`
+
+No recovered RTL-SDR, HackRF, u-blox, Osmosdr, UHD, PlutoSDR, LimeSDR, serial receiver, or equivalent live source configuration was found.
+
+Historical `REAL_PASSIVE_GNSS` adapter code was contract-level/readiness logic and depended on configured candidate environment variables; it was not evidence of a live capture. P1 intentionally hardened this boundary.
+
+**Archive verdict:** no forgotten local live receiver implementation or live capture proof was recovered. The remaining P2 blocker is genuinely physical hardware/capture, not missing software history.
