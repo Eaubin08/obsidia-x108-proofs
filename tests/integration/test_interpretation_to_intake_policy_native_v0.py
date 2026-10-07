@@ -1,4 +1,5 @@
 import inspect
+from dataclasses import replace
 
 from periphery.native_ops.interpretation_to_intake_policy_v0 import (
     DEADLINE_CANDIDATE,
@@ -13,6 +14,8 @@ from periphery.native_ops.interpretation_to_intake_policy_v0 import (
     DISPOSITION_INFORMATION_ONLY,
     OWNER_UNASSIGNED,
     project_interpretations_to_native_intake_v0,
+    verify_interpretation_to_intake_batch_v0,
+    verify_interpretation_to_intake_instruction_v0,
 )
 import periphery.native_ops.interpretation_to_intake_policy_v0 as policy_module
 from periphery.native_sources.source_interpretation_v0 import (
@@ -56,6 +59,12 @@ def test_policy_projects_all_twelve_interpretations_without_authority(tmp_path):
         assert instruction.allowed_to_act is False
         assert instruction.decision_authority == "KX108_ONLY"
         assert instruction.candidate_id in by_candidate
+        assert instruction.candidate_hash
+        assert verify_interpretation_to_intake_instruction_v0(instruction) == (
+            True,
+            None,
+        )
+    assert verify_interpretation_to_intake_batch_v0(batch) == (True, None)
 
 
 def test_policy_routes_information_context_duplicate_and_calendar(tmp_path):
@@ -179,3 +188,23 @@ def test_policy_is_deterministic_and_does_not_execute_native_intake(tmp_path):
     assert "apply_task_mutation_v0" not in source
     assert "allowed_to_decide: bool = False" in source
     assert "allowed_to_act: bool = False" in source
+
+
+def test_policy_verifier_rejects_authority_and_hash_tampering(tmp_path):
+    _, _, batch, _ = build_batch(tmp_path)
+    first = batch.instructions[0]
+
+    tampered_authority = replace(first, allowed_to_act=True)
+    assert verify_interpretation_to_intake_instruction_v0(
+        tampered_authority
+    ) == (False, "INTAKE_POLICY_AUTHORITY_FORBIDDEN")
+
+    tampered_hash = replace(first, policy_hash="0" * 64)
+    assert verify_interpretation_to_intake_instruction_v0(
+        tampered_hash
+    ) == (False, "INTAKE_POLICY_HASH_MISMATCH")
+
+    bad_batch = replace(batch, batch_hash="f" * 64)
+    assert verify_interpretation_to_intake_batch_v0(
+        bad_batch
+    ) == (False, "INTAKE_POLICY_BATCH_HASH_MISMATCH")
