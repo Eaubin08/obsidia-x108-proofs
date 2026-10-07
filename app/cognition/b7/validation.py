@@ -16,6 +16,7 @@ from typing import Any, Iterable, Mapping
 from app.cognition.b7.contracts import (CandidateStatus, CognitiveResolutionCandidate, CognitiveResolutionRequest,
                                         CognitiveValidationVerdict, RequiredCandidateKind)
 from app.harness.state_explicit.context_assembly import ContextPacket
+from app.semantic.lattice.lexicon import lookup as sens_lexicon_lookup
 from app.harness.state_explicit.contracts import StateEntry, StateStatus, Visibility
 from app.harness.state_explicit.registry import WorkingStateRegistry
 
@@ -59,15 +60,19 @@ def _contains_phrase(haystack: tuple[str, ...], phrase: tuple[str, ...]) -> bool
     return n > 0 and any(haystack[i:i + n] == phrase for i in range(len(haystack) - n + 1))
 
 
-def _structured_referents(origin: StateEntry) -> set[tuple[str, ...]]:
-    """Referent phrases SENS already structured (unit subjects, object texts, coordination members)."""
+def _structured_referents(origin: StateEntry, anaphor_units: frozenset[str] = frozenset()) -> set[tuple[str, ...]]:
+    """Referent phrases SENS already structured (unit subjects, object texts, coordination members).
+
+    The objects of the unit carrying the mention being resolved are the anaphor itself ("Lance-le":
+    object "le"), not candidate referents, and are not counted."""
     payload = origin.payload if isinstance(origin.payload, dict) else {}
     frame = payload.get("semantic_frame") or {}
     out: set[tuple[str, ...]] = set()
     for u in frame.get("units") or []:
         if isinstance(u, dict):
             out.add(_tokens(str(u.get("subject") or "")))
-            out.update(_tokens(str(o.get("text") or "")) for o in u.get("objects") or [] if isinstance(o, dict))
+            if str(u.get("id")) not in anaphor_units:
+                out.update(_tokens(str(o.get("text") or "")) for o in u.get("objects") or [] if isinstance(o, dict))
     for c in frame.get("coordinations") or []:
         if isinstance(c, dict):
             out.update(_tokens(str(t)) for t in c.get("member_texts") or [])
@@ -75,20 +80,28 @@ def _structured_referents(origin: StateEntry) -> set[tuple[str, ...]]:
     return out
 
 
-def _referent_admissible(value: Any, origin: StateEntry) -> bool:
-    """STRUCTURED IDENTITY > exact bounded phrase evidence > REJECT (never a character coincidence)."""
+def _known_verb_form(token: str) -> bool:
+    """Readonly SENS lexicon membership (the lexicon lists verb forms only); no B7 verb list."""
+    return bool(sens_lexicon_lookup(token)[0])
+
+
+def _referent_admissible(value: Any, origin: StateEntry, anaphor_units: frozenset[str] = frozenset()) -> bool:
+    """STRUCTURED REFERENTS AVAILABLE -> closed admissible set (no text fallback);
+    otherwise exact bounded phrase evidence (never a character coincidence) or REJECT."""
     if not isinstance(value, str) or _NON_PHRASE.search(value):
         return False
     phrase = _tokens(value)
     if not phrase:
         return False
-    if phrase in _structured_referents(origin):
-        return True
+    structured = _structured_referents(origin, anaphor_units)
+    if structured:
+        return phrase in structured
     raw = _origin_raw(origin)
     if not _contains_phrase(_tokens(raw), phrase):
         return False
     if len(phrase) > 1:
-        return phrase[0] in _DETERMINERS
+        # a determiner followed by a known SENS verb form ("le teste", "la lance") is not a referent
+        return phrase[0] in _DETERMINERS and not _known_verb_form(phrase[1])
     # a single bare token is a text referent only as a capitalized name in the original text; a
     # sentence-initial capital proves nothing ("Lance-le." is not a name)
     for m in _WORD.finditer(raw):
@@ -163,7 +176,8 @@ def _check(request: CognitiveResolutionRequest, cand: CognitiveResolutionCandida
         return "forbidden_claim"
     referents = [proposal[k] for k in _REFERENT_SCALARS if k in proposal]
     referents += [v for k in _REFERENT_LISTS for v in proposal.get(k) or []]
-    if not all(_referent_admissible(v, origin) for v in referents):
+    anaphor_units = frozenset(m.split(":", 1)[0] for m in markers if ":" in m)
+    if not all(_referent_admissible(v, origin, anaphor_units) for v in referents):
         return "unsupported_content_invented"
     times = [proposal[k] for k in _TIME_SCALARS if k in proposal]
     times += [v for k in _TIME_LISTS for v in proposal.get(k) or []]
