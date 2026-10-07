@@ -74,6 +74,14 @@ Result:
 
 ## Verdict
 
-`UNIVERSAL_ENTERPRISE_STACK_ADAPTER_V0_PROVEN_FUNCTIONAL`
+`UNIVERSAL_ENTERPRISE_STACK_ADAPTER_V0_PROVEN`
 
-Final freeze HEAD rerun required after evidence metadata is committed.
+## Freeze proof
+
+Workflow: `37643429107`
+
+Result: `127 passed in 3.57s`
+
+Tested HEAD: `0e569a8bb49de149117ff0ffdf2c17eea629636e`
+
+The final metadata-only HEAD proof is recorded on the Draft PR.
