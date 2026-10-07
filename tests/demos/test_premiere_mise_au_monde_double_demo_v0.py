@@ -60,8 +60,9 @@ def test_gps_blocker_remains_visible_and_fail_closed():
         evidence_refs=("evidence:gps:recorded",),
         receiver_status="BLOCKED_RECEIVER_CONFIGURATION",
     )
-    result = run_gps_demo_v0(gps, confidence=0.9)
-    assert result.x108_gate in {"HOLD", "BLOCK"}
+    result = run_gps_demo_v0(gps, confidence=0.4)
+    assert result.x108_gate == "HOLD"
+    assert result.reason_code == "UNKNOWNS_OR_CONFIDENCE_LOW"
     assert result.proof_verified is True
     assert result.execution_authority is False
 
