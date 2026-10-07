@@ -23,6 +23,7 @@ jobs:
         run: >-
           python -m pytest
           tests/integration/test_gmail_draft_connector_adapter_v0.py
+          tests/integration/test_gmail_draft_governed_real_pilot_v0.py
           tests/integration/test_google_calendar_connector_adapter_v0.py
           tests/integration/test_google_calendar_governed_real_pilot_v0.py
           tests/integration/test_world_action_multidomain_conformance_v0.py
