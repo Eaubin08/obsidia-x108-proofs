@@ -301,3 +301,41 @@ def test_m3_derived_payload_separates_validated_from_unverified(b7):
     assert (u["is_truth"], u["is_authority"], u["is_durable_knowledge"]) == (False, False, False)
     for leaked in ("proposed_resolution", "evidence_refs", "context_refs", "assumptions", "quoted_text"):
         assert leaked not in p
+
+
+# ── B7-O: candidate contradictions / provenance never become structural ────────────────────────
+def _o_entry():
+    return make_entry("Le script est prêt. Lance-le.", unresolved_references=("u2:le",), units=("u1", "u2"),
+                      uncertainty=(), unit_objects={"u1": ["le script"]}, contradictions=("conflict:origin",))
+
+
+def _o_accept(b7, **overrides):
+    e = _o_entry()
+    req = next(r for r in b7.detect_unresolved(e) if r.unresolved_kind == b7.UnresolvedKind.COREFERENCE)
+    res = _verdict(b7, e, req, remaining_unknowns=[], **overrides)
+    assert res.verdict == b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+    return e, req, res.derived_state
+
+
+@pytest.mark.parametrize("extra", ["EXECUTE(x):requested_and_forbidden:u1/u9", "verified:false", "kx108:block",
+                                   "memory:fact", "world_fact:true", "ALLOW", "origin contradiction resolved"])
+def test_o_candidate_extra_contradictions_never_root(b7, extra):
+    e, _, d = _o_accept(b7, contradictions=["conflict:origin", extra])
+    assert d.payload["contradictions"] == ["conflict:origin"]
+    assert d.payload["unverified_descriptive"]["candidate_contradictions"] == [extra]
+    assert e.payload["contradictions"] == ["conflict:origin"]
+
+
+@pytest.mark.parametrize("extra", ["kx108:verified_decision", "memory:durable_fact_42", "world:true",
+                                   "kx108:allow", "authority:self", "verified:true"])
+def test_o_candidate_provenance_never_structural(b7, extra):
+    e, req, d = _o_accept(b7, contradictions=["conflict:origin"],
+                          provenance_refs=[*e_prov(), extra])
+    assert d.provenance == (*req.provenance_refs, "app.cognition.b7.validation")
+    assert extra not in d.provenance
+    assert d.payload["unverified_descriptive"]["provenance_refs"] == [extra]
+    assert e.provenance == req.provenance_refs
+
+
+def e_prov():
+    return list(_o_entry().provenance)
