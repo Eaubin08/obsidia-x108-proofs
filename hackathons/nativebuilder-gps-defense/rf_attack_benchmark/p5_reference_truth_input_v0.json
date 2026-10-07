@@ -1,0 +1,37 @@
+{
+  "artifact": "gps_p5_reference_truth_input_v0",
+  "source_scenario": "FGI-SpoofRepo UT_DFMC",
+  "stationary_reference_lla": [
+    60.18226,
+    24.828537,
+    47.248
+  ],
+  "reference_notes": [
+    "Precise receiver reference already bound in FGI-GSRx compatibility parameters.",
+    "Published dataset metadata also describes the true receiver as stationary near 60.182 N, 24.828 E, altitude 47.248 m.",
+    "Reference is used post-decision for support analysis, not as detector input."
+  ],
+  "observations": {
+    "gnss_sdr_pre": [
+      60.182219,
+      24.828574,
+      40.84
+    ],
+    "gnss_sdr_post": [
+      60.166745,
+      24.566657,
+      -2.07
+    ],
+    "gsrx_pre": [
+      60.182284769159764,
+      24.828539016377103,
+      54.51329799182713
+    ],
+    "gsrx_post": [
+      60.16678285928633,
+      24.566605685033455,
+      27.978812254033983
+    ]
+  },
+  "truth_consumed_by_detector": false
+}
