@@ -64,6 +64,7 @@ Prefixes namespace only: `IDENTITY_COLLISION_REDUCTION=NONE`.
 | TransitionRequest | `b8treq_` | every field |
 | TransitionReceipt | `b8rcpt_` | every field |
 | SupersessionTransitionBundle | `b8bundle_` | every field except bundle_digest |
+| GapPartitionBundle | `b8gpart_` | every field except bundle_digest |
 | EpistemicGap record | `b8gap_` | gap_id lineage fields, gap_version, state, refs, recorded_at, previous_gap_record_id |
 | GapTransitionRequest / Receipt | `b8greq_` / `b8grcpt_` | every field |
 
@@ -92,7 +93,7 @@ append-only log size, a B10 persistence concern.
 | `VerificationRecord` | verifier_family, claim_id, claim_version, verdict SATISFIED / NOT_SATISFIED / INCONCLUSIVE, evidence_refs, method ref, produced_at |
 | `HumanAttestation` (O-5) | attestation_id, actor_id, identity_source, auth_context_ref, issued_at, claim_id, claim_version, attestation_kind (ATTESTATION / REVIEW_AUTHORIZATION / PRIMARY_DECLARATION), scope, optional proof/signature ref |
 | `KnowledgeRecord` | claim_id, claim_version, record_version, state, evidence / verification / attestation refs, supersedes / superseded_by, contested_by, recorded_at, previous_record_id |
-| `TransitionRequest` | claim_id, expected_claim_version, expected_state, expected_record_version, target_state, refs, (T9 only) supersedes_claim_id + supersedes_record_id, requester ref, reason |
+| `TransitionRequest` | claim_id, expected_claim_version, expected_state, expected_record_version, slot_id, expected_slot_revision, target_state, refs, (T9 only) supersedes_claim_id + supersedes_record_id, requester ref, reason |
 | `TransitionReceipt` | request id, verdict APPLIED / REJECTED / NO_OP_DUPLICATE, claim_id, claim_version, from / to state, from / to record_version, from / to record id, reasons, gate contract version, recorded_at |
 | `SupersessionTransitionBundle` | §9.3 |
 | `EpistemicGap` (O-1) | gap_id (lineage), gap_version, slot_id, valid_time, reason knowledge is unavailable, missing evidence, contradiction refs, provenance, state OPEN / RESOLVED / SUPERSEDED, recorded_at |
@@ -129,8 +130,11 @@ Slot canonicalization (applied before hashing; any violation → REJECT):
 1. Every textual component (domain_id, predicate_ref, each subject / context ref) must be a
    string, normalized to Unicode NFC; empty or whitespace-only strings and non-strings are
    rejected. No other normalization (no case folding, no trimming beyond the rejection rule).
-2. `subject_refs` and `context_refs` are **unordered sets**: normalize each, reject empty,
-   deduplicate exact normalized values, sort by code point.
+2. `subject_refs` and `context_refs` are **unordered sets**: normalize each, reject empty
+   elements, deduplicate exact normalized values, sort by code point. `subject_refs` must contain
+   at least one element (`EMPTY_SUBJECT_REFS=REJECT`: a subjectless slot is too broad for V1;
+   global knowledge needs a future audited contract with a typed canonical subject).
+   `context_refs` may be empty (`EMPTY_CONTEXT_REFS=ALLOWED`: no extra discriminator).
 3. `KnowledgeSlot` = `b8slot_` + SHA-256(canonical_json([claim_class, domain_id,
    subject_set, context_set, predicate_ref])) — full 256 bits.
 
@@ -142,6 +146,38 @@ needs ordered participants puts that order in typed claim content, never in the 
 - same slot, non-overlapping valid_time → historical coexistence;
 - same slot, overlapping valid_time, different admissible successor → T9 supersession only;
 - different context / domain → different slot, never fused.
+
+### 5.1 Valid-time algebra
+
+`valid_time` is a half-open interval `[start, end)` of canonical comparable time values; `start`
+may be −∞ and `end` may be +∞ (encoded as null). `overlaps(a, b)` = a.start < b.end and
+b.start < a.end; `contains(a, b)` = a.start ≤ b.start and b.end ≤ a.end; `difference(a, b)` = the
+0, 1 or 2 half-open intervals of a not covered by b (deterministic, exact). In V1 a gap scope is
+partitioned only along `valid_time` (the slot is fixed); a future scope type without an exact
+deterministic difference cannot be partitioned → `PARTIAL_GAP_RESOLUTION=HELD` (no approximation).
+
+### 5.2 Slot state and concurrency (D-B8-R2-3)
+
+Each KnowledgeSlot has a logical `SlotState{slot_id, slot_revision, last_recorded_at}`, initial
+revision 0. Every APPLIED claim transition on the slot (any rule, T1 included) increments
+`slot_revision` by exactly 1; a T9 bundle increments it exactly once; REJECTED and
+NO_OP_DUPLICATE never increment. Every claim request binds `slot_id` + `expected_slot_revision`;
+the gate checks claim version, state, record version and slot revision against one canonical
+snapshot and applies atomically; any mismatch → REJECTED `stale_request`. Locks, transactions,
+database CAS or a single writer are implementation mechanisms; the semantic contract is the
+expected slot revision. Two requests prepared on the same revision can never both apply:
+`CONCURRENT_T6_DOUBLE_PROMOTION=0`, `T6_T9_RACE_DOUBLE_PROMOTION=0`,
+`CONCURRENT_T9_CONFLICT_ACCEPTED=0`.
+
+### 5.3 Recorded-time ordering (D-B8-R2-2)
+
+`valid_time` may lie anywhere; `recorded_at` never moves backward. A claim transition requires
+`recorded_at ≥ SlotState.last_recorded_at` (which also covers the claim's own previous record);
+a gap transition requires `recorded_at ≥` the previous gap record's `recorded_at` and, for G2 / G4,
+`≥` the slot's `last_recorded_at`; a bundle has one `recorded_at` that must satisfy every affected
+predecessor. Otherwise → REJECTED `backdated_record`. Equal timestamps are allowed; order is total
+by `(recorded_at, record_version)` per claim, `(recorded_at, slot_revision)` per slot and
+`(recorded_at, gap_version)` per gap. `RECORDED_HISTORY_IS_APPEND_ONLY_AND_NON_BACKDATED`.
 
 ## 6. Claim classes and verifier policy (O-2)
 
@@ -201,20 +237,39 @@ Authority: `B8_CANONICAL_TRANSITION_GATE` only (no agent, human or LLM authority
 | # | From → To | Preconditions |
 |---|---|---|
 | G1 | ∅ → OPEN | well-formed gap (slot, valid_time, reason, provenance) ; idempotent on gap_id |
-| G2 | OPEN → RESOLVED | `promoted_claim_id` + `promoted_record_id` whose latest state (§10) is PROMOTED, same slot_id, valid_time overlapping the gap's, reason |
-| G3 | OPEN → SUPERSEDED | `successor_gap_id` of an OPEN gap on the same slot_id with overlapping valid_time, reason |
+| G2 | OPEN → RESOLVED (full coverage) | `promoted_claim_id` + `promoted_record_id` whose latest state (§10) is PROMOTED, same slot_id, typed resolution relation, claim valid_time **contains** the gap valid_time, expected_slot_revision, reason |
+| G3 | OPEN → SUPERSEDED, reason GAP_REFRAMED | `successor_gap_id` of an OPEN gap on the same slot_id whose valid_time **contains** the old gap's, reason |
+| G4 | compound GapPartitionBundle, reason PARTIAL_RESOLUTION | PROMOTED claim (latest state, same slot, typed resolution relation, expected_slot_revision) whose valid_time overlaps but does not contain the gap's: old gap OPEN → SUPERSEDED, resolved sub-interval (gap ∩ claim) linked to the claim, residual gaps = `difference(gap, claim)` created OPEN (§5.1) |
 
 Every gap transition uses `GapTransitionRequest` (gap_id, expected_gap_state, expected_gap_version,
-target_state, refs, reason) → new immutable gap record + `GapTransitionReceipt`; CAS, idempotency
-(NO_OP_DUPLICATE), stale request rejection and append-only history as in §9.1. Every other pair
-fails closed; RESOLVED and SUPERSEDED are terminal; no gap state is a claim state.
+target_state, refs, reason, and for G2 / G4 slot_id + expected_slot_revision) → new immutable gap
+record(s) + `GapTransitionReceipt`(s); CAS, idempotency (NO_OP_DUPLICATE with the original
+receipt / bundle), stale request rejection, non-backdating (§5.3) and append-only history as in
+§9.1. Every other pair fails closed; RESOLVED and SUPERSEDED are terminal; no gap state is a claim
+state. A partial resolution never marks the whole gap RESOLVED
+(`PARTIAL_COVERAGE_CAN_FULLY_RESOLVE_GAP=NO`); the receipt reason distinguishes GAP_REFRAMED from
+PARTIAL_RESOLUTION.
+
+**GapPartitionBundle (G4, atomic)**: original_gap_id, original_gap_record_id, resolving_claim_id,
+resolving_promoted_record_id, resolved_scope, residual_gap_records[], old_gap_transition_receipt,
+new_gap_receipts[], recorded_at, gate_contract_version, bundle_digest. Invariants: original scope =
+resolved scope ∪ residual scopes; resolved ∩ residuals = ∅; residuals pairwise disjoint. All or
+nothing: never the old gap SUPERSEDED without its residuals, residuals while the old gap stays OPEN,
+a linked resolved segment without the partition, or residuals that do not rebuild the original
+scope (`GAP_PARTITION_ATOMIC=YES`, `UNCERTAINTY_COVERAGE_LOSS=0`). Example: gap [0,10) and PROMOTED
+claim [5,6) → old gap SUPERSEDED, [5,6) linked to the claim, new OPEN gaps [0,5) and [6,10).
+
+Intentional asymmetry: unknown space is partitioned (uncertainty must be preserved); positive claims
+are never auto-partitioned (that would manufacture knowledge artifacts) — T9 fails closed instead.
 
 ## 9. Legal transitions (the only ones)
 
 ### 9.1 Common contract
 
-Every request binds claim_id, expected_claim_version, expected_state, expected_record_version and
-target_state (compare-and-set against the latest record; mismatch → REJECTED `stale_request`), a
+Every request binds claim_id, expected_claim_version, expected_state, expected_record_version,
+slot_id, expected_slot_revision and target_state (compare-and-set against one canonical snapshot,
+§5.2; mismatch → REJECTED `stale_request`; backdated `recorded_at` → REJECTED `backdated_record`,
+§5.3), a
 reason, and refs re-hashed and bound to `(claim_id, claim_version)`. An applied transition
 produces exactly one new immutable `KnowledgeRecord` (`record_version + 1`) and one
 `TransitionReceipt` (T9: one bundle, §9.3). An identical request already applied →
@@ -229,17 +284,18 @@ NO_OP_DUPLICATE with the original receipt / bundle; an old receipt never re-appl
 | T3 | CANDIDATE / HELD → REJECTED | explicit reasons |
 | T4 | CANDIDATE / HELD → SUPPORTED | ≥1 admissible EvidenceRef with complete provenance |
 | T5 | SUPPORTED → VERIFIED | VerificationRecord SATISFIED, verifier family admissible for the class (§6), bound to (claim_id, claim_version); human classes: admissible PRIMARY_DECLARATION attestation (§7) |
-| T6 | VERIFIED → PROMOTED (free slot) | no claim whose latest state is PROMOTED on the same slot with overlapping valid_time; no open contradiction; REVIEW_AUTHORIZATION attestation admissible when `requires_human_review` |
+| T6 | VERIFIED → PROMOTED (free slot) | expected_slot_revision current; no claim whose latest state is PROMOTED on the same slot with overlapping valid_time; no open contradiction; REVIEW_AUTHORIZATION attestation admissible when `requires_human_review` |
 | T7 | SUPPORTED / VERIFIED / PROMOTED → CONTESTED | admissible contradicting evidence or claim recorded with refs |
 | T8 | CONTESTED → SUPPORTED | contradiction explicitly resolved (contradicting side INVALIDATED / REJECTED or new verification refs); never by confidence or recency; T5 and T6 required again |
-| T9 | compound: new VERIFIED → PROMOTED **and** predecessor PROMOTED → SUPERSEDED | request carries `supersedes_claim_id` + `supersedes_record_id` identifying exactly the predecessor whose latest state is PROMOTED on the same slot with overlapping valid_time; the new claim meets every T6 condition except the free-slot one; atomic bundle (§9.3) |
+| T9 | compound: new VERIFIED → PROMOTED **and** predecessor PROMOTED → SUPERSEDED | request carries `supersedes_claim_id` + `supersedes_record_id` + expected_slot_revision identifying exactly the predecessor whose latest state is PROMOTED on the same slot; it is the **only** PROMOTED claim on the slot overlapping the new valid_time (else REJECTED `MULTIPLE_PREDECESSORS_UNSUPPORTED`: no winner, no repeated T9); the new valid_time **contains** the predecessor's (partial overlap → REJECTED; no implicit claim split in V1); the new claim meets every T6 condition except the free-slot one; atomic bundle (§9.3), one recorded_at, slot_revision +1 once |
 | T10 | CANDIDATE / HELD / SUPPORTED / VERIFIED / PROMOTED / CONTESTED / STALE → INVALIDATED | explicit reason + evidence ref |
 | T11 | PROMOTED → STALE | staleness trigger evidence per class mechanism (§6) |
 | T12 | STALE → VERIFIED | fresh SATISFIED VerificationRecord for the same (claim_id, claim_version); T6 / T9 again to PROMOTED |
 
-`LEGAL_TRANSITION_COUNT=12` claim rules (T9 compound) + 3 gap rules (G1–G3).
+`LEGAL_TRANSITION_COUNT=12` claim rules (T9 compound) + 4 gap rules (G1–G3, G4 compound).
 Claim (from, to) pairs: 22 (T9 contributes VERIFIED → PROMOTED on the new claim and PROMOTED →
-SUPERSEDED on the predecessor, both only inside one bundle) ; gap pairs: 3.
+SUPERSEDED on the predecessor, both only inside one bundle) ; gap pairs: 3 (∅ → OPEN, OPEN → RESOLVED,
+OPEN → SUPERSEDED; G4 = OPEN → SUPERSEDED + ∅ → OPEN residuals inside one bundle).
 
 ### 9.3 SupersessionTransitionBundle (T9 atomic result)
 
@@ -252,6 +308,11 @@ All-or-nothing: the gate either returns the complete bundle (both new records, b
 links) or REJECTED with no new record. No valid outcome exposes two claims whose latest state is
 PROMOTED on the same slot / overlapping time, nor a SUPERSEDED predecessor without a PROMOTED
 successor, nor a one-way link. Idempotency and replay apply to the whole bundle.
+
+**Current uniqueness**: with slot-revision CAS, T6 free-slot, atomic single-predecessor T9 and full
+predecessor coverage, for every (slot, world_time, as_of_recorded_time) at most one claim is current
+PROMOTED (`CURRENT_PROMOTED_CARDINALITY_PER_SLOT_TIME ≤ 1`); zero means explicitly not known. Never
+chosen by confidence, recency, majority or provider priority.
 
 ### 9.4 Forbidden complement (fail closed)
 
@@ -270,8 +331,9 @@ History is append-only: records, receipts and bundles are immutable, linked by
 `valid_time` (when the claim applies to the world / domain) and `recorded_at` (when Obsidia
 recorded the transition).
 
-- `LATEST_EPISTEMIC_STATE(claim_id, as_of_recorded_time)` = state of the record with the highest
-  record_version among that claim's records with `recorded_at ≤ as_of_recorded_time`.
+- `LATEST_EPISTEMIC_STATE(claim_id, as_of_recorded_time)` = state of the last record in
+  `(recorded_at, record_version)` order among that claim's records with `recorded_at ≤
+  as_of_recorded_time` (non-backdated history, §5.3; never wall-clock sorting alone).
 - `KNOWLEDGE_STATE_AS_RECORDED_AT(T)` = for each claim, `LATEST_EPISTEMIC_STATE(claim_id, T)`
   (historical replay: "what did Obsidia hold at T").
 - `CURRENT_KNOWLEDGE(slot, world_time, as_of_recorded_time)` = claims such that the slot matches,
@@ -323,5 +385,10 @@ No duplicate promotion engine survives canonical B8.
 - Remediation 02ec2c64: §10 latest-state queries; §4.1 version model and CAS fields; T6
   free-slot + T9 compound rule with §9.3 bundle; §5 canonicalization; §8.1 gap rules G1–G3;
   §3 bounds wording. Status back to DRAFT_FOR_AUDIT pending independent re-certification.
-- Normalization (docs only, no semantic change): history line moved out of the active status
+- Normalization 17730492 (docs only, no semantic change): history line moved out of the active status
   block into this record; header BASE line reworded so the active block carries no CLOSED token.
+- Independent certification R2 of 17730492: S1–S5 confirmed fixed; REMEDIATE_SPEC for D-B8-R2-1
+  (gap resolved by partial overlap), D-B8-R2-2 (backdatable recorded_at), D-B8-R2-3 (no slot-level
+  CAS). Remediation: §5.1 interval algebra, §5.2 slot_revision CAS, §5.3 non-backdating, G2 / G3
+  containment + G4 GapPartitionBundle, T9 single predecessor + full predecessor coverage,
+  empty-collection policy, current-uniqueness invariant. Status stays DRAFT_FOR_AUDIT.
