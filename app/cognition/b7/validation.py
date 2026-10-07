@@ -28,6 +28,11 @@ _WORD = re.compile(r"[^\W_]+", re.UNICODE)
 _NON_PHRASE = re.compile(r"[^\w\s'’-]", re.UNICODE)     # a claimed phrase never spans punctuation
 _BLOCKER_FORM = {"unresolved_references": "unresolved_reference", "contradictions": "contradiction",
                  "ambiguities": "ambiguity", "missing": "missing"}
+# closed proposed_resolution schema: every key is either validated below or explicitly descriptive
+# (quoted_text / characterization / hypothesis never ground a referent); any other key is an
+# unvalidated claim and is rejected (it would otherwise enter accepted context unchecked)
+_VALIDATED_KEYS = frozenset({"mention", "antecedent", "participants", "sources", "anchor", "times", "relations"})
+_DESCRIPTIVE_KEYS = frozenset({"quoted_text", "characterization", "hypothesis"})
 _FORBIDDEN_CLAIMS = ("physical_chronology_established", "world_fact_established", "emits_act", "memory_write",
                      "kernel_mutation", "allowed_to_act", "allowed_to_decide", "decision_authority")
 
@@ -147,6 +152,8 @@ def _check(request: CognitiveResolutionRequest, cand: CognitiveResolutionCandida
     proposal = cand.proposed_resolution
     if any(proposal.get(k) not in (None, False) for k in _FORBIDDEN_CLAIMS):
         return "forbidden_claim"
+    if set(proposal) - _VALIDATED_KEYS - _DESCRIPTIVE_KEYS - set(_FORBIDDEN_CLAIMS):
+        return "unvalidated_claim_key"
     referents = [proposal[k] for k in _REFERENT_SCALARS if k in proposal]
     referents += [v for k in _REFERENT_LISTS for v in proposal.get(k) or []]
     anaphor_units = frozenset(m.split(":", 1)[0] for m in markers if ":" in m)
