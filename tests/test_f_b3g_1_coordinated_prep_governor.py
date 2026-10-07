@@ -34,7 +34,13 @@ def test_serve_for_members_are_both_purpose(text, pair):
     occ = {e.predicate_ref: e.occurrence_claim.value for e in build_frame_event_index(f).events()}
     assert occ.get("u3") != "ASSERTED_REALIZED"
     s = governable_summary(f)
-    assert s["requested_world_actions"] == [] and not f.constraints and f.closure
+    assert s["requested_world_actions"] == [] and not f.constraints
+    # R1-R5 (requalified): "La mémoire qui sert à ... est prête" no longer drops its main
+    # predicate "est prête": it is reported, so that frame stays open
+    if text.startswith("La mémoire"):
+        assert any(m.endswith(":main_predicate_after_relative_of=u3") for m in f.missing) and not f.closure
+    else:
+        assert f.closure
 
 
 @pytest.mark.parametrize("text", ["Paul apprend à tester Q et à lancer R.", "Paul a oublié de tester Q et de lancer R."])

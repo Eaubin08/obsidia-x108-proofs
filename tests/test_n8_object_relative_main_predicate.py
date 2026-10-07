@@ -24,7 +24,7 @@ def _kept(f):
     ("Le build que Marie teste échoue.", "échoue", "u1"),
     ("La tâche que Paul lance réussit.", "réussit", "u1"),
     ("Le test que Paul lance est prêt.", "est prêt", "u1"),
-    ("Le test que Paul lance demain échoue.", "demain échoue", "u1"),
+    ("Le test que Paul lance demain échoue.", "échoue", "u1"),   # R1-R5: "demain" stays in the relative
     ("Le test que Paul lance et que Marie observe échoue.", "échoue", "u2"),
 ])
 def test_main_predicate_reported_never_object(text, span, unit):

@@ -100,7 +100,8 @@ def test_modal_with_unknown_infinitive_keeps_modal_and_link():
 
 def test_main_predicate_absorbed_after_relative_is_reported():
     frame = parse_utterance("Le script que Paul a lancé est cassé.")
-    assert [link for _, link, _ in _markers(frame)] == ["unattached"]
+    # R1-R5 (requalified, formerly "unattached"): named as the antecedent's main predicate
+    assert [link for _, link, _ in _markers(frame)] == ["main_predicate_after_relative_of=u1"]
     assert [u.predicate for u in frame.units] == ["EXECUTE"]
 
 
