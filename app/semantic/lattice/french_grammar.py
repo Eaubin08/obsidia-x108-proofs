@@ -1083,7 +1083,16 @@ def _relative_chain_end(toks: list, j: int, raw: str, has_object: bool) -> int:
         if len(toks[s].low) == 1 and raw[toks[s].start:toks[s].end].isupper():
             return s + 1
         arg, nxt = _np_from(toks, s)
-        return nxt if arg is not None and nxt > s else e
+        if arg is None or nxt <= s:
+            return e
+        end_of_clause = all(t.is_punct for t in toks[nxt:])
+        if end_of_clause and toks[s].low in _DETERMINERS and nxt > s + 2:
+            # N5-R: an extended NP that would consume all the remaining material leaves no
+            # room for the antecedent's (unknown) main predicate ("le build échoue"): no
+            # positive evidence for the extension; bound the object to its safe core (det +
+            # head) and keep the remainder as explicit unresolved content
+            return s + 2
+        return nxt
     if _pred(toks[j]) in {"HAVE", "BE"} and j + 1 < len(toks) and _is_verb(toks, j + 1) \
             and "PP" in _feats(toks[j + 1]):
         j += 1
@@ -1197,7 +1206,9 @@ def _split_relative_main(clauses: list[_Clause], raw: str) -> list[_Clause]:
             continue
         if not rest or rest[0].is_punct or rest[0].low in set(_CONNECTIVES) | {"et", "ou", "puis", "mais", "qui", "que"}:
             # the main predicate was not found after the relative chain: named, frame open
-            if not any(c.conn not in {"rel", "et", "ou", "puis"} for c in out[chain_end + 1:chain_end + 2]):
+            # (N5-R: a following consequent never proves that a protasis predicate exists)
+            if ante.conn == "si" or not any(c.conn not in {"rel", "et", "ou", "puis"}
+                                            for c in out[chain_end + 1:chain_end + 2]):
                 ante.rel_main_unresolved = True
             k = chain_end + 1
             continue
