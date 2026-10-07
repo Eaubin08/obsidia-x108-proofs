@@ -1,6 +1,6 @@
 # Première mise au monde — F11 Product Freeze V0
 
-Status: **FREEZE CANDIDATE — CI REQUIRED**
+Status: **FROZEN / VERIFIED — NO F3→F11 REGRESSION**
 
 F11 ne change pas l'autorité: `KX108_ONLY`. Il ferme les dettes d'acceptation qui pouvaient fausser la frontière de preuve avant le gel produit.
 
@@ -26,3 +26,13 @@ Le candidat est gelable seulement si:
 5. aucune provenance n'est promue silencieusement en evidence.
 
 Le statut **FROZEN / VERIFIED** ne doit être posé qu'après CI.
+
+## Verification finale
+
+- HEAD vérifié: `53b8a813ba94811be1b93f62de7a0e033a6044c4`
+- GitHub Actions run: `37554279661`
+- Résultat global: `12485 passed / 11 failed / 46 skipped / 207 deselected`
+- Les 11 failures restantes correspondent à la baseline hors périmètre déjà observée avant F11; aucun test F3→F11 n’échoue.
+- F11 introduit 4 passes nettes par rapport au checkpoint F10 (`12481 passed`) et aucune nouvelle failure produit.
+
+**Verdict:** Première mise au monde V0 = `FROZEN / VERIFIED` sur cette branche. Ce verdict ne transforme pas les limites déclarées (GPS LIVE/RF hostile, SENS/GMS complet, failures historiques hors scope) en capacités fermées.
