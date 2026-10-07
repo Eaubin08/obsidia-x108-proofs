@@ -19,7 +19,6 @@ External action:
 
 ## Implemented
 
-- `sigma/contracts.py` — `Domain.WORLD_ACTION`
 - `scripts/obsidia_world_action_pre_execution_context_v0.py`
 - `scripts/obsidia_world_action_pre_execution_v0.py`
 - `scripts/obsidia_kx108_decision_store.py`
@@ -70,3 +69,10 @@ Result:
 `WORLD_ACTION_PRE_EXECUTION_CANONICAL_PRODUCER_V0_PROVEN`
 
 `REAL_EXTERNAL_WORLD_ACTUATION_NOT_ACTIVATED`
+
+## Protected-core boundary
+
+- protected `sigma/contracts.py` unchanged
+- protected `sigma/guard.py` unchanged
+- protected `sigma/protocols.py` unchanged
+- KX108 engine mutation: NO
