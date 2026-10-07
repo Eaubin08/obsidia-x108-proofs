@@ -425,7 +425,7 @@ F25 — PUBLIC FREEZE / RELEASE CANDIDATE — FROZEN
 
 The first-world release chain F12→F25 is frozen. New physical-world work continues on separate branches and must not rewrite the freeze.
 
-### P1 — CONTROLLED LIVE RECEIVER READINESS — CURRENT
+### P1 — CONTROLLED LIVE RECEIVER READINESS — VERIFIED
 
 Branch:
 `feat/gps-live-controlled-receiver-readiness-v0`
@@ -462,7 +462,7 @@ Promotion to `REAL_PASSIVE_GNSS` requires at minimum:
 - provenance;
 - explicit remaining limitations.
 
-### P2 — REAL PASSIVE GNSS CAPTURE
+### P2 — REAL PASSIVE GNSS CAPTURE — CURRENT
 
 Only after P1 validation:
 - connect actual passive GNSS/SDR receiver;
@@ -559,9 +559,9 @@ This is the path toward closing the original F21 open items:
 ```text
 F25 FROZEN
    ↓
-P1 Receiver readiness
+P1 Receiver readiness — VERIFIED
    ↓
-P2 Real passive GNSS capture
+P2 Real passive GNSS capture — CURRENT
    ↓
 P3 Multi-source corroboration
    ↓
