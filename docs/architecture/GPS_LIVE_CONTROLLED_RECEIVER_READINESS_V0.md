@@ -1,6 +1,6 @@
 # GPS LIVE Controlled Receiver Readiness V0
 
-Status: IMPLEMENTED / VALIDATION REQUIRED
+Status: IMPLEMENTED / HARDENED / FINAL VALIDATION REQUIRED
 
 ## Purpose
 
@@ -86,6 +86,12 @@ A future REAL_PASSIVE_GNSS promotion must bind at minimum:
 - explicit remaining limitations.
 
 Configuration alone never satisfies this.
+
+A second residual boundary is also hardened:
+
+`eligible_for_physical_claim != sensor_attestation_proven`
+
+Recorded-real or live physical-claim eligibility can never synthesize sensor attestation. The GPS domain payload now sets `sensor_attested` / `attestation_ready` only from explicit `sensor_attestation_proven=true`.
 
 ## Authority
 
