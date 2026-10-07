@@ -55,8 +55,17 @@ allowed_to_act=false
 decision_authority=KX108_ONLY
 ```
 
+## Final documentation/freeze proof
+
+Workflow:
+`37627281103`
+
+Result:
+`91 passed in 1.70s`
+
+HEAD tested:
+`dba8fe7f24cf25fa2d6a5c1f8619c38ca9678774`
+
 ## Verdict
 
 `INTERPRETATION_TO_INTAKE_POLICY_NATIVE_V0_PROVEN`
-
-A final documentation/freeze rerun is required on the final HEAD.
