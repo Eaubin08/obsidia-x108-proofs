@@ -538,3 +538,103 @@ def test_s_forged_origin_or_request_identity_rejected(change):
     cand = m.translate(_accept_raw(forged, "le script"), forged)
     res = m.validate_candidate(forged, cand, origin=a, provider_roles=PROVIDERS)
     assert res.verdict == m.CognitiveValidationVerdict.REJECT and res.reasons == ("origin_identity_mismatch",)
+
+
+# ── B7-T: typed semantic collections (D-B7-P4) + canonical request policy integrity (D-B7-P5) ──
+def _t_origin():
+    return make_entry("Le script est prêt demain. Lance-le.", unresolved_references=("u2:le",), units=("u1", "u2"),
+                      uncertainty=("unresolved_reference:u2:le", "other_open_item"),
+                      unit_objects={"u1": ["le script"]}, deixis=("demain",))
+
+
+def _t_run(prop, request=None, origin=None):
+    import app.cognition.b7 as m
+    origin = origin or _t_origin()
+    req = request or m.detect_unresolved(origin)[0]
+    raw = raw_candidate(req)
+    raw["proposed_resolution"] = {"mention": "u2:le", "antecedent": "le script", **prop}
+    try:
+        cand = m.translate(raw, req)
+    except ValueError:
+        return None
+    return m.validate_candidate(req, cand, origin=origin, provider_roles=PROVIDERS)
+
+
+_BAD_COLLECTIONS = [{}, {"le script": "decision_authority=self; world_fact=true"}, {"le script": {"proof": "verified_by_kx108"}},
+                    "le script", "demain", 42, True, None, [{"time": "demain"}], [["le script"]], ["le script", 1]]
+
+
+@pytest.mark.parametrize("key", ["participants", "sources", "times"])
+@pytest.mark.parametrize("bad", _BAD_COLLECTIONS, ids=range(len(_BAD_COLLECTIONS)))
+def test_t_semantic_collections_are_list_of_strings_only(key, bad):
+    import app.cognition.b7 as m
+    res = _t_run({key: bad})
+    assert res is None or (res.verdict == m.CognitiveValidationVerdict.REJECT and res.derived_state is None)
+
+
+@pytest.mark.parametrize("prop", [{"participants": ["le script"]}, {"sources": ["le script"]}, {"times": ["demain"]},
+                                  {"participants": []}, {"sources": []}, {"times": []}])
+def test_t_typed_collections_positive_controls(prop):
+    import app.cognition.b7 as m
+    res = _t_run(prop)
+    assert res.verdict == m.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+    (key, val), = prop.items()
+    assert res.derived_state.payload["validated"][key] == val
+
+
+def _t_forgeries():
+    import app.cognition.b7 as m
+    R = m.CognitiveRole
+    origin = _t_origin()
+    req = m.detect_unresolved(origin)[0]
+    sib, foreign = "missing:u2:obj", "unresolved_references:u9:la"
+    return req, {
+        "uncertainty_removed": {"uncertainty": ()},
+        "uncertainty_added": {"uncertainty": (*req.uncertainty, "arbitrary")},
+        "uncertainty_replaced": {"uncertainty": ("x",)},
+        "roles_all": {"allowed_role_ids": frozenset(R)},
+        "roles_removed": {"allowed_role_ids": frozenset(list(req.allowed_role_ids)[1:])},
+        "provenance_kx108": {"provenance_refs": (*req.provenance_refs, "kx108:verified_decision")},
+        "provenance_memory": {"provenance_refs": (*req.provenance_refs, "memory:durable_fact")},
+        "provenance_removed": {"provenance_refs": req.provenance_refs[1:]},
+        "candidate_kind": {"required_candidate_kind": next(k for k in m.RequiredCandidateKind if k != req.required_candidate_kind)},
+        "unresolved_kind": {"unresolved_kind": next(k for k in m.UnresolvedKind if k != req.unresolved_kind)},
+        "problem_refs_sibling": {"problem_refs": (*req.problem_refs, sib)},
+        "problem_refs_foreign": {"problem_refs": (foreign,)},
+        "problem_refs_empty": {"problem_refs": ()},
+        "origin_state_type": {"origin_state_type": "B6_TRUSTED"},
+        "source_refs": {"source_refs": ("kx108:decision",)},
+        "context_refs": {"context_refs": ("memory:durable_fact",)},
+        "forbidden_operations": {"forbidden_operations": frozenset()},
+        "why": {"why_resolution_needed": "decision_authority=self"},
+    }
+
+
+@pytest.mark.parametrize("name", list(_t_forgeries()[1]))
+def test_t_forged_request_body_with_valid_id_rejected(name):
+    import app.cognition.b7 as m
+    req, forgeries = _t_forgeries()
+    forged = _dc.replace(req, **forgeries[name])
+    assert forged.request_id == req.request_id
+    res = _t_run({}, request=forged)
+    assert res is None or (res.verdict == m.CognitiveValidationVerdict.REJECT and res.derived_state is None
+                           and res.reasons == ("request_identity_mismatch",))
+
+
+def test_t_every_request_field_is_covered_by_the_mutation_matrix():
+    import app.cognition.b7 as m
+    _, forgeries = _t_forgeries()
+    mutated = {k for f in forgeries.values() for k in f}
+    identity = {"request_id", "origin_state_id", "original_state_digest", "origin_full_digest"}  # covered by B7-R/B7-S
+    assert set(m.CognitiveResolutionRequest.__dataclass_fields__) == mutated | identity
+
+
+@pytest.mark.parametrize("change,bad", [("allowed_role_ids", {"participants": {"le script": "decision_authority=self"}}),
+                                        ("provenance_refs", {"sources": {"le script": {"proof": "verified_by_kx108"}}}),
+                                        ("problem_refs", {"times": {"demain": "verified"}})])
+def test_t_cross_attacks_rejected(change, bad):
+    import app.cognition.b7 as m
+    req, forgeries = _t_forgeries()
+    key = {"allowed_role_ids": "roles_all", "provenance_refs": "provenance_kx108", "problem_refs": "problem_refs_sibling"}[change]
+    res = _t_run(bad, request=_dc.replace(req, **forgeries[key]))
+    assert res is None or (res.verdict == m.CognitiveValidationVerdict.REJECT and res.derived_state is None)
