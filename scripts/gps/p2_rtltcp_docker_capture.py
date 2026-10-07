@@ -28,10 +28,15 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from domains.gps.gps_x108_gate import GpsX108Gate
-from hackathons.nativebuilder_gps_defense_import_shim import load_physical_signal_periphery
+import importlib.util
 
-
-PSP = load_physical_signal_periphery()
+_PSP_PATH = ROOT / "hackathons" / "nativebuilder-gps-defense" / "physical_signal_periphery.py"
+_PSP_SPEC = importlib.util.spec_from_file_location("physical_signal_periphery_p2_rtltcp", _PSP_PATH)
+if _PSP_SPEC is None or _PSP_SPEC.loader is None:
+    raise RuntimeError(f"Cannot load physical signal periphery: {_PSP_PATH}")
+PSP = importlib.util.module_from_spec(_PSP_SPEC)
+sys.modules[_PSP_SPEC.name] = PSP
+_PSP_SPEC.loader.exec_module(PSP)
 sha256_file = PSP.sha256_file
 sha256_obj = PSP.sha256_obj
 parse_gnss_sdr_stdout = PSP.parse_gnss_sdr_stdout
