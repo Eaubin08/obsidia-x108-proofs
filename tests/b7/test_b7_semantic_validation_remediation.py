@@ -433,9 +433,11 @@ def test_r_candidate_identity_is_full_width_and_independently_recomputable():
 
 
 def test_r_request_identity_is_full_width_and_independently_recomputable():
-    m, e, req, _ = _q_full()
+    m, e, req, _ = _q_full()  # noqa: F841
     field, marker = req.problem_refs[0].split(":", 1)
-    expected = _hashlib.sha256(_canonical_json([req.original_state_digest, field, marker]).encode("utf-8")).hexdigest()
+    # requalified by B7-S: request identity material = (origin_state_id, full origin digest, field, marker)
+    full_origin = "b7orig_" + _hashlib.sha256(_canonical_json(e.to_dict()).encode("utf-8")).hexdigest()
+    expected = _hashlib.sha256(_canonical_json([req.origin_state_id, full_origin, field, marker]).encode("utf-8")).hexdigest()
     assert req.request_id == "b7req_" + expected and len(_hex(req.request_id, "b7req_")) == 64
 
 
@@ -471,3 +473,68 @@ def test_r_legacy_64bit_identity_rejected():
                    {"candidate_id": "b7cand_" + short, "candidate_digest": "b7dig_" + short}):
         res = m.validate_candidate(req, _dc.replace(cand, **change), origin=e, provider_roles=PROVIDERS)
         assert res.verdict == m.CognitiveValidationVerdict.REJECT
+
+
+
+# ── B7-S: requests are bound to the full-width origin content digest ───────────────────────────
+from app.harness.state_explicit.contracts import StateEntry as _StateEntry
+
+
+def _origin(raw):
+    return make_entry(raw, unresolved_references=("u1:le",), units=("u1",), uncertainty=(),
+                      unit_objects={"u1": []})
+
+
+def _full(entry):
+    return "b7orig_" + _hashlib.sha256(_canonical_json(entry.to_dict()).encode("utf-8")).hexdigest()
+
+
+def test_s_full_origin_digest_extends_the_b6_digest():
+    import app.cognition.b7 as m
+    a = _origin("Lance-le.")
+    (req,) = m.detect_unresolved(a)
+    assert req.origin_full_digest == _full(a) and len(_hex(req.origin_full_digest, "b7orig_")) == 64
+    assert req.origin_full_digest[len("b7orig_"):][:16] == a.content_digest
+
+
+def test_s_same_state_id_distinct_origins_have_distinct_requests():
+    import app.cognition.b7 as m
+    a, b = _origin("Lance-le."), _origin("Exécute-le.")
+    assert a.state_id == b.state_id
+    ra, rb = m.detect_unresolved(a)[0], m.detect_unresolved(b)[0]
+    assert ra.problem_refs == rb.problem_refs
+    assert ra.origin_full_digest != rb.origin_full_digest and ra.request_id != rb.request_id
+
+
+def _accept_raw(req, structured_text):
+    return raw_candidate(req, remaining_unknowns=[], proposed_resolution={"mention": "u1:le", "antecedent": structured_text})
+
+
+def test_s_simulated_b6_collision_cannot_replay(monkeypatch):
+    import app.cognition.b7 as m
+    a = make_entry("Le script. Lance-le.", unresolved_references=("u1:le",), units=("u1", "u0"), uncertainty=(),
+                   unit_objects={"u0": ["le script"]})
+    b = make_entry("Le test. Lance-le.", unresolved_references=("u1:le",), units=("u1", "u0"), uncertainty=(),
+                   unit_objects={"u0": ["le script"]})
+    monkeypatch.setattr(_StateEntry, "content_digest", property(lambda self: "deadbeefdeadbeef"))  # simulated 64-bit collision
+    assert a.state_id == b.state_id and a.content_digest == b.content_digest and a.to_dict() != b.to_dict()
+    ra, rb = m.detect_unresolved(a)[0], m.detect_unresolved(b)[0]
+    assert ra.origin_full_digest != rb.origin_full_digest and ra.request_id != rb.request_id
+    cand_a = m.translate(_accept_raw(ra, "le script"), ra)
+    assert m.validate_candidate(ra, cand_a, origin=a, provider_roles=PROVIDERS).verdict ==         m.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT                               # positive control
+    for request, origin in ((rb, b), (ra, b)):                                                 # foreign / stale origin
+        res = m.validate_candidate(request, cand_a, origin=origin, provider_roles=PROVIDERS)
+        assert res.verdict == m.CognitiveValidationVerdict.REJECT and res.derived_state is None
+
+
+@pytest.mark.parametrize("change", ["origin_full_digest", "request_id"])
+def test_s_forged_origin_or_request_identity_rejected(change):
+    import app.cognition.b7 as m
+    a = make_entry("Le script. Lance-le.", unresolved_references=("u1:le",), units=("u1", "u0"), uncertainty=(),
+                   unit_objects={"u0": ["le script"]})
+    (req,) = m.detect_unresolved(a)
+    forged_value = ("b7orig_" if change == "origin_full_digest" else "b7req_") + "0" * 64
+    forged = _dc.replace(req, **{change: forged_value})
+    cand = m.translate(_accept_raw(forged, "le script"), forged)
+    res = m.validate_candidate(forged, cand, origin=a, provider_roles=PROVIDERS)
+    assert res.verdict == m.CognitiveValidationVerdict.REJECT and res.reasons == ("origin_identity_mismatch",)
