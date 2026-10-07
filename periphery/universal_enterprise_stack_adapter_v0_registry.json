@@ -1,0 +1,46 @@
+{
+  "schema": "UNIVERSAL_ENTERPRISE_STACK_ADAPTER_V0_REGISTRY",
+  "status": "PROVEN_FUNCTIONAL_PENDING_FINAL_HEAD_RERUN",
+  "date": "2026-10-07",
+  "branch": "feat/universal-enterprise-stack-adapter-v0",
+  "base": "feat/enterprise-office-full-loop-e2e-v0",
+  "capabilities_proven": [
+    "SOURCE.MAIL.READ",
+    "SOURCE.API.READ",
+    "CALENDAR.EVENT.CREATE",
+    "CRM.RECORD.UPDATE"
+  ],
+  "provider_swap": {
+    "providers": 3,
+    "stable_intent_same": true,
+    "proposal_hash_same": true,
+    "binding_hash_distinct": true,
+    "world_action_request_hash_distinct": true,
+    "kx108_allow_count": 3,
+    "receipt_replay_ok_count": 3
+  },
+  "inbound": {
+    "provider_neutral_source_runtime_reused": true,
+    "generic_api_read_boundary": true,
+    "raw_credentials_persisted": false
+  },
+  "outbound": {
+    "action_candidate_reused": true,
+    "world_action_request_reused": true,
+    "provider_binding_peripheral": true,
+    "network_calls": 0,
+    "real_external_effects": 0
+  },
+  "invariants": {
+    "decision_authority": "KX108_ONLY",
+    "allowed_to_decide": false,
+    "allowed_to_act": false,
+    "emits_act": false,
+    "main_merge": false
+  },
+  "functional_proof": {
+    "workflow_run": 37643201046,
+    "result": "127 passed in 2.61s"
+  },
+  "next_unresolved_boundary": "MONDE_OBSIDIA_NATIVE_READ_MODEL_V0"
+}
