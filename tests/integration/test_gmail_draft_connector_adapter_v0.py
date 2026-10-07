@@ -104,14 +104,39 @@ def test_real_provider_receipt_requires_draft_readback_cleanup_and_no_send():
         invocation=invocation,
         provider_draft_id="provider-draft-fixture",
         provider_message_id="provider-message-fixture",
-        resolved_recipient="self-fixture-invalid",
+        resolved_recipient_sha256=EXPECTED_SELF_RECIPIENT_SHA256,
         draft_created=True,
         draft_readback_verified=True,
         draft_cleanup_verified=True,
         sent_message_created=False,
         observed_at="2026-10-07T12:00:00+00:00",
     )
-    raise AssertionError("unreachable")
+    assert receipt.sent_message_created is False
+    assert receipt.draft_cleanup_verified is True
+    assert verify_real_provider_receipt_v0(
+        receipt,
+        expected_invocation_hash=invocation["invocation_hash"],
+    ) == (True, None)
+
+
+def test_real_provider_receipt_rejects_wrong_self_binding():
+    packet = generate_packet()
+    invocation = packet["invocation"]
+    with pytest.raises(
+        ValueError,
+        match="GMAIL_DRAFT_RESOLVED_SELF_HASH_MISMATCH",
+    ):
+        ingest_gmail_draft_provider_result_v0(
+            invocation=invocation,
+            provider_draft_id="provider-draft-fixture",
+            provider_message_id="provider-message-fixture",
+            resolved_recipient_sha256="0" * 64,
+            draft_created=True,
+            draft_readback_verified=True,
+            draft_cleanup_verified=True,
+            sent_message_created=False,
+            observed_at="2026-10-07T12:00:00+00:00",
+        )
 
 
 def test_generator_cli_emits_one_json_packet():
