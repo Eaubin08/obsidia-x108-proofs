@@ -1,6 +1,6 @@
 # F22 — Real E2E Demonstrations V0
 
-Status: IMPLEMENTED / VALIDATION REQUIRED
+Status: VERIFIED / NO F22 REGRESSION
 
 ## Purpose
 
@@ -127,3 +127,13 @@ F22 is:
 F23 — Monde UI Final.
 
 No F23 implementation before F22 validation.
+
+## Verification finale
+
+- Code SHA vérifié: `f74eb6058d978cdaa5a1c4cfe681a6d5e096bd17`
+- GitHub Actions run: `37570710314`
+- Résultat global: `12550 passed / 11 failed / 46 skipped / 207 deselected`
+- Failures F22 visibles: `0`
+- Les 11 failures restantes correspondent aux familles baseline historiques.
+
+**Verdict:** F22 `VERIFIED`.
