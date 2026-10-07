@@ -58,9 +58,9 @@ with a dedicated binding set:
 It is additive and does not change historical PRE_EXECUTION,
 AGENT_PRE_EXECUTION or POST_EXECUTION records.
 
-## Universal kernel domain
+## Structural kernel-domain token
 
-`Domain.WORLD_ACTION` is added as a structural execution-governance domain.
+`world_action` is supplied by the PRE translator through a local enum-like token. `sigma/contracts.py` remains protected and unchanged.
 
 Business meaning is not moved into the kernel.
 
@@ -169,3 +169,10 @@ default.
 
 No real connector should be invoked until that separate activation phase is
 proved.
+
+## Protected-core boundary
+
+- protected `sigma/contracts.py` unchanged
+- protected `sigma/guard.py` unchanged
+- protected `sigma/protocols.py` unchanged
+- KX108 engine mutation: NO
