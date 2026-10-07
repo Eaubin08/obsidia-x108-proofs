@@ -45,7 +45,9 @@ UNKNOWN != FALSE · UNKNOWN != VERIFIED · STALE != INVALIDATED != SUPERSEDED !=
 CONTENT != SCOPE != PROVENANCE · CLAIM_VERSION != RECORD_VERSION ·
 HISTORICAL_PROMOTED != CURRENT_PROMOTED · CONTRADICTION != AUTOMATIC_RESOLUTION ·
 EPISTEMIC_STATUS != MEMORY_LIFECYCLE_STATUS · NO_SILENT_PROMOTION · NO_SILENT_OVERWRITE ·
-DECISION_AUTHORITY=KX108_ONLY.
+DECISION_AUTHORITY=KX108_ONLY · TIME_VALUE != TEMPORAL_ORDER · TIMESTAMP != CAUSALITY ·
+RECORDED_AT != WORLD_TIME · SOURCE_TIME != RECORDED_AT · ONE_SYSTEM != ONE_CLOCK ·
+ONE_IDENTITY != ONE_TEMPORALITY · LOGICAL_ORDER != PHYSICAL_TIME.
 
 ## 3. Identities and bounds (O-6)
 
@@ -116,8 +118,16 @@ append-only log size, a B10 persistence concern.
 - **Record identity**: `b8rec_` over claim_id, claim_version, record_version, state, refs,
   links, recorded_at, previous_record_id — unique per immutable record.
 
-`recorded_at` is an input supplied to the gate (injected clock), never read by the gate itself:
-the gate stays deterministic. Confidence is descriptive data inside evidence; it is never a
+Temporal fields are separate and never conflated: `valid_time` (when the claim applies in the
+modeled world / domain), `source_time` / `observed_time` (time reported by the source or observer,
+when available), `recorded_at` (when one Obsidia recorder recorded the artifact), each timestamp
+carrying a `clock_domain` / `temporal_frame_ref` (the reference in which it is meaningful),
+`record_version` / `gap_version` (logical order inside one object), `slot_revision` (canonical
+logical order of B8 mutations on one slot) and `proof_time` / `anchor_time` (future external
+receipt timestamp, out of B8 scope). Timestamps are inputs supplied to the gate, never read by
+it: the gate stays deterministic. B8 assumes no universal clock; these fields must remain
+mappable later onto the MMonde / F12 TimeEnvelope temporal reference structures (not implemented
+in B8, and no competing global clock abstraction is introduced). Confidence is descriptive data inside evidence; it is never a
 sufficient precondition and never part of a policy decision.
 
 ## 5. Scope and slots (O-4, D-B8-S4)
@@ -158,7 +168,7 @@ deterministic difference cannot be partitioned → `PARTIAL_GAP_RESOLUTION=HELD`
 
 ### 5.2 Slot state and concurrency (D-B8-R2-3, D-B8-R3-3)
 
-Each KnowledgeSlot has exactly one logical `SlotState{slot_id, slot_revision, last_recorded_at}`,
+Each KnowledgeSlot has exactly one logical `SlotState{slot_id, slot_revision}`,
 initial revision 0, shared by **claim and gap** transitions on that slot (no separate claim / gap
 revision). Every APPLIED operation changing canonical B8 state on the slot — T1–T12 and G1–G4 —
 increments `slot_revision` by exactly 1; a T9 bundle and a G4 bundle each increment it exactly
@@ -173,16 +183,27 @@ expected slot revision. Two requests prepared on the same revision can never bot
 `CONCURRENT_T6_DOUBLE_PROMOTION=0`, `T6_T9_RACE_DOUBLE_PROMOTION=0`,
 `CONCURRENT_T9_CONFLICT_ACCEPTED=0`.
 
-### 5.3 Recorded-time ordering (D-B8-R2-2)
+### 5.3 Logical ordering and anti-backdating (D-B8-R2-2, D-B8-R3-3, temporal doctrine 2026-10-07)
 
-`valid_time` may lie anywhere (a past world fact recorded today is admissible); `recorded_at`
-never moves backward. Every applied transition on a slot, claim or gap, requires
-`recorded_at ≥ SlotState.last_recorded_at` (which covers each object's own previous record); a
-bundle has one `recorded_at` satisfying the same rule. Otherwise → REJECTED `backdated_record`.
-After APPLIED, `SlotState.last_recorded_at = recorded_at`. Equal timestamps are allowed. Cross-object
-slot order is total by `(recorded_at, slot_revision)` (shared by claims and gaps); object-local
-order by `(recorded_at, record_version)` per claim and `(recorded_at, gap_version)` per gap.
-`RECORDED_HISTORY_IS_APPEND_ONLY_AND_NON_BACKDATED`.
+`ONE_SHARED_SLOT_REVISION=YES` · `ONE_SHARED_CLOCK=NO` · `RECORDED_AT_CANONICAL_ORDER_AUTHORITY=NO`.
+
+- Canonical order of B8 state transitions = `slot_revision` (across claims and gaps of a slot),
+  `record_version` / `gap_version` (inside one object) and explicit predecessor / causal links
+  (`previous_record_id`, `previous_gap_record_id`, supersedes, resolution links). It is never the
+  numerical order of `recorded_at`.
+- Backdating = attempting to insert or rewrite a logical transition before an already committed
+  causal / revision predecessor. It is prevented structurally: every mutating request binds
+  `expected_slot_revision` and its object's expected version / state (§5.2, §9.1), so a request can
+  only append after the current revision; any other request → REJECTED `stale_request`. A history is
+  append-only in revision order (`RECORDED_HISTORY_IS_APPEND_ONLY_IN_LOGICAL_ORDER`).
+- A numerically smaller `recorded_at` is not backdating by itself
+  (`CROSS_CLOCK_NUMERIC_COMPARISON_FORBIDDEN=YES`): timestamps from different clock domains are
+  not compared. Only when the request and the predecessor carry the same trusted `clock_domain` may
+  a monotonic check (`recorded_at ≥` predecessor's `recorded_at` in that domain) be applied as an
+  additional consistency invariant → REJECTED `backdated_record`; it never defines canonical order.
+- `valid_time` may lie anywhere (a past world fact recorded today is admissible).
+- A bundle (T9, G4) is one logical step: one slot_revision increment; its timestamps follow the
+  same rules.
 
 ## 6. Claim classes and verifier policy (O-2)
 
@@ -249,7 +270,7 @@ Authority: `B8_CANONICAL_TRANSITION_GATE` only (no agent, human or LLM authority
 Every gap transition uses `GapTransitionRequest` (gap_id, expected_gap_state, expected_gap_version,
 target_state, refs, reason, slot_id, expected_slot_revision — G1–G4 alike) → new immutable gap
 record(s) + `GapTransitionReceipt`(s); CAS, idempotency (NO_OP_DUPLICATE with the original
-receipt / bundle), stale request rejection, non-backdating (§5.3) and append-only history as in
+receipt / bundle), stale request rejection, logical anti-backdating (§5.3) and append-only history as in
 §9.1. Every other pair fails closed; RESOLVED and SUPERSEDED are terminal; no gap state is a claim
 state. A partial resolution never marks the whole gap RESOLVED
 (`PARTIAL_COVERAGE_CAN_FULLY_RESOLVE_GAP=NO`); the receipt reason distinguishes GAP_REFRAMED from
@@ -273,8 +294,8 @@ are never auto-partitioned (that would manufacture knowledge artifacts) — T9 f
 
 Every request binds claim_id, expected_claim_version, expected_state, expected_record_version,
 slot_id, expected_slot_revision and target_state (compare-and-set against one canonical snapshot,
-§5.2; mismatch → REJECTED `stale_request`; backdated `recorded_at` → REJECTED `backdated_record`,
-§5.3), a
+§5.2; mismatch → REJECTED `stale_request`; same-clock-domain monotonic violation → REJECTED
+`backdated_record`, §5.3), a
 reason, and refs re-hashed and bound to `(claim_id, claim_version)`. An applied transition
 produces exactly one new immutable `KnowledgeRecord` (`record_version + 1`) and one
 `TransitionReceipt` (T9: one bundle, §9.3). An identical request already applied →
@@ -292,7 +313,7 @@ NO_OP_DUPLICATE with the original receipt / bundle; an old receipt never re-appl
 | T6 | VERIFIED → PROMOTED (free slot) | expected_slot_revision current; no claim whose latest state is PROMOTED on the same slot with overlapping valid_time; no open contradiction; REVIEW_AUTHORIZATION attestation admissible when `requires_human_review` |
 | T7 | SUPPORTED / VERIFIED / PROMOTED → CONTESTED | admissible contradicting evidence or claim recorded with refs |
 | T8 | CONTESTED → SUPPORTED | contradiction explicitly resolved (contradicting side INVALIDATED / REJECTED or new verification refs); never by confidence or recency; T5 and T6 required again |
-| T9 | compound: new VERIFIED → PROMOTED **and** predecessor PROMOTED → SUPERSEDED | request carries `supersedes_claim_id` + `supersedes_record_id` + expected_slot_revision identifying exactly the predecessor whose latest state is PROMOTED on the same slot; it is the **only** PROMOTED claim on the slot overlapping the new valid_time (else REJECTED `MULTIPLE_PREDECESSORS_UNSUPPORTED`: no winner, no repeated T9); the new valid_time **contains** the predecessor's (partial overlap → REJECTED; no implicit claim split in V1); the new claim meets every T6 condition except the free-slot one; atomic bundle (§9.3), one recorded_at, slot_revision +1 once |
+| T9 | compound: new VERIFIED → PROMOTED **and** predecessor PROMOTED → SUPERSEDED | request carries `supersedes_claim_id` + `supersedes_record_id` + expected_slot_revision identifying exactly the predecessor whose latest state is PROMOTED on the same slot; it is the **only** PROMOTED claim on the slot overlapping the new valid_time (else REJECTED `MULTIPLE_PREDECESSORS_UNSUPPORTED`: no winner, no repeated T9); the new valid_time **contains** the predecessor's (partial overlap → REJECTED; no implicit claim split in V1); the new claim meets every T6 condition except the free-slot one; atomic bundle (§9.3), slot_revision +1 once |
 | T10 | CANDIDATE / HELD / SUPPORTED / VERIFIED / PROMOTED / CONTESTED / STALE → INVALIDATED | explicit reason + evidence ref |
 | T11 | PROMOTED → STALE | staleness trigger evidence per class mechanism (§6) |
 | T12 | STALE → VERIFIED | fresh SATISFIED VerificationRecord for the same (claim_id, claim_version); T6 / T9 again to PROMOTED |
@@ -315,7 +336,7 @@ PROMOTED on the same slot / overlapping time, nor a SUPERSEDED predecessor witho
 successor, nor a one-way link. Idempotency and replay apply to the whole bundle.
 
 **Current uniqueness**: with slot-revision CAS, T6 free-slot, atomic single-predecessor T9 and full
-predecessor coverage, for every (slot, world_time, as_of_recorded_time) at most one claim is current
+predecessor coverage, for every (slot, world_time, as_of_slot_revision) at most one claim is current
 PROMOTED (`CURRENT_PROMOTED_CARDINALITY_PER_SLOT_TIME ≤ 1`); zero means explicitly not known. Never
 chosen by confidence, recency, majority or provider priority.
 
@@ -331,21 +352,23 @@ majority, provider priority, recency or a human approval alone on an objective c
 
 ## 10. Point-in-time contract (D-B8-S1)
 
-History is append-only: records, receipts and bundles are immutable, linked by
-`previous_record_id` and supersedes / superseded_by. Two time dimensions:
-`valid_time` (when the claim applies to the world / domain) and `recorded_at` (when Obsidia
-recorded the transition).
+History is append-only in logical order: records, receipts and bundles are immutable, linked by
+`previous_record_id`, `previous_gap_record_id`, supersedes / superseded_by and resolution links.
+World time (`valid_time`) and history position are separate dimensions; history position is the
+logical cutoff `as_of_slot_revision`, not a timestamp.
 
-- `LATEST_EPISTEMIC_STATE(claim_id, as_of_recorded_time)` = state of the last record in
-  `(recorded_at, record_version)` order among that claim's records with `recorded_at ≤
-  as_of_recorded_time` (non-backdated history, §5.3; never wall-clock sorting alone).
-- `KNOWLEDGE_STATE_AS_RECORDED_AT(T)` = for each claim, `LATEST_EPISTEMIC_STATE(claim_id, T)`
-  (historical replay: "what did Obsidia hold at T").
-- `CURRENT_KNOWLEDGE(slot, world_time, as_of_recorded_time)` = claims such that the slot matches,
-  `valid_time` contains `world_time`, and `LATEST_EPISTEMIC_STATE(claim_id, as_of_recorded_time)
-  = PROMOTED`. By construction a later CONTESTED / STALE / INVALIDATED / SUPERSEDED record removes
-  the claim; historical PROMOTED records are never scanned as independently current.
-- "Current now" uses `as_of_recorded_time` = latest available history, passed explicitly to the
+- `LATEST_EPISTEMIC_STATE(claim_id, as_of_slot_revision)` = state of the claim's last record (highest
+  record_version) among records committed at slot_revision ≤ `as_of_slot_revision`.
+- `KNOWLEDGE_STATE_AS_OF_REVISION(R)` = for each claim of the slot, `LATEST_EPISTEMIC_STATE(claim_id,
+  R)` (historical replay: "what did the slot hold after revision R").
+- A timestamp cutoff ("as recorded at T") is a derived convenience, admissible only inside one
+  declared `clock_domain`: it maps T to the last revision whose `recorded_at` in that domain is ≤ T,
+  and is never compared across clock domains.
+- `CURRENT_KNOWLEDGE(slot, world_time, as_of_slot_revision)` = claims such that the slot matches,
+  `valid_time` contains `world_time`, and `LATEST_EPISTEMIC_STATE(claim_id, as_of_slot_revision)
+  = PROMOTED`. A later CONTESTED / STALE / INVALIDATED / SUPERSEDED record removes the claim;
+  historical PROMOTED records are never scanned as independently current.
+- "Current now" uses `as_of_slot_revision` = the slot's current revision, passed explicitly to the
   deterministic core.
 
 No destructive overwrite. Durable storage of this history is B10.
@@ -355,10 +378,10 @@ No destructive overwrite. Durable storage of this history is B10.
 `RECORDED_GAP_STATE != EFFECTIVE_CURRENT_UNCERTAINTY`. Gap and claim records are history; the
 current view is a deterministic projection, never a write.
 
-`CURRENT_EPISTEMIC_VIEW(slot_id, world_time_domain, as_of_recorded_time, as_of_slot_revision)`
+`CURRENT_EPISTEMIC_VIEW(slot_id, world_time_domain, as_of_slot_revision)`
 returns `current_promoted_coverage`, `current_unknown_coverage`, `current_contested_refs`,
 `current_stale_refs`, `current_gap_refs`, `snapshot_revision`, all derived from one slot history
-cutoff in `(recorded_at, slot_revision)` order (`MIXED_SLOT_SNAPSHOT_ALLOWED=NO`).
+cutoff `as_of_slot_revision` (`MIXED_SLOT_SNAPSHOT_ALLOWED=NO`).
 
 - `CURRENT_PROMOTED_COVERAGE` = union of valid_time of claims whose latest state at the cutoff is
   PROMOTED (≤ 1 claim per instant, §9.3).
@@ -446,3 +469,10 @@ No duplicate promotion engine survives canonical B8.
   revision). Remediation (human doctrine: derived current-unknown view, no automatic gap reopen;
   artifact coexistence with view masking; one shared slot revision and clock): §5.2, §5.3, §8.1
   request fields, §10.1 current epistemic view. Status stays DRAFT_FOR_AUDIT.
+- Doctrine correction (human, 2026-10-07, temporal model): no universal / shared physical clock.
+  `ONE_SHARED_SLOT_REVISION=YES`, `ONE_SHARED_CLOCK=NO`, `RECORDED_AT_CANONICAL_ORDER_AUTHORITY=NO`,
+  `CROSS_CLOCK_NUMERIC_COMPARISON_FORBIDDEN=YES`; logical order = slot_revision / record_version /
+  causal predecessor; temporal fields separated (valid, source / observed, recorded, clock_domain,
+  proof / anchor) and kept mappable to MMonde / F12 TimeEnvelope. SlotState no longer carries
+  last_recorded_at; point-in-time queries use as_of_slot_revision; recorded_at monotonicity is only an
+  optional same-clock-domain consistency check. Status stays DRAFT_FOR_AUDIT.
