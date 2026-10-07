@@ -1,6 +1,6 @@
 # GPS Real Passive Capture V0
 
-Status: SOFTWARE VERIFIED / PHYSICAL CLOSURE BLOCKED_HARDWARE_RUNTIME
+Status: SOFTWARE VERIFIED / DOCKER RUNTIME READY / PHYSICAL CLOSURE BLOCKED_HARDWARE
 
 ## Purpose
 
@@ -186,3 +186,29 @@ Next closure order:
 2. connect or identify an actual GNSS/SDR receiver;
 3. produce a passive capture;
 4. admit it through P2 with bound capture/config/receiver evidence.
+
+
+## Runtime unblock — 2026-10-07
+
+Docker Desktop Linux engine was started successfully.
+
+Verified locally:
+
+```text
+Docker Server Version: 29.4.3
+Operating System: Docker Desktop
+Kernel: WSL2
+Architecture: x86_64
+GNSS-SDR container: carlesfernandez/docker-gnsssdr:latest
+GNSS-SDR version: 0.0.21.git-next-2a7214a4f
+```
+
+Runtime blocker removed:
+
+`DOCKER_DESKTOP_LINUX_ENGINE_NOT_RUNNING -> RESOLVED`
+
+Remaining physical blocker:
+
+`NO_CONFIRMED_GNSS_SDR_RECEIVER`
+
+P2 remains physically open until an actual receiver is connected and a passive capture is produced.
