@@ -743,6 +743,233 @@ def run_live_passive() -> dict[str, Any]:
     }
 
 
+def _verify_receiver_identity_manifest(manifest_path: Path, evidence_path: Path) -> tuple[dict[str, Any], bool, list[str]]:
+    errors: list[str] = []
+    if not manifest_path.exists():
+        return {}, False, ["RECEIVER_MANIFEST_NOT_FOUND"]
+    if not evidence_path.exists() or evidence_path.stat().st_size <= 0:
+        return {}, False, ["RECEIVER_IDENTITY_EVIDENCE_NOT_FOUND"]
+    manifest = load_observation(manifest_path)
+    for key in ("receiver_id", "manufacturer", "model", "interface", "identity_evidence_sha256"):
+        if not manifest.get(key):
+            errors.append(f"MISSING_RECEIVER_{key.upper()}")
+    actual_evidence_hash = sha256_file(evidence_path)
+    if manifest.get("identity_evidence_sha256") != actual_evidence_hash:
+        errors.append("RECEIVER_IDENTITY_EVIDENCE_HASH_MISMATCH")
+    return manifest, not errors, errors
+
+
+def _live_capture_observed(parsed: dict[str, Any], capture_path: Path) -> bool:
+    if not capture_path.exists() or capture_path.stat().st_size <= 0:
+        return False
+    return bool(
+        parsed.get("tracked_satellites")
+        or parsed.get("nav_message_satellites")
+        or parsed.get("position_count", 0) > 0
+        or parsed.get("avg_cn0_dbhz", 0.0) > 0.0
+    )
+
+
+def run_live_gnss_sdr_capture(
+    config_file: Path,
+    receiver_manifest_path: Path,
+    receiver_evidence_path: Path,
+    out_dir: Path,
+    duration_seconds: int,
+    kernel_endpoint: str,
+) -> dict[str, Any]:
+    """Run a bounded local GNSS-SDR capture and promote only observed evidence.
+
+    This does not infer physical proof from configuration. REAL_PASSIVE_GNSS
+    requires runtime-produced output, a bound receiver identity evidence file,
+    and the exact configuration hash used for the run.
+    """
+    gnss_sdr = shutil.which("gnss-sdr")
+    if not gnss_sdr:
+        return {
+            "mode": "LIVE_GNSS_SDR_CAPTURE",
+            "status": "BLOCKED_GNSS_SDR_NOT_FOUND",
+            "p2_capture_promoted": False,
+            "proof_level": "STRUCTURED_STATE",
+            "eligible_for_physical_claim": False,
+            "limitations": ["GNSS_SDR_NOT_FOUND", "LIVE_CAPTURE_NOT_OBSERVED"],
+        }
+    if not config_file.exists():
+        return {
+            "mode": "LIVE_GNSS_SDR_CAPTURE",
+            "status": "BLOCKED_CONFIG_NOT_FOUND",
+            "p2_capture_promoted": False,
+            "proof_level": "STRUCTURED_STATE",
+            "eligible_for_physical_claim": False,
+            "limitations": ["GNSS_SDR_CONFIG_NOT_FOUND", "LIVE_CAPTURE_NOT_OBSERVED"],
+        }
+
+    receiver_manifest, receiver_identity_verified, identity_errors = _verify_receiver_identity_manifest(
+        receiver_manifest_path, receiver_evidence_path
+    )
+    out_dir.mkdir(parents=True, exist_ok=True)
+    stdout_path = out_dir / "live_gnss_sdr_stdout.log"
+    started_ms = int(time.time() * 1000)
+    command = [gnss_sdr, f"--config_file={config_file}"]
+    timed_out = False
+    return_code: int | str
+    try:
+        completed = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            errors="replace",
+            timeout=max(1, int(duration_seconds)),
+            check=False,
+        )
+        stdout_text = completed.stdout or ""
+        return_code = completed.returncode
+    except subprocess.TimeoutExpired as exc:
+        raw = exc.stdout or ""
+        if isinstance(raw, bytes):
+            stdout_text = raw.decode("utf-8", errors="replace")
+        else:
+            stdout_text = str(raw)
+        timed_out = True
+        return_code = "TIMEOUT"
+    ended_ms = int(time.time() * 1000)
+    stdout_path.write_text(stdout_text, encoding="utf-8")
+
+    parsed = parse_gnss_sdr_stdout(stdout_path)
+    capture_observed = _live_capture_observed(parsed, stdout_path)
+    promoted = capture_observed and receiver_identity_verified
+
+    pvt = {
+        "lat_deg": parsed.get("last_position", {}).get("lat_deg", 0.0),
+        "lon_deg": parsed.get("last_position", {}).get("lon_deg", 0.0),
+        "altitude_m": parsed.get("last_position", {}).get("altitude_m", 0.0),
+        "speed_kt": parsed.get("ground_speed_kt", 0.0),
+        "observations": parsed.get("last_position", {}).get("observations", 0),
+        "fix_time_utc": parsed.get("last_position", {}).get("time_utc", "UNKNOWN"),
+    }
+    observables = {
+        "pvt": pvt,
+        "cn0_dbhz": parsed.get("avg_cn0_dbhz", 0.0),
+        "max_cn0_dbhz": parsed.get("max_cn0_dbhz", 0.0),
+        "tracked_satellites": parsed.get("tracked_satellites", []),
+        "nav_message_satellites": parsed.get("nav_message_satellites", []),
+        "tracking_channels": parsed.get("tracking_channels", {}),
+        "cn0_by_prn_dbhz": parsed.get("cn0_by_prn_dbhz", {}),
+        "first_fix": parsed.get("first_fix"),
+        "position_count": parsed.get("position_count", 0),
+        "last_velocity_mps": parsed.get("last_velocity_mps", {}),
+        "loss_of_lock_count": parsed.get("loss_of_lock_count", 0),
+        "run_time_seconds": parsed.get("run_time_seconds", 0.0),
+        "freshness_ms": max(0, ended_ms - started_ms),
+        "g_load": 1.0,
+        "spoof_score": 0.0,
+        "replay_window_detected": False,
+        "inertial_available": False,
+        "radio_available": True,
+        "trajectory_drift_score": 0.0,
+        "source_conflict_score": 0.0,
+        "time_skew_score": 0.0,
+        "brownout_score": 0.0,
+    }
+
+    limitations = list(identity_errors)
+    if not capture_observed:
+        limitations.append("LIVE_CAPTURE_NOT_OBSERVED")
+    if promoted:
+        limitations.extend([
+            "NO_SENSOR_PRIVATE_KEY_ATTESTATION",
+            "NO_INERTIAL_CORROBORATION",
+            "LIVE_SOURCE_AUTHENTICITY_BOUND_TO_LOCAL_RUNTIME_NOT_CRYPTOGRAPHIC_ATTESTATION",
+        ])
+
+    proof_level = "REAL_PASSIVE_GNSS" if promoted else "STRUCTURED_STATE"
+    input_hash = sha256_file(stdout_path) if capture_observed else "UNKNOWN"
+    envelope = {
+        "observation_id": f"live-gnss-sdr-{started_ms}",
+        "source_type": "LIVE_GNSS_SDR_CAPTURE",
+        "proof_level": proof_level,
+        "eligible_for_physical_claim": promoted,
+        "sensor_attestation_proven": False,
+        "synthetic": False,
+        "dataset_name": "local-live-passive",
+        "dataset_version": "p2-v0",
+        "license": "LOCAL_OPERATOR",
+        "official_url": "LOCAL_RUNTIME",
+        "capture_timestamp": str(started_ms),
+        "processing_timestamp": str(ended_ms),
+        "receiver": {
+            **receiver_manifest,
+            "identity_verified": receiver_identity_verified,
+            "identity_evidence_path": str(receiver_evidence_path),
+            "identity_evidence_sha256": sha256_file(receiver_evidence_path) if receiver_evidence_path.exists() else "UNKNOWN",
+        },
+        "constellation": ["G"] if parsed.get("tracked_satellites") else [],
+        "satellites": parsed.get("tracked_satellites", []),
+        "observables": observables,
+        "truth_reference": {
+            "route_hash": input_hash,
+            "labels_used_by_pipeline": False,
+        },
+        "input_hash": input_hash,
+        "processor_name": "obsidia-live-gnss-sdr-capture",
+        "processor_version": "p2-v0",
+        "processor_config_hash": sha256_file(config_file),
+        "observables_hash": sha256_obj(observables),
+        "domain_state_hash": "UNKNOWN",
+        "parent_receipt_id": "UNKNOWN",
+        "limitations": sorted(set(limitations)),
+        "provenance": {
+            "gnss_sdr_path": gnss_sdr,
+            "gnss_sdr_binary_sha256": sha256_file(Path(gnss_sdr)) if Path(gnss_sdr).exists() else "UNKNOWN",
+            "command": command,
+            "started_ms": started_ms,
+            "ended_ms": ended_ms,
+            "duration_requested_seconds": int(duration_seconds),
+            "timed_out": timed_out,
+            "return_code": return_code,
+            "stdout_path": str(stdout_path),
+            "stdout_sha256": sha256_file(stdout_path),
+            "config_path": str(config_file),
+            "config_sha256": sha256_file(config_file),
+            "receiver_manifest_path": str(receiver_manifest_path),
+            "receiver_manifest_sha256": sha256_file(receiver_manifest_path) if receiver_manifest_path.exists() else "UNKNOWN",
+            "receiver_identity_evidence_path": str(receiver_evidence_path),
+            "receiver_identity_evidence_sha256": sha256_file(receiver_evidence_path) if receiver_evidence_path.exists() else "UNKNOWN",
+            "parsed_stdout": parsed,
+        },
+    }
+
+    gate = physical_reality_gate(envelope)
+    payload = observation_to_domain_payload(envelope)
+    p4_20 = evaluate_path_fidelity(payload).to_dict()
+    x108 = GpsX108Gate().evaluate(payload)
+    http_probe = (
+        _http_post_json(kernel_endpoint, x108.get("ir_payload", payload))
+        if promoted
+        else {
+            "status_http": "NOT_ATTEMPTED",
+            "reason": "P2_CAPTURE_NOT_PROMOTED",
+            "payload_sha256": sha256_obj(payload),
+        }
+    )
+    return {
+        "mode": "LIVE_GNSS_SDR_CAPTURE",
+        "status": "REAL_PASSIVE_GNSS_CAPTURED" if promoted else "BLOCKED_LIVE_CAPTURE_EVIDENCE",
+        "p2_capture_promoted": promoted,
+        "proof_level": proof_level,
+        "eligible_for_physical_claim": promoted,
+        "receiver_identity_verified": receiver_identity_verified,
+        "live_capture_observed": capture_observed,
+        "physical_gate": asdict(gate),
+        "observation_envelope": envelope,
+        "domain_payload": payload,
+        "p4_20_evidence": p4_20,
+        "x108_result": x108,
+        "kernel_http_evidence": http_probe,
+    }
+
+
 def run_blind_benchmark(manifest_path: Path) -> dict[str, Any]:
     manifest = load_observation(manifest_path)
     cases = manifest.get("cases", [])
@@ -789,11 +1016,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--license", default="UNKNOWN")
     parser.add_argument("--kernel-endpoint", default="http://127.0.0.1:3001/kernel/ragnarok")
     parser.add_argument("--live-passive", action="store_true")
+    parser.add_argument("--live-gnss-sdr-capture", action="store_true")
+    parser.add_argument("--receiver-manifest", type=Path)
+    parser.add_argument("--receiver-evidence", type=Path)
+    parser.add_argument("--capture-dir", type=Path, default=Path("hackathons/nativebuilder-gps-defense/runs/live_passive"))
+    parser.add_argument("--capture-duration-seconds", type=int, default=60)
     parser.add_argument("--blind-benchmark", type=Path)
     parser.add_argument("--out", type=Path)
     args = parser.parse_args(argv)
 
-    selected = sum(bool(x) for x in [args.physical_observation, args.rinex, args.gnss_sdr_run, args.live_passive, args.blind_benchmark])
+    selected = sum(bool(x) for x in [args.physical_observation, args.rinex, args.gnss_sdr_run, args.live_passive, args.live_gnss_sdr_capture, args.blind_benchmark])
     if selected != 1:
         parser.error("select exactly one mode")
 
@@ -821,6 +1053,17 @@ def main(argv: list[str] | None = None) -> int:
         )
     elif args.live_passive:
         result = run_live_passive()
+    elif args.live_gnss_sdr_capture:
+        if not args.config_file or not args.receiver_manifest or not args.receiver_evidence:
+            parser.error("--live-gnss-sdr-capture requires --config-file, --receiver-manifest, and --receiver-evidence")
+        result = run_live_gnss_sdr_capture(
+            args.config_file,
+            args.receiver_manifest,
+            args.receiver_evidence,
+            args.capture_dir,
+            args.capture_duration_seconds,
+            args.kernel_endpoint,
+        )
     else:
         result = run_blind_benchmark(args.blind_benchmark)
 

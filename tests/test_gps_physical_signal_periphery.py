@@ -157,3 +157,134 @@ def test_explicit_sensor_attestation_can_be_carried_without_changing_authority()
 
     assert payload["sensor_attested"] is True
     assert payload["attestation_ready"] is True
+
+
+
+def _live_stdout_fixture():
+    return "\n".join([
+        "Tracking of GPS L1 C/A signal started on channel 0 for satellite GPS PRN 3",
+        "New GPS NAV message received for GPS PRN 3 CN0=40.0 dB-Hz",
+        "First position fix at 2026-10-07 10:00:00 UTC is Lat = 48.0 [deg], Long = 4.0 [deg], Height = 100.0 [m], with GDOP = 1.2",
+        "Position at 2026-10-07 10:00:01 UTC using 5 observations is Lat = 48.1 [deg], Long = 4.1 [deg], Height = 101.0 [m]",
+        "Velocity: East: 1.0 [m/s], North: 2.0 [m/s], Up = 0.0 [m/s]",
+        "Total GNSS-SDR run time: 2.0 [seconds]",
+    ])
+
+
+def _write_receiver_identity_files(mod, tmp_path):
+    evidence = tmp_path / "receiver-evidence.txt"
+    evidence.write_text("USB\\VID_0BDA&PID_2838 RTL-SDR receiver 00000001", encoding="utf-8")
+    manifest = tmp_path / "receiver-manifest.json"
+    manifest.write_text(
+        __import__("json").dumps({
+            "receiver_id": "rtl-sdr-00000001",
+            "manufacturer": "test-manufacturer",
+            "model": "test-model",
+            "interface": "USB",
+            "identity_evidence_sha256": mod.sha256_file(evidence),
+        }),
+        encoding="utf-8",
+    )
+    return manifest, evidence
+
+
+def test_p2_live_capture_promotes_only_runtime_observed_bound_receiver(monkeypatch, tmp_path):
+    mod = load_module()
+    fake_bin = tmp_path / "gnss-sdr"
+    fake_bin.write_text("binary-placeholder", encoding="utf-8")
+    config = tmp_path / "live.conf"
+    config.write_text("SignalSource.implementation=TestSource", encoding="utf-8")
+    manifest, evidence = _write_receiver_identity_files(mod, tmp_path)
+
+    monkeypatch.setattr(mod.shutil, "which", lambda name: str(fake_bin) if name == "gnss-sdr" else None)
+    monkeypatch.setattr(
+        mod.subprocess,
+        "run",
+        lambda *args, **kwargs: mod.subprocess.CompletedProcess(args=args[0], returncode=0, stdout=_live_stdout_fixture()),
+    )
+    monkeypatch.setattr(
+        mod,
+        "_http_post_json",
+        lambda url, payload: {"status_http": "TEST_NOT_SENT", "payload_sha256": mod.sha256_obj(payload)},
+    )
+
+    result = mod.run_live_gnss_sdr_capture(
+        config,
+        manifest,
+        evidence,
+        tmp_path / "capture",
+        5,
+        "http://127.0.0.1:3001/kernel/ragnarok",
+    )
+
+    assert result["p2_capture_promoted"] is True
+    assert result["proof_level"] == "REAL_PASSIVE_GNSS"
+    assert result["eligible_for_physical_claim"] is True
+    assert result["live_capture_observed"] is True
+    assert result["receiver_identity_verified"] is True
+    assert result["observation_envelope"]["input_hash"] != "UNKNOWN"
+    assert result["observation_envelope"]["sensor_attestation_proven"] is False
+    assert result["physical_gate"]["decision_authority"] == "KX108_ONLY"
+
+
+def test_p2_live_capture_identity_hash_mismatch_blocks_promotion(monkeypatch, tmp_path):
+    mod = load_module()
+    fake_bin = tmp_path / "gnss-sdr"
+    fake_bin.write_text("binary-placeholder", encoding="utf-8")
+    config = tmp_path / "live.conf"
+    config.write_text("SignalSource.implementation=TestSource", encoding="utf-8")
+    manifest, evidence = _write_receiver_identity_files(mod, tmp_path)
+    evidence.write_text("different receiver evidence", encoding="utf-8")
+
+    monkeypatch.setattr(mod.shutil, "which", lambda name: str(fake_bin) if name == "gnss-sdr" else None)
+    monkeypatch.setattr(
+        mod.subprocess,
+        "run",
+        lambda *args, **kwargs: mod.subprocess.CompletedProcess(args=args[0], returncode=0, stdout=_live_stdout_fixture()),
+    )
+
+    result = mod.run_live_gnss_sdr_capture(
+        config,
+        manifest,
+        evidence,
+        tmp_path / "capture",
+        5,
+        "http://127.0.0.1:3001/kernel/ragnarok",
+    )
+
+    assert result["p2_capture_promoted"] is False
+    assert result["proof_level"] == "STRUCTURED_STATE"
+    assert result["eligible_for_physical_claim"] is False
+    assert result["receiver_identity_verified"] is False
+    assert "RECEIVER_IDENTITY_EVIDENCE_HASH_MISMATCH" in result["observation_envelope"]["limitations"]
+    assert result["kernel_http_evidence"]["status_http"] == "NOT_ATTEMPTED"
+
+
+def test_p2_live_capture_empty_runtime_output_blocks_promotion(monkeypatch, tmp_path):
+    mod = load_module()
+    fake_bin = tmp_path / "gnss-sdr"
+    fake_bin.write_text("binary-placeholder", encoding="utf-8")
+    config = tmp_path / "live.conf"
+    config.write_text("SignalSource.implementation=TestSource", encoding="utf-8")
+    manifest, evidence = _write_receiver_identity_files(mod, tmp_path)
+
+    monkeypatch.setattr(mod.shutil, "which", lambda name: str(fake_bin) if name == "gnss-sdr" else None)
+    monkeypatch.setattr(
+        mod.subprocess,
+        "run",
+        lambda *args, **kwargs: mod.subprocess.CompletedProcess(args=args[0], returncode=0, stdout=""),
+    )
+
+    result = mod.run_live_gnss_sdr_capture(
+        config,
+        manifest,
+        evidence,
+        tmp_path / "capture",
+        5,
+        "http://127.0.0.1:3001/kernel/ragnarok",
+    )
+
+    assert result["p2_capture_promoted"] is False
+    assert result["live_capture_observed"] is False
+    assert result["proof_level"] == "STRUCTURED_STATE"
+    assert "LIVE_CAPTURE_NOT_OBSERVED" in result["observation_envelope"]["limitations"]
