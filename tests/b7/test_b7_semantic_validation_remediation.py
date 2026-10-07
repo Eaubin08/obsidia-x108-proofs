@@ -47,15 +47,20 @@ def test_d_b7_1_exact_bounded_referent_still_accepted(b7, antecedent):
         b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
 
 
-def test_d_b7_1_structured_referent_from_real_sens_frame(b7):
-    (e,) = sens_state_entries("Paul lance le script et Nadia le teste. Lance-le.")
-    req = next(r for r in b7.detect_unresolved(e) if r.unresolved_kind == b7.UnresolvedKind.COREFERENCE)
-    mention = req.problem_refs[0].split(":", 1)[1]
-    keep = [u for u in e.uncertainty if u not in (mention, f"frame:unresolved_reference:{mention}")]
-    ok = _verdict(b7, e, req, remaining_unknowns=keep, proposed_resolution={"mention": mention, "antecedent": "le script"})
-    assert ok.verdict == b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
-    bad = _verdict(b7, e, req, remaining_unknowns=keep, proposed_resolution={"mention": mention, "antecedent": "script et"})
-    assert bad.verdict == b7.CognitiveValidationVerdict.REJECT
+def test_d_b7_1_structured_referent_first(b7):
+    # SENS-shaped units (as in "Paul lance le script et Nadia teste P"): structured subjects / objects
+    frame = {"raw": "Paul lance le script et Nadia teste P. Lance-le.", "oblique_arguments": [],
+             "units": [{"id": "u1", "subject": "paul", "objects": [{"text": "le script"}]},
+                       {"id": "u2", "subject": "nadia", "objects": [{"text": "p"}]}, {"id": "u3", "objects": []}]}
+    e = make_entry("Paul lance le script et Nadia teste P. Lance-le.", unresolved_references=("u3:le",),
+                   units=("u1", "u2", "u3"), uncertainty=(), extra={"semantic_frame": frame})
+    (req,) = b7.detect_unresolved(e)
+    for antecedent in ("le script", "nadia", "p"):                      # structured referents
+        ok = _verdict(b7, e, req, remaining_unknowns=[], proposed_resolution={"mention": "u3:le", "antecedent": antecedent})
+        assert ok.verdict == b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT, antecedent
+    for antecedent in ("script et", "lance", "teste p"):                # contiguous text, not a referent
+        bad = _verdict(b7, e, req, remaining_unknowns=[], proposed_resolution={"mention": "u3:le", "antecedent": antecedent})
+        assert bad.verdict == b7.CognitiveValidationVerdict.REJECT, antecedent
 
 
 # ── D-B7-2: only the exact canonical unresolved item may be removed ─────────
