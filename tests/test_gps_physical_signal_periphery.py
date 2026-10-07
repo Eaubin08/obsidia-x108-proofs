@@ -85,3 +85,30 @@ def test_real_gnss_sdr_stdout_parser_extracts_rf_observables_when_present():
     assert parsed["position_count"] > 0
     assert len(parsed["tracked_satellites"]) >= 5
     assert parsed["avg_cn0_dbhz"] > 0
+
+
+def test_live_receiver_env_configuration_is_not_promoted_to_real_passive_claim(monkeypatch):
+    mod = load_module()
+    monkeypatch.setenv("OBSIDIA_GNSS_DEVICE", "serial://COM9")
+    detection = mod.detect_live_passive_receiver()
+
+    assert detection["receiver_candidate_detected"] is True
+    assert detection["status"] == "RECEIVER_CANDIDATE_CONFIGURED_UNVERIFIED"
+    assert detection["proof_level"] == "STRUCTURED_STATE"
+    assert detection["eligible_for_physical_claim"] is False
+    assert detection["live_capture_observed"] is False
+    assert detection["receiver_identity_verified"] is False
+    assert detection["sensor_attestation_proven"] is False
+    assert "LIVE_CAPTURE_NOT_OBSERVED" in detection["limitations"]
+
+
+def test_live_passive_with_configured_candidate_still_blocks_until_capture(monkeypatch):
+    mod = load_module()
+    monkeypatch.setenv("OBSIDIA_SDR_DEVICE", "rtl-sdr://0")
+    result = mod.run_live_passive()
+
+    assert result["status"] == "RECEIVER_CANDIDATE_CONFIGURED_UNVERIFIED"
+    assert result["blocked"] is True
+    assert result["envelope"]["proof_level"] == "STRUCTURED_STATE"
+    assert result["envelope"]["eligible_for_physical_claim"] is False
+    assert "Configuration alone is not proof" in result["next_human_action"]
