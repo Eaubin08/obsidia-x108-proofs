@@ -43,3 +43,29 @@ Sentences whose antecedent SENS does not structure (e.g. copula "Le script est p
 can no longer be resolved by B7: they stay unresolved until SENS / B6 provides structure.
 Tests whose ACCEPT relied only on raw text are requalified explicitly (contract amendment, not
 weakening).
+
+## Extension — STRUCTURED_TEMPORAL_REFERENCE_ONLY (2026-10-07, same human option-A doctrine)
+
+Found by the B7-L closure audit: textual temporal cues let any raw word pass as a time
+(`times: ["script"]`, `anchor: "le script est"`). The textual exception of the "Scope" section above is
+withdrawn:
+
+- **T1** `times` and `anchor` become validated content only when exactly supported by the origin
+  `semantic_frame.deixis` (SENS runtime shape: list of strings, e.g. `["hier"]`; canonical
+  normalization only).
+- **T2** Raw-text occurrence is insufficient.
+- **T3** No admissible structured temporal / deictic value → REJECT (or STILL_UNRESOLVED where the
+  candidate contract says so).
+- **T4** B7 never derives temporal structure itself.
+- **T5** Physical chronology stays NOT established.
+
+Companion rules (same audit):
+
+- **D1** `quoted_text`, `characterization`, `hypothesis` are strings only; they are descriptive,
+  never semantic claims.
+- **D2** The derived working state separates `validated` (only gate-validated proposed_resolution
+  fields) from `unverified_descriptive` (descriptive strings, evidence_refs, context_refs,
+  assumptions, confidence), explicitly marked not truth, not authority, not durable knowledge;
+  lineage metadata stays separate from both.
+
+This extends the human option-A doctrine; it does not reopen SENS.
