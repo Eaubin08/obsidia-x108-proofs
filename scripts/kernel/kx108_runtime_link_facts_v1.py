@@ -94,6 +94,16 @@ NATIVE_SOURCE_COMMON_PATH = "periphery/native_sources/common_v0.py"
 NATIVE_SOURCE_REGISTRY_PATH = "periphery/native_sources/source_registry_v0.py"
 NATIVE_SOURCE_ONBOARDING_PATH = "periphery/native_sources/source_onboarding_v0.py"
 NATIVE_SOURCE_RUNTIME_PATH = "periphery/native_sources/source_runtime_v0.py"
+NATIVE_MAIL_CONNECTOR_PATH = "periphery/native_sources/mail_connector_v0.py"
+NATIVE_DOCUMENT_CONNECTOR_PATH = "periphery/native_sources/document_connector_v0.py"
+NATIVE_CALENDAR_CONNECTOR_PATH = "periphery/native_sources/calendar_connector_v0.py"
+ENTERPRISE_SOURCE_SANDBOX_PATH = (
+    "periphery/native_sources/enterprise_source_sandbox_v0.py"
+)
+AUTONOMOUS_OFFICE_E2E_PATH = (
+    "periphery/native_sources/enterprise_office_e2e_v0.py"
+)
+NATIVE_INTAKE_BUNDLE_PATH = "periphery/native_ops/intake_bundle_v0.py"
 
 # Multi-domain proof surfaces.
 MULTIDOMAIN_PROOF_PATH = (
@@ -279,6 +289,38 @@ def native_source_runtime_present() -> bool:
     )
 
 
+def native_source_connectors_present() -> bool:
+    """True when the three provider-neutral READONLY V0 connectors exist."""
+    return (
+        native_source_runtime_present()
+        and _exists(NATIVE_MAIL_CONNECTOR_PATH)
+        and _exists(NATIVE_DOCUMENT_CONNECTOR_PATH)
+        and _exists(NATIVE_CALENDAR_CONNECTOR_PATH)
+    )
+
+
+def enterprise_source_sandbox_present() -> bool:
+    """True when the deterministic synthetic multi-source office exists."""
+    return (
+        native_source_connectors_present()
+        and _exists(ENTERPRISE_SOURCE_SANDBOX_PATH)
+    )
+
+
+def autonomous_office_e2e_contract_present() -> bool:
+    """True when the sandbox office-to-native-ops governed E2E exists.
+
+    This remains a synthetic proof contract, not a production interpreter.
+    """
+    return (
+        enterprise_source_sandbox_present()
+        and _exists(NATIVE_INTAKE_BUNDLE_PATH)
+        and _exists(AUTONOMOUS_OFFICE_E2E_PATH)
+        and native_tasks_crm_domains_present()
+        and world_action_pre_execution_rail_present()
+    )
+
+
 def runtime_internal_end_to_end_validated() -> bool:
     """
     Internal governed runtime, end to end — agent through verified KX108
@@ -431,6 +473,27 @@ def runtime_link_facts() -> dict:
 
         "native_source_runtime_path":
             NATIVE_SOURCE_RUNTIME_PATH,
+
+        "native_source_connectors_present":
+            native_source_connectors_present(),
+
+        "native_mail_connector_path":
+            NATIVE_MAIL_CONNECTOR_PATH,
+
+        "native_document_connector_path":
+            NATIVE_DOCUMENT_CONNECTOR_PATH,
+
+        "native_calendar_connector_path":
+            NATIVE_CALENDAR_CONNECTOR_PATH,
+
+        "enterprise_source_sandbox_present":
+            enterprise_source_sandbox_present(),
+
+        "autonomous_office_e2e_contract_present":
+            autonomous_office_e2e_contract_present(),
+
+        "autonomous_office_e2e_status":
+            "SANDBOX_ONLY_NOT_PRODUCTION_INTERPRETER",
 
         "runtime_internal_end_to_end_validated":
             runtime_internal_end_to_end_validated(),
