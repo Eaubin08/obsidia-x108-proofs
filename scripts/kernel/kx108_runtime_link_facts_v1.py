@@ -79,6 +79,9 @@ WORLD_ACTION_LIVE_TICKET_PATH = (
 WORLD_ACTION_LIVE_GATEWAY_PATH = (
     "periphery/world_calls/obsidia_live_gateway_v0.py"
 )
+WORLD_ACTION_BOUNDED_EXECUTOR_PATH = (
+    "periphery/world_calls/bounded_connector_executor_v0.py"
+)
 
 # Multi-domain proof surfaces.
 MULTIDOMAIN_PROOF_PATH = (
@@ -220,6 +223,20 @@ def world_action_live_gateway_capability_present() -> bool:
     )
 
 
+
+def world_action_bounded_executor_contract_present() -> bool:
+    """True when the universal bounded executor contract is present.
+
+    V0 proves sandbox execution receipts/replay/recovery only. It does not
+    bind any real network-capable connector and therefore does not activate
+    external world actuation.
+    """
+    return (
+        world_action_live_gateway_capability_present()
+        and _exists(WORLD_ACTION_BOUNDED_EXECUTOR_PATH)
+    )
+
+
 def runtime_internal_end_to_end_validated() -> bool:
     """
     Internal governed runtime, end to end — agent through verified KX108
@@ -339,6 +356,12 @@ def runtime_link_facts() -> dict:
 
         "world_action_live_gateway_path":
             WORLD_ACTION_LIVE_GATEWAY_PATH,
+
+        "world_action_bounded_executor_contract_present":
+            world_action_bounded_executor_contract_present(),
+
+        "world_action_bounded_executor_path":
+            WORLD_ACTION_BOUNDED_EXECUTOR_PATH,
 
         "runtime_internal_end_to_end_validated":
             runtime_internal_end_to_end_validated(),
