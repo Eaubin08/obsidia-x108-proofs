@@ -21,7 +21,7 @@ class Severity(IntEnum):
 class Domain(Enum):
     BANK = "bank"; TRADING = "trading"; ECOM = "ecom"
     GPS_DEFENSE_AVIATION = "gps_defense_aviation"; META = "meta"
-    TOOLING_BUILD = "tooling_build"; WORLD_ACTION = "world_action"
+    TOOLING_BUILD = "tooling_build"
 
 class SourceTag(Enum):
     CANONICAL = "canonical"; CANONICAL_FRAMEWORK = "canonical_framework"
