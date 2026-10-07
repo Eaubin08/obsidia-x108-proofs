@@ -102,3 +102,45 @@ def test_d_b7_2_sibling_markers_survive_one_resolution(b7):
     assert _verdict(b7, e, req, remaining_unknowns=[]).verdict == b7.CognitiveValidationVerdict.REJECT
     res = _verdict(b7, e, req, remaining_unknowns=["bare_ne:u1", "subject_unresolved:u2"])
     assert res.verdict == b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+
+
+# ── B7-J: D-B7-1a (verb-headed determiner fallback) and D-B7-1b (closed structured set) ───────────
+@pytest.mark.parametrize("raw,antecedent", [("Nadia le teste. Lance-le.", "le teste"),
+                                            ("Paul la lance. Lance-le.", "la lance"),
+                                            ("Il un parle. Lance-le.", "un parle"),
+                                            ("Paul veut le tester. Lance-le.", "le tester"),
+                                            ("Il la parle. Lance-le.", "la parle"),
+                                            ("Il un lance. Lance-le.", "un lance")])
+def test_d_b7_1a_verb_headed_fallback_rejected(b7, raw, antecedent):
+    e = _coref(raw)
+    (req,) = b7.detect_unresolved(e)
+    res = _verdict(b7, e, req, remaining_unknowns=[], proposed_resolution={"mention": "u2:le", "antecedent": antecedent})
+    assert res.verdict == b7.CognitiveValidationVerdict.REJECT
+
+
+@pytest.mark.parametrize("raw,antecedent", [("Le script est prêt. Lance-le.", "le script"),
+                                            ("Le test est prêt. Lance-le.", "le test")])
+def test_d_b7_1a_legitimate_fallback_controls(b7, raw, antecedent):
+    e = _coref(raw)
+    (req,) = b7.detect_unresolved(e)
+    res = _verdict(b7, e, req, remaining_unknowns=[], proposed_resolution={"mention": "u2:le", "antecedent": antecedent})
+    assert res.verdict == b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+
+
+def test_d_b7_1b_structured_set_is_closed(b7):
+    raw = "Paul lance le script et Nadia le teste avec le mot. Lance-le."
+    frame = {"raw": raw, "oblique_arguments": [],
+             "units": [{"id": "u1", "subject": "paul", "objects": [{"text": "le script"}]},
+                       {"id": "u2", "subject": "nadia", "objects": [{"text": "le"}]},
+                       {"id": "u3", "objects": [{"text": "le"}]}]}
+    e = make_entry(raw, unresolved_references=("u3:le",), units=("u1", "u2", "u3"), uncertainty=(),
+                   extra={"semantic_frame": frame})
+    (req,) = b7.detect_unresolved(e)
+
+    def v(antecedent):
+        return _verdict(b7, e, req, remaining_unknowns=[],
+                        proposed_resolution={"mention": "u3:le", "antecedent": antecedent}).verdict
+    assert v("le teste") == b7.CognitiveValidationVerdict.REJECT          # exact raw text, not a structured referent
+    assert v("le mot") == b7.CognitiveValidationVerdict.REJECT            # noun-like raw phrase outside the closed set
+    assert v("le script") == b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+    assert v("Paul") == b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
