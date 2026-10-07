@@ -265,8 +265,8 @@ def test_each_provider_binding_reaches_same_kx108_gate_and_replay(tmp_path):
             allowed_world_call_classes=(binding.world_call_class,),
             allowed_action_risk_classes=(binding.action_risk_class,),
             max_autonomy_level=binding.autonomy_level,
-            created_at=(now - datetime.timedelta(hours=1)).isoformat(),
-            expires_at=(now + datetime.timedelta(hours=1)).isoformat(),
+            created_at="2026-10-01T00:00:00+00:00",
+            expires_at="2099-01-01T00:00:00+00:00",
             operator_approval_ref=f"HUMAN:STACK:{manifest.provider_id}",
         )
         ticket = issue_live_sovereign_ticket_v0(
