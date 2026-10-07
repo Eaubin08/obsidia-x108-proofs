@@ -44,7 +44,7 @@ class MeasurementContextV0:
         if self.precision is not None and self.precision < 0:
             raise ValueError("precision cannot be negative")
         if self.instrument.calibration_ref is None and "CALIBRATION_UNKNOWN" not in self.uncertainty:
-            raise ValueError("missing calibration must remain explicit as uncertainty")
+            raise ValueError("CALIBRATION_UNKNOWN: missing calibration must remain explicit as uncertainty")
 
 
 @dataclass(frozen=True)
