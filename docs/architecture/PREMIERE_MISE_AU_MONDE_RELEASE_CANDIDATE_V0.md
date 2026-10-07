@@ -1,6 +1,6 @@
 # F25 — Première Mise au Monde — Public Freeze / Release Candidate V0
 
-Status: RELEASE CANDIDATE / VALIDATION REQUIRED
+Status: FROZEN / NO F25 REGRESSION
 
 ## Scope
 
@@ -179,3 +179,13 @@ F25 can move from `RELEASE CANDIDATE` to `FROZEN` only if:
 5. KX108_ONLY remains unchanged.
 
 No feature work belongs in F25.
+
+## F25 verification
+
+- Verified code SHA: `afefb316f400473388967b22acbcabd91d08ac67`
+- GitHub Actions run: `37575789814`
+- Global result: `12562 passed / 11 failed / 46 skipped / 207 deselected`
+- New F25 failures: `0`
+- The 11 remaining failures match the historical baseline families already present before this release chain.
+
+**Freeze verdict:** F25 `FROZEN`.
