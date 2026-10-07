@@ -29,6 +29,36 @@ STATUS_INVALID_ID = "INVALID_ACTION_EVIDENCE_ID"
 STATUS_TEMP_WRITE_FAILED = "CANONICAL_RECEIPT_TEMP_WRITE_FAILED"
 
 DEFAULT_REDACTION_POLICY = "HASHES_AND_REFS_ONLY"
+
+OUTCOME_SUCCESS = "SUCCESS"
+OUTCOME_NOOP = "NOOP"
+OUTCOME_PREPARE_REJECTED = "PREPARE_REJECTED"
+OUTCOME_APPROVAL_MISSING_OR_INVALID = "APPROVAL_MISSING_OR_INVALID"
+OUTCOME_KX108_HOLD = "KX108_HOLD"
+OUTCOME_KX108_BLOCK = "KX108_BLOCK"
+OUTCOME_BINDER_REJECTED = "BINDER_REJECTED"
+OUTCOME_TOCTOU_ABORTED = "TOCTOU_ABORTED"
+OUTCOME_EXECUTOR_FAILED_BEFORE_ACTION = "EXECUTOR_FAILED_BEFORE_ACTION"
+OUTCOME_REALIZED_STATE_MISMATCH = "REALIZED_STATE_MISMATCH"
+OUTCOME_DISPATCHED_OUTCOME_UNCERTAIN = "DISPATCHED_OUTCOME_UNCERTAIN"
+
+DISPATCH_PRE_FAILURE = "PRE_DISPATCH_FAILURE"
+DISPATCH_POST_UNCERTAINTY = "POST_DISPATCH_UNCERTAINTY"
+DISPATCH_POST_CONFIRMED = "POST_DISPATCH_CONFIRMED"
+
+STAGE_REQUEST = "REQUEST"
+STAGE_PREPARE = "PREPARE"
+STAGE_APPROVAL = "APPROVAL"
+STAGE_KX108 = "KX108"
+STAGE_BINDER = "BINDER"
+STAGE_TOCTOU = "TOCTOU"
+STAGE_EXECUTOR = "EXECUTOR"
+STAGE_POST_OBSERVATION = "POST_OBSERVATION"
+STAGE_RECONCILIATION = "RECONCILIATION"
+
+STATUS_NOT_REACHED = "NOT_REACHED"
+STATUS_NOT_APPLICABLE = "NOT_APPLICABLE"
+STATUS_NOT_PERSISTED = "NOT_PERSISTED"
 _ACTION_EVIDENCE_ID_RE = re.compile(r"^aev-[0-9a-f]{32}$")
 _LOCALAPPDATA = Path(os.environ.get("LOCALAPPDATA", ""))
 CANONICAL_RECEIPT_DIR = _LOCALAPPDATA / "Obsidia" / "canonical_receipts"
@@ -57,6 +87,8 @@ def compute_ref_hash(ref: object) -> str:
 
 
 def _action_identity_seed(envelope: dict) -> dict:
+    if isinstance(envelope.get("action_identity"), dict) and envelope.get("action_identity"):
+        return envelope["action_identity"]
     return {
         "schema_version": envelope.get("schema_version"),
         "capability": envelope.get("capability"),
@@ -93,6 +125,7 @@ def build_canonical_receipt_envelope(
     domain: str = "PC_BROWSER",
     layer: str = "GOVERNED_ACTION",
     created_at: Optional[str] = None,
+    action_identity: Optional[dict] = None,
 ) -> dict:
     envelope = {
         "schema_version": SCHEMA_VERSION,
@@ -106,6 +139,7 @@ def build_canonical_receipt_envelope(
         "jarvis_authority": "NONE",
         "openjarvis_authority": "NONE",
         "request_ref": dict(request_ref),
+        "action_identity": dict(action_identity or {}),
         "session_ref": dict(session_ref),
         "prepare": dict(prepare),
         "authorization": dict(authorization),

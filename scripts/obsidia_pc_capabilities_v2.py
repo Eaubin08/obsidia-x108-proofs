@@ -293,6 +293,289 @@ def _exec_rej(op, cap, reason, sid="") -> dict:
 def _ref_hash(value) -> str:
     return _CRE.compute_ref_hash(value)
 
+def _safe_reason_ref(reason_code: str) -> dict:
+    safe = str(reason_code or "UNKNOWN")[:160]
+    return {"reason_code": safe, "reason_hash": _ref_hash({"reason_code": safe})}
+
+
+def _canonical_action_identity(capability: str, operation_type: str, request_ref: dict,
+                               session_ref: dict, descriptor_hash: str, eah: str) -> dict:
+    return {
+        "schema_version": _CRE.SCHEMA_VERSION,
+        "capability": capability,
+        "operation_type": operation_type,
+        "request_ref": request_ref,
+        "session_ref": session_ref,
+        "descriptor_hash": descriptor_hash,
+        "execution_authority_hash": eah,
+    }
+
+
+def _store_canonical_envelope(envelope: dict, stores: dict) -> tuple[dict, str]:
+    stored = _CRE.store_canonical_receipt_envelope(envelope, stores["receipts"])
+    return envelope, stored.get("status")
+
+
+def _with_canonical_failure(base: dict, envelope: dict, store_status: str) -> dict:
+    base["canonical_receipt_envelope"] = envelope
+    base["action_evidence_id"] = envelope["action_evidence_id"]
+    base["canonical_receipt_store_status"] = store_status
+    return base
+
+
+def _build_browser_set_checked_envelope(*, stores: dict, executor, v2id: str, child: str,
+                                        exp_eah: str, mh: str, dh: str, descriptor: dict,
+                                        identity: dict, selector: str, target_checked: bool,
+                                        semantic_intent: str, semantic_risk: str,
+                                        runtime_receipt: dict, outcome: str,
+                                        failure_stage: str, dispatch_boundary: str,
+                                        physical_effect_dispatched: bool,
+                                        executor_status: str, execution_state: str,
+                                        reason_code: str = "", apr: Optional[dict] = None,
+                                        kx: Optional[dict] = None, current_identity: Optional[dict] = None,
+                                        post_identity: Optional[dict] = None, act: Optional[dict] = None,
+                                        proof_strength: str = "NONE",
+                                        realized_state_verified: bool = False,
+                                        mutation_performed: bool = False) -> tuple[dict, str]:
+    request_ref = {
+        "public_action": "BROWSER_SET_CHECKED",
+        "selector_hash": _ref_hash(selector),
+        "target_checked": bool(target_checked),
+        "semantic_intent": semantic_intent,
+        "semantic_risk": semantic_risk,
+    }
+    session_ref = {"session_id": runtime_receipt.get("session_id", ""), "v2_exec_id": v2id, "child_id": child}
+    executor_input_ref = {
+        "public_action": "BROWSER_SET_CHECKED",
+        "selector": selector,
+        "element_identity_hash": identity.get("metadata_sha256"),
+        "target_checked": bool(target_checked),
+        "semantic_intent": semantic_intent,
+        "semantic_risk": semantic_risk,
+        "physical_state_anchor": descriptor.get("physical_state_anchor", ""),
+    }
+    reason_ref = _safe_reason_ref(reason_code) if reason_code else {"reason_code": "NONE", "reason_hash": _ref_hash({"reason_code": "NONE"})}
+    kx_record = (kx or {}).get("record") or {}
+    current_state_ref = None
+    if current_identity:
+        current_state_ref = {
+            "browser_session_id": current_identity.get("browser_session_id"),
+            "page_id": current_identity.get("page_id"),
+            "current_url": current_identity.get("url"),
+            "element_identity_hash": current_identity.get("metadata_sha256"),
+            "checked": current_identity.get("checked"),
+            "indeterminate_status": current_identity.get("indeterminate_status"),
+        }
+    post_state_ref = None
+    if post_identity:
+        post_state_ref = {
+            "browser_session_id": post_identity.get("browser_session_id"),
+            "page_id": post_identity.get("page_id"),
+            "post_url": post_identity.get("url"),
+            "element_identity_hash": post_identity.get("metadata_sha256"),
+            "checked": post_identity.get("checked"),
+            "indeterminate_status": post_identity.get("indeterminate_status"),
+        }
+    realized_state = {
+        "outcome": outcome,
+        "failure_stage": failure_stage,
+        "dispatch_boundary": dispatch_boundary,
+        "physical_effect_dispatched": bool(physical_effect_dispatched),
+        "proof_strength": proof_strength,
+        "realized_state_verified": bool(realized_state_verified),
+        "mutation_performed": bool(mutation_performed),
+        "prepared_pre_state_hash": descriptor.get("physical_state_anchor", ""),
+        "prepared_pre_state_ref": "descriptor.physical_state_anchor",
+        "execution_state": execution_state,
+        "uncertainty_state": "NONE",
+        "uncertainty_reason": "",
+        "failure_reason_code": reason_ref["reason_code"],
+        "failure_reason_hash": reason_ref["reason_hash"],
+    }
+    if current_state_ref is not None:
+        realized_state["current_state_hash"] = _ref_hash(current_state_ref)
+        realized_state["current_state_ref"] = current_state_ref
+    if post_state_ref is not None:
+        realized_state["post_state_hash"] = _ref_hash(post_state_ref)
+        realized_state["post_state_ref"] = post_state_ref
+    envelope = _CRE.build_canonical_receipt_envelope(
+        capability=_CAP_BCHK_EXECUTE,
+        operation_type=OP_BROWSER_SET_CHECKED,
+        request_ref=request_ref,
+        session_ref=session_ref,
+        action_identity=_canonical_action_identity(_CAP_BCHK_EXECUTE, OP_BROWSER_SET_CHECKED, request_ref, session_ref, dh, exp_eah),
+        prepare={
+            "descriptor_ref": v2id,
+            "descriptor_hash": dh,
+            "physical_state_anchor": descriptor.get("physical_state_anchor", ""),
+            "state_anchor_kind": "PHYSICAL_PRE_STATE",
+            "manifest_hash": mh,
+        },
+        authorization={
+            "execution_authority_hash": exp_eah,
+            "approval_id": (apr or {}).get("approval_id", _CRE.STATUS_NOT_REACHED),
+            "approval_status": (apr or {}).get("approval_status", _CRE.STATUS_NOT_REACHED),
+            "approved_by": (apr or {}).get("approved_by", _CRE.STATUS_NOT_REACHED),
+            "approval_record_hash": (apr or {}).get("approval_record_hash", _CRE.STATUS_NOT_REACHED),
+            "kx108_pre_decision_record_id": (kx or {}).get("decision_record_id", _CRE.STATUS_NOT_REACHED),
+            "kx108_pre_decision_record_hash": kx_record.get("decision_record_hash", _CRE.STATUS_NOT_REACHED),
+            "kx108_verdict": (kx or {}).get("x108_gate", _CRE.STATUS_NOT_REACHED),
+            "binder_verdict_status": "OBSERVED_INLINE" if apr is not None else _CRE.STATUS_NOT_REACHED,
+            "binder_verdict_ref": "NOT_SEPARATELY_PERSISTED" if apr is not None else _CRE.STATUS_NOT_REACHED,
+        },
+        execution={
+            "executor_kind": getattr(executor, "EXECUTOR_PROVIDER", _CRE.STATUS_NOT_REACHED),
+            "executor_backend": getattr(executor, "EXECUTOR_BACKEND", _CRE.STATUS_NOT_REACHED),
+            "executor_operation": "browser.set_checkbox",
+            "executor_status": executor_status,
+            "executor_input_hash": _ref_hash(executor_input_ref),
+            "executor_input_ref": executor_input_ref,
+            "executor_invoked": executor_status != _CRE.STATUS_NOT_REACHED,
+            "physical_effect_dispatched": bool(physical_effect_dispatched),
+            "mutation_performed": bool(mutation_performed),
+            "execution_state": execution_state,
+            "dispatch_boundary": dispatch_boundary,
+            "failure_stage": failure_stage,
+            "failure_reason_code": reason_ref["reason_code"],
+            "failure_reason_hash": reason_ref["reason_hash"],
+            "executor_evidence_hash": _ref_hash(act or {"status": executor_status}),
+        },
+        realized_state=realized_state,
+        receipt={
+            "existing_runtime_receipt_id": runtime_receipt.get("receipt_id"),
+            "existing_receipt_hash": _ref_hash(runtime_receipt),
+            "existing_receipt_ref": "runtime_result.receipt",
+        },
+        replay={
+            "physical_replay_allowed": False,
+            "evidence_replay_allowed": True,
+            "automatic_retry": False,
+        },
+        privacy={
+            "redaction_policy": "HASHES_AND_REFS_ONLY",
+            "plaintext_sensitive_data_present": False,
+        },
+    )
+    return _store_canonical_envelope(envelope, stores)
+
+
+def _build_browser_submit_uncertainty_envelope(*, stores: dict, executor, v2id: str, child: str,
+                                               exp_eah: str, mh: str, dh: str, descriptor: dict,
+                                               identity: dict, form_selector: str,
+                                               submitter_selector: str, runtime_receipt: dict,
+                                               act: dict, result: dict, apr: Optional[dict] = None,
+                                               kx: Optional[dict] = None) -> tuple[dict, str]:
+    request_ref = {
+        "public_action": "BROWSER_SUBMIT_FORM_NAVIGATION_V0",
+        "form_selector_hash": _ref_hash(form_selector),
+        "submitter_selector_hash": _ref_hash(submitter_selector),
+        "field_manifest_hash": identity.get("field_manifest_hash"),
+        "resolved_action_hash": identity.get("resolved_action_hash"),
+        "submission_class": descriptor.get("submission_class"),
+        "semantic_intent": descriptor.get("semantic_intent", ""),
+        "semantic_risk": descriptor.get("semantic_risk", ""),
+    }
+    session_ref = {"session_id": runtime_receipt.get("session_id", ""), "v2_exec_id": v2id, "child_id": child}
+    executor_input_ref = {
+        "public_action": "BROWSER_SUBMIT_FORM_NAVIGATION_V0",
+        "form_identity_hash": identity.get("metadata_sha256"),
+        "submitter_identity_hash": identity.get("submitter_metadata_sha256"),
+        "field_manifest_hash": identity.get("field_manifest_hash"),
+        "resolved_action_hash": identity.get("resolved_action_hash"),
+        "resolved_action_endpoint": identity.get("resolved_action_endpoint"),
+    }
+    transport_ref = {
+        "request_observed": bool(act.get("request_observed")),
+        "request_method": act.get("request_method"),
+        "request_url_hash": act.get("request_url_hash"),
+        "request_endpoint": act.get("request_endpoint"),
+        "request_fingerprint": act.get("request_fingerprint"),
+        "response_observed": bool(act.get("response_observed")),
+        "response_status": act.get("response_status"),
+        "response_url_hash": act.get("response_url_hash"),
+        "final_url_hash": act.get("final_url_hash"),
+        "final_url_endpoint": act.get("final_url_endpoint"),
+        "execution_state": result.get("execution_state"),
+    }
+    reason = result.get("uncertain_reason") or result.get("execution_state") or "DISPATCHED_OUTCOME_UNCERTAIN"
+    reason_ref = _safe_reason_ref(reason)
+    kx_record = (kx or {}).get("record") or {}
+    envelope = _CRE.build_canonical_receipt_envelope(
+        capability=_CAP_BSUB_EXECUTE,
+        operation_type=OP_BROWSER_SUBMIT_GET_NAV,
+        request_ref=request_ref,
+        session_ref=session_ref,
+        action_identity=_canonical_action_identity(_CAP_BSUB_EXECUTE, OP_BROWSER_SUBMIT_GET_NAV, request_ref, session_ref, dh, exp_eah),
+        prepare={
+            "descriptor_ref": v2id,
+            "descriptor_hash": dh,
+            "physical_state_anchor": descriptor.get("physical_state_anchor", ""),
+            "state_anchor_kind": "PHYSICAL_PRE_STATE",
+            "manifest_hash": mh,
+        },
+        authorization={
+            "execution_authority_hash": exp_eah,
+            "approval_id": (apr or {}).get("approval_id", _CRE.STATUS_NOT_PERSISTED),
+            "approval_status": (apr or {}).get("approval_status", "APPROVED_FOR_BOUNDED_EXECUTION"),
+            "approved_by": (apr or {}).get("approved_by", "HUMAN"),
+            "approval_record_hash": (apr or {}).get("approval_record_hash", _CRE.STATUS_NOT_PERSISTED),
+            "kx108_pre_decision_record_id": (kx or {}).get("decision_record_id", _CRE.STATUS_NOT_PERSISTED),
+            "kx108_pre_decision_record_hash": kx_record.get("decision_record_hash", _CRE.STATUS_NOT_PERSISTED),
+            "kx108_verdict": (kx or {}).get("x108_gate", "ALLOW"),
+            "binder_verdict_status": "OBSERVED_INLINE_NOT_SEPARATELY_PERSISTED",
+            "binder_verdict_ref": "NOT_SEPARATELY_PERSISTED",
+        },
+        execution={
+            "executor_kind": getattr(executor, "EXECUTOR_PROVIDER", _CRE.STATUS_NOT_REACHED),
+            "executor_backend": getattr(executor, "EXECUTOR_BACKEND", _CRE.STATUS_NOT_REACHED),
+            "executor_operation": "browser.submit_get_navigation",
+            "executor_status": "INVOKED",
+            "executor_input_hash": _ref_hash(executor_input_ref),
+            "executor_input_ref": executor_input_ref,
+            "transport_evidence_hash": _ref_hash(transport_ref),
+            "transport_evidence_ref": transport_ref,
+            "physical_effect_dispatched": True,
+            "execution_state": result.get("execution_state"),
+            "dispatch_boundary": _CRE.DISPATCH_POST_UNCERTAINTY,
+            "failure_stage": _CRE.STAGE_RECONCILIATION,
+            "failure_reason_code": reason_ref["reason_code"],
+            "failure_reason_hash": reason_ref["reason_hash"],
+            "automatic_retry": False,
+        },
+        realized_state={
+            "outcome": _CRE.OUTCOME_DISPATCHED_OUTCOME_UNCERTAIN,
+            "failure_stage": _CRE.STAGE_RECONCILIATION,
+            "dispatch_boundary": _CRE.DISPATCH_POST_UNCERTAINTY,
+            "physical_effect_dispatched": True,
+            "proof_strength": result.get("proof_strength"),
+            "realized_state_verified": False,
+            "mutation_performed": True,
+            "execution_state": result.get("execution_state"),
+            "uncertainty_state": _CRE.OUTCOME_DISPATCHED_OUTCOME_UNCERTAIN,
+            "uncertainty_reason": reason_ref["reason_code"],
+            "last_confirmed_state_hash": descriptor.get("physical_state_anchor", ""),
+            "last_confirmed_state_ref": "descriptor.physical_state_anchor",
+        },
+        receipt={
+            "existing_runtime_receipt_id": runtime_receipt.get("receipt_id"),
+            "existing_receipt_hash": _ref_hash(runtime_receipt),
+            "existing_receipt_ref": "runtime_result.receipt",
+        },
+        replay={
+            "physical_replay_allowed": False,
+            "evidence_replay_allowed": True,
+            "automatic_retry": False,
+        },
+        privacy={
+            "redaction_policy": "HASHES_AND_REFS_ONLY",
+            "plaintext_sensitive_data_present": False,
+            "get_query_plaintext_persisted": False,
+        },
+    )
+    return _store_canonical_envelope(envelope, stores)
+
+
+
 # ============================================================
 # GOVERNED_CREATE_FILE
 # ============================================================
@@ -2867,12 +3150,42 @@ def pc_v2_browser_set_checked_execute(
     if reason:
         return _exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, reason, session_id)
     if not _same_checkbox_identity(identity, current_identity):
-        return _exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, "ELEMENT_IDENTITY_DRIFT", session_id)
+        reason_code = "ELEMENT_IDENTITY_DRIFT"
+        runtime_receipt = _rcpt(_CAP_BCHK_EXECUTE, OP_BROWSER_SET_CHECKED, EXECUTE_REJECTED, session_id, reason=reason_code)
+        envelope, store_status = _build_browser_set_checked_envelope(
+            stores=st, executor=executor, v2id=v2id, child=child, exp_eah=exp_eah, mh=mh, dh=dh,
+            descriptor=d, identity=identity, selector=selector, target_checked=target_checked,
+            semantic_intent=d.get("semantic_intent", ""), semantic_risk=d.get("semantic_risk", ""),
+            runtime_receipt=runtime_receipt, outcome=_CRE.OUTCOME_TOCTOU_ABORTED,
+            failure_stage=_CRE.STAGE_TOCTOU, dispatch_boundary=_CRE.DISPATCH_PRE_FAILURE,
+            physical_effect_dispatched=False, executor_status=_CRE.STATUS_NOT_REACHED,
+            execution_state="NOT_DISPATCHED", reason_code=reason_code, current_identity=current_identity)
+        return _with_canonical_failure(_exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, reason_code, session_id), envelope, store_status)
     if current_identity.get("checked") is not identity.get("checked"):
-        return _exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, "PRE_CHECKED_DRIFT", session_id)
+        reason_code = "PRE_CHECKED_DRIFT"
+        runtime_receipt = _rcpt(_CAP_BCHK_EXECUTE, OP_BROWSER_SET_CHECKED, EXECUTE_REJECTED, session_id, reason=reason_code)
+        envelope, store_status = _build_browser_set_checked_envelope(
+            stores=st, executor=executor, v2id=v2id, child=child, exp_eah=exp_eah, mh=mh, dh=dh,
+            descriptor=d, identity=identity, selector=selector, target_checked=target_checked,
+            semantic_intent=d.get("semantic_intent", ""), semantic_risk=d.get("semantic_risk", ""),
+            runtime_receipt=runtime_receipt, outcome=_CRE.OUTCOME_TOCTOU_ABORTED,
+            failure_stage=_CRE.STAGE_TOCTOU, dispatch_boundary=_CRE.DISPATCH_PRE_FAILURE,
+            physical_effect_dispatched=False, executor_status=_CRE.STATUS_NOT_REACHED,
+            execution_state="NOT_DISPATCHED", reason_code=reason_code, current_identity=current_identity)
+        return _with_canonical_failure(_exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, reason_code, session_id), envelope, store_status)
     _, current_psa = _browser_checkbox_pre_state_anchor(current_identity)
     if current_psa != d.get("physical_state_anchor", ""):
-        return _exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, "PRE_STATE_DRIFT", session_id)
+        reason_code = "PRE_STATE_DRIFT"
+        runtime_receipt = _rcpt(_CAP_BCHK_EXECUTE, OP_BROWSER_SET_CHECKED, EXECUTE_REJECTED, session_id, reason=reason_code)
+        envelope, store_status = _build_browser_set_checked_envelope(
+            stores=st, executor=executor, v2id=v2id, child=child, exp_eah=exp_eah, mh=mh, dh=dh,
+            descriptor=d, identity=identity, selector=selector, target_checked=target_checked,
+            semantic_intent=d.get("semantic_intent", ""), semantic_risk=d.get("semantic_risk", ""),
+            runtime_receipt=runtime_receipt, outcome=_CRE.OUTCOME_TOCTOU_ABORTED,
+            failure_stage=_CRE.STAGE_TOCTOU, dispatch_boundary=_CRE.DISPATCH_PRE_FAILURE,
+            physical_effect_dispatched=False, executor_status=_CRE.STATUS_NOT_REACHED,
+            execution_state="NOT_DISPATCHED", reason_code=reason_code, current_identity=current_identity)
+        return _with_canonical_failure(_exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, reason_code, session_id), envelope, store_status)
     semantic_intent = d.get("semantic_intent", "")
     semantic_risk = d.get("semantic_risk", "")
     reason = _validate_checkbox_semantics(semantic_intent, semantic_risk)
@@ -2893,7 +3206,19 @@ def pc_v2_browser_set_checked_execute(
         return _exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, "KX108_PRE_FAILED", session_id)
     gate = kx.get("x108_gate", "")
     if gate != "ALLOW":
-        return _exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, "KX108_PRE_GATE:" + gate, session_id)
+        reason_code = "KX108_PRE_GATE:" + gate
+        runtime_receipt = _rcpt(_CAP_BCHK_EXECUTE, OP_BROWSER_SET_CHECKED, EXECUTE_REJECTED, session_id, reason=reason_code)
+        outcome = _CRE.OUTCOME_KX108_HOLD if gate == "HOLD" else _CRE.OUTCOME_KX108_BLOCK
+        envelope, store_status = _build_browser_set_checked_envelope(
+            stores=st, executor=executor, v2id=v2id, child=child, exp_eah=exp_eah, mh=mh, dh=dh,
+            descriptor=d, identity=identity, selector=selector, target_checked=target_checked,
+            semantic_intent=semantic_intent, semantic_risk=semantic_risk,
+            runtime_receipt=runtime_receipt, outcome=outcome,
+            failure_stage=_CRE.STAGE_KX108, dispatch_boundary=_CRE.DISPATCH_PRE_FAILURE,
+            physical_effect_dispatched=False, executor_status=_CRE.STATUS_NOT_REACHED,
+            execution_state="NOT_DISPATCHED", reason_code=reason_code, apr=apr, kx=kx,
+            current_identity=current_identity)
+        return _with_canonical_failure(_exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, reason_code, session_id), envelope, store_status)
     act = executor.set_checkbox(identity, bool(target_checked))
     if not act.get("ok"):
         return _exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE,
@@ -2922,7 +3247,20 @@ def pc_v2_browser_set_checked_execute(
     if post_identity.get("indeterminate_status") != "FALSE_PROVEN":
         return _exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, "POST_INDETERMINATE_STATE_UNPROVABLE", session_id)
     if post_identity.get("checked") is not bool(target_checked):
-        return _exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, REALIZED_STATE_MISMATCH, session_id)
+        reason_code = REALIZED_STATE_MISMATCH
+        runtime_receipt = _rcpt(_CAP_BCHK_EXECUTE, OP_BROWSER_SET_CHECKED, EXECUTE_REJECTED, session_id, reason=reason_code)
+        envelope, store_status = _build_browser_set_checked_envelope(
+            stores=st, executor=executor, v2id=v2id, child=child, exp_eah=exp_eah, mh=mh, dh=dh,
+            descriptor=d, identity=identity, selector=selector, target_checked=target_checked,
+            semantic_intent=semantic_intent, semantic_risk=semantic_risk,
+            runtime_receipt=runtime_receipt, outcome=_CRE.OUTCOME_REALIZED_STATE_MISMATCH,
+            failure_stage=_CRE.STAGE_POST_OBSERVATION, dispatch_boundary=_CRE.DISPATCH_POST_CONFIRMED,
+            physical_effect_dispatched=True, executor_status="INVOKED",
+            execution_state=REALIZED_STATE_MISMATCH, reason_code=reason_code, apr=apr, kx=kx,
+            current_identity=current_identity, post_identity=post_identity, act=act,
+            proof_strength="STRONG", realized_state_verified=False,
+            mutation_performed=bool(act.get("mutation_performed")))
+        return _with_canonical_failure(_exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, reason_code, session_id), envelope, store_status)
     runtime_receipt = _rcpt(
         _CAP_BCHK_EXECUTE, OP_BROWSER_SET_CHECKED, EXECUTED_OK, session_id,
         kx108_pre_gate=gate,
@@ -2968,6 +3306,20 @@ def pc_v2_browser_set_checked_execute(
             "semantic_risk": semantic_risk,
         },
         session_ref={"session_id": session_id, "v2_exec_id": v2id, "child_id": child},
+        action_identity=_canonical_action_identity(
+            _CAP_BCHK_EXECUTE,
+            OP_BROWSER_SET_CHECKED,
+            {
+                "public_action": "BROWSER_SET_CHECKED",
+                "selector_hash": _ref_hash(selector),
+                "target_checked": bool(target_checked),
+                "semantic_intent": semantic_intent,
+                "semantic_risk": semantic_risk,
+            },
+            {"session_id": session_id, "v2_exec_id": v2id, "child_id": child},
+            dh,
+            exp_eah,
+        ),
         prepare={
             "descriptor_ref": v2id,
             "descriptor_hash": dh,
@@ -2993,10 +3345,18 @@ def pc_v2_browser_set_checked_execute(
             "executor_operation": "browser.set_checkbox",
             "executor_input_hash": _ref_hash(executor_input_ref),
             "executor_input_ref": executor_input_ref,
+            "executor_status": "INVOKED",
+            "physical_effect_dispatched": bool(act.get("mutation_performed")),
+            "dispatch_boundary": _CRE.DISPATCH_POST_CONFIRMED,
+            "outcome": _CRE.OUTCOME_NOOP if not bool(act.get("mutation_performed")) else _CRE.OUTCOME_SUCCESS,
             "mutation_performed": bool(act.get("mutation_performed")),
             "execution_state": "POSTCONDITION_CONFIRMED",
         },
         realized_state={
+            "outcome": _CRE.OUTCOME_NOOP if not bool(act.get("mutation_performed")) else _CRE.OUTCOME_SUCCESS,
+            "failure_stage": _CRE.STATUS_NOT_APPLICABLE,
+            "dispatch_boundary": _CRE.DISPATCH_POST_CONFIRMED,
+            "physical_effect_dispatched": bool(act.get("mutation_performed")),
             "proof_strength": "STRONG",
             "realized_state_verified": True,
             "mutation_performed": bool(act.get("mutation_performed")),
@@ -4455,6 +4815,15 @@ def pc_v2_browser_submit_get_navigation_execute(
         replay_physical_action_allowed=False,
         plaintext_form_data_returned=False,
     )
+    if status == "EXECUTED_OUTCOME_UNCERTAIN":
+        envelope, store_status = _build_browser_submit_uncertainty_envelope(
+            stores=st, executor=executor, v2id=v2id, child=child, exp_eah=exp_eah,
+            mh=mh, dh=dh, descriptor=d, identity=identity, form_selector=form_selector,
+            submitter_selector=submitter_selector, runtime_receipt=result["receipt"],
+            act=act, result=result, apr=apr, kx=kx)
+        result["canonical_receipt_envelope"] = envelope
+        result["action_evidence_id"] = envelope["action_evidence_id"]
+        result["canonical_receipt_store_status"] = store_status
     return result
 
 
