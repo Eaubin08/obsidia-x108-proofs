@@ -1,0 +1,53 @@
+{
+  "schema": "INTERPRETATION_TO_INTAKE_POLICY_NATIVE_V0_REGISTRY",
+  "status": "PROVEN_FUNCTIONAL_PENDING_FINAL_HEAD_RERUN",
+  "date": "2026-10-07",
+  "branch": "feat/interpretation-to-intake-policy-native-v0",
+  "base": "feat/source-interpretation-native-v0",
+  "input": [
+    "SourceInterpretationCandidateV0",
+    "SourceInterpretationCorrelationV0"
+  ],
+  "output": [
+    "InterpretationToIntakeInstructionV0",
+    "InterpretationToIntakeBatchV0",
+    "NativeCaseTaskIntakePlanV0 when proposed"
+  ],
+  "policy": {
+    "deterministic": true,
+    "self_verifying": true,
+    "owner_invented": false,
+    "deadline_origin_explicit": true,
+    "duplicate_suppression": true,
+    "contradiction_review": true,
+    "evidence_gap_review": true,
+    "allowed_to_decide": false,
+    "allowed_to_act": false,
+    "decision_authority": "KX108_ONLY"
+  },
+  "digital_twin": {
+    "source_observations": 12,
+    "source_packets": 12,
+    "interpretation_candidates": 12,
+    "intake_policy_instructions": 12,
+    "committed_cases": 3,
+    "committed_tasks": 3,
+    "canonical_mutations": 12,
+    "duplicate_suppressed": 1,
+    "hold": 1,
+    "block": 1,
+    "information_only": 2,
+    "network_calls": 0,
+    "external_actions": 0
+  },
+  "functional_proof": {
+    "workflow_run": 37627121414,
+    "result": "91 passed in 1.60s"
+  },
+  "invariants": {
+    "memory_write": false,
+    "kernel_mutation": false,
+    "emits_act": false,
+    "main_merge": false
+  }
+}
