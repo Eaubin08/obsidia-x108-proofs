@@ -103,6 +103,12 @@ ENTERPRISE_SOURCE_SANDBOX_PATH = (
 AUTONOMOUS_OFFICE_E2E_PATH = (
     "periphery/native_sources/enterprise_office_e2e_v0.py"
 )
+NATIVE_SOURCE_INTERPRETATION_PATH = (
+    "periphery/native_sources/source_interpretation_v0.py"
+)
+INTERPRETED_AUTONOMOUS_OFFICE_E2E_PATH = (
+    "periphery/native_sources/enterprise_office_interpreted_e2e_v0.py"
+)
 NATIVE_INTAKE_BUNDLE_PATH = "periphery/native_ops/intake_bundle_v0.py"
 
 # Multi-domain proof surfaces.
@@ -321,6 +327,20 @@ def autonomous_office_e2e_contract_present() -> bool:
     )
 
 
+def native_source_interpretation_present() -> bool:
+    """True when bounded source interpretation and interpreted office E2E exist.
+
+    Presence means provenance-bound source packets can produce deterministic,
+    non-sovereign interpretation candidates. It does not activate providers,
+    decide KX108 gates, or grant action authority.
+    """
+    return (
+        autonomous_office_e2e_contract_present()
+        and _exists(NATIVE_SOURCE_INTERPRETATION_PATH)
+        and _exists(INTERPRETED_AUTONOMOUS_OFFICE_E2E_PATH)
+    )
+
+
 def runtime_internal_end_to_end_validated() -> bool:
     """
     Internal governed runtime, end to end — agent through verified KX108
@@ -494,6 +514,18 @@ def runtime_link_facts() -> dict:
 
         "autonomous_office_e2e_status":
             "SANDBOX_ONLY_NOT_PRODUCTION_INTERPRETER",
+
+        "native_source_interpretation_present":
+            native_source_interpretation_present(),
+
+        "native_source_interpretation_path":
+            NATIVE_SOURCE_INTERPRETATION_PATH,
+
+        "interpreted_autonomous_office_e2e_path":
+            INTERPRETED_AUTONOMOUS_OFFICE_E2E_PATH,
+
+        "source_interpretation_authority":
+            "NON_SOVEREIGN_CANDIDATE_ONLY",
 
         "runtime_internal_end_to_end_validated":
             runtime_internal_end_to_end_validated(),
