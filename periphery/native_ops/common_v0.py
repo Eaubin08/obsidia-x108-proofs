@@ -14,6 +14,22 @@ DECISION_AUTHORITY = "KX108_ONLY"
 ABSENT_STATE_HASH = hashlib.sha256(b'{"state":"ABSENT"}').hexdigest()
 _ID_RE = re.compile(r"^[A-Za-z0-9_.:-]{1,160}$")
 
+_FS_SAFE_RE = re.compile(r"^[A-Za-z0-9_.-]{1,120}$")
+
+
+def filesystem_component_v0(value: str) -> str:
+    """Portable deterministic directory component for a canonical identifier.
+
+    Canonical IDs remain unchanged in state/receipts. Only the filesystem
+    representation is encoded when an ID contains characters unsafe on
+    Windows or is too long.
+    """
+    if _FS_SAFE_RE.fullmatch(value) and value not in {".", ".."}:
+        return value
+    return f"id-{hashlib.sha256(value.encode('utf-8')).hexdigest()}"
+
+
+
 
 def canonical_hash(value: Any) -> str:
     return hashlib.sha256(
@@ -179,7 +195,12 @@ class NativeEntityStoreV0:
     def _entity_dir(self, domain_id: str, entity_kind: str, entity_id: str) -> Path:
         if not _ID_RE.match(entity_id):
             raise ValueError("NATIVE_ENTITY_ID_INVALID")
-        return self.root / domain_id / entity_kind / entity_id
+        return (
+            self.root
+            / filesystem_component_v0(domain_id)
+            / filesystem_component_v0(entity_kind)
+            / filesystem_component_v0(entity_id)
+        )
 
     def load_state(
         self, domain_id: str, entity_kind: str, entity_id: str
