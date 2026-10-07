@@ -1,6 +1,6 @@
 # F15 — Physical Evidence Plane V0
 
-Status: IMPLEMENTED / REVALIDATION — F15 TESTS PASS
+Status: VERIFIED / NO F15 REGRESSION
 
 ## Purpose
 
@@ -77,3 +77,14 @@ Run `37560271802`: `12506 passed / 12 failed / 46 skipped / 207 deselected`.
 - the same concurrency failure is present on the contract-only and test commits, with no F15 code path in that test.
 
 A fresh CI run is requested by this documentation-only commit before freezing F15, to distinguish an unrelated nondeterministic baseline failure from an actual regression.
+
+## Verification finale
+
+- Code SHA vérifié: `f48fd37a20a827dcf471a5ed1d4b41d65585485c`
+- GitHub Actions run: `37561024457`
+- Résultat global: `12507 passed / 11 failed / 46 skipped / 207 deselected`
+- Failures F15 visibles: `0`
+- Le failure concurrent `TestApprovalConcurrency` n'est pas réapparu au re-run.
+- Les 11 failures restantes correspondent aux familles baseline historiques.
+
+**Verdict:** F15 `VERIFIED`.
