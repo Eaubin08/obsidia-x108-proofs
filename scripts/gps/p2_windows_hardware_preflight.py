@@ -18,26 +18,25 @@ from pathlib import Path
 from typing import Any
 
 
-HARDWARE_KEYWORDS = (
-    "gnss",
-    "gps",
-    "u-blox",
-    "ublox",
-    "rtl-sdr",
-    "rtlsdr",
-    "rtl2832",
-    "hackrf",
-    "airspy",
-    "bladerf",
-    "lime",
-    "usrp",
-    "ettus",
-    "sdrplay",
-    "adalm-pluto",
-    "plutosdr",
-    "novatel",
-    "septentrio",
-    "trimble",
+HARDWARE_PATTERNS = (
+    r"\bgnss\b",
+    r"\bgps\b",
+    r"\bu[- ]?blox\b",
+    r"\brtl[- ]?sdr\b",
+    r"\brtlsdr\b",
+    r"\brtl2832[a-z0-9]*\b",
+    r"\bhackrf\b",
+    r"\bairspy\b",
+    r"\bbladerf\b",
+    r"\blime(?:sdr)?\b",
+    r"\busrp\b",
+    r"\bettus\b",
+    r"\bsdrplay\b",
+    r"\badalm[- ]?pluto\b",
+    r"\bplutosdr\b",
+    r"\bnovatel\b",
+    r"\bseptentrio\b",
+    r"\btrimble\b",
 )
 
 
@@ -99,7 +98,7 @@ def _looks_like_receiver(device: dict[str, Any]) -> bool:
         str(device.get(key, ""))
         for key in ("name", "device_id", "pnp_class", "manufacturer")
     ).lower()
-    return any(keyword in haystack for keyword in HARDWARE_KEYWORDS)
+    return any(re.search(pattern, haystack) for pattern in HARDWARE_PATTERNS)
 
 
 def classify_preflight(snapshot: dict[str, Any]) -> dict[str, Any]:
