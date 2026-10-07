@@ -1,13 +1,13 @@
-"""Generate one exact governed Google Calendar pilot invocation envelope V0.
+"""Generate one exact governed Gmail draft pilot invocation envelope V0.
 
 This script performs no network call. It runs the real Obsidia governance
 chain up to the external connector boundary and prints one JSON packet that a
-Google Calendar transport can execute exactly.
+Gmail draft transport can execute exactly.
 
 User authorization basis:
-- explicit "go" for the low-risk real Calendar pilot on 2026-10-07.
+- explicit "go" for the low-risk real Gmail draft pilot on 2026-10-07.
 
-No credentials or personal email address are included.
+No credentials or raw personal email address are included.
 """
 from __future__ import annotations
 
@@ -30,12 +30,14 @@ from obsidia_world_action_pre_execution_v0 import (  # noqa: E402
 from periphery.world_calls.external_runtime_activation_policy_v0 import (  # noqa: E402
     build_activation_policy_v0,
 )
-from periphery.world_calls.google_calendar_connector_adapter_v0 import (  # noqa: E402
-    CONNECTOR_ACTION_CREATE,
+from periphery.world_calls.gmail_draft_connector_adapter_v0 import (  # noqa: E402
+    CONNECTOR_ACTION_CREATE_DRAFT,
     CONNECTOR_ID,
-    REQUIRED_SCOPE_CREATE,
-    build_google_calendar_invocation_v0,
-    canonical_google_calendar_call_hash,
+    EXPECTED_SELF_RECIPIENT_SHA256,
+    REQUIRED_SCOPE_CREATE_DRAFT,
+    RECIPIENT_BINDING_SELF,
+    build_gmail_draft_invocation_v0,
+    canonical_gmail_draft_call_hash,
 )
 from periphery.world_calls.live_sovereign_ticket_v0 import (  # noqa: E402
     issue_live_sovereign_ticket_v0,
@@ -56,67 +58,64 @@ def h(value) -> str:
 
 def build_connector_args() -> dict:
     return {
-        "calendar_id": "primary",
-        "title": "[OBSIDIA PILOT] Governed Calendar Adapter V0",
-        "attendees": [],
-        "start_time": "2026-10-08T12:30:00+02:00",
-        "end_time": "2026-10-08T12:45:00+02:00",
-        "timezone_str": "Europe/Paris",
-        "description": (
-            "Pilote réel Obsidia WORLD_ACTION Google Calendar adapter V0. "
-            "Sans invité, sans notification externe; suppression après "
-            "lecture de vérification."
+        "recipient_binding": RECIPIENT_BINDING_SELF,
+        "recipient_sha256": EXPECTED_SELF_RECIPIENT_SHA256,
+        "subject": "[OBSIDIA PILOT] Governed Gmail Draft V0",
+        "body": (
+            "Pilote réel Obsidia WORLD_ACTION Gmail draft V0. "
+            "Ce brouillon est auto-adressé, ne doit jamais être envoyé, "
+            "et sera supprimé après vérification."
         ),
-        "visibility": "private",
-        "transparency": "transparent",
-        "add_google_meet": False,
-        "self_attendance": "omit",
-        "reminders": {"use_default": False, "overrides": []},
+        "content_type": "text/plain",
+        "cc": "",
+        "bcc": "",
+        "reply_message_id": None,
+        "attachment_count": 0,
     }
 
 
 def build_request(connector_args: dict) -> dict:
-    target_ref = "google-calendar:primary:test-event"
+    target_ref = "gmail:authenticated-self:draft"
     target_prestate_hash = h(
         {
-            "calendar": "primary",
-            "pilot_slot": "2026-10-08T12:30:00+02:00",
-            "expected_state": "NO_OBSIDIA_PILOT_EVENT",
+            "mailbox": "authenticated-self",
+            "pilot_subject": connector_args["subject"],
+            "expected_state": "NO_OBSIDIA_PILOT_DRAFT",
         }
     )
     proposal_hash = h(
         {
             "domain": "administration",
-            "surface": "CALENDAR",
-            "operation": "CREATE_TEST_EVENT",
-            "pilot": "GOOGLE_CALENDAR_ADAPTER_V0",
+            "surface": "MAIL",
+            "operation": "CREATE_DRAFT",
+            "pilot": "GMAIL_DRAFT_ADAPTER_V0",
         }
     )
-    connector_call_hash = canonical_google_calendar_call_hash(connector_args)
+    connector_call_hash = canonical_gmail_draft_call_hash(connector_args)
     idempotency_key = h(
         {
             "schema": "UNIVERSAL_WORLD_ACTION_IDEMPOTENCY_V0",
             "proposal_hash": proposal_hash,
             "connector_call_hash": connector_call_hash,
             "target_prestate_hash": target_prestate_hash,
-            "required_scope": REQUIRED_SCOPE_CREATE,
+            "required_scope": REQUIRED_SCOPE_CREATE_DRAFT,
         }
     )
     request = {
-        "request_id": "world-calendar-real-adapter-pilot-v0",
-        "proposal_id": "proposal-calendar-real-adapter-pilot-v0",
+        "request_id": "world-gmail-draft-real-adapter-pilot-v0",
+        "proposal_id": "proposal-gmail-draft-real-adapter-pilot-v0",
         "proposal_hash": proposal_hash,
         "domain_id": "administration",
-        "surface_id": "CALENDAR",
-        "operation_id": "CREATE_TEST_EVENT",
+        "surface_id": "MAIL",
+        "operation_id": "CREATE_DRAFT",
         "effect_class": "EXTERNAL_DATA_MUTATION",
         "connector_id": CONNECTOR_ID,
-        "connector_action": CONNECTOR_ACTION_CREATE,
+        "connector_action": CONNECTOR_ACTION_CREATE_DRAFT,
         "connector_args": connector_args,
         "connector_call_hash": connector_call_hash,
         "target_ref": target_ref,
         "target_prestate_hash": target_prestate_hash,
-        "required_scope": REQUIRED_SCOPE_CREATE,
+        "required_scope": REQUIRED_SCOPE_CREATE_DRAFT,
         "world_call_class": "REVERSIBLE_WORLD_CALL",
         "action_risk_class": "ACTION_EXTERNAL_API",
         "autonomy_level": 4,
@@ -160,9 +159,9 @@ def build_request(connector_args: dict) -> dict:
 def build_approval(request: dict) -> dict:
     approval = {
         "schema": "UNIVERSAL_WORLD_ACTION_HUMAN_APPROVAL_V0",
-        "approval_id": "approval-calendar-real-adapter-pilot-v0",
+        "approval_id": "approval-gmail-draft-real-adapter-pilot-v0",
         "approved_by": "HUMAN:USER_EXPLICIT_GO_2026-10-07",
-        "approval_reference": "CHAT_EXPLICIT_GO_CALENDAR_REAL_ADAPTER_V0",
+        "approval_reference": "CHAT_EXPLICIT_GO_GMAIL_DRAFT_REAL_ADAPTER_V0",
         "request_id": request["request_id"],
         "request_hash": request["request_hash"],
         "proposal_hash": request["proposal_hash"],
@@ -188,7 +187,7 @@ def generate_packet() -> dict:
     request = build_request(connector_args)
     approval = build_approval(request)
 
-    with tempfile.TemporaryDirectory(prefix="obsidia-gcal-pilot-") as temp:
+    with tempfile.TemporaryDirectory(prefix="obsidia-gmail-draft-pilot-") as temp:
         root = Path(temp)
         pre = run_world_action_pre_execution_v0(
             request=request,
@@ -211,8 +210,8 @@ def generate_packet() -> dict:
             allowed_operations=[
                 (
                     CONNECTOR_ID,
-                    CONNECTOR_ACTION_CREATE,
-                    REQUIRED_SCOPE_CREATE,
+                    CONNECTOR_ACTION_CREATE_DRAFT,
+                    REQUIRED_SCOPE_CREATE_DRAFT,
                 )
             ],
             allowed_world_call_classes=["REVERSIBLE_WORLD_CALL"],
@@ -220,7 +219,7 @@ def generate_packet() -> dict:
             max_autonomy_level=4,
             created_at=now.isoformat(),
             expires_at=(now + datetime.timedelta(minutes=10)).isoformat(),
-            operator_approval_ref="CHAT_EXPLICIT_GO_CALENDAR_REAL_ADAPTER_V0",
+            operator_approval_ref="CHAT_EXPLICIT_GO_GMAIL_DRAFT_REAL_ADAPTER_V0",
         )
         ticket = issue_live_sovereign_ticket_v0(
             decision_record_id=pre.decision_record_id,
@@ -230,7 +229,7 @@ def generate_packet() -> dict:
             ttl_seconds=300,
             now=now.isoformat(),
         )
-        invocation = build_google_calendar_invocation_v0(
+        invocation = build_gmail_draft_invocation_v0(
             ticket=ticket,
             activation_policy=policy,
             connector_args=connector_args,
@@ -239,7 +238,7 @@ def generate_packet() -> dict:
             now=now.isoformat(),
         )
         return {
-            "schema": "GOOGLE_CALENDAR_REAL_PILOT_PACKET_V0",
+            "schema": "GMAIL_DRAFT_REAL_PILOT_PACKET_V0",
             "generated_at": now.isoformat(),
             "request_hash": request["request_hash"],
             "human_approval_hash": approval["approval_hash"],
