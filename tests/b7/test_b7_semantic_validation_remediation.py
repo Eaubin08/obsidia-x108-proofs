@@ -748,3 +748,35 @@ def test_u_issued_non_accept_results_and_multi_candidate_are_not_trusted():
             m.admit_trusted_context(res)
     single = m.validate_candidates(req, (good,), origin=origin, provider_roles=PROVIDERS)
     assert m.admit_trusted_context(single) is single.derived_state
+
+
+# ── B7-V: every trust sink requires a gate-issued ACCEPT result (D-B7-P8) ──────────────────────
+def _v_forgeries():
+    import app.cognition.b7 as m
+    from app.cognition.b7.validation import ValidationResult
+    A = m.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+    real = _u_real()
+    d = real.derived_state
+    evil = _dc.replace(d, state_id="b7:evil", payload={**d.payload, "decision_authority": "self", "world_fact_established": True,
+                                                      "memory_write": True, "kernel_mutation": True})
+    return {**_u_forgeries(),
+            "manual_evil_payload": ValidationResult(A, (), (), evil),
+            "public_data_reconstruction": ValidationResult(**{f: getattr(real, f) for f in real.__dataclass_fields__})}
+
+
+@pytest.mark.parametrize("name", list(_v_forgeries()))
+def test_v_forged_or_reconstructed_results_are_never_registered(name):
+    import app.cognition.b7 as m
+    from app.harness.state_explicit.registry import WorkingStateRegistry
+    reg = WorkingStateRegistry()
+    with pytest.raises(ValueError):
+        m.register_derived(reg, _v_forgeries()[name])
+    assert len(reg) == 0 if hasattr(reg, "__len__") else True
+
+
+def test_v_real_issued_result_is_registered():
+    import app.cognition.b7 as m
+    from app.harness.state_explicit.registry import WorkingStateRegistry
+    res = _u_real()
+    assert m.register_derived(WorkingStateRegistry(), res) is res.derived_state or \
+        m.register_derived(WorkingStateRegistry(), res).state_id == res.derived_state.state_id
