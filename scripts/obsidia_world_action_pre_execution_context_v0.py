@@ -47,6 +47,7 @@ _REQUEST_REQUIRED_FIELDS = (
     "effect_class",
     "connector_id",
     "connector_action",
+    "connector_args",
     "connector_call_hash",
     "target_ref",
     "target_prestate_hash",
@@ -139,6 +140,51 @@ def _sha256_json(value: Any) -> str:
     ).hexdigest()
 
 
+def _expected_connector_call_hash(request: Mapping[str, Any]) -> str:
+    return _sha256_json({
+        "connector_id": request["connector_id"],
+        "connector_action": request["connector_action"],
+        "connector_args": dict(request["connector_args"]),
+    })
+
+
+def _expected_idempotency_key(request: Mapping[str, Any]) -> str:
+    return _sha256_json({
+        "schema": "UNIVERSAL_WORLD_ACTION_IDEMPOTENCY_V0",
+        "proposal_hash": request["proposal_hash"],
+        "connector_call_hash": request["connector_call_hash"],
+        "target_prestate_hash": request["target_prestate_hash"],
+        "required_scope": request["required_scope"],
+    })
+
+
+def _expected_request_hash(request: Mapping[str, Any]) -> str:
+    return _sha256_json({
+        "schema": "UNIVERSAL_WORLD_ACTION_REQUEST_V0",
+        "request_id": request["request_id"],
+        "proposal_id": request["proposal_id"],
+        "proposal_hash": request["proposal_hash"],
+        "domain_id": request["domain_id"],
+        "surface_id": request["surface_id"],
+        "operation_id": request["operation_id"],
+        "effect_class": request["effect_class"],
+        "connector_id": request["connector_id"],
+        "connector_action": request["connector_action"],
+        "connector_args": dict(request["connector_args"]),
+        "connector_call_hash": request["connector_call_hash"],
+        "target_ref": request["target_ref"],
+        "target_prestate_hash": request["target_prestate_hash"],
+        "required_scope": request["required_scope"],
+        "world_call_class": request["world_call_class"],
+        "action_risk_class": request["action_risk_class"],
+        "autonomy_level": request["autonomy_level"],
+        "irreversible": request["irreversible"],
+        "retry_policy": request["retry_policy"],
+        "idempotency_key": request["idempotency_key"],
+        "decision_authority": request["decision_authority"],
+    })
+
+
 def verify_world_action_request_mapping(
     request: Mapping[str, Any] | None,
 ) -> tuple[bool, Optional[str]]:
@@ -169,6 +215,14 @@ def verify_world_action_request_mapping(
         return False, "WORLD_ACTION_REQUEST_AUTONOMY_LEVEL_INVALID"
     if request.get("autonomy_level") not in (3, 4, 5):
         return False, "WORLD_ACTION_REQUEST_AUTONOMY_LEVEL_UNSUPPORTED"
+    if not isinstance(request.get("connector_args"), Mapping):
+        return False, "WORLD_ACTION_REQUEST_CONNECTOR_ARGS_INVALID"
+    if request["connector_call_hash"] != _expected_connector_call_hash(request):
+        return False, "WORLD_ACTION_REQUEST_CONNECTOR_CALL_HASH_MISMATCH"
+    if request["idempotency_key"] != _expected_idempotency_key(request):
+        return False, "WORLD_ACTION_REQUEST_IDEMPOTENCY_KEY_MISMATCH"
+    if request["request_hash"] != _expected_request_hash(request):
+        return False, "WORLD_ACTION_REQUEST_HASH_MISMATCH"
     return True, None
 
 
