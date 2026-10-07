@@ -88,6 +88,53 @@ class ReasonCode(Enum):
     verifier_inadmissible = "verifier_inadmissible"
 
 
+class VerificationVerdict(Enum):
+    SATISFIED = "SATISFIED"
+    NOT_SATISFIED = "NOT_SATISFIED"
+    INCONCLUSIVE = "INCONCLUSIVE"
+
+
+class AttestationKind(Enum):
+    ATTESTATION = "ATTESTATION"
+    REVIEW_AUTHORIZATION = "REVIEW_AUTHORIZATION"
+    PRIMARY_DECLARATION = "PRIMARY_DECLARATION"
+
+
+class StalenessMechanism(Enum):
+    """Closed set (§6); no generic duration is encoded in B8."""
+    NEVER_BY_TIME = "NEVER_BY_TIME"
+    TTL = "TTL"
+    SOURCE_VERSION_CHANGE = "SOURCE_VERSION_CHANGE"
+    VALID_UNTIL = "VALID_UNTIL"
+    CONDITION_TRIGGER = "CONDITION_TRIGGER"
+    DOMAIN_POLICY = "DOMAIN_POLICY"
+
+
+_C, _M = ClaimClass, StalenessMechanism
+
+# §6 registry. HUMAN classes are verified by a PRIMARY_DECLARATION attestation, never by a verifier family.
+HUMAN_CLASSES = frozenset({_C.HUMAN_DECLARATION, _C.ORGANIZATIONAL_POLICY})
+ADMISSIBLE_VERIFIER_FAMILY = MappingProxyType({
+    _C.FORMAL_CLAIM: "FORMAL_PROOF_VERIFIER",
+    _C.CODE_BUILD_CLAIM: "TEST_BUILD_PROOF_VERIFIER",
+    _C.PHYSICAL_CLAIM: "PROVENANCE_PLUS_REALITY_VERIFIER",
+    _C.DOCUMENTARY_CLAIM: "SOURCE_PROVENANCE_VERIFIER",
+    _C.DOMAIN_CLAIM: "TYPED_DOMAIN_VERIFIER",
+})
+# DOMAIN_CLAIM review is "per domain contract"; no audited domain contract exists in V1 → fail closed (required)
+REQUIRES_HUMAN_REVIEW = frozenset({_C.HUMAN_DECLARATION, _C.ORGANIZATIONAL_POLICY, _C.DOMAIN_CLAIM})
+# Staleness trigger mechanisms per class (§6). NEVER_BY_TIME is the absence of a time trigger, not a trigger.
+STALENESS_TRIGGERS = MappingProxyType({
+    _C.FORMAL_CLAIM: frozenset({_M.SOURCE_VERSION_CHANGE}),
+    _C.CODE_BUILD_CLAIM: frozenset({_M.SOURCE_VERSION_CHANGE}),
+    _C.PHYSICAL_CLAIM: frozenset({_M.DOMAIN_POLICY, _M.VALID_UNTIL}),
+    _C.DOCUMENTARY_CLAIM: frozenset({_M.SOURCE_VERSION_CHANGE, _M.VALID_UNTIL}),
+    _C.DOMAIN_CLAIM: frozenset({_M.DOMAIN_POLICY}),
+    _C.HUMAN_DECLARATION: frozenset({_M.CONDITION_TRIGGER, _M.VALID_UNTIL}),
+    _C.ORGANIZATIONAL_POLICY: frozenset({_M.CONDITION_TRIGGER, _M.VALID_UNTIL}),
+})
+
+
 class MalformedSlot(ValueError):
     """Slot canonicalization violation (§5): fail closed with ReasonCode.malformed_slot."""
 
