@@ -8,6 +8,8 @@ B7 result is admissible as trusted context; an arbitrary mapping never is.
 """
 from __future__ import annotations
 
+import re
+import unicodedata
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping
 
@@ -18,8 +20,19 @@ from app.harness.state_explicit.contracts import StateEntry, StateStatus, Visibi
 from app.harness.state_explicit.registry import WorkingStateRegistry
 
 V = CognitiveValidationVerdict
-_TEXT_LISTS = ("participants", "sources", "times")
-_TEXT_SCALARS = ("antecedent", "anchor")
+_REFERENT_SCALARS = ("antecedent",)
+_REFERENT_LISTS = ("participants", "sources")
+_TIME_SCALARS = ("anchor",)
+_TIME_LISTS = ("times",)
+_WORD = re.compile(r"[^\W_]+", re.UNICODE)
+_NON_PHRASE = re.compile(r"[^\w\s'’-]", re.UNICODE)     # a claimed phrase never spans punctuation
+# Closed B7 V1 list: a multi-token text referent must be a determiner-headed phrase (bounded lexical
+# evidence); anything else needs a structured SENS referent (unit subject / object / coordination member)
+_DETERMINERS = frozenset({"le", "la", "les", "l", "un", "une", "des", "du", "ce", "cet", "cette", "ces", "mon",
+                          "ma", "mes", "ton", "ta", "tes", "son", "sa", "ses", "notre", "nos", "votre", "vos",
+                          "leur", "leurs"})
+_BLOCKER_FORM = {"unresolved_references": "unresolved_reference", "contradictions": "contradiction",
+                 "ambiguities": "ambiguity", "missing": "missing"}
 _FORBIDDEN_CLAIMS = ("physical_chronology_established", "world_fact_established", "emits_act", "memory_write",
                      "kernel_mutation", "allowed_to_act", "allowed_to_decide", "decision_authority")
 
@@ -32,9 +45,64 @@ class ValidationResult:
     derived_state: StateEntry | None = None
 
 
-def _origin_text(origin: StateEntry) -> str:
+def _origin_raw(origin: StateEntry) -> str:
     payload = origin.payload if isinstance(origin.payload, dict) else {}
-    return str(payload.get("raw") or (payload.get("semantic_frame") or {}).get("raw") or "").casefold()
+    return unicodedata.normalize("NFC", str(payload.get("raw") or (payload.get("semantic_frame") or {}).get("raw") or ""))
+
+
+def _tokens(text: str) -> tuple[str, ...]:
+    return tuple(_WORD.findall(unicodedata.normalize("NFC", text).casefold()))
+
+
+def _contains_phrase(haystack: tuple[str, ...], phrase: tuple[str, ...]) -> bool:
+    n = len(phrase)
+    return n > 0 and any(haystack[i:i + n] == phrase for i in range(len(haystack) - n + 1))
+
+
+def _structured_referents(origin: StateEntry) -> set[tuple[str, ...]]:
+    """Referent phrases SENS already structured (unit subjects, object texts, coordination members)."""
+    payload = origin.payload if isinstance(origin.payload, dict) else {}
+    frame = payload.get("semantic_frame") or {}
+    out: set[tuple[str, ...]] = set()
+    for u in frame.get("units") or []:
+        if isinstance(u, dict):
+            out.add(_tokens(str(u.get("subject") or "")))
+            out.update(_tokens(str(o.get("text") or "")) for o in u.get("objects") or [] if isinstance(o, dict))
+    for c in frame.get("coordinations") or []:
+        if isinstance(c, dict):
+            out.update(_tokens(str(t)) for t in c.get("member_texts") or [])
+    out.discard(())
+    return out
+
+
+def _referent_admissible(value: Any, origin: StateEntry) -> bool:
+    """STRUCTURED IDENTITY > exact bounded phrase evidence > REJECT (never a character coincidence)."""
+    if not isinstance(value, str) or _NON_PHRASE.search(value):
+        return False
+    phrase = _tokens(value)
+    if not phrase:
+        return False
+    if phrase in _structured_referents(origin):
+        return True
+    raw = _origin_raw(origin)
+    if not _contains_phrase(_tokens(raw), phrase):
+        return False
+    if len(phrase) > 1:
+        return phrase[0] in _DETERMINERS
+    # a single bare token is a text referent only as a capitalized name in the original text; a
+    # sentence-initial capital proves nothing ("Lance-le." is not a name)
+    for m in _WORD.finditer(raw):
+        before = raw[:m.start()].rstrip()
+        if m.group()[:1].isupper() and m.group().casefold() == phrase[0] and before and before[-1] not in ".!?":
+            return True
+    return False
+
+
+def _time_admissible(value: Any, origin: StateEntry) -> bool:
+    """Linguistic temporal cue: exact token / phrase present in the original text, nothing more."""
+    if not isinstance(value, str) or _NON_PHRASE.search(value):
+        return False
+    return _contains_phrase(_tokens(_origin_raw(origin)), _tokens(value))
 
 
 def _origin_units(origin: StateEntry) -> set[str]:
@@ -44,6 +112,19 @@ def _origin_units(origin: StateEntry) -> set[str]:
 
 def _problem_markers(request: CognitiveResolutionRequest) -> list[str]:
     return [p.split(":", 1)[1] if ":" in p else p for p in request.problem_refs]
+
+
+def _resolved_forms(request: CognitiveResolutionRequest) -> frozenset[str]:
+    """Exact canonical forms of the unresolved item(s) this request addresses (no containment)."""
+    forms: set[str] = set()
+    for ref in request.problem_refs:
+        field, _, marker = ref.partition(":")
+        forms.update({ref, marker})
+        if field in _BLOCKER_FORM:
+            blocker = f"{_BLOCKER_FORM[field]}:{marker}"
+            forms.update({blocker, f"frame:{blocker}"})
+    forms.discard("")
+    return frozenset(forms)
 
 
 def _check(request: CognitiveResolutionRequest, cand: CognitiveResolutionCandidate, origin: StateEntry,
@@ -69,8 +150,10 @@ def _check(request: CognitiveResolutionRequest, cand: CognitiveResolutionCandida
     if not set(request.provenance_refs) <= set(cand.provenance_refs):
         return "provenance_dropped"
     markers = _problem_markers(request)
+    resolved = _resolved_forms(request)
     for item in request.uncertainty:
-        if not any(m and m in item for m in markers) and item not in cand.remaining_unknowns:
+        # only the exact canonical item addressed by the request may disappear
+        if item not in resolved and item not in cand.remaining_unknowns:
             return "unresolved_content_lost"
     origin_contradictions = (origin.payload or {}).get("contradictions") or [] if isinstance(origin.payload, dict) else []
     if not set(origin_contradictions) <= set(cand.contradictions):
@@ -78,10 +161,13 @@ def _check(request: CognitiveResolutionRequest, cand: CognitiveResolutionCandida
     proposal = cand.proposed_resolution
     if any(proposal.get(k) not in (None, False) for k in _FORBIDDEN_CLAIMS):
         return "forbidden_claim"
-    text = _origin_text(origin)
-    values = [proposal[k] for k in _TEXT_SCALARS if k in proposal]
-    values += [v for k in _TEXT_LISTS for v in proposal.get(k) or []]
-    if any(not isinstance(v, str) or v.casefold() not in text for v in values):
+    referents = [proposal[k] for k in _REFERENT_SCALARS if k in proposal]
+    referents += [v for k in _REFERENT_LISTS for v in proposal.get(k) or []]
+    if not all(_referent_admissible(v, origin) for v in referents):
+        return "unsupported_content_invented"
+    times = [proposal[k] for k in _TIME_SCALARS if k in proposal]
+    times += [v for k in _TIME_LISTS for v in proposal.get(k) or []]
+    if not all(_time_admissible(v, origin) for v in times):
         return "unsupported_content_invented"
     units = _origin_units(origin)
     for rel in proposal.get("relations") or []:
