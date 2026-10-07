@@ -85,6 +85,10 @@ OP_BROWSER_SELECT_OPTION = "V2_BROWSER_SELECT_OPTION"
 _CAP_BOPT_PREPARE = "PC_V2_BROWSER_SELECT_OPTION_PREPARE"
 _CAP_BOPT_EXECUTE = "PC_V2_BROWSER_SELECT_OPTION_EXECUTE"
 
+OP_BROWSER_SET_FIELD_VALUE = "V2_BROWSER_SET_FIELD_VALUE"
+_CAP_BFLD_PREPARE = "PC_V2_BROWSER_SET_FIELD_VALUE_PREPARE"
+_CAP_BFLD_EXECUTE = "PC_V2_BROWSER_SET_FIELD_VALUE_EXECUTE"
+
 _SENSITIVE_SELECTOR_PATTERNS = (
     "type=password", 'type="password"', "type=hidden", 'type="hidden"',
 )
@@ -93,7 +97,7 @@ def _is_sensitive_selector(selector: str) -> bool:
     sl = selector.lower().replace(" ", "")
     return any(p.replace(" ", "") in sl for p in _SENSITIVE_SELECTOR_PATTERNS)
 OP_UIA_SET_CHECKED  = "V2_UIA_SET_CHECKED"
-_CAPABILITY_IDS_V2 = (_CAP_CREATE_PREPARE, _CAP_CREATE_EXECUTE, _CAP_MOVE_PREPARE, _CAP_MOVE_EXECUTE, _CAP_PATCH_PREPARE, _CAP_PATCH_EXECUTE, _CAP_CDIR_PREPARE, _CAP_CDIR_EXECUTE, _CAP_WFOCUS_PREPARE, _CAP_WFOCUS_EXECUTE, _CAP_AOPEN_PREPARE, _CAP_AOPEN_EXECUTE, _CAP_AVOL_PREPARE, _CAP_AVOL_EXECUTE, _CAP_UTEXT_PREPARE, _CAP_UTEXT_EXECUTE, _CAP_SCHK_PREPARE, _CAP_SCHK_EXECUTE, _CAP_SRAD_PREPARE, _CAP_SRAD_EXECUTE, _CAP_STAB_PREPARE, _CAP_STAB_EXECUTE, _CAP_BNAV_PREPARE, _CAP_BNAV_EXECUTE, _CAP_BRAD_PREPARE, _CAP_BRAD_EXECUTE, _CAP_BLINK_PREPARE, _CAP_BLINK_EXECUTE, _CAP_BDISC_PREPARE, _CAP_BDISC_EXECUTE, _CAP_BCHK_PREPARE, _CAP_BCHK_EXECUTE, _CAP_BRDO_PREPARE, _CAP_BRDO_EXECUTE, _CAP_BOPT_PREPARE, _CAP_BOPT_EXECUTE)
+_CAPABILITY_IDS_V2 = (_CAP_CREATE_PREPARE, _CAP_CREATE_EXECUTE, _CAP_MOVE_PREPARE, _CAP_MOVE_EXECUTE, _CAP_PATCH_PREPARE, _CAP_PATCH_EXECUTE, _CAP_CDIR_PREPARE, _CAP_CDIR_EXECUTE, _CAP_WFOCUS_PREPARE, _CAP_WFOCUS_EXECUTE, _CAP_AOPEN_PREPARE, _CAP_AOPEN_EXECUTE, _CAP_AVOL_PREPARE, _CAP_AVOL_EXECUTE, _CAP_UTEXT_PREPARE, _CAP_UTEXT_EXECUTE, _CAP_SCHK_PREPARE, _CAP_SCHK_EXECUTE, _CAP_SRAD_PREPARE, _CAP_SRAD_EXECUTE, _CAP_STAB_PREPARE, _CAP_STAB_EXECUTE, _CAP_BNAV_PREPARE, _CAP_BNAV_EXECUTE, _CAP_BRAD_PREPARE, _CAP_BRAD_EXECUTE, _CAP_BLINK_PREPARE, _CAP_BLINK_EXECUTE, _CAP_BDISC_PREPARE, _CAP_BDISC_EXECUTE, _CAP_BCHK_PREPARE, _CAP_BCHK_EXECUTE, _CAP_BRDO_PREPARE, _CAP_BRDO_EXECUTE, _CAP_BOPT_PREPARE, _CAP_BOPT_EXECUTE, _CAP_BFLD_PREPARE, _CAP_BFLD_EXECUTE)
 PREPARED_AWAITING_HUMAN_APPROVAL = "PREPARED_AWAITING_HUMAN_APPROVAL"
 EXECUTED_OK = "EXECUTED_OK"
 PREPARE_REJECTED = "PREPARE_REJECTED"
@@ -3668,6 +3672,340 @@ def pc_v2_browser_select_option_execute(
     }
 
 
+_BROWSER_FIELD_SUPPORTED_CLASSES = {"INPUT_TEXT", "INPUT_SEARCH", "INPUT_EMAIL", "INPUT_URL", "INPUT_TEL", "TEXTAREA"}
+_BROWSER_FIELD_SENSITIVE_AUTOCOMPLETE = {
+    "current-password", "new-password", "one-time-code",
+    "cc-number", "cc-csc", "cc-exp", "cc-exp-month", "cc-exp-year",
+}
+_BROWSER_FIELD_MAX_TARGET_VALUE_LENGTH = 4096
+
+
+def _browser_field_identity(inspected: dict) -> dict:
+    keys = (
+        "browser_session_id", "page_id", "url", "origin", "closed", "selector",
+        "element_count", "tag_name", "type", "name", "id", "role",
+        "autocomplete", "form_owner", "visible", "enabled", "editable",
+        "readonly", "supported_field_class", "current_value_sha256",
+        "current_value_length", "metadata_sha256", "main_frame",
+    )
+    return {key: inspected.get(key) for key in keys}
+
+
+def _browser_field_pre_state_anchor(identity: dict):
+    snapshot = {
+        "anchor_schema": "BROWSER_SET_FIELD_VALUE_PRE_STATE_V1",
+        "field_identity": {k: identity.get(k) for k in (
+            "browser_session_id", "page_id", "url", "origin", "selector",
+            "element_count", "tag_name", "type", "name", "id", "role",
+            "autocomplete", "form_owner", "metadata_sha256", "main_frame",
+            "supported_field_class",
+        )},
+        "visible": identity.get("visible"),
+        "enabled": identity.get("enabled"),
+        "editable": identity.get("editable"),
+        "readonly": identity.get("readonly"),
+        "current_value_sha256": identity.get("current_value_sha256"),
+        "current_value_length": identity.get("current_value_length"),
+    }
+    return snapshot, _sha256(json.dumps(snapshot, sort_keys=True, ensure_ascii=False).encode("utf-8"))
+
+
+def _validate_field_semantics(semantic_intent, semantic_risk) -> str:
+    if not isinstance(semantic_intent, str) or not semantic_intent.strip():
+        return "SEMANTIC_INTENT_REQUIRED"
+    if len(semantic_intent.strip()) > 160:
+        return "SEMANTIC_INTENT_TOO_LONG"
+    if semantic_risk not in {"LOW", "MEDIUM", "HIGH"}:
+        return "SEMANTIC_RISK_INVALID"
+    return ""
+
+
+def _validate_field_identity(identity: dict) -> str:
+    if not identity.get("browser_session_id"):
+        return "SESSION_ID_MISSING"
+    if not identity.get("page_id"):
+        return "PAGE_ID_MISSING"
+    if identity.get("closed"):
+        return "PAGE_CLOSED"
+    if identity.get("element_count") != 1:
+        return "FIELD_COUNT_NOT_ONE"
+    if identity.get("main_frame") is not True:
+        return "IFRAME_UNSUPPORTED"
+    field_class = identity.get("supported_field_class")
+    field_type = identity.get("type")
+    if field_class not in _BROWSER_FIELD_SUPPORTED_CLASSES:
+        if field_type == "password":
+            return "PASSWORD_FIELD_DEFERRED"
+        if field_type == "file":
+            return "FILE_FIELD_BLOCKED"
+        if field_type == "hidden":
+            return "HIDDEN_FIELD_BLOCKED"
+        if field_type in {"number", "date", "time", "datetime-local"}:
+            return "FIELD_TYPE_DEFERRED"
+        return "UNSUPPORTED_FIELD_TARGET"
+    if str(identity.get("autocomplete") or "").lower() in _BROWSER_FIELD_SENSITIVE_AUTOCOMPLETE:
+        return "SENSITIVE_AUTOCOMPLETE_DEFERRED"
+    if identity.get("visible") is not True:
+        return "ELEMENT_NOT_VISIBLE"
+    if identity.get("enabled") is not True:
+        return "ELEMENT_NOT_ENABLED"
+    if identity.get("editable") is not True:
+        return "ELEMENT_NOT_EDITABLE"
+    if identity.get("readonly") is True:
+        return "ELEMENT_READONLY"
+    if not isinstance(identity.get("current_value_sha256"), str) or not identity.get("current_value_sha256"):
+        return "CURRENT_VALUE_HASH_MISSING"
+    if not isinstance(identity.get("current_value_length"), int):
+        return "CURRENT_VALUE_LENGTH_MISSING"
+    return ""
+
+
+def _same_field_identity(a: dict, b: dict) -> bool:
+    for key in (
+        "browser_session_id", "page_id", "url", "origin", "selector",
+        "element_count", "tag_name", "type", "name", "id", "role",
+        "autocomplete", "form_owner", "metadata_sha256", "main_frame",
+        "supported_field_class",
+    ):
+        if a.get(key) != b.get(key):
+            return False
+    return True
+
+
+def pc_v2_browser_set_field_value_prepare(
+        selector, target_value, semantic_intent, semantic_risk, *,
+        stores_base_dir, session_id="", executor=None):
+    if executor is None:
+        return _prep_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_PREPARE, "EXECUTOR_REQUIRED", session_id)
+    if not isinstance(selector, str) or not selector.strip():
+        return _prep_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_PREPARE, "SELECTOR_REQUIRED", session_id)
+    if not isinstance(target_value, str):
+        return _prep_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_PREPARE, "TARGET_VALUE_STRING_REQUIRED", session_id)
+    if len(target_value) > _BROWSER_FIELD_MAX_TARGET_VALUE_LENGTH:
+        return _prep_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_PREPARE, "TARGET_VALUE_TOO_LONG", session_id)
+    reason = _validate_field_semantics(semantic_intent, semantic_risk)
+    if reason:
+        return _prep_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_PREPARE, reason, session_id)
+    selector = selector.strip()
+    semantic_intent = semantic_intent.strip()
+    st = _stores(stores_base_dir)
+    inspected = executor.inspect_field(selector)
+    if not inspected.get("ok"):
+        return _prep_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_PREPARE,
+                         "INSPECT_FIELD_FAILED:" + str(inspected.get("error", "")), session_id)
+    identity = _browser_field_identity(inspected)
+    reason = _validate_field_identity(identity)
+    if reason:
+        return _prep_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_PREPARE, reason, session_id)
+    target_hash = _sha256_text(target_value)
+    target_length = len(target_value)
+    _, physical_state_anchor = _browser_field_pre_state_anchor(identity)
+    desc = {
+        "operation_type": OP_BROWSER_SET_FIELD_VALUE,
+        "public_action": "BROWSER_SET_FIELD_VALUE",
+        "selector": selector,
+        "field_identity": identity,
+        "target_value_sha256": target_hash,
+        "target_value_length": target_length,
+        "semantic_intent": semantic_intent,
+        "semantic_risk": semantic_risk,
+        "physical_state_anchor": physical_state_anchor,
+        "state_anchor_kind": "PHYSICAL_PRE_STATE",
+        "max_target_value_length": _BROWSER_FIELD_MAX_TARGET_VALUE_LENGTH,
+        "sensitive_autocomplete_denylist": sorted(_BROWSER_FIELD_SENSITIVE_AUTOCOMPLETE),
+    }
+    eah = _eah(OP_BROWSER_SET_FIELD_VALUE, desc)
+    scope = _sha16(f"BROWSER_SET_FIELD_VALUE:{selector}:{identity.get('metadata_sha256')}:{target_hash}:{target_length}:{semantic_intent}:{semantic_risk}")
+    child = _v2id("chd", eah + scope + "BROWSER_SET_FIELD_VALUE")
+    v2id = _v2id("v2x", eah + session_id + "BROWSER_SET_FIELD_VALUE")
+    mh = _sha16(json.dumps(desc, sort_keys=True))
+    dh = _persist_desc(v2id, OP_BROWSER_SET_FIELD_VALUE, eah, desc, st["v2exec"])
+    return {
+        "status": PREPARED_AWAITING_HUMAN_APPROVAL,
+        "j5_phase": "PREPARE",
+        "operation_type": OP_BROWSER_SET_FIELD_VALUE,
+        "public_action": "BROWSER_SET_FIELD_VALUE",
+        "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "execution_authority_hash": eah,
+        "selector": selector,
+        "field_identity": identity,
+        "target_value_sha256": target_hash,
+        "target_value_length": target_length,
+        "semantic_intent": semantic_intent,
+        "semantic_risk": semantic_risk,
+        "physical_state_anchor": physical_state_anchor,
+        "state_anchor_kind": "PHYSICAL_PRE_STATE",
+        "v2_exec_id": v2id,
+        "child_id": child,
+        "manifest_hash": mh,
+        "desc_hash": dh,
+        "_stores_base_dir": str(stores_base_dir),
+        "target_plaintext_persisted": False,
+        "sensitive_autocomplete_denylist": sorted(_BROWSER_FIELD_SENSITIVE_AUTOCOMPLETE),
+        "receipt": _rcpt(
+            _CAP_BFLD_PREPARE, OP_BROWSER_SET_FIELD_VALUE,
+            PREPARED_AWAITING_HUMAN_APPROVAL, session_id,
+            execution_authority_hash=eah, selector=selector,
+            target_value_sha256=target_hash, target_value_length=target_length,
+            pre_value_sha256=identity.get("current_value_sha256"),
+            pre_value_length=identity.get("current_value_length"),
+            semantic_intent=semantic_intent, semantic_risk=semantic_risk,
+            physical_state_anchor=physical_state_anchor,
+            state_anchor_kind="PHYSICAL_PRE_STATE",
+        ),
+    }
+
+
+def pc_v2_browser_set_field_value_execute(
+        prepared_result, human_authorized_eah, human_authorization_reference, target_value,
+        *, stores_base_dir, session_id="", executor=None):
+    if prepared_result.get("j5_phase") != "PREPARE":
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "PREPARE_PHASE_REQUIRED", session_id)
+    if prepared_result.get("status") != PREPARED_AWAITING_HUMAN_APPROVAL:
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE,
+                         "PREPARED_AWAITING_HUMAN_APPROVAL_REQUIRED", session_id)
+    exp_eah = prepared_result.get("execution_authority_hash", "")
+    if not exp_eah or human_authorized_eah != exp_eah:
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, EAH_MISMATCH, session_id)
+    if not (human_authorization_reference or "").strip():
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE,
+                         "HUMAN_AUTHORIZATION_REFERENCE_REQUIRED", session_id)
+    if executor is None:
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "EXECUTOR_REQUIRED", session_id)
+    if not isinstance(target_value, str):
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "TARGET_VALUE_STRING_REQUIRED", session_id)
+    if len(target_value) > _BROWSER_FIELD_MAX_TARGET_VALUE_LENGTH:
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "TARGET_VALUE_TOO_LONG", session_id)
+    v2id = prepared_result.get("v2_exec_id", "")
+    child = prepared_result.get("child_id", "")
+    mh = prepared_result.get("manifest_hash", "")
+    dh = prepared_result.get("desc_hash", "")
+    st = _stores(stores_base_dir)
+    desc_rec = _load_desc(v2id, st["v2exec"])
+    desc_eah_ok = (desc_rec and desc_rec.get("eah") == exp_eah
+                   and _eah(OP_BROWSER_SET_FIELD_VALUE, desc_rec.get("descriptor", {})) == exp_eah)
+    if not desc_eah_ok:
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "DESCRIPTOR_EAH_MISMATCH", session_id)
+    d = desc_rec["descriptor"]
+    target_hash = d.get("target_value_sha256", "")
+    target_length = d.get("target_value_length")
+    if _sha256_text(target_value) != target_hash or len(target_value) != target_length:
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "TARGET_VALUE_HASH_MISMATCH", session_id)
+    identity = dict(d.get("field_identity") or {})
+    selector = d.get("selector", "")
+    toctou = executor.inspect_field(selector)
+    if not toctou.get("ok"):
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE,
+                         "TOCTOU_INSPECT_FAILED:" + str(toctou.get("error", "")), session_id)
+    current_identity = _browser_field_identity(toctou)
+    reason = _validate_field_identity(current_identity)
+    if reason:
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, reason, session_id)
+    if not _same_field_identity(identity, current_identity):
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "FIELD_IDENTITY_DRIFT", session_id)
+    if current_identity.get("current_value_sha256") != identity.get("current_value_sha256"):
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "PRE_VALUE_HASH_DRIFT", session_id)
+    if current_identity.get("current_value_length") != identity.get("current_value_length"):
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "PRE_VALUE_LENGTH_DRIFT", session_id)
+    _, current_psa = _browser_field_pre_state_anchor(current_identity)
+    if current_psa != d.get("physical_state_anchor", ""):
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "PRE_STATE_DRIFT", session_id)
+    semantic_intent = d.get("semantic_intent", "")
+    semantic_risk = d.get("semantic_risk", "")
+    reason = _validate_field_semantics(semantic_intent, semantic_risk)
+    if reason:
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, reason, session_id)
+    scope_id = _sha16(f"BROWSER_SET_FIELD_VALUE:{selector}:{identity.get('metadata_sha256')}:{target_hash}:{target_length}:{semantic_intent}:{semantic_risk}")
+    apr = _approval(v2id, child, exp_eah, scope_id + target_hash)
+    apv_id = apr["approval_id"]
+    ar = _E.store_approval_artifact(apr, st["approval"])
+    if ar.get("status") not in ("STORED", "IDEMPOTENT_ALREADY_EXISTS"):
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "APPROVAL_STORE_FAILED", session_id)
+    kx = _kx108_pre(v2id, child, exp_eah, apv_id, dh, "", mh, [scope_id], OP_BROWSER_SET_FIELD_VALUE,
+                    kxpre=st["kxpre"], physical_state_anchor=d.get("physical_state_anchor", ""),
+                    state_anchor_kind="PHYSICAL_PRE_STATE")
+    if not kx.get("verify_ok"):
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "KX108_PRE_FAILED", session_id)
+    gate = kx.get("x108_gate", "")
+    if gate != "ALLOW":
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "KX108_PRE_GATE:" + gate, session_id)
+    act = executor.set_field_value(identity, target_value)
+    if not act.get("ok"):
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE,
+                         "SET_FIELD_VALUE_FAILED:" + str(act.get("error", "")), session_id)
+    for flag, reason_code in (("navigation_detected", "UNEXPECTED_NAVIGATION"),
+                              ("popup_detected", "UNEXPECTED_POPUP"),
+                              ("new_page_detected", "UNEXPECTED_NEW_PAGE"),
+                              ("download_detected", "UNEXPECTED_DOWNLOAD")):
+        if act.get(flag):
+            return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, reason_code, session_id)
+    post = executor.inspect_field(selector)
+    if not post.get("ok"):
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE,
+                         "POST_INSPECT_FAILED:" + str(post.get("error", "")), session_id)
+    post_identity = _browser_field_identity(post)
+    if not post_identity.get("browser_session_id"):
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "POST_SESSION_ID_MISSING", session_id)
+    if not post_identity.get("page_id"):
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "POST_PAGE_ID_MISSING", session_id)
+    if post_identity.get("browser_session_id") != identity.get("browser_session_id"):
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "POST_SESSION_ID_DRIFT", session_id)
+    if post_identity.get("page_id") != identity.get("page_id"):
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "POST_PAGE_ID_DRIFT", session_id)
+    if not _same_field_identity({**identity, "current_value_sha256": post_identity.get("current_value_sha256"),
+                                 "current_value_length": post_identity.get("current_value_length")}, post_identity):
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "POST_FIELD_IDENTITY_DRIFT", session_id)
+    if post_identity.get("current_value_sha256") != target_hash:
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, REALIZED_STATE_MISMATCH, session_id)
+    if post_identity.get("current_value_length") != target_length:
+        return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "REALIZED_STATE_LENGTH_MISMATCH", session_id)
+    return {
+        "status": EXECUTED_OK,
+        "j5_phase": "EXECUTE",
+        "operation_type": OP_BROWSER_SET_FIELD_VALUE,
+        "public_action": "BROWSER_SET_FIELD_VALUE",
+        "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "kx108_pre_gate": gate,
+        "human_authorization_consumed": True,
+        "selector": selector,
+        "target_value_sha256": target_hash,
+        "post_value_sha256": post_identity.get("current_value_sha256"),
+        "target_value_length": target_length,
+        "post_value_length": post_identity.get("current_value_length"),
+        "pre_value_sha256": identity.get("current_value_sha256"),
+        "pre_value_length": identity.get("current_value_length"),
+        "semantic_intent": semantic_intent,
+        "semantic_risk": semantic_risk,
+        "mutation_performed": bool(act.get("mutation_performed")),
+        "proof_strength": "STRONG",
+        "realized_state_verified": True,
+        "independent_post_read": True,
+        "plaintext_value_returned": False,
+        "navigation_detected": False,
+        "popup_detected": False,
+        "new_page_detected": False,
+        "download_detected": False,
+        "executor_provider": executor.EXECUTOR_PROVIDER,
+        "executor_backend": executor.EXECUTOR_BACKEND,
+        "receipt": _rcpt(
+            _CAP_BFLD_EXECUTE, OP_BROWSER_SET_FIELD_VALUE, EXECUTED_OK, session_id,
+            kx108_pre_gate=gate, selector=selector,
+            target_value_sha256=target_hash, post_value_sha256=post_identity.get("current_value_sha256"),
+            target_value_length=target_length, post_value_length=post_identity.get("current_value_length"),
+            pre_value_sha256=identity.get("current_value_sha256"),
+            pre_value_length=identity.get("current_value_length"),
+            semantic_intent=semantic_intent, semantic_risk=semantic_risk,
+            mutation_performed=bool(act.get("mutation_performed")),
+            proof_strength="STRONG", realized_state_verified=True,
+            independent_post_read=True,
+            physical_state_anchor=d.get("physical_state_anchor", ""),
+            state_anchor_kind="PHYSICAL_PRE_STATE",
+        ),
+    }
+
+
 # ============================
 # GOVERNED_BROWSER_READ
 # ============================
@@ -4120,6 +4458,8 @@ def execute_pc_capability_v2(capability_id: str, **kwargs) -> dict:
         _CAP_BRDO_EXECUTE:   pc_v2_browser_select_radio_execute,
         _CAP_BOPT_PREPARE:   pc_v2_browser_select_option_prepare,
         _CAP_BOPT_EXECUTE:   pc_v2_browser_select_option_execute,
+        _CAP_BFLD_PREPARE:   pc_v2_browser_set_field_value_prepare,
+        _CAP_BFLD_EXECUTE:   pc_v2_browser_set_field_value_execute,
     }
     fn = _dispatch.get(capability_id)
     if fn is None: return {"status": "UNKNOWN_CAPABILITY_V2", "capability_id": capability_id, "known": list(_dispatch)}
@@ -4141,7 +4481,7 @@ def self_check_v2() -> dict:
         "generic_shell_enabled": GENERIC_SHELL_ENABLED,
         "governed_delete_file": GOVERNED_DELETE_FILE_STATUS,
         "capabilities": list(_CAPABILITY_IDS_V2),
-        "operations": [OP_CREATE_FILE, OP_MOVE_FILE, OP_APPLY_PATCH, OP_CREATE_DIR, OP_WINDOW_FOCUS, OP_APP_OPEN, OP_AUDIO_VOLUME, OP_UIA_SET_TEXT, OP_UIA_SET_CHECKED, OP_UIA_SELECT_RADIO, OP_UIA_SELECT_TAB, OP_BROWSER_NAVIGATE, OP_BROWSER_READ, OP_BROWSER_ACTIVATE_LINK, OP_BROWSER_SET_DISCLOSURE, OP_BROWSER_SET_CHECKED, OP_BROWSER_SELECT_RADIO, OP_BROWSER_SELECT_OPTION],
+        "operations": [OP_CREATE_FILE, OP_MOVE_FILE, OP_APPLY_PATCH, OP_CREATE_DIR, OP_WINDOW_FOCUS, OP_APP_OPEN, OP_AUDIO_VOLUME, OP_UIA_SET_TEXT, OP_UIA_SET_CHECKED, OP_UIA_SELECT_RADIO, OP_UIA_SELECT_TAB, OP_BROWSER_NAVIGATE, OP_BROWSER_READ, OP_BROWSER_ACTIVATE_LINK, OP_BROWSER_SET_DISCLOSURE, OP_BROWSER_SET_CHECKED, OP_BROWSER_SELECT_RADIO, OP_BROWSER_SELECT_OPTION, OP_BROWSER_SET_FIELD_VALUE],
         "new_parallel_mutation_engine": False,
         "generic_write_file_enabled": False,
         "openjarvis_authority": JARVIS_AUTHORITY,

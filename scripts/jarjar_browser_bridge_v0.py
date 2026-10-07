@@ -201,6 +201,33 @@ class JarJarBrowserExecutor:
         out.update(data)
         return out
 
+    def inspect_field(self, selector: str) -> dict:
+        """Inspect one supported text field target. No mutation and no plaintext value."""
+        from jarvis.contracts import ActionRequest
+        result = self._backend.execute(
+            ActionRequest("browser.inspect_field", {"selector": selector}))
+        if not result.ok:
+            return {"ok": False, "error": "INSPECT_FIELD_FAILED:" + result.message,
+                    "executor": self.EXECUTOR_BACKEND}
+        data = result.data or {}
+        out = {"ok": True, "executor": self.EXECUTOR_BACKEND}
+        out.update(data)
+        return out
+
+    def set_field_value(self, field_identity: dict, target_value: str) -> dict:
+        """Set an approved field value. This is not generic fill/submit."""
+        from jarvis.contracts import ActionRequest
+        args = dict(field_identity or {})
+        args["target_value"] = target_value
+        result = self._backend.execute(ActionRequest("browser.set_field_value", args))
+        if not result.ok:
+            return {"ok": False, "error": "SET_FIELD_VALUE_FAILED:" + result.message,
+                    "executor": self.EXECUTOR_BACKEND}
+        data = result.data or {}
+        out = {"ok": True, "executor": self.EXECUTOR_BACKEND}
+        out.update(data)
+        return out
+
     def navigate(self, requested_url: str) -> dict:
         """Execute physical navigation. Returns execution evidence only."""
         from jarvis.contracts import ActionRequest
