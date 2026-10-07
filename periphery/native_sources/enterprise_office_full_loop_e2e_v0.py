@@ -338,6 +338,25 @@ def run_enterprise_office_full_loop_e2e_v0(
         value["execution_receipt_hash"] for value in executions.values()
     )
 
+    stable_intent = {
+        "schema": "OBSIDIA_ENTERPRISE_OFFICE_FULL_LOOP_STABLE_INTENT_V0",
+        "upstream_result_hash": office["result_hash"],
+        "projection_hashes": {
+            item_id: projection.projection_hash
+            for item_id, projection in sorted(projections.items())
+        },
+        "action_bindings": {
+            item_id: {
+                "projection_hash": value["projection_hash"],
+                "request_hash": value["request_hash"],
+                "approval_hash": value["approval_hash"],
+                "activation_policy_hash": value["activation_policy_hash"],
+            }
+            for item_id, value in sorted(executions.items())
+        },
+        "decision_authority": DECISION_AUTHORITY,
+    }
+
     summary = {
         "schema": "OBSIDIA_ENTERPRISE_OFFICE_FULL_LOOP_E2E_RESULT_V0",
         "status": STATUS,
@@ -382,6 +401,8 @@ def run_enterprise_office_full_loop_e2e_v0(
             value["real_external_effect"] for value in executions.values()
         ),
         "execution_receipt_hashes": execution_receipt_hashes,
+        "stable_intent_hash": canonical_hash(stable_intent),
+        "runtime_evidence_time_bound": True,
         "projection_hashes": {
             item_id: projection.projection_hash
             for item_id, projection in sorted(projections.items())
