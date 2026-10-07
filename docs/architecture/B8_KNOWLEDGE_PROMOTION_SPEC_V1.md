@@ -341,7 +341,7 @@ Authority: `B8_CANONICAL_TRANSITION_GATE` only (no agent, human or LLM authority
 
 | # | From → To | Preconditions |
 |---|---|---|
-| G1 | ∅ → OPEN | well-formed gap (slot, valid_time, reason, provenance) ; idempotent on gap_id |
+| G1 | ∅ → OPEN | well-formed gap (slot, valid_time, provenance) and an explicit reason ; idempotent on gap_id |
 | G2 | OPEN → RESOLVED (full coverage) | `promoted_claim_id` + `promoted_record_id` whose latest state (§10) is PROMOTED, same slot_id, typed resolution relation, claim valid_time **contains** the gap valid_time, expected_slot_revision, reason; every temporal relation used here requires `TEMPORALLY_COMPARABLE` (§5.1), else REJECTED `temporal_relation_indeterminate` (state unchanged) |
 | G3 | OPEN → SUPERSEDED, reason GAP_REFRAMED | `successor_gap_id` of an OPEN gap on the same slot_id and the same `temporal_frame_ref` (V1) whose valid_time **contains** the old gap's, reason; every temporal relation used here requires `TEMPORALLY_COMPARABLE` (§5.1), else REJECTED `temporal_relation_indeterminate` (state unchanged) |
 | G4 | compound GapPartitionBundle, reason PARTIAL_RESOLUTION | PROMOTED claim (latest state, same slot, typed resolution relation, expected_slot_revision) whose valid_time overlaps but does not contain the gap's: old gap OPEN → SUPERSEDED, resolved sub-interval (gap ∩ claim) linked to the claim, residual gaps = `difference(gap, claim)` created OPEN (§5.1); every temporal relation used here requires `TEMPORALLY_COMPARABLE` (§5.1), else REJECTED `temporal_relation_indeterminate` (state unchanged) |
@@ -472,38 +472,46 @@ serialization, digest, duplicate identity or replay (`DISPLAY_LABEL_AFFECTS_RECE
 carrying a value outside the enum is itself invalid (`UNKNOWN_REASON_CODE_IN_CANONICAL_RECEIPT=REJECT`).
 Claims and gaps share this single vocabulary. Sorting (§9.1) is ascending code-point order over these
 canonical strings (`REASON_ORDER_SOURCE=canonical_reason_code_string`). Each rejecting guard maps to
-exactly one code (`ONE_REJECT_GUARD_ONE_REASON_CODE=YES`); semantically identical guards share one code.
+exactly one code; semantically identical guards share one code.
+
+**Atomic failure partition (D-B8-SA5-1).** ReasonCode predicates partition rejection at the level of
+atomic failure facts (`ATOMIC_FAILURE_REASON_PARTITION=YES`, `ONE_ATOMIC_FAILURE_FACT_ONE_REASON_CODE=YES`):
+one atomic failure fact yields exactly one code; N independent facts yield the code of each (§9.1
+complete set). Exclusivity follows from the predicate definitions below (each predicate is evaluable
+only when the prerequisite facts it presupposes hold, per `GUARD_NOT_EVALUABLE`), never from a priority
+table or from guard evaluation order (`REASON_PRIORITY_TABLE=NONE`,
+`GUARD_ORDER_DEFINES_REASON_PARTITION=NO`, `SAME_FAILURE_FACT_DUPLICATE_CODES=0`).
 
 | ReasonCode | Rejecting guard(s) (section) |
 |---|---|
 | `attestation_inadmissible` | attestation identity not from a trusted identity boundary (§7; T5 / T6 human classes) |
 | `attestation_missing` | required attestation kind absent: PRIMARY_DECLARATION for T5 on human classes, REVIEW_AUTHORIZATION for T6 / T9 when `requires_human_review` (§6) |
 | `backdated_record` | same trusted clock-domain monotonic consistency violation (§5.3, §9.1) |
-| `containment_not_satisfied` | required containment fails: T9 new valid_time does not contain the predecessor's; G2 claim does not contain the gap; G3 successor does not contain the old gap |
+| `containment_not_satisfied` | required containment fails, evaluated only within one frame and, for T9, only against the unique eligible predecessor: T9 new valid_time does not contain the predecessor's; G2 claim does not contain the gap; G3 successor does not contain the old gap |
 | `contradiction_inadmissible` | T7 without admissible contradicting evidence or claim refs |
 | `contradiction_unresolved` | T8 without explicit resolution refs |
-| `evidence_inadmissible` | T4 without ≥1 admissible EvidenceRef with complete provenance; T10 without evidence ref |
-| `forbidden_transition` | (from, to) pair outside §9.2 / §8.1 or a half-T9 outside its bundle (§9.4) |
-| `malformed_object` | object not well-formed: missing / invalid class, content, refs, valid_time or temporal_frame_ref (T1, G1, §4, §5.1) |
+| `evidence_inadmissible` | an EvidenceRef correctly bound to (claim_id, claim_version) that is not admissible / lacks complete provenance, or no EvidenceRef at all (T4, T10); a wrongly bound ref is `ref_binding_mismatch` only |
+| `forbidden_transition` | the request's (expected_state, target_state) pair is outside §9.2 / §8.1, or a half-T9 is requested outside its bundle (§9.4); evaluated on the request alone, independently of the snapshot state (a snapshot mismatch is `stale_request`) |
+| `malformed_object` | structural / schema malformation of the object (missing or invalid class, content, refs, valid_time, temporal_frame_ref, provenance) other than fields that have their own code: a missing reason is `reason_missing`, a slot defect is `malformed_slot`, size is `oversize_object` (T1, G1, §4, §5.1) |
 | `malformed_slot` | slot canonicalization violation, empty subject_refs, invalid element (§5) |
-| `multiple_predecessors_unsupported` | T9 new claim overlaps more than one PROMOTED claim |
+| `multiple_predecessors_unsupported` | T9: the set of eligible predecessors (same-frame PROMOTED claims on the slot overlapping the new valid_time) has more than one member |
 | `no_temporal_overlap` | G4 resolving claim does not overlap the gap |
 | `open_contradiction` | T6 / T9 with an open contradiction on the slot / time |
 | `oversize_object` | canonical JSON above `MAX_CANDIDATE_CHARS` (§3) |
 | `partition_not_partial` | G4 requested while the claim contains the whole gap (G2 applies) |
-| `predecessor_mismatch` | T9 `supersedes_claim_id` / `supersedes_record_id` do not identify the latest record of the single overlapping PROMOTED claim |
-| `reason_missing` | required explicit reason absent (T2, T3, T10, G1–G4 and every request) |
-| `ref_binding_mismatch` | referenced object not bound to (claim_id, claim_version) after re-hashing (§9.1) |
-| `referenced_claim_not_promoted` | G2 / G4 resolving claim, or T9 predecessor, whose latest state is not PROMOTED |
+| `predecessor_mismatch` | T9: exactly one eligible PROMOTED predecessor exists and the designated predecessor is PROMOTED on the same slot, but `supersedes_claim_id` / `supersedes_record_id` do not identify that predecessor or its latest record |
+| `reason_missing` | the required explicit reason field is absent (T2, T3, T10, G1–G4 and every request); the only code for that fact |
+| `ref_binding_mismatch` | a referenced record / object is available but its identity / version binding does not match the request target after re-hashing (e.g. VerificationRecord, attestation or EvidenceRef bound to another claim_id or claim_version) (§9.1) |
+| `referenced_claim_not_promoted` | the claim designated by the request (G2 / G4 resolving claim, T9 `supersedes_claim_id`) is on the same slot but its latest state is not PROMOTED; the only code for that fact |
 | `resolution_relation_invalid` | G2 / G4 typed resolution relation missing or invalid |
-| `slot_mismatch` | referenced claim / gap on another slot (T9, G2, G3, G4) |
+| `slot_mismatch` | the designated claim / gap is on another slot (T9, G2, G3, G4); state- or relation-based predicates about it are then not evaluable |
 | `slot_occupied` | T6 with a same-frame PROMOTED claim overlapping the candidate |
 | `stale_request` | expected claim_version / state / record_version / gap_state / gap_version / slot_revision mismatch (§5.2, §9.1) |
 | `staleness_trigger_inadmissible` | T11 without staleness trigger evidence for the class mechanism (§6) |
 | `successor_gap_not_open` | G3 successor gap not OPEN |
 | `temporal_relation_indeterminate` | required temporal relation across different temporal frames (§5.1) |
-| `verification_not_satisfied` | T5 / T12 VerificationRecord missing, NOT_SATISFIED or INCONCLUSIVE, or not bound to (claim_id, claim_version) |
-| `verifier_inadmissible` | verifier family not admissible for the claim class (§6) |
+| `verification_not_satisfied` | T5 / T12: no VerificationRecord, or a record correctly bound to (claim_id, claim_version) from an admissible verifier family whose verdict is NOT_SATISFIED or INCONCLUSIVE (a wrong binding is `ref_binding_mismatch`, a wrong family `verifier_inadmissible`) |
+| `verifier_inadmissible` | a correctly bound verification artifact from a verifier family not admissible for the claim class, including a human attestation offered as verification of an objective class (§6) |
 
 `TOTAL_REASON_CODES=28`. ReasonCode != TransitionVerdict != ClaimState.
 
@@ -669,3 +677,9 @@ No duplicate promotion engine survives canonical B8.
   Remediation: §9.5 closed lowercase snake_case enum of 28 codes mapped to every rejecting guard, legacy
   upper-case spelling (historically `MULTIPLE_PREDECESSORS_UNSUPPORTED`, non-normative here) replaced,
   oversize / slot rejections coded. Status stays DRAFT_FOR_AUDIT.
+- Second auditor re-certification of bcd08872: vocabulary closed and complete (37 guards mapped, 2016
+  cases → 0); REMEDIATE_SPEC for D-B8-SA5-1 — three predicate overlaps gave one failure two codes
+  (verification binding, T9 non-promoted predecessor, G1 missing reason; 14400 cases). Remediation:
+  atomic failure partition rule, disjoint predicates for those three plus the neighbouring evidence /
+  verifier / forbidden-transition / slot / containment / malformed-object definitions; enum unchanged
+  (28 codes). Status stays DRAFT_FOR_AUDIT.
