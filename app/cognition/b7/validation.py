@@ -16,7 +16,6 @@ from typing import Any, Iterable, Mapping
 from app.cognition.b7.contracts import (CandidateStatus, CognitiveResolutionCandidate, CognitiveResolutionRequest,
                                         CognitiveValidationVerdict, RequiredCandidateKind)
 from app.harness.state_explicit.context_assembly import ContextPacket
-from app.semantic.lattice.lexicon import lookup as sens_lexicon_lookup
 from app.harness.state_explicit.contracts import StateEntry, StateStatus, Visibility
 from app.harness.state_explicit.registry import WorkingStateRegistry
 
@@ -27,11 +26,6 @@ _TIME_SCALARS = ("anchor",)
 _TIME_LISTS = ("times",)
 _WORD = re.compile(r"[^\W_]+", re.UNICODE)
 _NON_PHRASE = re.compile(r"[^\w\s'’-]", re.UNICODE)     # a claimed phrase never spans punctuation
-# Closed B7 V1 list: a multi-token text referent must be a determiner-headed phrase (bounded lexical
-# evidence); anything else needs a structured SENS referent (unit subject / object / coordination member)
-_DETERMINERS = frozenset({"le", "la", "les", "l", "un", "une", "des", "du", "ce", "cet", "cette", "ces", "mon",
-                          "ma", "mes", "ton", "ta", "tes", "son", "sa", "ses", "notre", "nos", "votre", "vos",
-                          "leur", "leurs"})
 _BLOCKER_FORM = {"unresolved_references": "unresolved_reference", "contradictions": "contradiction",
                  "ambiguities": "ambiguity", "missing": "missing"}
 _FORBIDDEN_CLAIMS = ("physical_chronology_established", "world_fact_established", "emits_act", "memory_write",
@@ -80,35 +74,14 @@ def _structured_referents(origin: StateEntry, anaphor_units: frozenset[str] = fr
     return out
 
 
-def _known_verb_form(token: str) -> bool:
-    """Readonly SENS lexicon membership (the lexicon lists verb forms only); no B7 verb list."""
-    return bool(sens_lexicon_lookup(token)[0])
-
-
 def _referent_admissible(value: Any, origin: StateEntry, anaphor_units: frozenset[str] = frozenset()) -> bool:
-    """STRUCTURED REFERENTS AVAILABLE -> closed admissible set (no text fallback);
-    otherwise exact bounded phrase evidence (never a character coincidence) or REJECT."""
+    """STRUCTURED_REFERENT_ONLY (human doctrine, docs/architecture/B7_STRUCTURED_REFERENT_ONLY_AMENDMENT_20261007.md):
+    a referent is admissible only as an exact member of the origin's structured referent set. Raw text,
+    lexicon, determiners or capitalization never establish a referent; no structure -> not admissible."""
     if not isinstance(value, str) or _NON_PHRASE.search(value):
         return False
     phrase = _tokens(value)
-    if not phrase:
-        return False
-    structured = _structured_referents(origin, anaphor_units)
-    if structured:
-        return phrase in structured
-    raw = _origin_raw(origin)
-    if not _contains_phrase(_tokens(raw), phrase):
-        return False
-    if len(phrase) > 1:
-        # a determiner followed by a known SENS verb form ("le teste", "la lance") is not a referent
-        return phrase[0] in _DETERMINERS and not _known_verb_form(phrase[1])
-    # a single bare token is a text referent only as a capitalized name in the original text; a
-    # sentence-initial capital proves nothing ("Lance-le." is not a name)
-    for m in _WORD.finditer(raw):
-        before = raw[:m.start()].rstrip()
-        if m.group()[:1].isupper() and m.group().casefold() == phrase[0] and before and before[-1] not in ".!?":
-            return True
-    return False
+    return bool(phrase) and phrase in _structured_referents(origin, anaphor_units)
 
 
 def _time_admissible(value: Any, origin: StateEntry) -> bool:
