@@ -85,6 +85,11 @@ class ObsidiaLiveGatewayV0:
                 ticket=None,
                 reason="NO_LIVE_SOVEREIGN_TICKET_NO_WORLD_CALL",
             )
+        if not isinstance(ticket, LiveSovereignTicketV0):
+            return self._block(
+                ticket=None,
+                reason="NON_LIVE_TICKET_REJECTED",
+            )
 
         ok, reason = verify_live_sovereign_ticket_v0(ticket, now=now)
         if not ok:
