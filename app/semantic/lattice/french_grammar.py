@@ -1658,6 +1658,19 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
                 open_clause("si", [t])
                 i += 1
                 continue
+            # NF2: "Si, selon Marie, P": a detached source between "si" and its protasis
+            # qualifies the protasis; it never replaces nor neutralises the condition marker
+            close = next((j for j in range(i + 2, len(toks)) if toks[j].is_punct), None) \
+                if nxt is not None and nxt.low == "," else None
+            src = toks[i + 2:close] if close is not None and toks[close].low == "," else []
+            after = toks[close + 1] if src and close + 1 < len(toks) else None
+            if after is not None and _source_marker(src) is not None \
+                    and (after.low in _SUBJECT_PRONOUNS | _DETERMINERS or after.low in {"c'", "ça", "ca"}
+                         or _si_nominal_subject(toks, close) or _si_unresolved_governor(toks, close)):
+                open_clause("si", [t])
+                cur().evidential, cur().evidential_span = _source_marker(src), (src[0].start, src[-1].end)
+                i = close + 1
+                continue
 
         if low in _CONNECTIVES and low not in {"si", "if"}:
             conn = _CONNECTIVES[low]
@@ -1790,7 +1803,11 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
         # ("elle appelle Luc") is kept as its own (unanalyzed) clause, and so is
         # a verbless "quand / lorsque" subordinate ("lorsque Nadia et Luc V"), and a verbless
         # exception ("Lance R sauf si P": never "r sauf", never an ordinary protasis, F1).
+        # NF2: a protasis opener ("Selon Marie, si le script qui ...") is never fused into the
+        # preceding detached source clause: "si" keeps governing its own protasis
         if not has_verb and merged and c.conn not in {"sans", "sans_que", "quand", "wh", "a_moins_que"} \
+                and not (c.conn == "si" and merged[-1].conn is None
+                         and _source_marker(merged[-1].toks) is not None) \
                 and not _unanalyzed_predicative(c, in_sequence=c.conn in _SEQUENCE_CONNECTIVES
                                                 or (c.conn is None and c.boundary == ",")):
             prev = merged[-1]
@@ -3452,9 +3469,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{content[0].start}-{content[-1].end}:{link}"
                        + (f":governed_by={governed_by.id}" if governed_by is not None else "")
                        + (f":ops={','.join(ops)}" if ops else ""))
-        if clause.main_after_relative and not clause.units and clause.evidential_span is not None:
+        if (clause.main_after_relative or clause.conn == "si") and not clause.units \
+                and clause.evidential_span is not None:
             # F-EV: the source / evidential of an unresolved main predicate is kept, as a
-            # detached source of that unresolved content (never silently dropped)
+            # detached source of that unresolved content (never silently dropped); NF2: so is
+            # the source of an unresolved protasis ("Si, selon Marie, le script échoue, ...")
             missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{clause.evidential_span[0]}-"
                            f"{clause.evidential_span[1]}:detached_source_of="
                            f"unresolved:{content[0].start}-{content[-1].end}:source={clause.evidential}")
