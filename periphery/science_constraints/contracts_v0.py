@@ -55,13 +55,14 @@ class ScientificInvariantV0:
     model_ref: str | None = None
     equation_refs: tuple[str, ...] = ()
     proof_refs: tuple[str, ...] = ()
+    evidence_refs: tuple[str, ...] = ()
     assumed: bool = False
 
     def __post_init__(self) -> None:
         if not self.invariant_id or not self.statement:
             raise ValueError("scientific invariant requires identity and statement")
-        if not self.assumed and not self.proof_refs:
-            raise ValueError("non-assumed scientific invariant requires proof_refs")
+        if not self.assumed and not (self.proof_refs or self.evidence_refs):
+            raise ValueError("non-assumed scientific invariant requires proof_refs or evidence_refs")
 
 
 @dataclass(frozen=True)
@@ -120,8 +121,12 @@ class ConstraintAssessmentV0:
             raise ValueError("constraint assessment requires identity and constraint ref")
         if self.status in (ConstraintStatusV0.SATISFIED, ConstraintStatusV0.VIOLATED) and not self.evidence_refs:
             raise ValueError("resolved constraint assessment requires explicit evidence_refs")
-        if self.possibility == PossibilityStatusV0.IMPOSSIBLE and not self.evidence_refs:
-            raise ValueError("IMPOSSIBLE requires explicit evidence_refs")
+        if self.possibility != PossibilityStatusV0.UNKNOWN and not self.evidence_refs:
+            raise ValueError("resolved possibility requires explicit evidence_refs")
+        if self.possibility != PossibilityStatusV0.UNKNOWN and not self.model_ref:
+            raise ValueError("resolved possibility requires explicit model_ref scope")
+        if self.status == ConstraintStatusV0.SATISFIED and self.possibility == PossibilityStatusV0.IMPOSSIBLE:
+            raise ValueError("SATISFIED constraint cannot simultaneously be IMPOSSIBLE")
         if not self.readonly or not self.advisory_only:
             raise ValueError("constraint assessment must remain readonly/advisory")
         if self.decision_authority != "KX108_ONLY" or self.allowed_to_decide or self.allowed_to_act:
