@@ -1,11 +1,34 @@
 param(
-    [Parameter(Mandatory=$true)]
-    [string]$SourcePath,
+    [string]$SourcePath = "",
     [string]$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path,
     [string]$ExpectedSha256 = ""
 )
 
 $ErrorActionPreference = "Stop"
+
+if (-not $SourcePath) {
+    $roots = @(
+        (Join-Path $env:USERPROFILE "Downloads"),
+        (Join-Path $env:USERPROFILE "Desktop"),
+        "C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_REMOTE_A5F21C6B\hackathons\nativebuilder-gps-defense\data\fgi-spoofrepo"
+    ) | Where-Object { Test-Path -LiteralPath $_ -PathType Container }
+
+    $matches = @()
+    foreach ($root in $roots) {
+        $matches += @(Get-ChildItem -LiteralPath $root -Recurse -File -Filter "MCD_L1_E1.dat" -ErrorAction SilentlyContinue)
+    }
+
+    $uniqueMatches = @($matches | Sort-Object FullName -Unique)
+    if ($uniqueMatches.Count -eq 0) {
+        throw "MCD_L1_E1.dat not found under Downloads, Desktop, or the historical FGI root."
+    }
+    if ($uniqueMatches.Count -gt 1) {
+        Write-Host "Multiple MCD_L1_E1.dat candidates found:"
+        $uniqueMatches | ForEach-Object { Write-Host " - $($_.FullName)" }
+        throw "Refusing ambiguous held-out source selection. Re-run with -SourcePath."
+    }
+    $SourcePath = $uniqueMatches[0].FullName
+}
 
 if (-not (Test-Path -LiteralPath $SourcePath -PathType Leaf)) {
     throw "Held-out MCD source not found: $SourcePath"
