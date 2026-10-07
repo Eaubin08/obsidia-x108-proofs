@@ -19,13 +19,14 @@ def governance_payload_to_aggregate(
     *,
     confidence: float,
 ) -> DomainAggregate:
+    if not 0.0 <= confidence <= 1.0:
+        raise ValueError("confidence must be between 0.0 and 1.0")
     domain = _DOMAIN_MAP.get(payload.domain_id)
     if domain is None:
         raise ValueError(f"unsupported KX108 domain: {payload.domain_id}")
     if payload.decision is not None or payload.binder_permission or payload.allowed_to_act:
         raise ValueError("world/domain payload cannot arrive with decision or action authority")
 
-    provenance_evidence = tuple(f"provenance:{ref}" for ref in payload.provenance_refs)
     return DomainAggregate(
         domain=domain,
         market_verdict="HOLD",
@@ -33,7 +34,7 @@ def governance_payload_to_aggregate(
         contradictions=list(payload.contradictions),
         unknowns=list(payload.unknowns),
         risk_flags=list(payload.risk_flags),
-        evidence_refs=list(dict.fromkeys((*payload.evidence_refs, *provenance_evidence))),
+        evidence_refs=list(dict.fromkeys(payload.evidence_refs)),
         agent_votes=[],
         extra_metrics={
             "world_state_ref": payload.world_state_ref,
@@ -42,6 +43,7 @@ def governance_payload_to_aggregate(
             "input_decision_authority": payload.decision_authority,
             "world_payload_can_decide": False,
             "world_payload_can_act": False,
+            "provenance_refs": list(payload.provenance_refs),
         },
     )
 

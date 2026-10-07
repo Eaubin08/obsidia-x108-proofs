@@ -45,7 +45,7 @@ def modality_to_world_observation(item: ModalityObservationV0) -> WorldObservati
         source_refs=(item.source_ref,),
         source_hashes=(item.source_hash,),
         entity_ref=f"multimodal:{item.modality}",
-        state={"modality": item.modality, "generated": item.generated, **item.state},
+        state={**item.state, "modality": item.modality, "generated": item.generated, "latency_ms": item.latency_ms, "frame_ref": item.frame_ref},
         uncertainty=uncertainty,
         contradictions=item.contradictions,
         evidence_refs=item.evidence_refs,

@@ -24,10 +24,12 @@ def test_world_payload_enters_kernel_as_non_sovereign_aggregate():
     assert aggregate.market_verdict == "HOLD"
     assert aggregate.extra_metrics["world_payload_can_decide"] is False
     assert aggregate.extra_metrics["world_payload_can_act"] is False
-    assert "provenance:source:1" in aggregate.evidence_refs
+    assert aggregate.evidence_refs == ["evidence:1"]
+    assert aggregate.extra_metrics["provenance_refs"] == ["source:1"]
+    assert "provenance:source:1" not in aggregate.evidence_refs
 
 
-def test_unknown_world_state_forces_guard_hold():
+def test_unknown_world_state_with_low_confidence_forces_guard_hold():
     envelope = decide_governed_world_v0(
         payload(unknowns=("PHYSICAL_AUTHENTICITY_UNKNOWN",)),
         confidence=0.4,
