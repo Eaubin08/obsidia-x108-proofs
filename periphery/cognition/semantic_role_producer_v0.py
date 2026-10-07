@@ -13,6 +13,8 @@ from __future__ import annotations
 
 import json
 import os
+import socket
+import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -122,17 +124,34 @@ def qwen_semantic_roles_call_v0(
         method="POST",
     )
 
+    started = time.perf_counter()
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             payload = json.loads(response.read().decode("utf-8"))
-    except urllib.error.URLError as exc:
+    except (TimeoutError, socket.timeout) as exc:
         return {
             "success": False,
-            "status": "not_available",
+            "status": "timeout",
+            "text": "",
+            "error": str(exc) or "QWEN_LOCAL_INFERENCE_TIMEOUT",
+            "provider": "qwen_local",
+            "local_model_tokens": None,
+            "elapsed_ms": round((time.perf_counter() - started) * 1000, 1),
+        }
+    except urllib.error.URLError as exc:
+        reason = getattr(exc, "reason", None)
+        if isinstance(reason, (TimeoutError, socket.timeout)):
+            status = "timeout"
+        else:
+            status = "not_available"
+        return {
+            "success": False,
+            "status": status,
             "text": "",
             "error": str(exc),
             "provider": "qwen_local",
             "local_model_tokens": None,
+            "elapsed_ms": round((time.perf_counter() - started) * 1000, 1),
         }
     except Exception as exc:
         return {
@@ -142,6 +161,7 @@ def qwen_semantic_roles_call_v0(
             "error": str(exc),
             "provider": "qwen_local",
             "local_model_tokens": None,
+            "elapsed_ms": round((time.perf_counter() - started) * 1000, 1),
         }
 
     choices = payload.get("choices") or []
@@ -178,6 +198,7 @@ def qwen_semantic_roles_call_v0(
             usage.get("completion_tokens")
             or usage.get("total_tokens")
         ),
+        "elapsed_ms": round((time.perf_counter() - started) * 1000, 1),
     }
 
 
