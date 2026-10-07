@@ -18,6 +18,7 @@ from periphery.native_ops.common_v0 import DECISION_AUTHORITY, canonical_hash
 from periphery.native_ops.intake_bundle_v0 import (
     NativeCaseTaskIntakePlanV0,
     build_native_case_task_intake_plan_v0,
+    verify_native_case_task_intake_plan_v0,
 )
 from periphery.native_sources.source_interpretation_v0 import (
     CASE_CONFLICT,
@@ -58,6 +59,9 @@ class InterpretationToIntakeInstructionV0:
     schema: str
     instruction_id: str
     candidate_id: str
+    candidate_hash: str
+    policy_id: str
+    policy_version: str
     disposition: str
     group_key: str | None
     plan: NativeCaseTaskIntakePlanV0 | None
@@ -223,6 +227,9 @@ def _instruction(
         schema=payload["schema"],
         instruction_id=f"intake-policy-{policy_hash[:32]}",
         candidate_id=candidate.candidate_id,
+        candidate_hash=candidate.interpretation_hash,
+        policy_id=POLICY_ID,
+        policy_version=POLICY_VERSION,
         disposition=disposition,
         group_key=group_key,
         plan=plan,
@@ -236,6 +243,78 @@ def _instruction(
         policy_evidence_refs=tuple(payload["policy_evidence_refs"]),
         policy_hash=policy_hash,
     )
+
+
+def verify_interpretation_to_intake_instruction_v0(
+    instruction: InterpretationToIntakeInstructionV0,
+) -> tuple[bool, str | None]:
+    if instruction.schema != "OBSIDIA_INTERPRETATION_TO_INTAKE_INSTRUCTION_V0":
+        return False, "INTAKE_POLICY_INSTRUCTION_SCHEMA_INVALID"
+    if instruction.policy_id != POLICY_ID or instruction.policy_version != POLICY_VERSION:
+        return False, "INTAKE_POLICY_IDENTITY_INVALID"
+    if instruction.allowed_to_decide or instruction.allowed_to_act:
+        return False, "INTAKE_POLICY_AUTHORITY_FORBIDDEN"
+    if instruction.decision_authority != DECISION_AUTHORITY:
+        return False, "INTAKE_POLICY_DECISION_AUTHORITY_INVALID"
+    if instruction.plan is not None:
+        ok, reason = verify_native_case_task_intake_plan_v0(instruction.plan)
+        if not ok:
+            return False, reason
+    payload = {
+        "schema": instruction.schema,
+        "candidate_id": instruction.candidate_id,
+        "candidate_hash": instruction.candidate_hash,
+        "disposition": instruction.disposition,
+        "group_key": instruction.group_key,
+        "plan_hash": instruction.plan.plan_hash if instruction.plan is not None else None,
+        "gate_unknowns": sorted(set(instruction.gate_unknowns)),
+        "gate_contradictions": sorted(set(instruction.gate_contradictions)),
+        "duplicate_of_candidate_id": instruction.duplicate_of_candidate_id,
+        "contradiction_id": instruction.contradiction_id,
+        "contradiction_subject": instruction.contradiction_subject,
+        "deadline_origin": instruction.deadline_origin,
+        "owner_origin": instruction.owner_origin,
+        "policy_evidence_refs": sorted(set(instruction.policy_evidence_refs)),
+        "policy_id": instruction.policy_id,
+        "policy_version": instruction.policy_version,
+        "allowed_to_decide": False,
+        "allowed_to_act": False,
+        "decision_authority": instruction.decision_authority,
+    }
+    expected_hash = canonical_hash(payload)
+    if instruction.policy_hash != expected_hash:
+        return False, "INTAKE_POLICY_HASH_MISMATCH"
+    if instruction.instruction_id != f"intake-policy-{expected_hash[:32]}":
+        return False, "INTAKE_POLICY_INSTRUCTION_ID_MISMATCH"
+    return True, None
+
+
+def verify_interpretation_to_intake_batch_v0(
+    batch: InterpretationToIntakeBatchV0,
+) -> tuple[bool, str | None]:
+    if batch.schema != "OBSIDIA_INTERPRETATION_TO_INTAKE_BATCH_V0":
+        return False, "INTAKE_POLICY_BATCH_SCHEMA_INVALID"
+    if batch.allowed_to_decide or batch.allowed_to_act:
+        return False, "INTAKE_POLICY_BATCH_AUTHORITY_FORBIDDEN"
+    if batch.decision_authority != DECISION_AUTHORITY:
+        return False, "INTAKE_POLICY_BATCH_DECISION_AUTHORITY_INVALID"
+    if batch.instruction_count != len(batch.instructions):
+        return False, "INTAKE_POLICY_BATCH_COUNT_MISMATCH"
+    for instruction in batch.instructions:
+        ok, reason = verify_interpretation_to_intake_instruction_v0(instruction)
+        if not ok:
+            return False, reason
+    payload = {
+        "schema": batch.schema,
+        "correlation_hash": batch.correlation_hash,
+        "instruction_hashes": [item.policy_hash for item in batch.instructions],
+        "allowed_to_decide": False,
+        "allowed_to_act": False,
+        "decision_authority": batch.decision_authority,
+    }
+    if batch.batch_hash != canonical_hash(payload):
+        return False, "INTAKE_POLICY_BATCH_HASH_MISMATCH"
+    return True, None
 
 
 def project_interpretations_to_native_intake_v0(
