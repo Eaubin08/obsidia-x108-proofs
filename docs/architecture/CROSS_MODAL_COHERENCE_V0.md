@@ -1,6 +1,6 @@
 # F20 — Cross-Modal Coherence V0
 
-Status: IMPLEMENTED / VALIDATION REQUIRED
+Status: VERIFIED / NO F20 REGRESSION
 
 ## Purpose
 
@@ -88,3 +88,13 @@ Specialized domain adapters may consume F20 reports, but only domain governance 
 F21 — GPS Physical-World Closure.
 
 No F21 runtime before F20 validation.
+
+## Verification finale
+
+- Code SHA vérifié: `db36a7592a43683056dc31acb5aba41bc1a69d8c`
+- GitHub Actions run: `37567727213`
+- Résultat global: `12538 passed / 11 failed / 46 skipped / 207 deselected`
+- Failures F20 visibles: `0`
+- Les 11 failures restantes correspondent aux familles baseline historiques.
+
+**Verdict:** F20 `VERIFIED`.
