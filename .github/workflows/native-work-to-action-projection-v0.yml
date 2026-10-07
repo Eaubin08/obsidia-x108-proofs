@@ -1,0 +1,33 @@
+name: native-work-to-action-projection-v0
+
+on:
+  push:
+    branches:
+      - feat/native-work-to-action-projection-v0
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-work-action-proof:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip pytest
+      - name: Run native work action projection and upstream regression
+        run: >-
+          python -m pytest
+          tests/integration/test_native_work_to_action_projection_v0.py
+          tests/integration/test_interpretation_to_intake_policy_native_v0.py
+          tests/integration/test_source_interpretation_native_v0.py
+          tests/integration/test_interpreted_autonomous_office_e2e_v0.py
+          tests/integration/test_autonomous_office_e2e_v0.py
+          tests/integration/test_native_tasks_crm_v0.py
+          tests/integration/test_world_action_pre_execution_v0.py
+          tests/integration/test_world_action_multidomain_conformance_v0.py
+          -q
