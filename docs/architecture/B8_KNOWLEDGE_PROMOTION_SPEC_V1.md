@@ -7,8 +7,7 @@ B8_SPEC_INDEPENDENTLY_CERTIFIED=NO
 B8_RUNTIME_STATUS=NOT_IMPLEMENTED
 SAFE_FOR_B8_RED_TESTS=NO
 SAFE_FOR_B8_RUNTIME_IMPLEMENTATION=NO
-HISTORY=draft 2e2fbf6f ; self-closed cc22638b ; independent certification REMEDIATE_SPEC (D-B8-S1..S5) ; remediated, awaiting re-certification
-BASE=B7 runtime CLOSED 44b0391e (security epoch 1) ; Sentinel V0 c5af4138
+BASE=B7 runtime closure document 44b0391e (B7 security epoch 1) ; Sentinel V0 c5af4138
 FORENSIC_BASIS=B8 forensic (HOLD) + human doctrine D-1..D-5 + O-1..O-5 decisions (2026-10-07)
 PROMOTION_AUTHORITY=B8_CANONICAL_TRANSITION_GATE
 VERIFICATION_AUTHORITY=TYPED_VERIFIER_BY_CLAIM_CLASS (records only)
@@ -321,6 +320,8 @@ No duplicate promotion engine survives canonical B8.
   contradicted T9 and T9 had no atomic result; D-B8-S4 slot canonicalization incomplete
   (duplicates, Unicode, empty refs); D-B8-S5 gap transitions without actor / receipt; bounds
   wording overstated.
-- Remediation (this revision): §10 latest-state queries; §4.1 version model and CAS fields; T6
+- Remediation 02ec2c64: §10 latest-state queries; §4.1 version model and CAS fields; T6
   free-slot + T9 compound rule with §9.3 bundle; §5 canonicalization; §8.1 gap rules G1–G3;
   §3 bounds wording. Status back to DRAFT_FOR_AUDIT pending independent re-certification.
+- Normalization (docs only, no semantic change): history line moved out of the active status
+  block into this record; header BASE line reworded so the active block carries no CLOSED token.
