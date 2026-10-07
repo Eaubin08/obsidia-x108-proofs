@@ -423,6 +423,10 @@ F25 — PUBLIC FREEZE / RELEASE CANDIDATE — FROZEN
 
 ## POST-FREEZE — CONTINUATION GPS / PHYSICAL WORLD
 
+Canonical fusion reference: `docs/architecture/GPS_DEFENSE_AVIATION_CANONICAL_FUSION_V0.md`.
+
+This reference absorbs the validated historical GPS/RF/PASS8-PASS9/terrain trajectory into the current F12→F25 + P1→P7 architecture. It is the source for reuse/port decisions; old branches are not blindly merged.
+
 The first-world release chain F12→F25 is frozen. New physical-world work continues on separate branches and must not rewrite the freeze.
 
 ### P1 — CONTROLLED LIVE RECEIVER READINESS — VERIFIED
