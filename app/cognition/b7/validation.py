@@ -96,6 +96,12 @@ def _time_admissible(value: Any, origin: StateEntry) -> bool:
     return _contains_phrase(_tokens(_origin_raw(origin)), _tokens(value))
 
 
+def _origin_relations(origin: StateEntry) -> set[tuple[str, str, str]]:
+    frame = (origin.payload or {}).get("semantic_frame") or {} if isinstance(origin.payload, dict) else {}
+    return {(str(r.get("kind")), str(r.get("source")), str(r.get("target")))
+            for r in frame.get("relations") or [] if isinstance(r, dict)}
+
+
 def _origin_units(origin: StateEntry) -> set[str]:
     frame = (origin.payload or {}).get("semantic_frame") or {} if isinstance(origin.payload, dict) else {}
     return {str(u.get("id")) for u in frame.get("units") or [] if isinstance(u, dict)}
@@ -164,8 +170,11 @@ def _check(request: CognitiveResolutionRequest, cand: CognitiveResolutionCandida
     if not all(_time_admissible(v, origin) for v in times):
         return "unsupported_content_invented"
     units = _origin_units(origin)
+    structured_relations = _origin_relations(origin)
     for rel in proposal.get("relations") or []:
-        if not isinstance(rel, dict) or {str(rel.get("source")), str(rel.get("target"))} - units:
+        # a relation is admissible only as an existing structured relation of the origin (exact
+        # kind / source / target); never invented between existing units
+        if not isinstance(rel, dict) or set(rel) != {"kind", "source", "target"}                 or {str(rel["source"]), str(rel["target"])} - units                 or (str(rel["kind"]), str(rel["source"]), str(rel["target"])) not in structured_relations:
             return "unsupported_relation_invented"
     if "mention" in proposal and proposal["mention"] not in markers:
         return "mention_not_in_request"
