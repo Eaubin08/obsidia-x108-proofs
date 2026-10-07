@@ -9,14 +9,24 @@ The truth manifest remains test oracle only.
 """
 from __future__ import annotations
 
-import datetime
 from pathlib import Path
 from typing import Any
 
 from periphery.native_ops.common_v0 import NativeEntityStoreV0
-from periphery.native_ops.intake_bundle_v0 import (
-    build_native_case_task_intake_plan_v0,
-    execute_native_case_task_intake_v0,
+from periphery.native_ops.intake_bundle_v0 import execute_native_case_task_intake_v0
+from periphery.native_ops.interpretation_to_intake_policy_v0 import (
+    DISPOSITION_ACTION_PLAN,
+    DISPOSITION_ACTION_REVIEW_REQUIRED,
+    DISPOSITION_CALENDAR_CONTEXT,
+    DISPOSITION_CONSTRAINT_CONTEXT,
+    DISPOSITION_CONTEXT_ONLY,
+    DISPOSITION_CONTRADICTION_MEMBER_CONTEXT,
+    DISPOSITION_CONTRADICTION_REVIEW,
+    DISPOSITION_DUPLICATE_SUPPRESSED,
+    DISPOSITION_EVIDENCE_GAP_CONTEXT,
+    DISPOSITION_EVIDENCE_GAP_REVIEW,
+    DISPOSITION_INFORMATION_ONLY,
+    project_interpretations_to_native_intake_v0,
 )
 from periphery.native_sources.calendar_connector_v0 import (
     CalendarNativeConnectorV0,
@@ -41,12 +51,6 @@ from periphery.native_sources.mail_connector_v0 import (
     MailNativeConnectorV0,
 )
 from periphery.native_sources.source_interpretation_v0 import (
-    CASE_CONFLICT,
-    CASE_MISSING_EVIDENCE,
-    KIND_CALENDAR_CONTEXT,
-    KIND_CONSTRAINT,
-    KIND_EVIDENCE_GAP,
-    KIND_INFORMATION_ONLY,
     SourceInterpretationCandidateV0,
     correlate_source_interpretations_v0,
     interpret_calendar_v0,
@@ -96,74 +100,6 @@ def _activate_source(
         source_id=source_id,
         activated_at="2026-10-01T00:00:00+00:00",
     )[0]
-
-
-def _ids(group: str) -> dict[str, str]:
-    digest = canonical_hash({"interpreted_office_group": group})[:20]
-    return {
-        "case_id": f"office-case:{digest}",
-        "task_id": f"office-task:{digest}",
-        "interaction_id": f"office-interaction:{digest}",
-        "followup_id": f"office-followup:{digest}",
-    }
-
-
-def _review_policy_due_at(occurred_at: str) -> str:
-    dt = datetime.datetime.fromisoformat(occurred_at)
-    next_day = dt + datetime.timedelta(days=1)
-    return next_day.replace(
-        hour=17,
-        minute=0,
-        second=0,
-        microsecond=0,
-    ).isoformat()
-
-
-def _build_plan_from_candidate(
-    candidate: SourceInterpretationCandidateV0,
-    *,
-    group: str,
-    due_at: str,
-    policy_due: bool = False,
-):
-    if not candidate.proposed_case_type:
-        raise ValueError("INTERPRETED_E2E_CASE_TYPE_REQUIRED")
-    if not candidate.proposed_title or not candidate.proposed_summary:
-        raise ValueError("INTERPRETED_E2E_TITLE_SUMMARY_REQUIRED")
-    if not candidate.proposed_priority:
-        raise ValueError("INTERPRETED_E2E_PRIORITY_REQUIRED")
-    ids = _ids(group)
-    tags = [
-        "ENTERPRISE_SANDBOX",
-        "SOURCE_INTERPRETATION_NATIVE_V0",
-        candidate.proposed_case_type,
-    ]
-    if policy_due:
-        tags.append("POLICY_DUE_REVIEW_NOT_SOURCE_FACT")
-    return build_native_case_task_intake_plan_v0(
-        intake_id=f"interpreted-intake:{group}",
-        case_id=ids["case_id"],
-        task_id=ids["task_id"],
-        interaction_id=ids["interaction_id"],
-        followup_id=ids["followup_id"],
-        case_type=candidate.proposed_case_type,
-        title=candidate.proposed_title,
-        summary=candidate.proposed_summary,
-        owner_ref="role:office_operator",
-        priority=candidate.proposed_priority,
-        occurred_at=candidate.occurred_at,
-        due_at=due_at,
-        source_refs=tuple(candidate.provenance_refs),
-        evidence_refs=(
-            f"interpretation:{candidate.interpretation_hash}",
-            *tuple(
-                ref
-                for ref in candidate.provenance_refs
-                if ref.startswith("source-observation:")
-            ),
-        ),
-        tags=tuple(tags),
-    )
 
 
 def run_interpreted_autonomous_office_e2e_v0(
@@ -250,240 +186,161 @@ def run_interpreted_autonomous_office_e2e_v0(
     correlation = correlate_source_interpretations_v0(
         list(interpretations.values())
     )
-    duplicate_map = {
-        duplicate_id: primary_id
-        for duplicate_id, primary_id in correlation.duplicate_links
-    }
+    policy_batch = project_interpretations_to_native_intake_v0(
+        interpretations,
+        correlation,
+        context_tags=("ENTERPRISE_SANDBOX",),
+    )
+
     candidate_by_id = {
         candidate.candidate_id: candidate
         for candidate in interpretations.values()
     }
-
-    contradiction_by_candidate: dict[str, Any] = {}
-    for group in correlation.contradiction_groups:
-        for candidate_id in group.candidate_ids:
-            contradiction_by_candidate[candidate_id] = group
+    item_id_by_candidate = {
+        candidate.candidate_id: item_id
+        for item_id, candidate in interpretations.items()
+    }
 
     results: dict[str, Any] = {}
     committed_by_candidate: dict[str, dict[str, Any]] = {}
-    handled_contradictions: set[str] = set()
 
-    for item_id, candidate in sorted(
-        interpretations.items(),
-        key=lambda item: (item[1].occurred_at, item[0]),
-    ):
-        if candidate.interpretation_kind == KIND_INFORMATION_ONLY:
+    for instruction in policy_batch.instructions:
+        candidate = candidate_by_id[instruction.candidate_id]
+        item_id = item_id_by_candidate[instruction.candidate_id]
+
+        if instruction.disposition == DISPOSITION_INFORMATION_ONLY:
             results[item_id] = {
                 "status": "NO_WORK_INFORMATION_ONLY",
                 "canonical_mutation_count": 0,
                 "interpretation_hash": candidate.interpretation_hash,
+                "intake_policy_hash": instruction.policy_hash,
             }
             continue
 
-        if candidate.interpretation_kind == KIND_CONSTRAINT:
+        if instruction.disposition == DISPOSITION_CONSTRAINT_CONTEXT:
             results[item_id] = {
                 "status": "CONTEXT_ONLY_SUPPORTING_CONSTRAINT",
                 "canonical_mutation_count": 0,
                 "interpretation_hash": candidate.interpretation_hash,
+                "intake_policy_hash": instruction.policy_hash,
             }
             continue
 
-        if candidate.interpretation_kind == KIND_CALENDAR_CONTEXT:
+        if instruction.disposition == DISPOSITION_CALENDAR_CONTEXT:
             results[item_id] = {
                 "status": (
                     "EXISTING_CALENDAR_CONTEXT_ONLY"
-                    if candidate.work_identity_candidate
+                    if instruction.group_key
                     else "ROUTINE_CALENDAR_CONTEXT_ONLY"
                 ),
                 "canonical_mutation_count": 0,
-                "linked_group": candidate.work_identity_candidate,
+                "linked_group": instruction.group_key,
                 "interpretation_hash": candidate.interpretation_hash,
+                "intake_policy_hash": instruction.policy_hash,
             }
             continue
 
-        primary_id = duplicate_map.get(candidate.candidate_id)
-        if primary_id is not None:
-            primary_result = committed_by_candidate.get(primary_id)
+        if instruction.disposition == DISPOSITION_DUPLICATE_SUPPRESSED:
+            primary_result = committed_by_candidate.get(
+                instruction.duplicate_of_candidate_id or ""
+            )
             if primary_result is None:
-                raise ValueError("INTERPRETED_E2E_DUPLICATE_PRIMARY_NOT_COMMITTED")
+                raise ValueError("INTAKE_POLICY_DUPLICATE_PRIMARY_NOT_COMMITTED")
             results[item_id] = {
                 "status": "DUPLICATE_SUPPRESSED",
                 "canonical_mutation_count": 0,
                 "canonical_case_id": primary_result["case_id"],
-                "duplicate_of_interpretation": primary_id,
+                "duplicate_of_interpretation": instruction.duplicate_of_candidate_id,
                 "interpretation_hash": candidate.interpretation_hash,
+                "intake_policy_hash": instruction.policy_hash,
             }
             continue
 
-        contradiction = contradiction_by_candidate.get(candidate.candidate_id)
-        if contradiction is not None:
-            if contradiction.contradiction_id in handled_contradictions:
-                results[item_id] = {
-                    "status": "CONTRADICTION_MEMBER_CONTEXT",
-                    "canonical_mutation_count": 0,
-                    "contradiction_id": contradiction.contradiction_id,
-                    "interpretation_hash": candidate.interpretation_hash,
-                }
-                continue
-            handled_contradictions.add(contradiction.contradiction_id)
-
-            members = [
-                candidate_by_id[candidate_id]
-                for candidate_id in contradiction.candidate_ids
-            ]
-            action_members = [x for x in members if x.actionable_signal]
-            seed = sorted(
-                action_members,
-                key=lambda x: (x.occurred_at, x.candidate_id),
-            )[0]
-            due = next(
-                (
-                    x.deadline_candidate
-                    for x in action_members
-                    if x.deadline_candidate is not None
-                ),
-                _review_policy_due_at(seed.occurred_at),
-            )
-            # The contradiction intake binds all original interpretation
-            # hashes. No synthetic replacement interpretation is created.
-            ids = _ids(contradiction.subject)
-            plan = build_native_case_task_intake_plan_v0(
-                intake_id=f"interpreted-intake:{contradiction.subject}",
-                case_id=ids["case_id"],
-                task_id=ids["task_id"],
-                interaction_id=ids["interaction_id"],
-                followup_id=ids["followup_id"],
-                case_type=CASE_CONFLICT,
-                title="Resolve conflicting source instructions",
-                summary=(
-                    f"Contradictory source directives detected for "
-                    f"{contradiction.subject}."
-                ),
-                owner_ref="role:office_operator",
-                priority="HIGH",
-                occurred_at=seed.occurred_at,
-                due_at=due,
-                source_refs=tuple(
-                    sorted(
-                        {
-                            ref
-                            for member in members
-                            for ref in member.provenance_refs
-                        }
-                    )
-                ),
-                evidence_refs=tuple(
-                    sorted(
-                        {
-                            *(
-                                f"interpretation:{member.interpretation_hash}"
-                                for member in members
-                            ),
-                            f"correlation:{correlation.correlation_hash}",
-                            f"contradiction:{contradiction.contradiction_hash}",
-                        }
-                    )
-                ),
-                tags=(
-                    "ENTERPRISE_SANDBOX",
-                    "SOURCE_INTERPRETATION_NATIVE_V0",
-                    CASE_CONFLICT,
-                ),
-            )
-            result = execute_native_case_task_intake_v0(
-                plan=plan,
-                store=store,
-                governance_root=governance_root / canonical_hash(
-                    {"contradiction": contradiction.subject}
-                )[:20],
-                approved_by="HUMAN:SANDBOX_OPERATOR",
-                approval_reference=(
-                    f"interpreted-e2e:{contradiction.contradiction_id}"
-                ),
-                gate_overrides={
-                    "CREATE_RECORD": {
-                        "contradictions": (
-                            f"SOURCE_DIRECTIVE_REQUIRE:{contradiction.subject}",
-                            f"SOURCE_DIRECTIVE_FORBID:{contradiction.subject}",
-                        )
-                    }
-                },
-            )
-            results[contradiction.subject] = result
+        if instruction.disposition == DISPOSITION_CONTRADICTION_MEMBER_CONTEXT:
             results[item_id] = {
                 "status": "CONTRADICTION_MEMBER_CONTEXT",
                 "canonical_mutation_count": 0,
-                "contradiction_id": contradiction.contradiction_id,
+                "contradiction_id": instruction.contradiction_id,
                 "interpretation_hash": candidate.interpretation_hash,
+                "intake_policy_hash": instruction.policy_hash,
             }
             continue
 
-        if candidate.interpretation_kind == KIND_EVIDENCE_GAP:
-            if not candidate.unknowns:
-                results[item_id] = {
-                    "status": "INTERPRETATION_UNKNOWN_NO_NATIVE_WORK",
-                    "canonical_mutation_count": 0,
-                    "interpretation_hash": candidate.interpretation_hash,
-                }
-                continue
-            due = _review_policy_due_at(candidate.occurred_at)
-            plan = _build_plan_from_candidate(
-                candidate,
-                group=candidate.work_identity_candidate
-                or f"evidence-gap:{candidate.candidate_id}",
-                due_at=due,
-                policy_due=True,
-            )
-            result = execute_native_case_task_intake_v0(
-                plan=plan,
-                store=store,
-                governance_root=governance_root / canonical_hash(
-                    {"evidence_gap": candidate.candidate_id}
-                )[:20],
-                approved_by="HUMAN:SANDBOX_OPERATOR",
-                approval_reference=f"interpreted-e2e:{candidate.candidate_id}",
-                gate_overrides={
-                    "CREATE_RECORD": {
-                        "unknowns": tuple(candidate.unknowns),
-                    }
-                },
-            )
-            results[item_id] = result
+        if instruction.disposition == DISPOSITION_EVIDENCE_GAP_CONTEXT:
+            results[item_id] = {
+                "status": "INTERPRETATION_UNKNOWN_NO_NATIVE_WORK",
+                "canonical_mutation_count": 0,
+                "interpretation_hash": candidate.interpretation_hash,
+                "intake_policy_hash": instruction.policy_hash,
+            }
             continue
 
-        if candidate.actionable_signal:
-            if not candidate.deadline_candidate:
-                results[item_id] = {
-                    "status": "INTERPRETATION_ACTION_WITHOUT_DUE_REVIEW_REQUIRED",
-                    "canonical_mutation_count": 0,
-                    "interpretation_hash": candidate.interpretation_hash,
-                }
-                continue
-            group = candidate.work_identity_candidate or candidate.candidate_id
-            plan = _build_plan_from_candidate(
-                candidate,
-                group=group,
-                due_at=candidate.deadline_candidate,
-            )
-            result = execute_native_case_task_intake_v0(
-                plan=plan,
-                store=store,
-                governance_root=governance_root / canonical_hash(
-                    {"work_identity": group}
-                )[:20],
-                approved_by="HUMAN:SANDBOX_OPERATOR",
-                approval_reference=f"interpreted-e2e:{candidate.candidate_id}",
-            )
-            results[item_id] = result
-            if result["status"] == "NATIVE_INTAKE_COMMITTED":
-                committed_by_candidate[candidate.candidate_id] = result
+        if instruction.disposition == DISPOSITION_ACTION_REVIEW_REQUIRED:
+            results[item_id] = {
+                "status": "INTERPRETATION_ACTION_WITHOUT_DUE_REVIEW_REQUIRED",
+                "canonical_mutation_count": 0,
+                "interpretation_hash": candidate.interpretation_hash,
+                "intake_policy_hash": instruction.policy_hash,
+            }
             continue
 
-        results[item_id] = {
-            "status": "INTERPRETATION_CONTEXT_ONLY",
-            "canonical_mutation_count": 0,
-            "interpretation_hash": candidate.interpretation_hash,
-        }
+        if instruction.disposition == DISPOSITION_CONTEXT_ONLY:
+            results[item_id] = {
+                "status": "INTERPRETATION_CONTEXT_ONLY",
+                "canonical_mutation_count": 0,
+                "interpretation_hash": candidate.interpretation_hash,
+                "intake_policy_hash": instruction.policy_hash,
+            }
+            continue
+
+        if instruction.disposition not in {
+            DISPOSITION_ACTION_PLAN,
+            DISPOSITION_EVIDENCE_GAP_REVIEW,
+            DISPOSITION_CONTRADICTION_REVIEW,
+        }:
+            raise ValueError("INTAKE_POLICY_DISPOSITION_UNSUPPORTED")
+        if instruction.plan is None:
+            raise ValueError("INTAKE_POLICY_EXECUTABLE_PLAN_REQUIRED")
+
+        gate_overrides: dict[str, dict[str, tuple[str, ...]]] = {}
+        create_record_override: dict[str, tuple[str, ...]] = {}
+        if instruction.gate_unknowns:
+            create_record_override["unknowns"] = tuple(instruction.gate_unknowns)
+        if instruction.gate_contradictions:
+            create_record_override["contradictions"] = tuple(
+                instruction.gate_contradictions
+            )
+        if create_record_override:
+            gate_overrides["CREATE_RECORD"] = create_record_override
+
+        result = execute_native_case_task_intake_v0(
+            plan=instruction.plan,
+            store=store,
+            governance_root=governance_root / instruction.policy_hash[:20],
+            approved_by="HUMAN:SANDBOX_OPERATOR",
+            approval_reference=f"interpreted-e2e:{instruction.instruction_id}",
+            gate_overrides=gate_overrides or None,
+        )
+
+        if instruction.disposition == DISPOSITION_CONTRADICTION_REVIEW:
+            if not instruction.contradiction_subject:
+                raise ValueError("INTAKE_POLICY_CONTRADICTION_SUBJECT_REQUIRED")
+            results[instruction.contradiction_subject] = result
+            results[item_id] = {
+                "status": "CONTRADICTION_MEMBER_CONTEXT",
+                "canonical_mutation_count": 0,
+                "contradiction_id": instruction.contradiction_id,
+                "interpretation_hash": candidate.interpretation_hash,
+                "intake_policy_hash": instruction.policy_hash,
+            }
+            continue
+
+        results[item_id] = result
+        if (
+            instruction.disposition == DISPOSITION_ACTION_PLAN
+            and result["status"] == "NATIVE_INTAKE_COMMITTED"
+        ):
+            committed_by_candidate[candidate.candidate_id] = result
 
     committed = [
         value
@@ -504,6 +361,8 @@ def run_interpreted_autonomous_office_e2e_v0(
         "interpreter_version": "V0",
         "interpretation_candidate_count": len(interpretations),
         "correlation_hash": correlation.correlation_hash,
+        "intake_policy_batch_hash": policy_batch.batch_hash,
+        "intake_policy_instruction_count": policy_batch.instruction_count,
         "source_observation_count": (
             len(runtime.list_observations(mail_reg.source_id))
             + len(runtime.list_observations(doc_reg.source_id))
