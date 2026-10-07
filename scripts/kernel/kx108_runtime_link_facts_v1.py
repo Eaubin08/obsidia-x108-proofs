@@ -70,6 +70,15 @@ WORLD_ACTION_PRE_EXECUTION_CONTEXT_PATH = (
 WORLD_ACTION_PRE_EXECUTION_PRODUCER_PATH = (
     "scripts/obsidia_world_action_pre_execution_v0.py"
 )
+WORLD_ACTION_ACTIVATION_POLICY_PATH = (
+    "periphery/world_calls/external_runtime_activation_policy_v0.py"
+)
+WORLD_ACTION_LIVE_TICKET_PATH = (
+    "periphery/world_calls/live_sovereign_ticket_v0.py"
+)
+WORLD_ACTION_LIVE_GATEWAY_PATH = (
+    "periphery/world_calls/obsidia_live_gateway_v0.py"
+)
 
 # Multi-domain proof surfaces.
 MULTIDOMAIN_PROOF_PATH = (
@@ -196,6 +205,21 @@ def world_action_pre_execution_rail_present() -> bool:
     )
 
 
+
+def world_action_live_gateway_capability_present() -> bool:
+    """True when the bounded LIVE preflight capability exists on disk.
+
+    Capability presence is not runtime activation. V0 has no bound external
+    executor, so world_action_runtime_activated remains false.
+    """
+    return (
+        world_action_pre_execution_rail_present()
+        and _exists(WORLD_ACTION_ACTIVATION_POLICY_PATH)
+        and _exists(WORLD_ACTION_LIVE_TICKET_PATH)
+        and _exists(WORLD_ACTION_LIVE_GATEWAY_PATH)
+    )
+
+
 def runtime_internal_end_to_end_validated() -> bool:
     """
     Internal governed runtime, end to end — agent through verified KX108
@@ -303,6 +327,18 @@ def runtime_link_facts() -> dict:
 
         "world_action_pre_execution_producer_path":
             WORLD_ACTION_PRE_EXECUTION_PRODUCER_PATH,
+
+        "world_action_live_gateway_capability_present":
+            world_action_live_gateway_capability_present(),
+
+        "world_action_activation_policy_path":
+            WORLD_ACTION_ACTIVATION_POLICY_PATH,
+
+        "world_action_live_ticket_path":
+            WORLD_ACTION_LIVE_TICKET_PATH,
+
+        "world_action_live_gateway_path":
+            WORLD_ACTION_LIVE_GATEWAY_PATH,
 
         "runtime_internal_end_to_end_validated":
             runtime_internal_end_to_end_validated(),
