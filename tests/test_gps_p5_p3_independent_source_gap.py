@@ -31,3 +31,26 @@ def test_p5_cross_receiver_reproducibility_does_not_close_p3_physical_independen
     assert p3["physical_truth_proven"] is False
     assert "P2_REAL_PASSIVE_GNSS_NOT_VERIFIED" in p3["blockers"]
     assert "INDEPENDENT_PHYSICAL_SOURCE_NOT_PROVEN" in p3["blockers"]
+
+
+def test_p5_p3_gap_cli_runs_from_repo_root(tmp_path):
+    import subprocess
+
+    out = tmp_path / "gap.json"
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(MODULE_PATH),
+            "--out",
+            str(out),
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = __import__("json").loads(out.read_text(encoding="utf-8"))
+    assert payload["classification"] == "CROSS_RECEIVER_REPRODUCIBILITY_NOT_PHYSICAL_INDEPENDENCE"
+    assert "P2_REAL_PASSIVE_GNSS_NOT_VERIFIED" in payload["p3"]["blockers"]
+    assert "INDEPENDENT_PHYSICAL_SOURCE_NOT_PROVEN" in payload["p3"]["blockers"]
