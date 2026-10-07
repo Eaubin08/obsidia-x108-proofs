@@ -1,6 +1,6 @@
 # GPS Real Passive Capture V0
 
-Status: SOFTWARE VERIFIED / PHYSICAL CLOSURE OPEN
+Status: SOFTWARE VERIFIED / PHYSICAL CLOSURE BLOCKED_HARDWARE_RUNTIME
 
 ## Purpose
 
@@ -153,3 +153,36 @@ Local operator validation on Windows also reported:
 ```
 
 **Verdict:** P2 software admission path is `VERIFIED`. P2 physical closure remains `OPEN` until an actual local passive GNSS capture is produced and admitted through this path.
+
+
+## Local physical readiness audit — 2026-10-07
+
+User-local Windows audit on the P2 branch reported:
+
+- local branch updated to `36f8c14a`;
+- P2 targeted suite: `14 passed in 3.08s`;
+- Docker CLI present;
+- Docker context: `desktop-linux`;
+- Docker engine unavailable: `dockerDesktopLinuxEngine` named pipe not found;
+- native `gnss-sdr` not present in PATH;
+- no GNSS/SDR/HackRF/RTL/u-blox device found by PresentOnly PnP enumeration;
+- no serial/COM ports reported;
+- broader USB inventory contained Bluetooth, integrated camera, generic HID/USB devices and a Pixel 8a, but no confirmed GNSS/SDR receiver.
+
+Current physical blockers:
+
+```text
+DOCKER_DESKTOP_LINUX_ENGINE_NOT_RUNNING
+NO_CONFIRMED_GNSS_SDR_RECEIVER
+NO_SERIAL_RECEIVER_PORT
+GNSS_SDR_NATIVE_NOT_INSTALLED
+```
+
+These blockers do not invalidate P2 software verification. They prevent only the physical promotion to `REAL_PASSIVE_GNSS`.
+
+Next closure order:
+
+1. start Docker Desktop Linux engine and verify the existing GNSS-SDR container;
+2. connect or identify an actual GNSS/SDR receiver;
+3. produce a passive capture;
+4. admit it through P2 with bound capture/config/receiver evidence.
