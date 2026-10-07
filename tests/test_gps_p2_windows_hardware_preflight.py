@@ -116,3 +116,30 @@ def test_generic_serial_port_does_not_self_promote_to_gnss_candidate():
     assert result["status"] == "NO_RECEIVER_CANDIDATE_DETECTED"
     assert result["serial_ports"]
     assert result["p2_capture_promoted"] is False
+
+
+def test_acpi_power_devices_do_not_match_limesdr_by_substring():
+    snapshot = _base()
+    snapshot["hardware_candidates"] = [
+        {
+            "name": "Bouton d'alimentation ACPI",
+            "device_id": r"ACPI\PNP0C0C\2&DABA3FF&0",
+            "pnp_class": "System",
+            "manufacturer": "(Périphériques système standard)",
+            "status": "OK",
+        },
+        {
+            "name": "Plug-in du moteur d'alimentation Intel(R)",
+            "device_id": r"ACPI\INT33A1\1",
+            "pnp_class": "System",
+            "manufacturer": "Intel Corporation",
+            "status": "OK",
+        },
+    ]
+
+    # Snapshot candidates are rechecked by classify_preflight rather than trusted.
+    result = classify_preflight(snapshot)
+
+    assert result["hardware_candidate_count"] == 0
+    assert result["status"] == "NO_RECEIVER_CANDIDATE_DETECTED"
+    assert "NO_HARDWARE_DETECTED" in result["blockers"]
