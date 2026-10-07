@@ -1,7 +1,16 @@
 import json
 from pathlib import Path
+import importlib.util
 
-from scripts.gps.p4_temporal_discontinuity_classifier import calibrate, detect
+ROOT = Path(__file__).resolve().parents[1]
+MODULE_PATH = ROOT / "scripts" / "gps" / "p4_temporal_discontinuity_classifier.py"
+SPEC = importlib.util.spec_from_file_location("p4_temporal_discontinuity_classifier", MODULE_PATH)
+MODULE = importlib.util.module_from_spec(SPEC)
+assert SPEC and SPEC.loader
+SPEC.loader.exec_module(MODULE)
+
+calibrate = MODULE.calibrate
+detect = MODULE.detect
 
 
 def _write_log(path: Path, rows):
