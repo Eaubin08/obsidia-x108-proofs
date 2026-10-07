@@ -3221,8 +3221,19 @@ def pc_v2_browser_set_checked_execute(
         return _with_canonical_failure(_exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, reason_code, session_id), envelope, store_status)
     act = executor.set_checkbox(identity, bool(target_checked))
     if not act.get("ok"):
-        return _exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE,
-                         "SET_CHECKBOX_FAILED:" + str(act.get("error", "")), session_id)
+        reason_code = "SET_CHECKBOX_FAILED:" + str(act.get("error", ""))
+        runtime_receipt = _rcpt(_CAP_BCHK_EXECUTE, OP_BROWSER_SET_CHECKED, EXECUTE_REJECTED, session_id, reason=reason_code)
+        envelope, store_status = _build_browser_set_checked_envelope(
+            stores=st, executor=executor, v2id=v2id, child=child, exp_eah=exp_eah, mh=mh, dh=dh,
+            descriptor=d, identity=identity, selector=selector, target_checked=target_checked,
+            semantic_intent=semantic_intent, semantic_risk=semantic_risk,
+            runtime_receipt=runtime_receipt, outcome=_CRE.OUTCOME_EXECUTOR_FAILED_BEFORE_ACTION,
+            failure_stage=_CRE.STAGE_EXECUTOR, dispatch_boundary=_CRE.DISPATCH_PRE_FAILURE,
+            physical_effect_dispatched=False, executor_status="INVOKED",
+            execution_state=_CRE.OUTCOME_EXECUTOR_FAILED_BEFORE_ACTION, reason_code=reason_code,
+            apr=apr, kx=kx, current_identity=current_identity, act=act,
+            proof_strength="NONE", realized_state_verified=False, mutation_performed=False)
+        return _with_canonical_failure(_exec_rej(OP_BROWSER_SET_CHECKED, _CAP_BCHK_EXECUTE, reason_code, session_id), envelope, store_status)
     for flag, reason_code in (("navigation_detected", "UNEXPECTED_NAVIGATION"),
                               ("popup_detected", "UNEXPECTED_POPUP"),
                               ("new_page_detected", "UNEXPECTED_NEW_PAGE"),
@@ -4415,6 +4426,115 @@ def pc_v2_browser_set_field_value_execute(
         return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, REALIZED_STATE_MISMATCH, session_id)
     if post_identity.get("current_value_length") != target_length:
         return _exec_rej(OP_BROWSER_SET_FIELD_VALUE, _CAP_BFLD_EXECUTE, "REALIZED_STATE_LENGTH_MISMATCH", session_id)
+    runtime_receipt = _rcpt(
+        _CAP_BFLD_EXECUTE, OP_BROWSER_SET_FIELD_VALUE, EXECUTED_OK, session_id,
+        kx108_pre_gate=gate, selector=selector,
+        target_value_sha256=target_hash, post_value_sha256=post_identity.get("current_value_sha256"),
+        target_value_length=target_length, post_value_length=post_identity.get("current_value_length"),
+        pre_value_sha256=identity.get("current_value_sha256"),
+        pre_value_length=identity.get("current_value_length"),
+        semantic_intent=semantic_intent, semantic_risk=semantic_risk,
+        mutation_performed=bool(act.get("mutation_performed")),
+        proof_strength="STRONG", realized_state_verified=True,
+        independent_post_read=True,
+        physical_state_anchor=d.get("physical_state_anchor", ""),
+        state_anchor_kind="PHYSICAL_PRE_STATE",
+    )
+    request_ref = {
+        "public_action": "BROWSER_SET_FIELD_VALUE",
+        "selector_hash": _ref_hash(selector),
+        "target_value_sha256": target_hash,
+        "target_value_length": target_length,
+        "semantic_intent": semantic_intent,
+        "semantic_risk": semantic_risk,
+    }
+    session_ref = {"session_id": session_id, "v2_exec_id": v2id, "child_id": child}
+    executor_input_ref = {
+        "public_action": "BROWSER_SET_FIELD_VALUE",
+        "selector": selector,
+        "field_identity_hash": identity.get("metadata_sha256"),
+        "target_value_sha256": target_hash,
+        "target_value_length": target_length,
+        "semantic_intent": semantic_intent,
+        "semantic_risk": semantic_risk,
+        "physical_state_anchor": d.get("physical_state_anchor", ""),
+    }
+    post_state_ref = {
+        "browser_session_id": post_identity.get("browser_session_id"),
+        "page_id": post_identity.get("page_id"),
+        "post_url": post_identity.get("url"),
+        "field_identity_hash": post_identity.get("metadata_sha256"),
+        "post_value_sha256": post_identity.get("current_value_sha256"),
+        "post_value_length": post_identity.get("current_value_length"),
+    }
+    kx_record = kx.get("record") or {}
+    envelope = _CRE.build_canonical_receipt_envelope(
+        capability=_CAP_BFLD_EXECUTE,
+        operation_type=OP_BROWSER_SET_FIELD_VALUE,
+        request_ref=request_ref,
+        session_ref=session_ref,
+        action_identity=_canonical_action_identity(_CAP_BFLD_EXECUTE, OP_BROWSER_SET_FIELD_VALUE, request_ref, session_ref, dh, exp_eah),
+        prepare={
+            "descriptor_ref": v2id,
+            "descriptor_hash": dh,
+            "physical_state_anchor": d.get("physical_state_anchor", ""),
+            "state_anchor_kind": "PHYSICAL_PRE_STATE",
+            "manifest_hash": mh,
+        },
+        authorization={
+            "execution_authority_hash": exp_eah,
+            "approval_id": apv_id,
+            "approval_status": apr.get("approval_status"),
+            "approved_by": apr.get("approved_by"),
+            "approval_record_hash": apr.get("approval_record_hash"),
+            "kx108_pre_decision_record_id": kx.get("decision_record_id", ""),
+            "kx108_pre_decision_record_hash": kx_record.get("decision_record_hash", ""),
+            "kx108_verdict": gate,
+            "binder_verdict_status": "OBSERVED_INLINE",
+            "binder_verdict_ref": "NOT_SEPARATELY_PERSISTED",
+        },
+        execution={
+            "executor_kind": executor.EXECUTOR_PROVIDER,
+            "executor_backend": executor.EXECUTOR_BACKEND,
+            "executor_operation": "browser.set_field_value",
+            "executor_input_hash": _ref_hash(executor_input_ref),
+            "executor_input_ref": executor_input_ref,
+            "executor_status": "INVOKED",
+            "physical_effect_dispatched": bool(act.get("mutation_performed")),
+            "dispatch_boundary": _CRE.DISPATCH_POST_CONFIRMED,
+            "outcome": _CRE.OUTCOME_NOOP if not bool(act.get("mutation_performed")) else _CRE.OUTCOME_SUCCESS,
+            "mutation_performed": bool(act.get("mutation_performed")),
+            "execution_state": "POSTCONDITION_CONFIRMED",
+        },
+        realized_state={
+            "outcome": _CRE.OUTCOME_NOOP if not bool(act.get("mutation_performed")) else _CRE.OUTCOME_SUCCESS,
+            "failure_stage": _CRE.STATUS_NOT_APPLICABLE,
+            "dispatch_boundary": _CRE.DISPATCH_POST_CONFIRMED,
+            "physical_effect_dispatched": bool(act.get("mutation_performed")),
+            "proof_strength": "STRONG",
+            "realized_state_verified": True,
+            "mutation_performed": bool(act.get("mutation_performed")),
+            "post_state_hash": _ref_hash(post_state_ref),
+            "post_state_ref": post_state_ref,
+            "execution_state": "POSTCONDITION_CONFIRMED",
+            "uncertainty_state": "NONE",
+            "uncertainty_reason": "",
+        },
+        receipt={
+            "existing_runtime_receipt_id": runtime_receipt.get("receipt_id"),
+            "existing_receipt_hash": _ref_hash(runtime_receipt),
+            "existing_receipt_ref": "runtime_result.receipt",
+        },
+        replay={
+            "physical_replay_allowed": False,
+            "evidence_replay_allowed": True,
+        },
+        privacy={
+            "redaction_policy": "HASHES_AND_REFS_ONLY",
+            "plaintext_sensitive_data_present": False,
+        },
+    )
+    envelope_store = _CRE.store_canonical_receipt_envelope(envelope, st["receipts"])
     return {
         "status": EXECUTED_OK,
         "j5_phase": "EXECUTE",
@@ -4444,20 +4564,10 @@ def pc_v2_browser_set_field_value_execute(
         "download_detected": False,
         "executor_provider": executor.EXECUTOR_PROVIDER,
         "executor_backend": executor.EXECUTOR_BACKEND,
-        "receipt": _rcpt(
-            _CAP_BFLD_EXECUTE, OP_BROWSER_SET_FIELD_VALUE, EXECUTED_OK, session_id,
-            kx108_pre_gate=gate, selector=selector,
-            target_value_sha256=target_hash, post_value_sha256=post_identity.get("current_value_sha256"),
-            target_value_length=target_length, post_value_length=post_identity.get("current_value_length"),
-            pre_value_sha256=identity.get("current_value_sha256"),
-            pre_value_length=identity.get("current_value_length"),
-            semantic_intent=semantic_intent, semantic_risk=semantic_risk,
-            mutation_performed=bool(act.get("mutation_performed")),
-            proof_strength="STRONG", realized_state_verified=True,
-            independent_post_read=True,
-            physical_state_anchor=d.get("physical_state_anchor", ""),
-            state_anchor_kind="PHYSICAL_PRE_STATE",
-        ),
+        "receipt": runtime_receipt,
+        "canonical_receipt_envelope": envelope,
+        "action_evidence_id": envelope["action_evidence_id"],
+        "canonical_receipt_store_status": envelope_store.get("status"),
     }
 
 
