@@ -90,6 +90,10 @@ NATIVE_OPS_WORLD_ACTION_BRIDGE_PATH = (
 NATIVE_OPS_SYNC_PROJECTION_PATH = (
     "periphery/native_ops/sync_projection_v0.py"
 )
+NATIVE_SOURCE_COMMON_PATH = "periphery/native_sources/common_v0.py"
+NATIVE_SOURCE_REGISTRY_PATH = "periphery/native_sources/source_registry_v0.py"
+NATIVE_SOURCE_ONBOARDING_PATH = "periphery/native_sources/source_onboarding_v0.py"
+NATIVE_SOURCE_RUNTIME_PATH = "periphery/native_sources/source_runtime_v0.py"
 
 # Multi-domain proof surfaces.
 MULTIDOMAIN_PROOF_PATH = (
@@ -260,6 +264,21 @@ def native_tasks_crm_domains_present() -> bool:
     )
 
 
+def native_source_runtime_present() -> bool:
+    """True when the provider-neutral READONLY source runtime is present.
+
+    Presence means source identity/onboarding/registry/observations are
+    available. It does not imply any live provider connection or external
+    mutation capability.
+    """
+    return (
+        _exists(NATIVE_SOURCE_COMMON_PATH)
+        and _exists(NATIVE_SOURCE_REGISTRY_PATH)
+        and _exists(NATIVE_SOURCE_ONBOARDING_PATH)
+        and _exists(NATIVE_SOURCE_RUNTIME_PATH)
+    )
+
+
 def runtime_internal_end_to_end_validated() -> bool:
     """
     Internal governed runtime, end to end — agent through verified KX108
@@ -400,6 +419,18 @@ def runtime_link_facts() -> dict:
 
         "native_ops_sync_projection_path":
             NATIVE_OPS_SYNC_PROJECTION_PATH,
+
+        "native_source_runtime_present":
+            native_source_runtime_present(),
+
+        "native_source_registry_path":
+            NATIVE_SOURCE_REGISTRY_PATH,
+
+        "native_source_onboarding_path":
+            NATIVE_SOURCE_ONBOARDING_PATH,
+
+        "native_source_runtime_path":
+            NATIVE_SOURCE_RUNTIME_PATH,
 
         "runtime_internal_end_to_end_validated":
             runtime_internal_end_to_end_validated(),
