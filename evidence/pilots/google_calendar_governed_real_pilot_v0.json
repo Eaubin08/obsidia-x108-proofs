@@ -1,0 +1,36 @@
+{
+  "version": "WORLD_ACTION_GOOGLE_CALENDAR_GOVERNED_REAL_PILOT_V0",
+  "status": "REAL_PROVIDER_EFFECT_GOVERNED_BY_OBSIDIA_INVOCATION_AND_CLEANED",
+  "date": "2026-10-07",
+  "provider": "GOOGLE_CALENDAR",
+  "transport_execution": "CHATGPT_GOOGLE_CALENDAR_CONNECTOR",
+  "obsidia_chain": {
+    "request_hash": "acc2e98f744fa96656cbdf2923687075d0f689ccc6cc042af7abcf189dc4d6a7",
+    "human_approval_hash": "a8e65b9b1237716f9fe74af7728acc9a2a0930ee1817759a47e821e3f982006a",
+    "kx108_decision_record_id": "kxworld-e5a16205460f8f87944b9049ad0b4a4a",
+    "kx108_decision_record_hash": "c437053c56183c937e65cf497a27cb780447d494ac114ae1e678da2cd657463c",
+    "kx108_gate": "ALLOW",
+    "activation_policy_hash": "9d9c7fb9a3bdebcca17ce0fd4288cfa007e301c28ef27ce5d2cb48fdde5c4ef0",
+    "sovereign_ticket_id": "svlive-d3dbb6cee40b4358eef6e67c0b6f135e",
+    "sovereign_ticket_hash": "0b5ccbb5db7eb6e600924a35f1bb8bd1e84e11f10308354fa2515ef88155effc",
+    "invocation_id": "gcal-dd9e904db69fd7f9175a722ec46235e8",
+    "invocation_hash": "ce6f3654729cbfce79600b90e96e6001fc6b3e1915934599a24e3079d111c86c",
+    "connector_call_hash": "946cf9f289c9e12b5a7a534ca1cdf3d892edd4467e23f51ba132e9559805d1a4",
+    "idempotency_key": "cee6e59d6835a23243756cdb942d64adf436c99a3fc580fb8c24b26fcfaad760"
+  },
+  "provider_observation": {
+    "create_status": "confirmed",
+    "readback_verified": true,
+    "cleanup_status": "cancelled",
+    "active_event_left": false,
+    "provider_event_id_sha256": "b6fc86d89efc2ac9f4d3238cb8168cc3e1fb3674ec698be954273891f901a267"
+  },
+  "truth_boundary": {
+    "real_external_effect_proven": true,
+    "obsidia_governed_invocation_proven": true,
+    "direct_in_process_obsidia_network_transport_proven": false,
+    "transport_bridge_used": true,
+    "no_active_event_left": true,
+    "main_merge": false
+  }
+}
