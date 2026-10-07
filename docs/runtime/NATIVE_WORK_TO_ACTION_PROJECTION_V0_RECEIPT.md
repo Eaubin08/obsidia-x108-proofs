@@ -59,8 +59,20 @@ emits_act=false
 decision_authority=KX108_ONLY
 ```
 
+## Documentation/freeze proof
+
+Workflow:
+`37631777079`
+
+Result:
+`79 passed in 1.54s`
+
+Tested HEAD:
+`417a1b030e86e6195b51942a4b87c355dc38fcf2`
+
+The final metadata-only close commit must also pass the same dedicated workflow;
+that final run is recorded on Draft PR #79 without changing the frozen code.
+
 ## Verdict
 
 `NATIVE_WORK_TO_ACTION_PROJECTION_V0_PROVEN`
-
-Final documentation/freeze HEAD rerun required before closure.
