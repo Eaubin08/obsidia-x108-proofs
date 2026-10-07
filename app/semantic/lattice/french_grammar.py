@@ -3366,7 +3366,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 complement_follows=(cmp_next := clause.conn is None and ci + 1 < len(clauses)
                                     and clauses[ci + 1].conn in {"si", "que"} and clauses[ci + 1].units
                                     and clauses[ci + 1].boundary is None)) \
-                and not (_copula_evidence(clause) and (in_seq or clause.conn in _COPULA_REPORTED_CONNS)) \
+                and not (_copula_evidence(clause) and (in_seq or clause.conn in _COPULA_REPORTED_CONNS
+                                                       # A: a copula utterance with no unit at all
+                                                       # ("Le script est prêt.": determiner NP subject) is never a zero
+                                                       # representation: reported, nothing invented
+                                                       or (not any(c.units for c in clauses) and clause.toks
+                                                           and clause.toks[0].low in _DETERMINERS))) \
                 and not (clause.conn is None and not any(c.units for c in clauses) and any(
                     t.low in {"que", "qu'", "qui"} and len(clause.toks) - k >= 3
                     for k, t in enumerate(clause.toks) if k > 0)) \
