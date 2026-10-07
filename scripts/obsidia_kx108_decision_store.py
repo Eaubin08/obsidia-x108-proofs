@@ -202,6 +202,57 @@ _AGENT_PRE_IDENTITY_SEED_FIELDS = (
 )
 
 
+# ── WORLD_ACTION_PRE_EXECUTION (external-world sovereign checkpoint) ─────────
+#
+# This phase is additive and distinct from:
+# - PRE_EXECUTION (content remediation)
+# - AGENT_PRE_EXECUTION (internal bounded provider execution)
+# - POST_EXECUTION
+#
+# It binds the exact external action request already approved by a human
+# before a sovereign KX108 decision is persisted. It grants no egress by
+# itself; current world-action runtime stays dry-run unless another layer
+# explicitly activates it.
+WORLD_ACTION_PRE_DECISION_PHASE = "WORLD_ACTION_PRE_EXECUTION"
+
+_WORLD_ACTION_PRE_BINDING_CONTEXT_FIELDS = (
+    "world_action_pre_context_id",
+    "world_action_pre_context_record_hash",
+    "world_action_request_hash",
+    "connector_call_hash",
+    "human_approval_hash",
+    "target_prestate_hash",
+    "required_scope",
+    "idempotency_key",
+    "source_domain",
+    "action_id",
+)
+
+_WORLD_ACTION_PRE_RECORD_BOUND_FIELDS = (
+    "decision_record_schema_version", "decision_record_id", "created_at",
+    "decision_phase",
+    "world_action_pre_context_id",
+    "world_action_pre_context_record_hash",
+    "world_action_request_hash",
+    "connector_call_hash",
+    "human_approval_hash",
+    "target_prestate_hash",
+    "required_scope",
+    "idempotency_key",
+    "source_domain",
+    "action_id",
+    "decision_id", "trace_id", "domain",
+    "x108_gate", "reason_code", "severity", "market_verdict",
+    "contradictions", "unknowns", "risk_flags",
+    "decision_authority", "canonical_envelope",
+)
+
+_WORLD_ACTION_PRE_IDENTITY_SEED_FIELDS = (
+    _WORLD_ACTION_PRE_BINDING_CONTEXT_FIELDS
+    + ("decision_phase", "canonical_envelope")
+)
+
+
 def decision_phase_of(record: "Optional[dict]") -> str:
     """Phase d'un enregistrement de décision KX108.
 
@@ -218,6 +269,8 @@ def _record_bound_fields_for(record: dict) -> tuple:
     POST explicitement lié à une décision PRE => _POST_PRE_LINKED_RECORD_BOUND_FIELDS ;
     sinon (schéma POST historique, decision_phase absent) => _RECORD_BOUND_FIELDS d'origine."""
     phase = record.get("decision_phase")
+    if phase == WORLD_ACTION_PRE_DECISION_PHASE:
+        return _WORLD_ACTION_PRE_RECORD_BOUND_FIELDS
     if phase == AGENT_PRE_DECISION_PHASE:
         return _AGENT_PRE_RECORD_BOUND_FIELDS
     if phase == PRE_DECISION_PHASE:
@@ -614,6 +667,110 @@ def persist_kx108_agent_pre_execution_decision(
     return {
         "decision_record_id": record["decision_record_id"],
         "decision_phase": AGENT_PRE_DECISION_PHASE,
+        "x108_gate": record["x108_gate"],
+        "store_result": store_result,
+        "record": reloaded,
+        "verify_ok": verify_ok,
+        "verify_reason": verify_reason,
+    }
+
+
+# ── WORLD_ACTION_PRE_EXECUTION (external world checkpoint) ─────────────────
+
+def _compute_world_action_pre_decision_record_identity(seed: dict) -> str:
+    """Content identity for WORLD_ACTION_PRE_EXECUTION records."""
+    payload = json.dumps(
+        {k: seed.get(k) for k in _WORLD_ACTION_PRE_IDENTITY_SEED_FIELDS},
+        sort_keys=True,
+        default=str,
+    )
+    digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    return f"kxworld-{digest[:32]}"
+
+
+def _validate_world_action_pre_binding_context(
+    binding_context: dict,
+) -> Optional[str]:
+    for field in _WORLD_ACTION_PRE_BINDING_CONTEXT_FIELDS:
+        if not binding_context.get(field):
+            return f"WORLD_ACTION_PRE_BINDING_CONTEXT_FIELD_MISSING:{field}"
+    return None
+
+
+def persist_kx108_world_action_pre_execution_decision(
+    decision_envelope,
+    world_action_pre_binding_context: dict,
+    store_dir: Optional[Path] = None,
+) -> dict:
+    """Persist a real KX108 decision bound to one exact external action.
+
+    The caller cannot supply x108_gate or any other sovereign field. The
+    function only accepts a kernel dataclass envelope, exactly like the
+    AGENT_PRE_EXECUTION persistence rail.
+
+    This record does NOT authorize egress by itself.
+    """
+    if (
+        dataclasses.is_dataclass(decision_envelope)
+        and not isinstance(decision_envelope, type)
+    ):
+        envelope = dataclasses.asdict(decision_envelope)
+    else:
+        return {
+            "status": "REJECTED",
+            "reason": "DECISION_ENVELOPE_NOT_A_KERNEL_DATACLASS",
+        }
+
+    binding_error = _validate_world_action_pre_binding_context(
+        world_action_pre_binding_context
+    )
+    if binding_error:
+        return {"status": "REJECTED", "reason": binding_error}
+
+    if envelope.get("x108_gate") not in VALID_X108_GATES:
+        return {"status": "REJECTED", "reason": "X108_GATE_INVALID"}
+
+    record: dict = {
+        "decision_record_schema_version": SCHEMA_VERSION,
+        "created_at": _now(),
+        "decision_phase": WORLD_ACTION_PRE_DECISION_PHASE,
+        **{
+            k: world_action_pre_binding_context[k]
+            for k in _WORLD_ACTION_PRE_BINDING_CONTEXT_FIELDS
+        },
+        "decision_id": envelope.get("decision_id"),
+        "trace_id": envelope.get("trace_id"),
+        "domain": envelope.get("domain"),
+        "x108_gate": envelope.get("x108_gate"),
+        "reason_code": envelope.get("reason_code"),
+        "severity": envelope.get("severity"),
+        "market_verdict": envelope.get("market_verdict"),
+        "contradictions": list(envelope.get("contradictions") or []),
+        "unknowns": list(envelope.get("unknowns") or []),
+        "risk_flags": list(envelope.get("risk_flags") or []),
+        "decision_authority": DECISION_AUTHORITY,
+        "canonical_envelope": envelope,
+    }
+
+    identity_seed = {
+        k: record[k] for k in _WORLD_ACTION_PRE_BINDING_CONTEXT_FIELDS
+    }
+    identity_seed["decision_phase"] = WORLD_ACTION_PRE_DECISION_PHASE
+    identity_seed["canonical_envelope"] = envelope
+    record["decision_record_id"] = (
+        _compute_world_action_pre_decision_record_identity(identity_seed)
+    )
+    record["decision_record_hash"] = compute_kx108_decision_record_hash(record)
+
+    store_result = store_kx108_decision_record(record, store_dir)
+    reloaded = load_kx108_decision_record(
+        record["decision_record_id"], store_dir
+    )
+    verify_ok, verify_reason = verify_kx108_decision_record(reloaded)
+
+    return {
+        "decision_record_id": record["decision_record_id"],
+        "decision_phase": WORLD_ACTION_PRE_DECISION_PHASE,
         "x108_gate": record["x108_gate"],
         "store_result": store_result,
         "record": reloaded,
