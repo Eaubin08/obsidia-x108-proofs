@@ -31,6 +31,12 @@ from periphery.world_calls.obsidia_live_gateway_v0 import (  # noqa: E402
 from periphery.world_calls.sovereign_ticket import (  # noqa: E402
     issue_sovereign_ticket,
 )
+from scripts.kernel.kx108_runtime_link_facts_v1 import (  # noqa: E402
+    MISSING_RUNTIME_LINK_REAL_EXECUTION,
+    MISSING_RUNTIME_LINK_WORLD_ACTUATION,
+    runtime_link_facts,
+    world_action_live_gateway_capability_present,
+)
 
 
 def canonical_hash(value):
@@ -453,3 +459,15 @@ def test_expired_live_ticket_is_blocked(tmp_path):
     assert decision.gate_result == "BLOCK"
     assert "LIVE_TICKET_EXPIRED" in decision.reason
     assert decision.egress_allowed is False
+
+
+
+def test_runtime_facts_show_live_capability_without_activation():
+    facts = runtime_link_facts()
+    assert world_action_live_gateway_capability_present() is True
+    assert facts["world_action_live_gateway_capability_present"] is True
+    assert facts["world_action_runtime_activated"] is False
+    assert facts["execution_authority"] is False
+    assert facts["emits_act"] is False
+    assert MISSING_RUNTIME_LINK_WORLD_ACTUATION in facts["missing_runtime_links"]
+    assert MISSING_RUNTIME_LINK_REAL_EXECUTION in facts["missing_runtime_links"]
