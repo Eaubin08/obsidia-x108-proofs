@@ -4,6 +4,7 @@ from __future__ import annotations
 import datetime
 import hashlib
 import json
+import re
 from dataclasses import asdict, dataclass
 from typing import Any, Mapping, Optional
 
@@ -51,6 +52,16 @@ WRITE_LIKE_FRAGMENTS = (
     "MUTATE",
     "EXECUTE",
 )
+
+_FS_SAFE_RE = re.compile(r"^[A-Za-z0-9_.-]{1,120}$")
+
+
+def filesystem_component_v0(value: str) -> str:
+    """Portable deterministic path component; canonical IDs stay unchanged."""
+    if _FS_SAFE_RE.fullmatch(value) and value not in {".", ".."}:
+        return value
+    return f"id-{hashlib.sha256(value.encode('utf-8')).hexdigest()}"
+
 
 
 def canonical_hash(value: Any) -> str:

@@ -1,0 +1,211 @@
+{
+  "schema": "OBSIDIA_ENTERPRISE_PREFORGE_FREEZE_V0",
+  "status": "PREFORGE_PROVEN",
+  "date": "2026-10-07",
+  "repositories": {
+    "obsidia": {
+      "repo": "Eaubin08/obsidia-x108-proofs",
+      "branch": "feat/preforge-enterprise-stack-freeze-v0",
+      "base_chain": {
+        "native_tasks_crm": {
+          "branch": "feat/native-tasks-crm-v0",
+          "head": "e5a75bb6e99052a8015f7ac8362c3bd3d40fa1f0",
+          "proof": "104/104",
+          "run_id": 37609020896
+        },
+        "source_runtime": {
+          "branch": "feat/source-runtime-native-v0",
+          "proof": "103/103",
+          "run_id": 37618281703
+        },
+        "source_connectors": {
+          "branch": "feat/native-source-connectors-v0",
+          "head": "f8cf92feb26ef1f4aa8bdfdbdc97bdbdf3fa29e7",
+          "proof": "93/93",
+          "run_id": 37618714156
+        },
+        "enterprise_sandbox": {
+          "branch": "feat/enterprise-source-sandbox-v0",
+          "head": "548482d28bf1613b21792b10db994dabd685131d",
+          "proof": "65/65",
+          "run_id": 37619010943
+        },
+        "autonomous_office": {
+          "branch": "feat/autonomous-office-e2e-v0",
+          "head": "cc4b203617c990d3bdf14896c0df70a2e75ad430",
+          "proof": "71/71",
+          "run_id": 37619385128
+        }
+      }
+    },
+    "cssa": {
+      "repo": "Eaubin08/cssa-v01--entreprise-universelle-domaien-obsidia-",
+      "role": "METIER_REFERENCE_AND_CONFORMANCE",
+      "branch": "feat/f3h-g-real-source-onboarding-pilot-v0",
+      "head": "f11379ec738dd8f020c6f7d7e2a73be2a881f096",
+      "phases": {
+        "f3h_d": {
+          "proof": "181/181",
+          "run_id": 37609707350
+        },
+        "f3h_e": {
+          "proof": "196/196",
+          "run_id": 37611452707
+        },
+        "f3h_f": {
+          "proof": "221/221",
+          "run_id": 37613151103
+        },
+        "f3h_g": {
+          "proof": "156/156",
+          "run_id": 37615616327
+        }
+      },
+      "new_infrastructure_should_be_built_here": false
+    },
+    "monde": {
+      "repo": "Eaubin08/monde-obsidia",
+      "role": "READONLY_PROJECTION",
+      "branch": "feat/native-operations-world-projection-v0",
+      "base": "feat/premiere-mise-au-monde-final-ui-v0",
+      "head_at_manifest_creation": "8aaec21138772803a22cf69f08d7a5d8dc4fcf37",
+      "proof_status": "WINDOWS_AND_LINUX_SUCCESS",
+      "canonical_truth": false,
+      "allowed_to_decide": false,
+      "allowed_to_act": false,
+      "workflow_run": 37621379882,
+      "proof": {
+        "ubuntu": "SUCCESS (npm build + npm test; 26 pass, 0 fail, 1 skipped)",
+        "windows": "SUCCESS (npm build + 27/27 tests + Windows updater checks)"
+      }
+    }
+  },
+  "canonical_stack": [
+    "SOURCE_RUNTIME_NATIVE_V0",
+    "MAIL_NATIVE_CONNECTOR_V0",
+    "DOCUMENT_NATIVE_CONNECTOR_V0",
+    "CALENDAR_NATIVE_CONNECTOR_V0",
+    "TASKS_NATIVE_V0",
+    "CRM_NATIVE_V0",
+    "NATIVE_CASE_TASK_INTAKE_V0",
+    "WORLD_ACTION_PRE_EXECUTION",
+    "KX108_ONLY",
+    "RECEIPTS_REPLAY"
+  ],
+  "synthetic_proof": {
+    "digital_twin": "ENTERPRISE_SOURCE_SANDBOX_V0",
+    "e2e": "E2E_AUTONOMOUS_OFFICE_V0",
+    "semantic_oracle": "SANDBOX_TRUTH_MANIFEST",
+    "production_interpreter_proven": false,
+    "status": "SANDBOX_ONLY_NOT_PRODUCTION_INTERPRETER",
+    "expected_outcomes": {
+      "source_observations": 12,
+      "source_packets": 12,
+      "committed_cases": 3,
+      "canonical_mutations": 12,
+      "duplicate_suppressed": 1,
+      "holds": 1,
+      "blocks": 1,
+      "information_only": 2,
+      "network_calls": 0,
+      "external_actions": 0
+    }
+  },
+  "invariants": {
+    "decision_authority": "KX108_ONLY",
+    "world_action_runtime_activated": false,
+    "runtime_allowed_now": false,
+    "execution_authority": false,
+    "memory_write": false,
+    "kernel_mutation": false,
+    "emits_act": false,
+    "external_saas_required": false,
+    "main_merge": false
+  },
+  "protected_core_must_remain_unchanged": [
+    "sigma/guard.py",
+    "sigma/contracts.py",
+    "sigma/protocols.py",
+    "sigma/aggregation.py",
+    "proofs/lean/",
+    "formal/tla/",
+    "merkle_seal.json"
+  ],
+  "cssa_to_native_mapping": {
+    "F3H-D": "periphery/native_ops/intake_bundle_v0.py + TASKS_NATIVE_V0 + CRM_NATIVE_V0",
+    "F3H-F": "periphery/native_sources/source_registry_v0.py",
+    "F3H-G": "periphery/native_sources/source_onboarding_v0.py",
+    "F3H-E": "METIER_REFERENCE_ONLY; generic production source interpreter still OPEN"
+  },
+  "open_source_adoption_policy": {
+    "sequence": [
+      "LICENSE_AUDIT",
+      "SECURITY_SCOPE_AUDIT",
+      "ADAPTER_TO_OBSIDIA_CONTRACT",
+      "CONFORMANCE_TESTS",
+      "OPTIONAL_COMPONENT"
+    ],
+    "oss_must_not_replace": [
+      "KX108_ONLY",
+      "WORLD_ACTION",
+      "TASKS_NATIVE_V0",
+      "CRM_NATIVE_V0",
+      "SOURCE_RUNTIME_NATIVE_V0"
+    ]
+  },
+  "forge_next": {
+    "scope": "SOURCE_INTERPRETATION_NATIVE_V0",
+    "goal": "Replace sandbox truth oracle with bounded production-capable source interpretation that emits structured candidates, never decisions.",
+    "inputs": [
+      "NativeSourceContextPacketV0",
+      "ephemeral connector material"
+    ],
+    "outputs": [
+      "SourceInterpretationCandidateV0",
+      "actionability signals",
+      "deadline/incident/duplicate/conflict/evidence-gap signals",
+      "provenance refs"
+    ],
+    "authority": {
+      "allowed_to_decide": false,
+      "allowed_to_act": false,
+      "decision_authority": "KX108_ONLY"
+    },
+    "acceptance": [
+      "No raw source content persisted by canonical runtime",
+      "Unknown semantics -> HOLD candidate, not guessed task",
+      "Duplicate candidates bind to same canonical work identity",
+      "Contradictions surface as contradictions before KX108",
+      "No direct CRM/TASK mutation from interpreter",
+      "Native intake remains separately human/KX108 governed",
+      "Digital twin E2E passes without truth-oracle routing",
+      "No protected-core changes"
+    ],
+    "out_of_scope": [
+      "real CSSA mailbox",
+      "real CSSA Drive",
+      "payment",
+      "real trading",
+      "physical device actuation",
+      "main merge"
+    ]
+  },
+  "preforge_proof": {
+    "workflow_run": 37621413321,
+    "result": "153 passed in 1.10s",
+    "protected_files_changed": 0,
+    "chain_compare_base": "feat/world-action-gmail-draft-adapter-v0",
+    "commits_ahead": 48,
+    "windows_portability_fix": {
+      "issue": "Canonical IDs containing ':' were unsafe as Windows filesystem components",
+      "resolution": "Canonical IDs remain unchanged; storage components are deterministically filesystem-encoded",
+      "covered_surfaces": [
+        "native source registration/revocation",
+        "source observations/packets",
+        "native CRM/TASK entity directories",
+        "Monde canonical-ID projection"
+      ],
+      "regression_required": true
+    }
+  }
+}

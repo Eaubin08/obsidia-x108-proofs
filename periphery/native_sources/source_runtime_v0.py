@@ -10,7 +10,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Mapping, Optional
 
-from .common_v0 import DECISION_AUTHORITY, canonical_hash
+from .common_v0 import DECISION_AUTHORITY, canonical_hash, filesystem_component_v0
 from .source_onboarding_v0 import (
     NativeHumanSourceAuthorizationV0,
     NativeObservedSourceCandidateV0,
@@ -132,7 +132,7 @@ class NativeSourceRuntimeV0:
         if not ok:
             raise ValueError(reason)
 
-        obs_dir = self.observations_root / source_id
+        obs_dir = self.observations_root / filesystem_component_v0(source_id)
         obs_dir.mkdir(parents=True, exist_ok=True)
         obs_path = obs_dir / f"{observation.observation_id}.json"
         payload = observation.to_dict()
@@ -174,7 +174,7 @@ class NativeSourceRuntimeV0:
             **packet_payload,
             packet_hash=canonical_hash(packet_payload),
         )
-        packet_dir = self.packets_root / source_id
+        packet_dir = self.packets_root / filesystem_component_v0(source_id)
         packet_dir.mkdir(parents=True, exist_ok=True)
         packet_path = packet_dir / f"{packet.packet_id}.json"
         import json
@@ -191,7 +191,7 @@ class NativeSourceRuntimeV0:
         return observation, packet
 
     def list_observations(self, source_id: str) -> list[dict[str, Any]]:
-        directory = self.observations_root / source_id
+        directory = self.observations_root / filesystem_component_v0(source_id)
         if not directory.exists():
             return []
         import json
@@ -201,7 +201,7 @@ class NativeSourceRuntimeV0:
         ]
 
     def list_packets(self, source_id: str) -> list[dict[str, Any]]:
-        directory = self.packets_root / source_id
+        directory = self.packets_root / filesystem_component_v0(source_id)
         if not directory.exists():
             return []
         import json
