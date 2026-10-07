@@ -12,6 +12,7 @@ from .common_v0 import (
     DECISION_AUTHORITY,
     SOURCE_KINDS,
     canonical_hash,
+    filesystem_component_v0,
     require_time,
     validate_readonly_capabilities,
 )
@@ -271,12 +272,20 @@ class NativeSourceRegistryV0:
     def _registration_path(self, source_id: str) -> Path:
         if not _ID_RE.match(source_id):
             raise ValueError("NATIVE_SOURCE_ID_INVALID")
-        return self.root / "registrations" / f"{source_id}.json"
+        return (
+            self.root
+            / "registrations"
+            / f"{filesystem_component_v0(source_id)}.json"
+        )
 
     def _revocation_dir(self, source_id: str) -> Path:
         if not _ID_RE.match(source_id):
             raise ValueError("NATIVE_SOURCE_ID_INVALID")
-        return self.root / "revocations" / source_id
+        return (
+            self.root
+            / "revocations"
+            / filesystem_component_v0(source_id)
+        )
 
     def register(
         self,
