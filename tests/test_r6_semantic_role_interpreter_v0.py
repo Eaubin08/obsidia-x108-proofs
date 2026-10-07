@@ -177,8 +177,10 @@ def test_r6_c1_missing_roles_are_unknown_not_invented():
 
 def test_r6_c1_prompt_is_bounded_and_non_sovereign():
     prompt = semantic_role_prompt_v0("Explique Obsidia.")
-    assert "Return JSON only" in prompt
+    assert "Return exactly one JSON object" in prompt
     assert "FOCUS" in prompt
     assert "SOURCE_OR_INSTRUMENT" in prompt
-    assert "Do not decide" in prompt
-    assert "User utterance:" in prompt
+    assert "A mentioned concept is not automatically the FOCUS" in prompt
+    assert "Contrast example A" in prompt
+    assert "Contrast example B" in prompt
+    assert "Now analyze ONLY this CURRENT utterance" in prompt
