@@ -46,6 +46,7 @@ MAX_FILES = 64
 MAX_METADATA_KEYS = 64
 
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+_GIT_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 _FORBIDDEN_AUTHORITY_WORDS = frozenset((
     "ALLOW",
     "ACT",
@@ -192,6 +193,15 @@ def _sha256(value: str, field_name: str) -> str:
     return normalized
 
 
+def _base_commit_sha(value: str, field_name: str) -> str:
+    if not isinstance(value, str):
+        raise BuilderProposalError(f"{field_name}_NOT_STRING")
+    normalized = value.strip().lower()
+    if not (_SHA256_RE.fullmatch(normalized) or _GIT_SHA_RE.fullmatch(normalized)):
+        raise BuilderProposalError(f"{field_name}_NOT_GIT_SHA_OR_SHA256")
+    return normalized
+
+
 def canonical_json(value: Mapping[str, Any]) -> str:
     normalized = _validate_json_value(value)
     try:
@@ -263,7 +273,7 @@ class ObsidureBuilderProposalV1:
         if kind not in PROPOSAL_KINDS:
             raise BuilderProposalError("PROPOSAL_KIND_UNSUPPORTED")
         object.__setattr__(self, "proposal_kind", kind)
-        object.__setattr__(self, "base_commit_sha", _sha256(self.base_commit_sha, "base_commit_sha"))
+        object.__setattr__(self, "base_commit_sha", _base_commit_sha(self.base_commit_sha, "base_commit_sha"))
         object.__setattr__(self, "target_scope", _paths(self.target_scope, "target_scope"))
         if not self.target_scope:
             raise BuilderProposalError("TARGET_SCOPE_REQUIRED")

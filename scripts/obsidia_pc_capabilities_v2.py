@@ -774,7 +774,8 @@ def _parse_patch_targets(patch_content, ew):
 
 def pc_v2_apply_patch_prepare(
         patch_content, *, execution_worktree_path,
-        main_worktree_path, branch_name, base_sha, stores_base_dir, session_id=""):
+        main_worktree_path, branch_name, base_sha, stores_base_dir, session_id="",
+        descriptor_lineage=None):
     ew = Path(execution_worktree_path).resolve(); mw = Path(main_worktree_path).resolve(); st = _stores(stores_base_dir)
     if not isinstance(patch_content, str): return _prep_rej(OP_APPLY_PATCH, _CAP_PATCH_PREPARE, "PATCH_MUST_BE_STR", session_id)
     pb = patch_content.encode("utf-8")
@@ -803,6 +804,8 @@ def pc_v2_apply_patch_prepare(
     desc = {"patch_sha256": psha, "target_paths": sorted(targets), "before_digests": before,
             "execution_worktree": str(ew), "branch_name": branch_name, "base_sha": base_sha,
             "session_id": session_id, "operation_type": OP_APPLY_PATCH}
+    if descriptor_lineage is not None:
+        desc["descriptor_lineage"] = dict(descriptor_lineage)
     eah = _eah(OP_APPLY_PATCH, desc); child = _v2id("chd", eah+psha); v2id = _v2id("v2x", eah+base_sha+session_id)
     mh = _sha16(json.dumps(desc, sort_keys=True))
     (st["v2exec"] / (v2id+".patch")).write_bytes(patch_content.encode("utf-8"))
