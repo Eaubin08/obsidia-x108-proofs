@@ -117,3 +117,18 @@ def test_bounded_calibration_uses_only_selected_initial_window(tmp_path):
     result = calibrate(full, max_receiver_second=30)
     assert result["baseline_position_count"] == 3
     assert result["baseline_max_receiver_second"] == 30
+
+
+def test_utf16_powershell_log_is_parsed(tmp_path):
+    log = tmp_path / "powershell_utf16.log"
+    text = (
+        "Current receiver time: 43 s\r\n"
+        "Position at 2023-Nov-10 14:05:24.120000 UTC using 8 observations is "
+        "Lat = 60.182200 [deg], Long = 24.828500 [deg], Height = 32.44 [m]\r\n"
+        "Current receiver time: 44 s\r\n"
+        "Position at 2023-Nov-10 14:05:25.120000 UTC using 8 observations is "
+        "Lat = 60.182210 [deg], Long = 24.828510 [deg], Height = 32.50 [m]\r\n"
+    )
+    log.write_bytes(b"\xff\xfe" + text.encode("utf-16-le"))
+    result = calibrate(log)
+    assert result["baseline_position_count"] == 2
