@@ -145,8 +145,12 @@ def _max(items: list[dict], key: str) -> float:
     return max(float(item[key]) for item in items)
 
 
-def calibrate(baseline_log: Path) -> dict:
+def calibrate(baseline_log: Path, max_receiver_second: int | None = None) -> dict:
     positions = parse_positions(baseline_log)
+    if max_receiver_second is not None:
+        positions = [p for p in positions if p.receiver_second <= max_receiver_second]
+    if len(positions) < 2:
+        raise ValueError(f"Need at least two PVT positions in selected calibration window from {baseline_log}")
     ts = transitions(positions)
 
     baseline_max = {
@@ -169,6 +173,7 @@ def calibrate(baseline_log: Path) -> dict:
         "status": DEVELOPMENT_STATUS,
         "truth_or_onset_consumed": False,
         "baseline_log_sha256": sha256_file(baseline_log),
+        "baseline_max_receiver_second": max_receiver_second,
         "baseline_position_count": len(positions),
         "baseline_transition_count": len(ts),
         "baseline_feature_maxima": baseline_max,
@@ -249,6 +254,8 @@ def main() -> int:
     p_cal = sub.add_parser("calibrate")
     p_cal.add_argument("--baseline-log", required=True, type=Path)
     p_cal.add_argument("--out", required=True, type=Path)
+    p_cal.add_argument("--max-receiver-second", type=int, default=None,
+                       help="Development-only calibration window bound; does not enter detection.")
 
     p_det = sub.add_parser("detect")
     p_det.add_argument("--log", required=True, type=Path)
@@ -258,7 +265,7 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.command == "calibrate":
-        result = calibrate(args.baseline_log)
+        result = calibrate(args.baseline_log, args.max_receiver_second)
         write_json(result, args.out)
     else:
         calibration = json.loads(args.calibration.read_text(encoding="utf-8"))
