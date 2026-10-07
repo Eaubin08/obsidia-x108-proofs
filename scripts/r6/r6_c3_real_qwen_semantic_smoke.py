@@ -57,6 +57,51 @@ PROBES = (
 )
 
 
+def _bounded_structured_diagnostic(raw_model_text: str) -> dict[str, Any]:
+    """Expose only bounded JSON structure for failed C1 diagnostics.
+
+    Never persists free-form model text. Values are limited to role status,
+    candidate abstract value and candidate surface.
+    """
+    try:
+        payload = json.loads(raw_model_text)
+    except Exception:
+        return {"json_parseable": False}
+    if not isinstance(payload, dict):
+        return {"json_parseable": True, "top_level_type": type(payload).__name__}
+
+    roles = payload.get("roles")
+    role_summary: dict[str, Any] = {}
+    if isinstance(roles, dict):
+        for role_name, role_payload in roles.items():
+            if not isinstance(role_payload, dict):
+                role_summary[str(role_name)] = {"type": type(role_payload).__name__}
+                continue
+            candidates = role_payload.get("candidates")
+            safe_candidates = []
+            if isinstance(candidates, list):
+                for candidate in candidates[:4]:
+                    if isinstance(candidate, dict):
+                        safe_candidates.append({
+                            "value": str(candidate.get("value") or "")[:80],
+                            "surface": str(candidate.get("surface") or "")[:80],
+                        })
+            role_summary[str(role_name)] = {
+                "status": str(role_payload.get("status") or "")[:40],
+                "candidates": safe_candidates,
+            }
+
+    return {
+        "json_parseable": True,
+        "top_level_keys": sorted(str(key) for key in payload.keys()),
+        "schema": str(payload.get("schema") or "")[:120],
+        "schema_version": str(payload.get("schema_version") or "")[:80],
+        "producer": str(payload.get("producer") or "")[:80],
+        "producer_version": str(payload.get("producer_version") or "")[:80],
+        "roles": role_summary,
+    }
+
+
 def _surface_for_role(raw: str, projection: Any, role_name: str) -> str | None:
     role = SemanticRoleKindV0(role_name)
     binding = projection.binding(role)
@@ -137,6 +182,9 @@ def build_real_qwen_semantic_smoke_report(
 
         projection = interpreted.projection
         if projection is None:
+            row["bounded_structured_diagnostic"] = _bounded_structured_diagnostic(
+                raw_model_text
+            )
             evidence.append(row)
             continue
 
