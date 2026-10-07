@@ -1118,11 +1118,12 @@ def _split_relative_main(clauses: list[_Clause], raw: str) -> list[_Clause]:
     # coordinated relatives: "... que Paul lance et qui teste P ..."
     for k in range(1, len(clauses)):
         c, p = clauses[k], clauses[k - 1]
-        if c.conn in {"et", "ou"} and c.toks and c.toks[0].low in {"qui", "que", "qu'"} \
+        # (N4-R: "puis qui / puis que" is a sequential sibling relative, PRECEDES)
+        if c.conn in {"et", "ou", "puis"} and c.toks and c.toks[0].low in {"qui", "que", "qu'"} \
                 and (p.conn == "rel" or p.rel_member):
             c.conn_toks, c.toks = c.conn_toks + [c.toks[0]], c.toks[1:]
             c.conn, c.rel_member, c.rel_sibling, c.embedding_parent = "rel", True, p, p.embedding_parent
-        elif c.conn == "rel" and c.conn_toks and c.conn_toks[0].low in {"et", "ou"} \
+        elif c.conn == "rel" and c.conn_toks and c.conn_toks[0].low in {"et", "ou", "puis"} \
                 and (p.conn == "rel" or p.rel_member):
             c.rel_member, c.rel_sibling = True, p                  # already "et que" / "ou qui"
     out = list(clauses)
