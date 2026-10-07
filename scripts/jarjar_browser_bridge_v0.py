@@ -174,6 +174,33 @@ class JarJarBrowserExecutor:
         out.update(data)
         return out
 
+    def inspect_select(self, selector: str) -> dict:
+        """Inspect one supported select target. No mutation."""
+        from jarvis.contracts import ActionRequest
+        result = self._backend.execute(
+            ActionRequest("browser.inspect_select", {"selector": selector}))
+        if not result.ok:
+            return {"ok": False, "error": "INSPECT_SELECT_FAILED:" + result.message,
+                    "executor": self.EXECUTOR_BACKEND}
+        data = result.data or {}
+        out = {"ok": True, "executor": self.EXECUTOR_BACKEND}
+        out.update(data)
+        return out
+
+    def select_option(self, select_identity: dict, option_identity: dict) -> dict:
+        """Select an approved option target. This is not a generic select/click."""
+        from jarvis.contracts import ActionRequest
+        args = dict(select_identity or {})
+        args["option_identity"] = dict(option_identity or {})
+        result = self._backend.execute(ActionRequest("browser.select_option", args))
+        if not result.ok:
+            return {"ok": False, "error": "SELECT_OPTION_FAILED:" + result.message,
+                    "executor": self.EXECUTOR_BACKEND}
+        data = result.data or {}
+        out = {"ok": True, "executor": self.EXECUTOR_BACKEND}
+        out.update(data)
+        return out
+
     def navigate(self, requested_url: str) -> dict:
         """Execute physical navigation. Returns execution evidence only."""
         from jarvis.contracts import ActionRequest
