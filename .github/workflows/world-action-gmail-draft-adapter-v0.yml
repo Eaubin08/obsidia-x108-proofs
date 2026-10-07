@@ -1,0 +1,37 @@
+name: world-action-gmail-draft-adapter-v0
+
+on:
+  push:
+    branches:
+      - feat/world-action-gmail-draft-adapter-v0
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gmail-draft-adapter-proof:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip pytest
+      - name: Run Gmail draft adapter + universal rail regression
+        run: >-
+          python -m pytest
+          tests/integration/test_gmail_draft_connector_adapter_v0.py
+          tests/integration/test_google_calendar_connector_adapter_v0.py
+          tests/integration/test_google_calendar_governed_real_pilot_v0.py
+          tests/integration/test_world_action_multidomain_conformance_v0.py
+          tests/integration/test_world_action_bounded_executor_v0.py
+          tests/integration/test_world_action_live_gateway_v0.py
+          tests/integration/test_world_action_pre_execution_v0.py
+          -q
+      - name: Emit exact governed Gmail draft pilot packet
+        run: |
+          echo "PILOT_PACKET_JSON_START"
+          python scripts/generate_gmail_draft_pilot_envelope_v0.py
+          echo "PILOT_PACKET_JSON_END"
