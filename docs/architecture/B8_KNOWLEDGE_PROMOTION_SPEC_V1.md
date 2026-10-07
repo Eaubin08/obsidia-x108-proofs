@@ -1,12 +1,15 @@
 # B8 — Knowledge Promotion State Machine (V1 specification)
 
 ```
-STATUS=B8_SPEC_V1 / DRAFT_FOR_AUDIT / NO_RUNTIME_IMPLEMENTATION
-B8_SPEC_STATUS=DRAFT_FOR_AUDIT
-B8_SPEC_INDEPENDENTLY_CERTIFIED=NO
+STATUS=B8_SPEC_V1 / CLOSED / NO_RUNTIME_IMPLEMENTATION
+B8_SPEC_STATUS=CLOSED
+B8_SPEC_INDEPENDENTLY_CERTIFIED=YES
+B8_SPEC_SECOND_AUDITOR_VERDICT=PASS_WITH_DEFERRED
+CERTIFIED_SPEC_HEAD=99391f39
 B8_RUNTIME_STATUS=NOT_IMPLEMENTED
-SAFE_FOR_B8_RED_TESTS=NO
+SAFE_FOR_B8_RED_TESTS=YES
 SAFE_FOR_B8_RUNTIME_IMPLEMENTATION=NO
+SPEC_CLOSED != RUNTIME_IMPLEMENTED
 BASE=B7 runtime closure document 44b0391e (B7 security epoch 1) ; Sentinel V0 c5af4138
 FORENSIC_BASIS=B8 forensic (HOLD) + human doctrine D-1..D-5 + O-1..O-5 decisions (2026-10-07)
 PROMOTION_AUTHORITY=B8_CANONICAL_TRANSITION_GATE
@@ -518,7 +521,12 @@ table or from guard evaluation order (`REASON_PRIORITY_TABLE=NONE`,
 
 **Eligibility evaluability (D-B8-SA7-1).** `INDETERMINATE_ELIGIBILITY != EMPTY_ELIGIBILITY`;
 `ELIGIBILITY_INDETERMINATE != ELIGIBILITY_FALSE`; `PREDECESSOR_EXISTENCE_UNRESOLVED != NO_PREDECESSOR`
-(instances of UNKNOWN != FALSE). `ELIGIBLE_SET_EVALUABLE` holds only when every PROMOTED claim on the slot
+(instances of UNKNOWN != FALSE). The candidate domain for E is the set of claims whose latest state is
+PROMOTED in the canonical pre-transition request snapshot (`E_CANDIDATE_DOMAIN=
+LATEST_STATE_PROMOTED_IN_REQUEST_SNAPSHOT`); records that were once PROMOTED but are now superseded,
+invalidated, stale, contested or otherwise non-current never affect evaluability
+(`HISTORICAL_NONCURRENT_PROMOTED_RECORDS_AFFECT_EVALUABILITY=NO`; historical replay, §10, is unchanged).
+`ELIGIBLE_SET_EVALUABLE` holds only when every claim of that domain on the slot
 is temporally comparable to the new claim (V1: same temporal_frame_ref). Otherwise the temporal relation
 needed for eligibility is indeterminate: the request yields `temporal_relation_indeterminate` and **no
 cardinality of E is asserted** — `no_eligible_predecessor`, `multiple_predecessors_unsupported`,
@@ -728,3 +736,37 @@ No duplicate promotion engine survives canonical B8.
   `no_eligible_predecessor` for one fact; 1767 cases). Remediation: eligibility evaluability prerequisite —
   E-based codes only when every PROMOTED claim on the slot is comparable; no absence inferred from temporal
   incomparability (T6, G4 rows clarified). Enum unchanged (29). Status stays DRAFT_FOR_AUDIT.
+
+## 14. Certification and closure (2026-10-07)
+
+```
+B8_SPEC_STATUS=CLOSED
+CERTIFIED_SPEC_HEAD=99391f39
+SECOND_AUDITOR=INDEPENDENT_AGENT
+B8_SPEC_SECOND_AUDITOR_VERDICT=PASS_WITH_DEFERRED
+INDEPENDENT_SECOND_AUDIT_CASES=36347
+FALSE_SAFE_CASES=0
+T9_MATRIX_UNCOVERED_CASES=0
+PREVIOUS_SA7_CROSS_FRAME_DIVERGENCES_REMAINING=0
+PREVIOUS_59_UNCODED_CASES_REMAINING=0
+PREVIOUS_14400_OVERLAP_DIVERGENCES_REMAINING=0
+RECEIPT_DETERMINISM_DIVERGENCES=0
+REGRESSED_PREVIOUS_DEFECTS=0
+TOTAL_REASON_CODES=29
+B8_DT01_STATUS=HOLD ; B8_DT01_BLOCKS_B8_V1=NO
+SAFE_FOR_B8_RED_TESTS=YES ; SAFE_FOR_B8_RUNTIME_IMPLEMENTATION=NO ; B8_RUNTIME_STATUS=NOT_IMPLEMENTED
+```
+
+Closure meaning: the canonical deterministic contract is frozen, independently audited and safe to
+begin isolated RED tests. `SPEC_CLOSED != RUNTIME_IMPLEMENTED`. The closure commit only changes status,
+records this evidence and states the E candidate domain explicitly (auditor's non-blocking note); it adds
+no doctrine.
+
+Deferred, non-blocking: B8-DT01 cross-frame temporal transform admission (HOLD); explicit per-field /
+per-collection bounds (V1: total-object bound only); B7 security epoch re-audit before live intake /
+runtime wiring; trusted identity boundary (attestations inadmissible until wired); B10 durable
+persistence.
+
+Reopening only if RED tests expose a contradiction, implementation exposes an unimplementable ambiguity,
+a new required invariant conflicts with this contract, or an independent concrete witness demonstrates a
+defect — never for stylistic improvement.
