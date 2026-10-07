@@ -324,7 +324,7 @@ def ingest_gmail_draft_provider_result_v0(
     invocation: GmailDraftInvocationEnvelopeV0 | Mapping[str, Any],
     provider_draft_id: str,
     provider_message_id: str,
-    resolved_recipient: str,
+    resolved_recipient_sha256: str,
     draft_created: bool,
     draft_readback_verified: bool,
     draft_cleanup_verified: bool,
@@ -339,9 +339,7 @@ def ingest_gmail_draft_provider_result_v0(
         if isinstance(invocation, GmailDraftInvocationEnvelopeV0)
         else dict(invocation)
     )
-    recipient_hash = hashlib.sha256(
-        resolved_recipient.encode("utf-8")
-    ).hexdigest()
+    recipient_hash = str(resolved_recipient_sha256)
     if recipient_hash != EXPECTED_SELF_RECIPIENT_SHA256:
         raise ValueError("GMAIL_DRAFT_RESOLVED_SELF_HASH_MISMATCH")
     if not provider_draft_id or not provider_message_id:
