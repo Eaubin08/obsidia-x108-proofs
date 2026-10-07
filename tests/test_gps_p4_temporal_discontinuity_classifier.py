@@ -38,7 +38,10 @@ def test_calibration_never_consumes_truth_or_onset(tmp_path):
     )
     result = calibrate(baseline)
     assert result["truth_or_onset_consumed"] is False
-    assert "onset" not in json.dumps(result).lower()
+    encoded = json.dumps(result).lower()
+    assert "official_attack_onset_seconds" not in encoded
+    assert "hostile" not in encoded
+    assert "attack_label" not in encoded
     assert result["status"] == "DEVELOPMENT_POST_HOC_NOT_BLIND"
 
 
@@ -98,3 +101,19 @@ def test_single_feature_violation_is_unknown(tmp_path):
     result = detect(target, calibration)
 
     assert result["overall_classification"] == "UNKNOWN"
+
+
+def test_bounded_calibration_uses_only_selected_initial_window(tmp_path):
+    full = tmp_path / "full.log"
+    _write_log(
+        full,
+        [
+            (10, "2023-Nov-10 14:05:00.000000", 60.18220, 24.82850, 40.0),
+            (20, "2023-Nov-10 14:05:10.000000", 60.18221, 24.82851, 40.1),
+            (30, "2023-Nov-10 14:05:20.000000", 60.18222, 24.82852, 40.2),
+            (200, "2023-Nov-10 23:55:00.000000", 60.16670, 24.56660, 0.0),
+        ],
+    )
+    result = calibrate(full, max_receiver_second=30)
+    assert result["baseline_position_count"] == 3
+    assert result["baseline_max_receiver_second"] == 30
