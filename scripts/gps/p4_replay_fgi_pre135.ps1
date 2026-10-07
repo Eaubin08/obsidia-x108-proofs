@@ -22,7 +22,7 @@ New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 
 $configText = Get-Content -LiteralPath $BaseConfig -Raw
 $historicalOutputPrefix = "/work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1_pre135_ibyte"
-$configText = $configText.Replace($historicalOutputPrefix, "/out")
+$configText = $configText.Replace($historicalOutputPrefix, ".")
 Set-Content -LiteralPath $RuntimeConfig -Value $configText -Encoding UTF8
 
 Write-Host "=== P4 FGI PRE-135 REPLAY ==="
@@ -33,17 +33,25 @@ Write-Host "IMAGE        = $Image"
 Write-Host ""
 Write-Host "Historical benchmark outputs remain untouched; runtime output is isolated under .local/."
 
-docker run --rm `
-    -v "${RepoRoot}:/work:ro" `
-    -v "${OutDir}:/out" `
-    -w /out `
-    $Image `
-    gnss-sdr `
-    --config_file=/out/receiver_pre135_runtime.conf `
-    --log_dir=/out 2>&1 |
-    Tee-Object -FilePath (Join-Path $OutDir "gnss_sdr_stdout.log")
+$previousErrorActionPreference = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
+try {
+    & docker run --rm `
+        -v "${RepoRoot}:/work:ro" `
+        -v "${OutDir}:/out" `
+        -w /out `
+        $Image `
+        gnss-sdr `
+        --config_file=/out/receiver_pre135_runtime.conf `
+        --log_dir=/out 2>&1 |
+        Tee-Object -FilePath (Join-Path $OutDir "gnss_sdr_stdout.log")
+    $dockerExitCode = $LASTEXITCODE
+}
+finally {
+    $ErrorActionPreference = $previousErrorActionPreference
+}
 
-if ($LASTEXITCODE -ne 0) { throw "GNSS-SDR replay exited with code $LASTEXITCODE" }
+if ($dockerExitCode -ne 0) { throw "GNSS-SDR replay exited with code $dockerExitCode" }
 
 Write-Host ""
 Write-Host "REPLAY_PROCESS_EXIT_OK = True"
