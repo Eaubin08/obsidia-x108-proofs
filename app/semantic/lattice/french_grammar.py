@@ -1887,6 +1887,10 @@ def _subject_before(toks: list[_Tok], idx: int) -> tuple[str | None, str | None]
         return t.low, person
     if t.low in {"c'", "ça", "ca", "cela"}:
         return t.low, "3"
+    if t.low == "qui" and k == 0:
+        # WH_REQUEST: a clause-initial "qui" with no carrier ("Qui lance Q ?") is the
+        # (interrogative) subject of its verb: the verb is never a subjectless imperative
+        return t.low, "3"
     if not t.analyses and t.low not in _DETERMINERS and t.low not in _PREPOSITIONS             and t.low not in _INTERJECTIONS and t.low not in _WH_WORDS \
             and t.low not in _FR_NEGATORS and t.low not in _CONNECTIVES \
             and t.low not in _TIME_ADVERBS and t.low not in {"que", "qu'", "qui"}:
