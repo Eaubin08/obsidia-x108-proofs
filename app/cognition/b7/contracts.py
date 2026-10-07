@@ -139,6 +139,11 @@ def digest(value: Any, prefix: str = "") -> str:
     return prefix + hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()[:16]
 
 
+def full_digest(value: Any, prefix: str = "") -> str:
+    """B7 identity digest: full SHA-256 (64 hex, 256 bits) over strict canonical JSON; never truncated."""
+    return prefix + hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
+
+
 def _plain(value: Any) -> Any:
     if isinstance(value, Enum):
         return value.value
@@ -223,11 +228,11 @@ def candidate_identity(candidate: "CognitiveResolutionCandidate") -> tuple[str, 
     Strict canonical JSON + sha256 (same digest helper as the rest of B7); no repr, no randomness."""
     payload = {f: _plain(getattr(candidate, f)) for f in candidate.__dataclass_fields__ if f not in _IDENTITY_EXCLUDED}
     payload["proposed_resolution"] = candidate.proposed_resolution
-    candidate_digest = digest(payload, "b7dig_")
+    candidate_digest = full_digest(payload, "b7dig_")
     return "b7cand_" + candidate_digest[len("b7dig_"):], candidate_digest
 
 
 __all__ = ["BOUNDARY", "MAX_CANDIDATE_CHARS", "MAX_REQUEST_CHARS", "CandidateStatus", "CognitiveValidationVerdict",
            "UnresolvedKind", "RequiredCandidateKind", "ForbiddenOperation", "ConfidenceClass", "CognitiveRole",
            "ROLE_RIGHTS", "DEFAULT_FORBIDDEN_OPERATIONS", "required_candidate_kind_for", "forbidden_operations_for",
-           "CognitiveResolutionRequest", "CognitiveResolutionCandidate", "digest", "candidate_identity"]
+           "CognitiveResolutionRequest", "CognitiveResolutionCandidate", "digest", "full_digest", "candidate_identity"]

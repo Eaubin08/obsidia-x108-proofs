@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 from typing import Any, Iterable
 
-from app.cognition.b7.contracts import (CognitiveResolutionRequest, UnresolvedKind, digest,
+from app.cognition.b7.contracts import (CognitiveResolutionRequest, UnresolvedKind, full_digest,
                                         forbidden_operations_for, required_candidate_kind_for)
 from app.cognition.b7.router import eligible_roles
 from app.harness.state_explicit.contracts import StateEntry, StateStatus
@@ -52,7 +52,7 @@ def make_request(entry: StateEntry, kind: UnresolvedKind, field: str, marker: st
     kind = UnresolvedKind(kind)
     origin_digest = entry.content_digest
     return CognitiveResolutionRequest(
-        request_id=digest([origin_digest, field, marker], "b7req_"),
+        request_id=full_digest([origin_digest, field, marker], "b7req_"),
         origin_state_id=entry.state_id, origin_state_type=entry.state_type, unresolved_kind=kind,
         problem_refs=(f"{field}:{marker}",), source_refs=(entry.source_ref,), provenance_refs=tuple(entry.provenance),
         context_refs=(), allowed_role_ids=eligible_roles(kind), forbidden_operations=forbidden_operations_for(kind),
