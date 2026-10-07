@@ -201,19 +201,24 @@ needs ordered participants puts that order in typed claim content, never in the 
   a.start ≤ b.start ∧ b.end ≤ a.end; `difference(a, b)` = the 0, 1 or 2 exact half-open remainders;
   intersection, coverage, ordering — are defined **only** inside one frame (V1: same frame id),
   with V1 half-open `[start, end)` boundaries (`BOUNDARY_SEMANTICS_AMBIGUITY=0`). Otherwise the relation
-  is `TEMPORALLY_INDETERMINATE` and every state-changing operation depending on it fails closed
-  (HELD / REJECTED `temporal_relation_indeterminate`). In particular T6 with a current PROMOTED claim
-  on the slot in another frame cannot prove the slot temporally free → HELD
+  is `TEMPORALLY_INDETERMINATE` and every state-changing operation depending on it fails closed with
+  verdict REJECTED, reason `temporal_relation_indeterminate`, no state change (§9.1). In particular T6
+  with a current PROMOTED claim on the slot in another frame cannot prove the slot temporally free →
+  REJECTED `temporal_relation_indeterminate`; the candidate stays VERIFIED, the occupant stays PROMOTED
   (`INCOMPARABLE_TEMPORAL_OCCUPANCY_CAUSES_UNSAFE_PROMOTION=0`); T9, G2, G3 and G4 across frames →
-  HELD; no cross-frame subtraction, clipping, approximation or conversion
-  (`CROSS_FRAME_INTERVAL_DIFFERENCE=FORBIDDEN`).
+  REJECTED `temporal_relation_indeterminate`; no cross-frame subtraction, clipping, approximation or
+  conversion (`CROSS_FRAME_INTERVAL_DIFFERENCE=FORBIDDEN`).
 - `TEMPORALLY_INDETERMINATE` means only that B8 cannot establish the required temporal relation under
   V1 contracts; it is not UNKNOWN, FALSE, NO_ASSERTION or CONTESTED.
 - Claims or gaps in incomparable frames on one slot are `TEMPORALLY_INCOMPARABLE`: neither
   overlapping, nor disjoint, nor conflicting, nor superseding (`UNRELATED_TEMPORAL_FRAMES_CAN_COEXIST
-  =YES`, `INCOMPARABLE_FRAME_CLAIMS_AUTO_CONFLICT=NO`).
+  =YES`, `INCOMPARABLE_FRAME_CLAIMS_AUTO_CONFLICT=NO`). Under T6 this means a slot carries current
+  PROMOTED claims in at most one frame at a time.
+- `CLOCK_DOMAIN != TEMPORAL_FRAME_REF`: `clock_domain` qualifies recorded / source / observed
+  timestamps; `temporal_frame_ref` qualifies valid_time and query time. A shared clock_domain proves
+  neither valid-time / world-time comparability nor causality.
 - In V1 a gap scope is partitioned only along `valid_time` (the slot is fixed); no exact comparable
-  difference → `PARTIAL_GAP_RESOLUTION=HELD` (no approximation).
+  difference → the partition request is REJECTED `temporal_relation_indeterminate` (no approximation).
 - `UNKNOWN_VALUE != TEMPORAL_RELATION_UNKNOWN`: knowing claims A and B while their temporal relation is
   indeterminate is a temporal indeterminacy, not an EpistemicGap about A or B (none is created
   unless explicitly recorded).
@@ -307,7 +312,8 @@ expected slot revision. Two requests prepared on the same revision can never bot
 An attestation is admissible only if `identity_source` is a trusted identity / auth boundary
 recorded by reference (`auth_context_ref`). A display name or any candidate-supplied identity is
 never sufficient. Until such a boundary is wired, every attestation is inadmissible for a
-transition that requires it → the claim stays HELD. B8 does not implement IAM.
+transition that requires it → that transition is REJECTED `attestation_inadmissible` and the claim
+keeps its current state (e.g. stays VERIFIED). B8 does not implement IAM.
 
 ## 8. States (epistemic only)
 
@@ -336,13 +342,14 @@ Authority: `B8_CANONICAL_TRANSITION_GATE` only (no agent, human or LLM authority
 | # | From → To | Preconditions |
 |---|---|---|
 | G1 | ∅ → OPEN | well-formed gap (slot, valid_time, reason, provenance) ; idempotent on gap_id |
-| G2 | OPEN → RESOLVED (full coverage) | `promoted_claim_id` + `promoted_record_id` whose latest state (§10) is PROMOTED, same slot_id, typed resolution relation, claim valid_time **contains** the gap valid_time, expected_slot_revision, reason; every temporal relation used here requires `TEMPORALLY_COMPARABLE` (§5.1), else HELD (`temporal_relation_indeterminate`) |
-| G3 | OPEN → SUPERSEDED, reason GAP_REFRAMED | `successor_gap_id` of an OPEN gap on the same slot_id whose valid_time **contains** the old gap's, reason; every temporal relation used here requires `TEMPORALLY_COMPARABLE` (§5.1), else HELD (`temporal_relation_indeterminate`) |
-| G4 | compound GapPartitionBundle, reason PARTIAL_RESOLUTION | PROMOTED claim (latest state, same slot, typed resolution relation, expected_slot_revision) whose valid_time overlaps but does not contain the gap's: old gap OPEN → SUPERSEDED, resolved sub-interval (gap ∩ claim) linked to the claim, residual gaps = `difference(gap, claim)` created OPEN (§5.1); every temporal relation used here requires `TEMPORALLY_COMPARABLE` (§5.1), else HELD (`temporal_relation_indeterminate`) |
+| G2 | OPEN → RESOLVED (full coverage) | `promoted_claim_id` + `promoted_record_id` whose latest state (§10) is PROMOTED, same slot_id, typed resolution relation, claim valid_time **contains** the gap valid_time, expected_slot_revision, reason; every temporal relation used here requires `TEMPORALLY_COMPARABLE` (§5.1), else REJECTED `temporal_relation_indeterminate` (state unchanged) |
+| G3 | OPEN → SUPERSEDED, reason GAP_REFRAMED | `successor_gap_id` of an OPEN gap on the same slot_id and the same `temporal_frame_ref` (V1) whose valid_time **contains** the old gap's, reason; every temporal relation used here requires `TEMPORALLY_COMPARABLE` (§5.1), else REJECTED `temporal_relation_indeterminate` (state unchanged) |
+| G4 | compound GapPartitionBundle, reason PARTIAL_RESOLUTION | PROMOTED claim (latest state, same slot, typed resolution relation, expected_slot_revision) whose valid_time overlaps but does not contain the gap's: old gap OPEN → SUPERSEDED, resolved sub-interval (gap ∩ claim) linked to the claim, residual gaps = `difference(gap, claim)` created OPEN (§5.1); every temporal relation used here requires `TEMPORALLY_COMPARABLE` (§5.1), else REJECTED `temporal_relation_indeterminate` (state unchanged) |
 
 Every gap transition uses `GapTransitionRequest` (gap_id, expected_gap_state, expected_gap_version,
 target_state, refs, reason, slot_id, expected_slot_revision — G1–G4 alike) → new immutable gap
-record(s) + `GapTransitionReceipt`(s); CAS, idempotency (NO_OP_DUPLICATE with the original
+record(s) + `GapTransitionReceipt`(s) (verdict enum identical to claims: APPLIED / REJECTED /
+NO_OP_DUPLICATE); CAS, idempotency (NO_OP_DUPLICATE with the original
 receipt / bundle), stale request rejection, logical anti-backdating (§5.3) and append-only history as in
 §9.1. Every other pair fails closed; RESOLVED and SUPERSEDED are terminal; no gap state is a claim
 state. A partial resolution never marks the whole gap RESOLVED
@@ -365,6 +372,14 @@ are never auto-partitioned (that would manufacture knowledge artifacts) — T9 f
 
 ### 9.1 Common contract
 
+**Verdict vs state (D-B8-SA2-1).** `TRANSITION_VERDICT_ENUM = APPLIED | REJECTED | NO_OP_DUPLICATE`
+for claim and gap receipts alike. HELD is a claim **state** only (reached through T2), never a verdict
+(`HELD_IS_TRANSITION_VERDICT=NO`; VERDICT != STATE != REASON; FAIL_CLOSED_REQUEST !=
+STATE_TRANSITION_TO_HELD). Only APPLIED mutates canonical state. A REJECTED request carries a canonical
+reason (e.g. `stale_request`, `temporal_relation_indeterminate`, `attestation_inadmissible`,
+`MULTIPLE_PREDECESSORS_UNSUPPORTED`) and leaves claim / gap state, record_version, gap_version and
+slot_revision unchanged; it writes no record.
+
 Every request binds claim_id, expected_claim_version, expected_state, expected_record_version,
 slot_id, expected_slot_revision and target_state (compare-and-set against one canonical snapshot,
 §5.2; mismatch → REJECTED `stale_request`; same-clock-domain monotonic violation → REJECTED
@@ -383,10 +398,10 @@ NO_OP_DUPLICATE with the original receipt / bundle; an old receipt never re-appl
 | T3 | CANDIDATE / HELD → REJECTED | explicit reasons |
 | T4 | CANDIDATE / HELD → SUPPORTED | ≥1 admissible EvidenceRef with complete provenance |
 | T5 | SUPPORTED → VERIFIED | VerificationRecord SATISFIED, verifier family admissible for the class (§6), bound to (claim_id, claim_version); human classes: admissible PRIMARY_DECLARATION attestation (§7) |
-| T6 | VERIFIED → PROMOTED (free slot) | expected_slot_revision current; no claim whose latest state is PROMOTED on the same slot with overlapping valid_time; no open contradiction; REVIEW_AUTHORIZATION attestation admissible when `requires_human_review`; every temporal relation used here requires `TEMPORALLY_COMPARABLE` (§5.1), else HELD (`temporal_relation_indeterminate`) |
-| T7 | SUPPORTED / VERIFIED / PROMOTED → CONTESTED | admissible contradicting evidence or claim recorded with refs |
+| T6 | VERIFIED → PROMOTED (free slot) | expected_slot_revision current; no claim whose latest state is PROMOTED on the same slot with overlapping valid_time; no open contradiction; REVIEW_AUTHORIZATION attestation admissible when `requires_human_review`; every temporal relation used here requires `TEMPORALLY_COMPARABLE` (§5.1), else REJECTED `temporal_relation_indeterminate` (state unchanged) |
+| T7 | SUPPORTED / VERIFIED / PROMOTED → CONTESTED | admissible contradicting evidence or claim recorded with refs; a claim in another temporal frame may be referenced (`CROSS_FRAME_REFERENCE_ALLOWED=YES`) but a contradiction that depends on temporal overlap / order across frames is never inferred (`CROSS_FRAME_TEMPORAL_CONTRADICTION_INFERRED=NO`) |
 | T8 | CONTESTED → SUPPORTED | contradiction explicitly resolved (contradicting side INVALIDATED / REJECTED or new verification refs); never by confidence or recency; T5 and T6 required again |
-| T9 | compound: new VERIFIED → PROMOTED **and** predecessor PROMOTED → SUPERSEDED | request carries `supersedes_claim_id` + `supersedes_record_id` + expected_slot_revision identifying exactly the predecessor whose latest state is PROMOTED on the same slot; it is the **only** PROMOTED claim on the slot overlapping the new valid_time (else REJECTED `MULTIPLE_PREDECESSORS_UNSUPPORTED`: no winner, no repeated T9); the new valid_time **contains** the predecessor's (partial overlap → REJECTED; no implicit claim split in V1); the new claim meets every T6 condition except the free-slot one; atomic bundle (§9.3), slot_revision +1 once; every temporal relation used here requires `TEMPORALLY_COMPARABLE` (§5.1), else HELD (`temporal_relation_indeterminate`) |
+| T9 | compound: new VERIFIED → PROMOTED **and** predecessor PROMOTED → SUPERSEDED | request carries `supersedes_claim_id` + `supersedes_record_id` + expected_slot_revision identifying exactly the predecessor whose latest state is PROMOTED on the same slot; it is the **only** PROMOTED claim on the slot overlapping the new valid_time (else REJECTED `MULTIPLE_PREDECESSORS_UNSUPPORTED`: no winner, no repeated T9); the new valid_time **contains** the predecessor's (partial overlap → REJECTED; no implicit claim split in V1); the new claim meets every T6 condition except the free-slot one; atomic bundle (§9.3), slot_revision +1 once; every temporal relation used here requires `TEMPORALLY_COMPARABLE` (§5.1), else REJECTED `temporal_relation_indeterminate` (state unchanged) |
 | T10 | CANDIDATE / HELD / SUPPORTED / VERIFIED / PROMOTED / CONTESTED / STALE → INVALIDATED | explicit reason + evidence ref |
 | T11 | PROMOTED → STALE | staleness trigger evidence per class mechanism (§6) |
 | T12 | STALE → VERIFIED | fresh SATISFIED VerificationRecord for the same (claim_id, claim_version); T6 / T9 again to PROMOTED |
@@ -454,7 +469,8 @@ current view is a deterministic projection, never a write.
 
 `CURRENT_EPISTEMIC_VIEW(slot_id, query_time, as_of_slot_revision)` (query_time frame-qualified)
 returns `current_promoted_coverage`, `current_unknown_coverage`, `current_contested_refs`,
-`current_stale_refs`, `current_gap_refs`, `snapshot_revision`, all derived from one slot history
+`current_stale_refs`, `current_gap_refs`, `temporal_indeterminate_refs` (query output only, no
+state effect), `snapshot_revision`, all derived from one slot history
 cutoff `as_of_slot_revision` (`MIXED_SLOT_SNAPSHOT_ALLOWED=NO`).
 
 - Claims / gaps whose valid_time is not temporally comparable to the query frame are neither known
@@ -470,7 +486,7 @@ cutoff `as_of_slot_revision` (`MIXED_SLOT_SNAPSHOT_ALLOWED=NO`).
   successor lineage that represents them (G3 successor, G4 residuals + resolved segment), so no
   ancestor coverage is counted twice.
 - `CURRENT_UNKNOWN_COVERAGE = EXPLICIT_UNKNOWN_BASE − CURRENT_PROMOTED_COVERAGE` (exact interval
-  difference, §5.1; if not exactly derivable → the query returns INDETERMINATE / HELD, never a
+  difference, §5.1; if not exactly derivable → the query reports TEMPORALLY_INDETERMINATE, never a
   guess). A resolved segment is therefore unknown again exactly when no current PROMOTED claim
   covers it (support INVALIDATED / STALE / CONTESTED), and stays known when a valid successor
   covers it (supersession does not recreate unknown).
@@ -514,7 +530,7 @@ an explicit G4.
 | `memory_promotion_policy.evaluate_promotion_policy` | SUPERSEDE | the B8 gate is the only promotion engine |
 | `memory_candidate_ledger` | ADAPT | T1 capture log, idempotent on claim_id |
 | Brody V3 Block 3A–3C (trace, candidate, education, replay) | ADAPT | proposal inputs to T1 only |
-| Block 3D human validation gate (dry run) | ADAPT | outcomes become HELD / REJECTED reasons; never promotion, never attestation |
+| Block 3D human validation gate (dry run) | ADAPT | outcomes map to claim states HELD (via T2) or REJECTED (via T3) with their reasons; never promotion, never attestation |
 | `brody_memory_promotion_guard` | ADAPT | advisory readiness only, outside policy decisions |
 | native memory reader | KEEP | read path, no state authority |
 | Neo4j CLI manual apply (2 modules) | SUPERSEDE_BEFORE_CANONICAL_RUNTIME_WRITE | D-5 |
@@ -567,3 +583,10 @@ No duplicate promotion engine survives canonical B8.
   transform; same-frame comparisons only; TemporalTransformRef reserved (B8-DT01 deferred). Remediation:
   §2 world-order laws, §5.1 V1 comparability rule, reserved transform, receipt comparison basis,
   indeterminacy semantics, §5.3 reception / commit order != world order. Status stays DRAFT_FOR_AUDIT.
+- Second independent audit (separate agent, own oracle 14680 cases) of a52990a9: REMEDIATE_SPEC for
+  D-B8-SA2-1 — "HELD" used as a fail-closed outcome while the verdict enum had no HELD and VERIFIED →
+  HELD was illegal (773 ambiguous T6 cases). Remediation: §9.1 verdict vs state, all fail-closed
+  outcomes = REJECTED with canonical reason and no state change, gap receipt enum aligned, view field
+  `temporal_indeterminate_refs`, G3 same-frame successor, CLOCK_DOMAIN != TEMPORAL_FRAME_REF, T7
+  cross-frame reference without inferred temporal contradiction, one-frame-per-slot consequence of T6
+  stated. Status stays DRAFT_FOR_AUDIT.
