@@ -1,0 +1,55 @@
+{
+  "version": "WORLD_ACTION_CALENDAR_REAL_PROVIDER_PILOT_V0",
+  "status": "REAL_PROVIDER_EFFECT_OBSERVED_AND_CLEANED",
+  "date": "2026-10-07",
+  "provider": "GOOGLE_CALENDAR",
+  "execution_origin": "CHATGPT_GOOGLE_CALENDAR_CONNECTOR",
+  "obsidia_executor_invoked": false,
+  "event": {
+    "provider_event_id_sha256": "5b1515483716259477f6b74d97e4d3f8ee020acb8cb73fec5e5d8d714874027b",
+    "title_sha256": "c9582a3abb05faa4090901a743acf311fd52c1b304b5a551316c67d8252c58b0",
+    "calendar_role": "PRIMARY_OWNER",
+    "start": "2026-10-07T12:30:00+02:00",
+    "end": "2026-10-07T12:45:00+02:00",
+    "attendee_count": 0,
+    "visibility": "private",
+    "transparency": "transparent",
+    "reminders_disabled": true,
+    "meet_created": false
+  },
+  "observations": [
+    {
+      "step": "CREATE",
+      "provider_status": "confirmed",
+      "real_provider_write": true
+    },
+    {
+      "step": "READ_AFTER_CREATE",
+      "provider_status": "confirmed",
+      "exact_title": true,
+      "exact_start": true,
+      "exact_end": true,
+      "attendee_count": 0
+    },
+    {
+      "step": "DELETE",
+      "provider_delete_call_succeeded": true
+    },
+    {
+      "step": "READ_AFTER_DELETE",
+      "provider_status": "cancelled",
+      "active_event_left": false
+    }
+  ],
+  "privacy": {
+    "raw_provider_event_id_persisted": false,
+    "authenticated_email_persisted": false,
+    "provider_web_url_persisted": false
+  },
+  "governance_boundary": {
+    "decision_authority": "KX108_ONLY",
+    "real_provider_effect_proven": true,
+    "real_obsidia_connector_execution_proven": false,
+    "main_merge": false
+  }
+}
