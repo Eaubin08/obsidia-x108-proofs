@@ -7,7 +7,7 @@ $ErrorActionPreference = "Stop"
 $Image = "carlesfernandez/docker-gnsssdr:latest"
 $ExpectedSha256 = "e8da962e92cfdbcb677361ce769a54f26dc385417bac9fd618492dcd02fb2d72"
 $Input = Join-Path $RepoRoot "hackathons\nativebuilder-gps-defense\data\fgi-spoofrepo\pipeline_inputs\case_0001_l1e1_real8.dat"
-$BaseConfig = Join-Path $RepoRoot "hackathons\nativebuilder-gps-defense\gnss_sdr_fgi_ut_dfmc_l1e1_official_gpsl1_pre135_runtime.conf"
+$BaseConfig = Join-Path $RepoRoot "hackathons\nativebuilder-gps-defense\gnss_sdr_fgi_ut_dfmc_l1e1_official_gpsl1_pre135_real8_runtime.conf"
 $OutDir = Join-Path $RepoRoot ".local\p4-replay\fgi-pre135"
 $RuntimeConfig = Join-Path $OutDir "receiver_pre135_runtime.conf"
 
@@ -21,7 +21,7 @@ if ($inputHash -ne $ExpectedSha256) { throw "FGI pipeline input hash mismatch. R
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 
 $configText = Get-Content -LiteralPath $BaseConfig -Raw
-$historicalOutputPrefix = "/work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1_pre135_ibyte"
+$historicalOutputPrefix = "/work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1_pre135_real8"
 $configText = $configText.Replace($historicalOutputPrefix, ".")
 Set-Content -LiteralPath $RuntimeConfig -Value $configText -Encoding UTF8
 
