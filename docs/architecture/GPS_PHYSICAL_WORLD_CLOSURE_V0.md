@@ -1,6 +1,6 @@
 # F21 — GPS Physical-World Closure V0
 
-Status: IMPLEMENTED / VALIDATION REQUIRED
+Status: VERIFIED / NO F21 REGRESSION
 
 ## Purpose
 
@@ -92,3 +92,13 @@ F21 remains:
 F22 — Real E2E Demonstrations.
 
 No F22 runtime before F21 validation.
+
+## Verification finale
+
+- Code SHA vérifié: `18641e67e2b0c8a48edc7b2c7de7cb504b1cfac2`
+- GitHub Actions run: `37569069930`
+- Résultat global: `12545 passed / 11 failed / 46 skipped / 207 deselected`
+- Failures F21 visibles: `0`
+- Les 11 failures restantes correspondent aux familles baseline historiques.
+
+**Verdict:** F21 `VERIFIED`.
