@@ -1,12 +1,14 @@
 import json
 from pathlib import Path
 import importlib.util
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = ROOT / "scripts" / "gps" / "p4_temporal_discontinuity_classifier.py"
 SPEC = importlib.util.spec_from_file_location("p4_temporal_discontinuity_classifier", MODULE_PATH)
 MODULE = importlib.util.module_from_spec(SPEC)
 assert SPEC and SPEC.loader
+sys.modules[SPEC.name] = MODULE
 SPEC.loader.exec_module(MODULE)
 
 calibrate = MODULE.calibrate
