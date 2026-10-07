@@ -28,7 +28,10 @@ def test_t18_typed_packet_and_accepted_result_are_admitted(b7, coref_entry, raw_
     reg = WorkingStateRegistry()
     reg.register(coref_entry)
     packet = assemble_context("Lance-le.", reg, capability_matrix=_M)
-    assert b7.admit_trusted_context(packet) is packet
+    # requalified by B7-U (TYPED OBJECT != TRUSTED OBJECT): B7 cannot prove issuance of a raw B6 packet,
+    # so its admission surface now fails closed; only an ACCEPT result issued by the B7 gate is admitted
+    with pytest.raises(ValueError):
+        b7.admit_trusted_context(packet)
     (req,) = b7.detect_unresolved(coref_entry)
     res = b7.validate_candidate(req, b7.translate(raw_candidate_factory(req), req), origin=coref_entry,
                                 provider_roles=providers)

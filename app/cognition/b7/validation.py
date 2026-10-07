@@ -3,13 +3,15 @@
 Verdicts: ACCEPT_AS_STRUCTURED_CONTEXT | REJECT | STILL_UNRESOLVED — cognitive validation results, never
 ALLOW / HOLD / BLOCK. Checks run in a fixed order; the first failure decides. ACCEPT creates a NEW
 B6-compatible StateEntry (the origin is never mutated). Multiple surviving candidates never produce a
-winner (no confidence, majority or provider priority). Only a typed B6 ContextPacket or an accepted
-B7 result is admissible as trusted context; an arbitrary mapping never is.
+winner (no confidence, majority or provider priority). Only an ACCEPT result issued by this gate
+(process-local identity registry) is admissible as trusted context; an arbitrary mapping, a hand-built
+or copied result and a raw B6 packet never are.
 """
 from __future__ import annotations
 
 import re
 import unicodedata
+import weakref
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping
 
@@ -17,7 +19,6 @@ from app.cognition.b7.contracts import (CandidateStatus, CognitiveResolutionCand
                                         CognitiveValidationVerdict, RequiredCandidateKind, candidate_identity,
                                         origin_full_digest, request_identity)
 from app.cognition.b7.detector import detect_unresolved
-from app.harness.state_explicit.context_assembly import ContextPacket
 from app.harness.state_explicit.contracts import StateEntry, StateStatus, Visibility
 from app.harness.state_explicit.registry import WorkingStateRegistry
 
@@ -196,10 +197,13 @@ def _check(request: CognitiveResolutionRequest, cand: CognitiveResolutionCandida
         return "unsupported_content_invented"
     units = _origin_units(origin)
     structured_relations = _origin_relations(origin)
-    for rel in proposal.get("relations") or []:
+    relations = proposal.get("relations", [])
+    if not isinstance(relations, list):
+        return "semantic_collection_not_list_of_strings"     # JSON VALUE != SEMANTIC COLLECTION (empty list allowed)
+    for rel in relations:
         # a relation is admissible only as an existing structured relation of the origin (exact
-        # kind / source / target); never invented between existing units
-        if not isinstance(rel, dict) or set(rel) != {"kind", "source", "target"}                 or {str(rel["source"]), str(rel["target"])} - units                 or (str(rel["kind"]), str(rel["source"]), str(rel["target"])) not in structured_relations:
+        # kind / source / target, string-valued); never invented between existing units
+        if not isinstance(rel, dict) or set(rel) != {"kind", "source", "target"}                 or not all(isinstance(x, str) for x in rel.values())                 or {str(rel["source"]), str(rel["target"])} - units                 or (str(rel["kind"]), str(rel["source"]), str(rel["target"])) not in structured_relations:
             return "unsupported_relation_invented"
     if "mention" in proposal and proposal["mention"] not in markers:
         return "mention_not_in_request"
@@ -241,6 +245,22 @@ def _derive(request: CognitiveResolutionRequest, cand: CognitiveResolutionCandid
                       summary=f"B7 {request.unresolved_kind.value} candidate (validated context, not truth)")
 
 
+# TYPED OBJECT != TRUSTED OBJECT: trust comes from the gate execution path, not from caller data.
+# Process-local issuance registry keyed by object identity; only validate_candidate's ACCEPT path
+# writes to it. Never serialized: a copy, replace, pickle round-trip or hand-built ValidationResult is a
+# new object and is not issued. Weak references: an entry disappears with its object (no id reuse).
+_ISSUED: "weakref.WeakValueDictionary[int, ValidationResult]" = weakref.WeakValueDictionary()
+
+
+def _issue(result: ValidationResult) -> ValidationResult:
+    _ISSUED[id(result)] = result
+    return result
+
+
+def _is_issued(obj: Any) -> bool:
+    return _ISSUED.get(id(obj)) is obj
+
+
 def validate_candidate(request: CognitiveResolutionRequest, candidate: CognitiveResolutionCandidate, *,
                        origin: StateEntry, provider_roles: Mapping[str, Iterable[Any]]) -> ValidationResult:
     failure = _check(request, candidate, origin, provider_roles)
@@ -251,7 +271,7 @@ def validate_candidate(request: CognitiveResolutionRequest, candidate: Cognitive
     if candidate.candidate_kind == RequiredCandidateKind.WORLD_REFERENCE_HYPOTHESIS:
         # B7 V1 has no admissible world / domain evidence source: a hypothesis never becomes context
         return ValidationResult(V.STILL_UNRESOLVED, ("no_admissible_world_evidence",), (candidate,))
-    return ValidationResult(V.ACCEPT_AS_STRUCTURED_CONTEXT, (), (candidate,), _derive(request, candidate, origin))
+    return _issue(ValidationResult(V.ACCEPT_AS_STRUCTURED_CONTEXT, (), (candidate,), _derive(request, candidate, origin)))
 
 
 def validate_candidates(request: CognitiveResolutionRequest, candidates: Iterable[CognitiveResolutionCandidate], *,
@@ -277,10 +297,11 @@ def register_derived(registry: WorkingStateRegistry, result: ValidationResult) -
 
 
 def admit_trusted_context(obj: Any) -> Any:
-    """ARBITRARY_DICT != TRUSTED_CONTEXT: only a typed B6 ContextPacket or an accepted B7 result."""
-    if isinstance(obj, ContextPacket):
-        return obj
-    if isinstance(obj, ValidationResult) and obj.verdict == V.ACCEPT_AS_STRUCTURED_CONTEXT \
+    """ARBITRARY_DICT != TYPED_OBJECT != TRUSTED_CONTEXT: only an ACCEPT result issued by this gate.
+
+    B7-U: a raw B6 ContextPacket is no longer admitted here (B7 cannot prove its issuance; B6 is frozen,
+    its own typed-object boundary is deferred to B6)."""
+    if isinstance(obj, ValidationResult) and _is_issued(obj) and obj.verdict == V.ACCEPT_AS_STRUCTURED_CONTEXT \
             and isinstance(obj.derived_state, StateEntry):
         return obj.derived_state
-    raise ValueError("not admissible as trusted context (typed B6 packet or accepted B7 result required)")
+    raise ValueError("not admissible as trusted context (ACCEPT result issued by the B7 gate required)")
