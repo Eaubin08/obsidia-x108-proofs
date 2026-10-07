@@ -113,3 +113,36 @@ def test_open_source_policy_keeps_obsidia_contracts_sovereign():
         "SOURCE_RUNTIME_NATIVE_V0",
     ):
         assert protected_contract in policy["oss_must_not_replace"]
+
+
+
+def test_preforge_filesystem_layout_is_windows_portable(tmp_path):
+    paths = materialize_enterprise_source_sandbox_v0(tmp_path / "enterprise")
+    runtime_root = tmp_path / "runtime"
+    native_root = tmp_path / "native"
+    governance_root = tmp_path / "governance"
+
+    result = run_autonomous_office_e2e_v0(
+        paths=paths,
+        runtime_root=runtime_root,
+        native_store_root=native_root,
+        governance_root=governance_root,
+    )
+    assert result["committed_case_count"] == 3
+
+    # Canonical identifiers deliberately contain ':' (source:mail,
+    # office-case:...), but disk components must be Windows-safe.
+    for root in (runtime_root, native_root):
+        for path in root.rglob("*"):
+            relative = path.relative_to(root)
+            for part in relative.parts:
+                assert ":" not in part
+                assert part not in {".", ".."}
+
+    # Canonical IDs remain intact inside canonical JSON despite path encoding.
+    persisted = [
+        path.read_text(encoding="utf-8")
+        for path in native_root.rglob("state.json")
+    ]
+    assert any("office-case:" in text for text in persisted)
+    assert any("office-task:" in text for text in persisted)
