@@ -344,20 +344,8 @@ def run_interpreted_autonomous_office_e2e_v0(
                 ),
                 _review_policy_due_at(seed.occurred_at),
             )
-            conflict_candidate = SourceInterpretationCandidateV0(
-                **{
-                    **seed.__dict__,
-                    "proposed_case_type": CASE_CONFLICT,
-                    "proposed_priority": "HIGH",
-                    "proposed_title": "Resolve conflicting source instructions",
-                    "proposed_summary": (
-                        f"Contradictory source directives detected for "
-                        f"{contradiction.subject}."
-                    ),
-                }
-            )
-            # The derived group view is not re-hashed as a new interpretation.
-            # The intake evidence binds all original interpretation hashes.
+            # The contradiction intake binds all original interpretation
+            # hashes. No synthetic replacement interpretation is created.
             ids = _ids(contradiction.subject)
             plan = build_native_case_task_intake_plan_v0(
                 intake_id=f"interpreted-intake:{contradiction.subject}",
