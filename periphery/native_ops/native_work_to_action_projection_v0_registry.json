@@ -1,0 +1,52 @@
+{
+  "schema": "NATIVE_WORK_TO_ACTION_PROJECTION_V0_REGISTRY",
+  "status": "PROVEN_FUNCTIONAL_PENDING_FINAL_HEAD_RERUN",
+  "date": "2026-10-07",
+  "branch": "feat/native-work-to-action-projection-v0",
+  "base": "feat/interpretation-to-intake-policy-native-v0",
+  "input": [
+    "CRM_RECORD_NATIVE_V0 CASE",
+    "TASK_NATIVE_V0",
+    "CRM_FOLLOWUP_NATIVE_V0"
+  ],
+  "output": [
+    "periphery.common.ActionCandidate",
+    "NO_ACTION",
+    "UNIVERSAL_WORLD_ACTION_REQUEST_V0 when explicit target binding is supplied"
+  ],
+  "policy": {
+    "calendar_case_types": [
+      "ACTION_WITH_DEADLINE",
+      "CONTRACT_DEADLINE"
+    ],
+    "incident_external_surface_inferred": false,
+    "mail_recipient_invented": false,
+    "mail_body_invented": false,
+    "deterministic": true,
+    "self_verifying": true,
+    "allowed_to_decide": false,
+    "allowed_to_act": false,
+    "emits_act": false,
+    "decision_authority": "KX108_ONLY"
+  },
+  "digital_twin_projection": {
+    "committed_work_bundles": 3,
+    "action_candidates": 2,
+    "calendar_candidates": 2,
+    "no_action": 1,
+    "mail_candidates": 0,
+    "world_action_pre_allow": 2,
+    "external_actions": 0
+  },
+  "functional_proof": {
+    "workflow_run": 37631556953,
+    "result": "79 passed in 2.20s"
+  },
+  "next_unresolved_boundary": "ENTERPRISE_OFFICE_FULL_LOOP_E2E_V0",
+  "invariants": {
+    "memory_write": false,
+    "kernel_mutation": false,
+    "emits_act": false,
+    "main_merge": false
+  }
+}
