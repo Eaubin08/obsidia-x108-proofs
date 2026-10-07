@@ -156,14 +156,18 @@ b.start < a.end; `contains(a, b)` = a.start ≤ b.start and b.end ≤ a.end; `di
 partitioned only along `valid_time` (the slot is fixed); a future scope type without an exact
 deterministic difference cannot be partitioned → `PARTIAL_GAP_RESOLUTION=HELD` (no approximation).
 
-### 5.2 Slot state and concurrency (D-B8-R2-3)
+### 5.2 Slot state and concurrency (D-B8-R2-3, D-B8-R3-3)
 
-Each KnowledgeSlot has a logical `SlotState{slot_id, slot_revision, last_recorded_at}`, initial
-revision 0. Every APPLIED claim transition on the slot (any rule, T1 included) increments
-`slot_revision` by exactly 1; a T9 bundle increments it exactly once; REJECTED and
-NO_OP_DUPLICATE never increment. Every claim request binds `slot_id` + `expected_slot_revision`;
-the gate checks claim version, state, record version and slot revision against one canonical
-snapshot and applies atomically; any mismatch → REJECTED `stale_request`. Locks, transactions,
+Each KnowledgeSlot has exactly one logical `SlotState{slot_id, slot_revision, last_recorded_at}`,
+initial revision 0, shared by **claim and gap** transitions on that slot (no separate claim / gap
+revision). Every APPLIED operation changing canonical B8 state on the slot — T1–T12 and G1–G4 —
+increments `slot_revision` by exactly 1; a T9 bundle and a G4 bundle each increment it exactly
+once; REJECTED, NO_OP_DUPLICATE and read-only queries never increment
+(`GAP_TRANSITION_SLOT_REVISION_EFFECT=INCREMENT_ON_APPLIED`). Every mutating request (claim or
+gap) binds `slot_id` + `expected_slot_revision`; the gate checks the object versions / states and
+the slot revision against one canonical snapshot and applies atomically; any mismatch → REJECTED
+`stale_request`. A claim request and a gap request prepared on the same revision can never both
+apply (`CLAIM_GAP_SAME_REVISION_DOUBLE_APPLY=0`). Locks, transactions,
 database CAS or a single writer are implementation mechanisms; the semantic contract is the
 expected slot revision. Two requests prepared on the same revision can never both apply:
 `CONCURRENT_T6_DOUBLE_PROMOTION=0`, `T6_T9_RACE_DOUBLE_PROMOTION=0`,
@@ -171,13 +175,14 @@ expected slot revision. Two requests prepared on the same revision can never bot
 
 ### 5.3 Recorded-time ordering (D-B8-R2-2)
 
-`valid_time` may lie anywhere; `recorded_at` never moves backward. A claim transition requires
-`recorded_at ≥ SlotState.last_recorded_at` (which also covers the claim's own previous record);
-a gap transition requires `recorded_at ≥` the previous gap record's `recorded_at` and, for G2 / G4,
-`≥` the slot's `last_recorded_at`; a bundle has one `recorded_at` that must satisfy every affected
-predecessor. Otherwise → REJECTED `backdated_record`. Equal timestamps are allowed; order is total
-by `(recorded_at, record_version)` per claim, `(recorded_at, slot_revision)` per slot and
-`(recorded_at, gap_version)` per gap. `RECORDED_HISTORY_IS_APPEND_ONLY_AND_NON_BACKDATED`.
+`valid_time` may lie anywhere (a past world fact recorded today is admissible); `recorded_at`
+never moves backward. Every applied transition on a slot, claim or gap, requires
+`recorded_at ≥ SlotState.last_recorded_at` (which covers each object's own previous record); a
+bundle has one `recorded_at` satisfying the same rule. Otherwise → REJECTED `backdated_record`.
+After APPLIED, `SlotState.last_recorded_at = recorded_at`. Equal timestamps are allowed. Cross-object
+slot order is total by `(recorded_at, slot_revision)` (shared by claims and gaps); object-local
+order by `(recorded_at, record_version)` per claim and `(recorded_at, gap_version)` per gap.
+`RECORDED_HISTORY_IS_APPEND_ONLY_AND_NON_BACKDATED`.
 
 ## 6. Claim classes and verifier policy (O-2)
 
@@ -242,7 +247,7 @@ Authority: `B8_CANONICAL_TRANSITION_GATE` only (no agent, human or LLM authority
 | G4 | compound GapPartitionBundle, reason PARTIAL_RESOLUTION | PROMOTED claim (latest state, same slot, typed resolution relation, expected_slot_revision) whose valid_time overlaps but does not contain the gap's: old gap OPEN → SUPERSEDED, resolved sub-interval (gap ∩ claim) linked to the claim, residual gaps = `difference(gap, claim)` created OPEN (§5.1) |
 
 Every gap transition uses `GapTransitionRequest` (gap_id, expected_gap_state, expected_gap_version,
-target_state, refs, reason, and for G2 / G4 slot_id + expected_slot_revision) → new immutable gap
+target_state, refs, reason, slot_id, expected_slot_revision — G1–G4 alike) → new immutable gap
 record(s) + `GapTransitionReceipt`(s); CAS, idempotency (NO_OP_DUPLICATE with the original
 receipt / bundle), stale request rejection, non-backdating (§5.3) and append-only history as in
 §9.1. Every other pair fails closed; RESOLVED and SUPERSEDED are terminal; no gap state is a claim
@@ -345,6 +350,49 @@ recorded the transition).
 
 No destructive overwrite. Durable storage of this history is B10.
 
+### 10.1 Current epistemic view (D-B8-R3-1, D-B8-R3-2)
+
+`RECORDED_GAP_STATE != EFFECTIVE_CURRENT_UNCERTAINTY`. Gap and claim records are history; the
+current view is a deterministic projection, never a write.
+
+`CURRENT_EPISTEMIC_VIEW(slot_id, world_time_domain, as_of_recorded_time, as_of_slot_revision)`
+returns `current_promoted_coverage`, `current_unknown_coverage`, `current_contested_refs`,
+`current_stale_refs`, `current_gap_refs`, `snapshot_revision`, all derived from one slot history
+cutoff in `(recorded_at, slot_revision)` order (`MIXED_SLOT_SNAPSHOT_ALLOWED=NO`).
+
+- `CURRENT_PROMOTED_COVERAGE` = union of valid_time of claims whose latest state at the cutoff is
+  PROMOTED (≤ 1 claim per instant, §9.3).
+- Resolution links (G2: whole gap; G4: resolved sub-interval) keep their exact support (gap
+  lineage / segment, claim_id, promoted_record_id, resolved scope); they are immutable history.
+- `EXPLICIT_UNKNOWN_BASE` = union over the slot's gap lineages of: OPEN gap scopes (residuals of
+  G4 included) and RESOLVED / partition-resolved segments. Excluded: gap scopes SUPERSEDED by a
+  successor lineage that represents them (G3 successor, G4 residuals + resolved segment), so no
+  ancestor coverage is counted twice.
+- `CURRENT_UNKNOWN_COVERAGE = EXPLICIT_UNKNOWN_BASE − CURRENT_PROMOTED_COVERAGE` (exact interval
+  difference, §5.1; if not exactly derivable → the query returns INDETERMINATE / HELD, never a
+  guess). A resolved segment is therefore unknown again exactly when no current PROMOTED claim
+  covers it (support INVALIDATED / STALE / CONTESTED), and stays known when a valid successor
+  covers it (supersession does not recreate unknown).
+- Invariant: `CURRENT_PROMOTED_COVERAGE ∩ CURRENT_UNKNOWN_COVERAGE = ∅`
+  (`KNOWN_UNKNOWN_EFFECTIVE_OVERLAP=0`) for one snapshot. Precedence is a projection: current
+  admissible PROMOTED knowledge masks explicit gap uncertainty only over the coverage it supports.
+- `NOT_KNOWN != KNOWN_UNKNOWN` (no closed-world assumption): unknown coverage comes only from an
+  explicit gap lineage. No gap lineage and no knowledge → `NO_ASSERTION` (view result only, not a
+  state). `CURRENT_UNKNOWN_COVERAGE != UNIVERSE − CURRENT_KNOWN`.
+- `CONTESTED != UNKNOWN`: a contested claim stays visible in `current_contested_refs`; its scope
+  may also appear in `current_unknown_coverage` when an explicit gap lineage covers it.
+- No automatic cross-object write: a claim state change never creates or mutates a gap record
+  (`SUPPORT_STATE_CHANGE_MUTATES_GAP=NO`); gap history changes only through explicit G1–G4 with
+  receipts. Gap artifacts and PROMOTED claims may coexist on overlapping scope
+  (`ARTIFACT_GAP_PROMOTED_COEXISTENCE=ALLOWED`); G2 / G4 are explicit normalizations that change
+  recorded representation, not current meaning
+  (`G4_NORMALIZATION_CHANGES_CURRENT_EPISTEMIC_MEANING=NO`).
+
+Examples: gap [0,10) G2-resolved by C [0,10) → KNOWN [0,10), UNKNOWN ∅; C later INVALIDATED (no
+gap write) → KNOWN ∅, UNKNOWN [0,10); C superseded by PROMOTED C2 [0,10) → KNOWN [0,10), UNKNOWN ∅.
+OPEN gap [0,10) + PROMOTED [4,6) → KNOWN [4,6), UNKNOWN [0,4) ∪ [6,10), identical before and after
+an explicit G4.
+
 ## 11. Boundaries
 
 - **B7 → B8**: a B7 ACCEPT may only seed a T1 CANDIDATE through a future typed B8 intake that
@@ -392,3 +440,9 @@ No duplicate promotion engine survives canonical B8.
   CAS). Remediation: §5.1 interval algebra, §5.2 slot_revision CAS, §5.3 non-backdating, G2 / G3
   containment + G4 GapPartitionBundle, T9 single predecessor + full predecessor coverage,
   empty-collection policy, current-uniqueness invariant. Status stays DRAFT_FOR_AUDIT.
+- Independent certification R3 of 49db9da1: S1–S5, R2-1..R2-3 confirmed; REMEDIATE_SPEC for
+  D-B8-R3-1 (uncertainty vanished when a resolving claim left PROMOTED), D-B8-R3-2 (known and unknown
+  overlapping with no view rule), D-B8-R3-3 (gap transitions did not advance the slot clock /
+  revision). Remediation (human doctrine: derived current-unknown view, no automatic gap reopen;
+  artifact coexistence with view masking; one shared slot revision and clock): §5.2, §5.3, §8.1
+  request fields, §10.1 current epistemic view. Status stays DRAFT_FOR_AUDIT.
