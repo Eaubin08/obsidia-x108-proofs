@@ -1200,7 +1200,15 @@ def _split_relative_main(clauses: list[_Clause], raw: str) -> list[_Clause]:
             k = chain_end + 1
             continue
         end = _relative_chain_end(toks, vs[0], raw, has_object=last.conn_toks[-1].low not in {"que", "qu'"})
+        if last.boundary == ",":
+            # NF1: a relative opened by a comma is closed by the next comma ("Le script, qui
+            # lance Q, échoue"): what follows is never object material of the relative
+            close = next((j for j in range(vs[0] + 1, len(toks)) if toks[j].low == ","), None)
+            if close is not None:
+                end = close
         rest = toks[end:]
+        if last.boundary == "," and len(rest) > 1 and rest[0].low == "," and not rest[1].is_punct:
+            rest = rest[1:]
         while rest and rest[-1].is_punct:
             rest = rest[:-1]
         if rest and (rest[0].low in _PREPOSITIONS or rest[0].low in {"à", "a", "de", "d'"}) \
@@ -1726,7 +1734,12 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
                 cur().governor_lost = not nominal
             i += 1
             continue
-        if low == "qui" and cur().toks:
+        # NF1: ", qui V" after a nominal carrier ("Le script, qui lance Q, échoue") is the same
+        # descriptive relative as "le script qui": never a clause-initial (imperative) verb
+        comma_rel = low == "qui" and not cur().toks and cur().conn is None and cur().boundary == "," \
+            and len(clauses) >= 2 and clauses[-2].toks and not clauses[-2].toks[-1].hyphen_before \
+            and not _is_verb(clauses[-2].toks, len(clauses[-2].toks) - 1)
+        if low == "qui" and (cur().toks or comma_rel):
             open_clause("rel", [t], parent=len(clauses) - 1)
             i += 1
             continue
