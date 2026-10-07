@@ -1069,13 +1069,21 @@ def _relative_chain_end(toks: list, j: int, raw: str, has_object: bool) -> int:
     (aux + participle), its object when the relative has one (qui: a symbol or det + noun),
     its adverbs, and its prep-governed infinitives ("sert à tester Q et à lancer R")."""
     def obj(e: int) -> int:
+        # N1-R: the verb's own negation / manner adverbs come before its object ("qui ne teste
+        # pas P", "qui teste rapidement P"); N2-R: the object keeps its full nominal extent
+        # (existing NP parser, "le build rouge"); a bare symbol is one argument ("P")
         if not has_object or e >= len(toks):
             return e
-        if len(toks[e].low) == 1 and raw[toks[e].start:toks[e].end].isupper():
-            return e + 1
-        if toks[e].low in _DETERMINERS and e + 1 < len(toks) and not _is_verb(toks, e + 1):
-            return e + 2
-        return e
+        s = e
+        while s < len(toks) and (toks[s].low in _MEMBER_NEGATORS or toks[s].low in _MANNER_ADVERBS
+                                 or toks[s].low in _ADVERBS_SKIPPABLE - {"rien"}):
+            s += 1
+        if s >= len(toks):
+            return e
+        if len(toks[s].low) == 1 and raw[toks[s].start:toks[s].end].isupper():
+            return s + 1
+        arg, nxt = _np_from(toks, s)
+        return nxt if arg is not None and nxt > s else e
     if _pred(toks[j]) in {"HAVE", "BE"} and j + 1 < len(toks) and _is_verb(toks, j + 1) \
             and "PP" in _feats(toks[j + 1]):
         j += 1
