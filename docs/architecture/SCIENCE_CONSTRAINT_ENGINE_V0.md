@@ -1,6 +1,6 @@
 # F18 — Science / Constraint Engine V0
 
-Status: IMPLEMENTED / VALIDATION REQUIRED
+Status: VERIFIED / NO F18 REGRESSION
 
 ## Purpose
 
@@ -72,3 +72,13 @@ The MMonde core remains world/domain agnostic.
 F19 — Physical Thermodynamics Adapter.
 
 No F19 runtime before F18 validation.
+
+## Verification finale
+
+- Code SHA vérifié: `076ad08cb64bd27935812684a2aab7c42a5571e0`
+- GitHub Actions run: `37565335527`
+- Résultat global: `12525 passed / 11 failed / 46 skipped / 207 deselected`
+- Failures F18 visibles: `0`
+- Les 11 failures restantes correspondent aux familles baseline historiques.
+
+**Verdict:** F18 `VERIFIED`.
