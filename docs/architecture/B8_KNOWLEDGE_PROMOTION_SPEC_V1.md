@@ -494,19 +494,19 @@ table or from guard evaluation order (`REASON_PRIORITY_TABLE=NONE`,
 | `forbidden_transition` | the request's (expected_state, target_state) pair is outside §9.2 / §8.1, or a half-T9 is requested outside its bundle (§9.4); evaluated on the request alone, independently of the snapshot state (a snapshot mismatch is `stale_request`) |
 | `malformed_object` | structural / schema malformation of the object (missing or invalid class, content, refs, valid_time, temporal_frame_ref, provenance) other than fields that have their own code: a missing reason is `reason_missing`, a slot defect is `malformed_slot`, size is `oversize_object` (T1, G1, §4, §5.1) |
 | `malformed_slot` | slot canonicalization violation, empty subject_refs, invalid element (§5) |
-| `multiple_predecessors_unsupported` | T9: the eligible predecessor set E (same-frame PROMOTED claims on the slot overlapping the new valid_time) has more than one member |
-| `no_eligible_predecessor` | T9: the eligible predecessor set E is empty (no same-frame PROMOTED claim on the slot overlaps the new valid_time); the request is not converted to T6 (`T9_ZERO_ELIGIBLE_AUTO_CONVERTS_TO_T6=NO`) |
-| `no_temporal_overlap` | G4 resolving claim does not overlap the gap |
+| `multiple_predecessors_unsupported` | T9, only when E is evaluable (see below): the eligible predecessor set E (same-frame PROMOTED claims on the slot overlapping the new valid_time) has more than one member |
+| `no_eligible_predecessor` | T9, only when E is evaluable (see below): E is proven empty; never concluded from temporal incomparability; the request is not converted to T6 (`T9_ZERO_ELIGIBLE_AUTO_CONVERTS_TO_T6=NO`) |
+| `no_temporal_overlap` | G4 resolving claim does not overlap the gap, evaluated only within one frame (cross-frame → `temporal_relation_indeterminate` only) |
 | `open_contradiction` | T6 / T9 with an open contradiction on the slot / time |
 | `oversize_object` | canonical JSON above `MAX_CANDIDATE_CHARS` (§3) |
-| `partition_not_partial` | G4 requested while the claim contains the whole gap (G2 applies) |
-| `predecessor_mismatch` | T9: |E| = 1, the designated claim is on the same slot and PROMOTED, but `supersedes_claim_id` / `supersedes_record_id` do not identify the member of E or its latest record (record-binding of the designation is evaluated only when |E| = 1) |
+| `partition_not_partial` | G4 requested while the claim contains the whole gap (G2 applies), evaluated only within one frame |
+| `predecessor_mismatch` | T9, only when E is evaluable and |E| = 1: the designated claim is on the same slot and PROMOTED, but `supersedes_claim_id` / `supersedes_record_id` do not identify the member of E or its latest record |
 | `reason_missing` | the required explicit reason field is absent (T2, T3, T10, G1–G4 and every request); the only code for that fact |
 | `ref_binding_mismatch` | a referenced record / object is available but its identity / version binding does not match the request target after re-hashing (e.g. VerificationRecord, attestation or EvidenceRef bound to another claim_id or claim_version) (§9.1) |
 | `referenced_claim_not_promoted` | the claim designated by the request (G2 / G4 resolving claim, T9 `supersedes_claim_id`) is on the same slot but its latest state is not PROMOTED; the only code for that fact (a T9 eligibility-set fact, |E| = 0 or |E| > 1, is independent and adds its own code) |
 | `resolution_relation_invalid` | G2 / G4 typed resolution relation missing or invalid |
 | `slot_mismatch` | the designated claim / gap is on another slot (T9, G2, G3, G4); state- or relation-based predicates about it are then not evaluable |
-| `slot_occupied` | T6 with a same-frame PROMOTED claim overlapping the candidate |
+| `slot_occupied` | T6 with a same-frame PROMOTED claim overlapping the candidate (an occupant in another frame yields `temporal_relation_indeterminate` only, never `slot_occupied`) |
 | `stale_request` | expected claim_version / state / record_version / gap_state / gap_version / slot_revision mismatch (§5.2, §9.1) |
 | `staleness_trigger_inadmissible` | T11 without staleness trigger evidence for the class mechanism (§6) |
 | `successor_gap_not_open` | G3 successor gap not OPEN |
@@ -516,7 +516,20 @@ table or from guard evaluation order (`REASON_PRIORITY_TABLE=NONE`,
 
 `TOTAL_REASON_CODES=29`. ReasonCode != TransitionVerdict != ClaimState.
 
-**T9 predecessor partition (D-B8-SA6-1)** — two independent facts: the designation fact (designated
+**Eligibility evaluability (D-B8-SA7-1).** `INDETERMINATE_ELIGIBILITY != EMPTY_ELIGIBILITY`;
+`ELIGIBILITY_INDETERMINATE != ELIGIBILITY_FALSE`; `PREDECESSOR_EXISTENCE_UNRESOLVED != NO_PREDECESSOR`
+(instances of UNKNOWN != FALSE). `ELIGIBLE_SET_EVALUABLE` holds only when every PROMOTED claim on the slot
+is temporally comparable to the new claim (V1: same temporal_frame_ref). Otherwise the temporal relation
+needed for eligibility is indeterminate: the request yields `temporal_relation_indeterminate` and **no
+cardinality of E is asserted** — `no_eligible_predecessor`, `multiple_predecessors_unsupported`,
+`predecessor_mismatch` and containment are not evaluable (`T9_CARDINALITY_REQUIRES_EVALUABILITY=YES`,
+`NO_COMPARABLE_MATCH_FOUND_IMPLIES_EMPTY=NO`). Designation-state facts (`referenced_claim_not_promoted`,
+`slot_mismatch`) and independent facts (`stale_request`, input codes …) still accumulate. No
+TemporalTransformRef can make E evaluable in V1. The same rule holds everywhere an absence is derived
+from a temporal relation (T6 free slot, G2–G4 coverage / overlap): incomparability never yields "none",
+"zero", "no overlap" or "free slot".
+
+**T9 predecessor partition (D-B8-SA6-1), when E is evaluable** — two independent facts: the designation fact (designated
 claim D) and the eligibility-set fact (E). Predecessor-family codes (`T9_PREDECESSOR_PARTITION_
 EXHAUSTIVE=YES`, `T9_PREDECESSOR_PARTITION_DISJOINT=YES`):
 
@@ -529,6 +542,8 @@ EXHAUSTIVE=YES`, `T9_PREDECESSOR_PARTITION_DISJOINT=YES`):
 | PROMOTED | 1 | D is the member and record current | none (containment then evaluated) |
 | PROMOTED | 1 | D is not the member, or record not latest | `predecessor_mismatch` |
 | PROMOTED | > 1 | any | `multiple_predecessors_unsupported` |
+
+When E is not evaluable: `temporal_relation_indeterminate` (+ `referenced_claim_not_promoted` if D is not PROMOTED), no E-based code.
 
 Impossible combinations: D correctly designated while not PROMOTED or while |E| = 0. D on another
 slot → `slot_mismatch` and the D-based predicates are not evaluable; E-based codes still apply.
@@ -708,3 +723,8 @@ No duplicate promotion engine survives canonical B8.
   `no_eligible_predecessor` (enum 29), exhaustive T9 predecessor partition table (designation fact vs
   eligibility-set fact), containment evaluated only for a correctly designated unique predecessor, no
   automatic T6 conversion. Status stays DRAFT_FOR_AUDIT.
+- Second auditor closure check of 73b119e0: SA6-1 closed (59 cases coded, two-fact case confirmed independent);
+  REMEDIATE_SPEC for D-B8-SA7-1 (cross-frame T9 emitted `temporal_relation_indeterminate` and
+  `no_eligible_predecessor` for one fact; 1767 cases). Remediation: eligibility evaluability prerequisite —
+  E-based codes only when every PROMOTED claim on the slot is comparable; no absence inferred from temporal
+  incomparability (T6, G4 rows clarified). Enum unchanged (29). Status stays DRAFT_FOR_AUDIT.
