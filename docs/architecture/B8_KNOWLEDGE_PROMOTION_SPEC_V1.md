@@ -348,7 +348,7 @@ Authority: `B8_CANONICAL_TRANSITION_GATE` only (no agent, human or LLM authority
 
 Every gap transition uses `GapTransitionRequest` (gap_id, expected_gap_state, expected_gap_version,
 target_state, refs, reason, slot_id, expected_slot_revision — G1–G4 alike) → new immutable gap
-record(s) + `GapTransitionReceipt`(s) (verdict enum identical to claims: APPLIED / REJECTED /
+record(s) + `GapTransitionReceipt`(s) (verdict enum and multi-cause reasons policy identical to claims, §9.1: APPLIED / REJECTED /
 NO_OP_DUPLICATE); CAS, idempotency (NO_OP_DUPLICATE with the original
 receipt / bundle), stale request rejection, logical anti-backdating (§5.3) and append-only history as in
 §9.1. Every other pair fails closed; RESOLVED and SUPERSEDED are terminal; no gap state is a claim
@@ -379,6 +379,30 @@ STATE_TRANSITION_TO_HELD). Only APPLIED mutates canonical state. A REJECTED requ
 reason (e.g. `stale_request`, `temporal_relation_indeterminate`, `attestation_inadmissible`,
 `MULTIPLE_PREDECESSORS_UNSUPPORTED`) and leaves claim / gap state, record_version, gap_version and
 slot_revision unchanged; it writes no record.
+
+`VERDICT != STATE != REASON`: `TransitionVerdict.REJECTED` (the requested transition was not
+applied), `ClaimState.REJECTED` (terminal state reached only through T3) and a `ReasonCode` are three
+different dimensions (`REJECTED_VERDICT_IMPLIES_REJECTED_STATE=NO`, mirroring HELD).
+
+**Multi-cause rejection (D-B8-SA3-1).** `reasons` of a REJECTED receipt (claim or gap alike) is the
+complete set of applicable rejection reasons (`REJECTION_REASON_POLICY=COMPLETE_APPLICABLE_SET`):
+- every guard is a pure function evaluated against the same immutable pre-transition snapshot; guards
+  never observe each other and reason gathering has no side effect (no mutation, revision increment,
+  memory write, promotion or action);
+- a reason is included only when its guard is evaluable and fails; a guard that cannot be evaluated
+  because a required input is missing contributes no reason of its own (`GUARD_FAILED !=
+  GUARD_NOT_EVALUABLE`; the structural / input reason, if one exists, explains it);
+- each ReasonCode appears once, and the list is sorted ascending by the ReasonCode string (code point
+  order), never by guard evaluation / source / discovery order (`REASON_ORDER_SOURCE=
+  CANONICAL_REASON_CODE`). Receipt content and digest are therefore independent of evaluation order,
+  so duplicate detection and replay are deterministic;
+- APPLIED receipts carry no rejection reason; NO_OP_DUPLICATE returns the original receipt / bundle
+  and never recomputes reasons.
+Existing codes are unchanged: `MULTIPLE_PREDECESSORS_UNSUPPORTED`, `attestation_inadmissible`,
+`backdated_record`, `stale_request`, `temporal_relation_indeterminate`. Examples: T6 with a stale
+expected_slot_revision and a PROMOTED occupant in another frame → `["stale_request",
+"temporal_relation_indeterminate"]`; T9 facing several overlapping predecessors with one temporal
+relation indeterminate → `["MULTIPLE_PREDECESSORS_UNSUPPORTED", "temporal_relation_indeterminate"]`.
 
 Every request binds claim_id, expected_claim_version, expected_state, expected_record_version,
 slot_id, expected_slot_revision and target_state (compare-and-set against one canonical snapshot,
@@ -590,3 +614,8 @@ No duplicate promotion engine survives canonical B8.
   `temporal_indeterminate_refs`, G3 same-frame successor, CLOCK_DOMAIN != TEMPORAL_FRAME_REF, T7
   cross-frame reference without inferred temporal contradiction, one-frame-per-slot consequence of T6
   stated. Status stays DRAFT_FOR_AUDIT.
+- Second auditor re-certification of ff88c23c: D-B8-SA2-1 closed; REMEDIATE_SPEC for D-B8-SA3-1 (reason
+  selection of multi-cause REJECTED receipts undefined → receipt digest divergence, 3532 cases).
+  Remediation: §9.1 complete applicable reason set, pure single-snapshot guards, dedup, code-point
+  order, gap receipts aligned, TransitionVerdict.REJECTED != ClaimState.REJECTED. Status stays
+  DRAFT_FOR_AUDIT.
