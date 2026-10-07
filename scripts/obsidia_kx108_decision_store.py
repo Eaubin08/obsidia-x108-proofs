@@ -202,6 +202,57 @@ _AGENT_PRE_IDENTITY_SEED_FIELDS = (
 )
 
 
+# ── WORLD_ACTION_PRE_EXECUTION (external-world sovereign checkpoint) ─────────
+#
+# This phase is additive and distinct from:
+# - PRE_EXECUTION (content remediation)
+# - AGENT_PRE_EXECUTION (internal bounded provider execution)
+# - POST_EXECUTION
+#
+# It binds the exact external action request already approved by a human
+# before a sovereign KX108 decision is persisted. It grants no egress by
+# itself; current world-action runtime stays dry-run unless another layer
+# explicitly activates it.
+WORLD_ACTION_PRE_DECISION_PHASE = "WORLD_ACTION_PRE_EXECUTION"
+
+_WORLD_ACTION_PRE_BINDING_CONTEXT_FIELDS = (
+    "world_action_pre_context_id",
+    "world_action_pre_context_record_hash",
+    "world_action_request_hash",
+    "connector_call_hash",
+    "human_approval_hash",
+    "target_prestate_hash",
+    "required_scope",
+    "idempotency_key",
+    "source_domain",
+    "action_id",
+)
+
+_WORLD_ACTION_PRE_RECORD_BOUND_FIELDS = (
+    "decision_record_schema_version", "decision_record_id", "created_at",
+    "decision_phase",
+    "world_action_pre_context_id",
+    "world_action_pre_context_record_hash",
+    "world_action_request_hash",
+    "connector_call_hash",
+    "human_approval_hash",
+    "target_prestate_hash",
+    "required_scope",
+    "idempotency_key",
+    "source_domain",
+    "action_id",
+    "decision_id", "trace_id", "domain",
+    "x108_gate", "reason_code", "severity", "market_verdict",
+    "contradictions", "unknowns", "risk_flags",
+    "decision_authority", "canonical_envelope",
+)
+
+_WORLD_ACTION_PRE_IDENTITY_SEED_FIELDS = (
+    _WORLD_ACTION_PRE_BINDING_CONTEXT_FIELDS
+    + ("decision_phase", "canonical_envelope")
+)
+
+
 def decision_phase_of(record: "Optional[dict]") -> str:
     """Phase d'un enregistrement de décision KX108.
 
@@ -218,6 +269,8 @@ def _record_bound_fields_for(record: dict) -> tuple:
     POST explicitement lié à une décision PRE => _POST_PRE_LINKED_RECORD_BOUND_FIELDS ;
     sinon (schéma POST historique, decision_phase absent) => _RECORD_BOUND_FIELDS d'origine."""
     phase = record.get("decision_phase")
+    if phase == WORLD_ACTION_PRE_DECISION_PHASE:
+        return _WORLD_ACTION_PRE_RECORD_BOUND_FIELDS
     if phase == AGENT_PRE_DECISION_PHASE:
         return _AGENT_PRE_RECORD_BOUND_FIELDS
     if phase == PRE_DECISION_PHASE:
