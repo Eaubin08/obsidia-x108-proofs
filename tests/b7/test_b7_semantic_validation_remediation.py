@@ -402,3 +402,72 @@ def test_q_identity_is_deterministic_and_content_sensitive(b7):
     assert a.candidate_digest != c.candidate_digest and a.candidate_id != c.candidate_id
     res = _q_verdict(b7, e, req, a)
     assert res.derived_state.payload["resolution_candidate_id"] == a.candidate_id
+
+
+# ── B7-R: full-width (256-bit) SHA-256 B7 identities ───────────────────────────────────────────
+import hashlib as _hashlib
+
+from app.harness.state_explicit.contracts import canonical_json as _canonical_json
+
+
+def _r():
+    e, req = _q()
+    import app.cognition.b7 as m
+    return m, e, req, m.translate(raw_candidate(req, remaining_unknowns=[]), req)
+
+
+def _hex(value, prefix):
+    assert value.startswith(prefix)
+    body = value[len(prefix):]
+    assert all(c in "0123456789abcdef" for c in body)
+    return body
+
+
+def test_r_candidate_identity_is_full_width_and_independently_recomputable():
+    m, e, req, cand = _r()
+    assert len(_hex(cand.candidate_digest, "b7dig_")) == 64
+    assert len(_hex(cand.candidate_id, "b7cand_")) == 64
+    payload = {k: v for k, v in cand.to_dict().items() if k not in ("candidate_id", "candidate_digest", "candidate_status")}
+    expected = _hashlib.sha256(_canonical_json(payload).encode("utf-8")).hexdigest()
+    assert cand.candidate_digest == "b7dig_" + expected and cand.candidate_id == "b7cand_" + expected
+
+
+def test_r_request_identity_is_full_width_and_independently_recomputable():
+    m, e, req, _ = _q_full()
+    field, marker = req.problem_refs[0].split(":", 1)
+    expected = _hashlib.sha256(_canonical_json([req.original_state_digest, field, marker]).encode("utf-8")).hexdigest()
+    assert req.request_id == "b7req_" + expected and len(_hex(req.request_id, "b7req_")) == 64
+
+
+def _q_full():
+    import app.cognition.b7 as m
+    e, req = _q()
+    return m, e, req, None
+
+
+def test_r_request_identity_replay_and_sensitivity():
+    import app.cognition.b7 as m
+    a = m.detect_unresolved(make_entry("x", unresolved_references=("u1:le",)))[0].request_id
+    b = m.detect_unresolved(make_entry("x", unresolved_references=("u1:le",)))[0].request_id
+    c = m.detect_unresolved(make_entry("x", unresolved_references=("u1:la",)))[0].request_id
+    assert a == b and a != c
+
+
+@pytest.mark.parametrize("tail", ["1" * 48, "2" * 48])
+def test_r_same_64bit_prefix_is_not_the_same_identity(tail):
+    m, e, req, cand = _r()
+    prefix16 = cand.candidate_digest[len("b7dig_"):][:16]
+    forged = "b7dig_" + prefix16 + tail
+    assert forged != cand.candidate_digest
+    res = m.validate_candidate(req, _dc.replace(cand, candidate_digest=forged, candidate_id="b7cand_" + prefix16 + tail),
+                               origin=e, provider_roles=PROVIDERS)
+    assert res.verdict == m.CognitiveValidationVerdict.REJECT and res.reasons == ("candidate_identity_mismatch",)
+
+
+def test_r_legacy_64bit_identity_rejected():
+    m, e, req, cand = _r()
+    short = cand.candidate_digest[len("b7dig_"):][:16]
+    for change in ({"candidate_id": "b7cand_" + short}, {"candidate_digest": "b7dig_" + short},
+                   {"candidate_id": "b7cand_" + short, "candidate_digest": "b7dig_" + short}):
+        res = m.validate_candidate(req, _dc.replace(cand, **change), origin=e, provider_roles=PROVIDERS)
+        assert res.verdict == m.CognitiveValidationVerdict.REJECT
