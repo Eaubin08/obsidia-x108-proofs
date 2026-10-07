@@ -339,3 +339,66 @@ def test_o_candidate_provenance_never_structural(b7, extra):
 
 def e_prov():
     return list(_o_entry().provenance)
+
+
+# ── B7-Q: candidate identity is bound to the canonical typed content ───────────────────────────
+import dataclasses as _dc
+import json as _json
+
+
+def _q():
+    e = make_entry("Le script et le test sont prêts demain. Lance-le.", unresolved_references=("u2:le",),
+                   units=("u1", "u2"), uncertainty=(), unit_objects={"u1": ["le script", "le test"]}, deixis=("demain",))
+    (req,) = __import__("app.cognition.b7", fromlist=["x"]).detect_unresolved(e)
+    return e, req
+
+
+def _q_verdict(b7, e, req, cand):
+    return b7.validate_candidate(req, cand, origin=e, provider_roles=PROVIDERS)
+
+
+_MUTATIONS = {
+    "proposed_resolution_json": _json.dumps({"mention": "u2:le", "antecedent": "le test"}),
+    "evidence_refs": ("other:evidence",), "context_refs": ("other:context",),
+    "provenance_refs": ("app.semantic.lattice.french_grammar.parse_utterance", "app.semantic.lattice.semantic_closure",
+                        "x"),
+    "remaining_unknowns": ("added",), "contradictions": ("added",), "assumptions": ("added",),
+    "provider_ref": "provider:other", "resolves": ("unresolved_references:u2:le",),
+}
+
+
+@pytest.mark.parametrize("field", sorted(_MUTATIONS) + ["confidence_class", "proposer_role", "candidate_kind"])
+def test_q_mutated_content_with_old_identity_rejected(b7, field):
+    e, req = _q()
+    cand = b7.translate(raw_candidate(req, remaining_unknowns=[]), req)
+    assert _q_verdict(b7, e, req, cand).verdict == b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+    value = {"confidence_class": b7.ConfidenceClass.HIGH, "proposer_role": b7.CognitiveRole.CRITIC,
+             "candidate_kind": b7.RequiredCandidateKind.REFERENCE_BINDING}.get(field, _MUTATIONS.get(field))
+    if field == "resolves":
+        value = ("unresolved_references:u2:le", "x")
+    if field == "candidate_kind":
+        value = b7.RequiredCandidateKind.ENTITY_BINDING
+    mutated = _dc.replace(cand, **{field: value})
+    res = _q_verdict(b7, e, req, mutated)
+    assert res.verdict == b7.CognitiveValidationVerdict.REJECT and res.derived_state is None
+
+
+@pytest.mark.parametrize("change", [{"candidate_id": "b7cand_victim000000"}, {"candidate_digest": "b7dig_0123456789abcdef"},
+                                    {"candidate_id": "b7cand_victim000000", "candidate_digest": "b7dig_victim000000"}])
+def test_q_forged_identity_rejected(b7, change):
+    e, req = _q()
+    cand = b7.translate(raw_candidate(req, remaining_unknowns=[]), req)
+    res = _q_verdict(b7, e, req, _dc.replace(cand, **change))
+    assert res.verdict == b7.CognitiveValidationVerdict.REJECT and res.reasons == ("candidate_identity_mismatch",)
+
+
+def test_q_identity_is_deterministic_and_content_sensitive(b7):
+    e, req = _q()
+    a = b7.translate(raw_candidate(req, remaining_unknowns=[]), req)
+    b = b7.translate(raw_candidate(req, remaining_unknowns=[]), req)
+    c = b7.translate(raw_candidate(req, remaining_unknowns=[],
+                                   proposed_resolution={"mention": "u2:le", "antecedent": "le test"}), req)
+    assert (a.candidate_id, a.candidate_digest) == (b.candidate_id, b.candidate_digest)
+    assert a.candidate_digest != c.candidate_digest and a.candidate_id != c.candidate_id
+    res = _q_verdict(b7, e, req, a)
+    assert res.derived_state.payload["resolution_candidate_id"] == a.candidate_id
