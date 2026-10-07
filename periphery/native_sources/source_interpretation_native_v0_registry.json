@@ -1,0 +1,78 @@
+{
+  "schema": "SOURCE_INTERPRETATION_NATIVE_V0_REGISTRY",
+  "status": "PROVEN",
+  "date": "2026-10-07",
+  "branch": "feat/source-interpretation-native-v0",
+  "base": "feat/preforge-enterprise-stack-freeze-v0",
+  "contract": {
+    "input": [
+      "NativeSourceContextPacketV0",
+      "NativeSourceRegistrationV0",
+      "ephemeral connector material"
+    ],
+    "output": "SourceInterpretationCandidateV0",
+    "source_kinds": [
+      "MAILBOX",
+      "DOCUMENT_REPOSITORY",
+      "CALENDAR"
+    ],
+    "interpreter_id": "OBSIDIA_SOURCE_INTERPRETER",
+    "interpreter_version": "V0",
+    "deterministic": true,
+    "raw_material_canonically_persisted": false,
+    "allowed_to_decide": false,
+    "allowed_to_act": false,
+    "decision_authority": "KX108_ONLY"
+  },
+  "signals": [
+    "INFORMATION_ONLY",
+    "ACTION_REQUEST",
+    "ACTION_WITH_DEADLINE",
+    "INCIDENT",
+    "CONSTRAINT",
+    "CALENDAR_CONTEXT",
+    "EVIDENCE_GAP",
+    "DUPLICATE_IDENTITY_CANDIDATE",
+    "CONTRADICTION_SUBJECT",
+    "UNKNOWNS",
+    "EVIDENCE_GAPS"
+  ],
+  "correlation": {
+    "duplicate_detection": true,
+    "contradiction_detection": true,
+    "duplicate_is_reversible_before_apply": true,
+    "contradiction_is_not_resolved_by_interpreter": true
+  },
+  "sandbox_e2e": {
+    "truth_manifest_used_for_routing": false,
+    "source_observations": 12,
+    "source_packets": 12,
+    "interpretation_candidates": 12,
+    "committed_cases": 3,
+    "canonical_mutations": 12,
+    "duplicate_suppressed": 1,
+    "hold": 1,
+    "block": 1,
+    "information_only": 2,
+    "network_calls": 0,
+    "external_actions": 0
+  },
+  "proof": {
+    "workflow_run": 37624949649,
+    "result": "83 passed in 1.84s",
+    "protected_files_changed": 0
+  },
+  "invariants": {
+    "world_action_runtime_activated": false,
+    "runtime_allowed_now": false,
+    "execution_authority": false,
+    "memory_write": false,
+    "kernel_mutation": false,
+    "emits_act": false,
+    "main_merge": false
+  },
+  "next_unresolved_boundary": {
+    "scope": "INTERPRETATION_TO_INTAKE_POLICY_NATIVE_V0",
+    "reason": "Production conversion from non-sovereign interpretation candidates to NativeCaseTaskIntakePlanV0 is currently exercised inside the interpreted sandbox E2E runner, not yet extracted as a canonical reusable policy contract."
+  }
+}
