@@ -33,6 +33,8 @@ def test_interpreted_e2e_matches_sandbox_oracle_without_using_it_for_routing(tmp
     assert result["status"] == STATUS
     assert result["truth_manifest_used_for_routing"] is False
     assert result["interpretation_candidate_count"] == 12
+    assert result["intake_policy_instruction_count"] == 12
+    assert len(result["intake_policy_batch_hash"]) == 64
     assert result["source_observation_count"] == 12
     assert result["source_packet_count"] == 12
 
@@ -124,9 +126,20 @@ def test_interpreted_result_is_deterministic(tmp_path):
 
     assert first["interpretation_hashes"] == second["interpretation_hashes"]
     assert first["correlation_hash"] == second["correlation_hash"]
+    assert first["intake_policy_batch_hash"] == second["intake_policy_batch_hash"]
     assert first["committed_case_count"] == second["committed_case_count"]
     assert first["canonical_mutation_count"] == second["canonical_mutation_count"]
     assert first["duplicate_suppressed_count"] == second["duplicate_suppressed_count"]
     assert first["hold_count"] == second["hold_count"]
     assert first["block_count"] == second["block_count"]
     assert first["information_only_count"] == second["information_only_count"]
+
+
+def test_runner_delegates_intake_conversion_to_native_policy():
+    source = inspect.getsource(interpreted_runner_module)
+    assert "project_interpretations_to_native_intake_v0" in source
+    assert "build_native_case_task_intake_plan_v0" not in source
+    assert "_build_plan_from_candidate" not in source
+    assert "_review_policy_due_at" not in source
+    assert "CASE_CONFLICT" not in source
+    assert "CASE_MISSING_EVIDENCE" not in source
