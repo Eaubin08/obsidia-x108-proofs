@@ -84,6 +84,20 @@ _APPROVAL_REQUIRED_FIELDS = (
     "approval_hash",
 )
 
+_SECRET_KEY_FRAGMENTS = (
+    "password",
+    "passwd",
+    "secret",
+    "token",
+    "api_key",
+    "apikey",
+    "authorization",
+    "private_key",
+    "access_key",
+    "credential",
+)
+
+
 _CONTEXT_BOUND_FIELDS = (
     "context_schema_version",
     "context_id",
@@ -138,6 +152,20 @@ def _sha256_json(value: Any) -> str:
             separators=(",", ":"),
         ).encode("utf-8")
     ).hexdigest()
+
+
+def _assert_no_secret_fields(value: Any, path: str = "connector_args") -> None:
+    if isinstance(value, Mapping):
+        for key, child in value.items():
+            lowered = str(key).lower()
+            if any(fragment in lowered for fragment in _SECRET_KEY_FRAGMENTS):
+                raise WorldActionPreContextError(
+                    f"SECRET_FIELD_FORBIDDEN_IN_WORLD_ACTION:{path}.{key}"
+                )
+            _assert_no_secret_fields(child, f"{path}.{key}")
+    elif isinstance(value, (list, tuple)):
+        for index, child in enumerate(value):
+            _assert_no_secret_fields(child, f"{path}[{index}]")
 
 
 def _expected_connector_call_hash(request: Mapping[str, Any]) -> str:
@@ -217,6 +245,10 @@ def verify_world_action_request_mapping(
         return False, "WORLD_ACTION_REQUEST_AUTONOMY_LEVEL_UNSUPPORTED"
     if not isinstance(request.get("connector_args"), Mapping):
         return False, "WORLD_ACTION_REQUEST_CONNECTOR_ARGS_INVALID"
+    try:
+        _assert_no_secret_fields(request["connector_args"])
+    except WorldActionPreContextError as exc:
+        return False, str(exc)
     if request["connector_call_hash"] != _expected_connector_call_hash(request):
         return False, "WORLD_ACTION_REQUEST_CONNECTOR_CALL_HASH_MISMATCH"
     if request["idempotency_key"] != _expected_idempotency_key(request):
