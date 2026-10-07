@@ -16,7 +16,7 @@ MANIFEST = ROOT / "docs" / "preforge" / "OBSIDIA_ENTERPRISE_PREFORGE_FREEZE_V0.j
 def test_preforge_manifest_freezes_expected_stack_and_next_forge_scope():
     data = json.loads(MANIFEST.read_text(encoding="utf-8"))
     assert data["schema"] == "OBSIDIA_ENTERPRISE_PREFORGE_FREEZE_V0"
-    assert data["status"] == "PREFORGE_CANDIDATE"
+    assert data["status"] == "PREFORGE_PROVEN"
 
     assert data["canonical_stack"] == [
         "SOURCE_RUNTIME_NATIVE_V0",
