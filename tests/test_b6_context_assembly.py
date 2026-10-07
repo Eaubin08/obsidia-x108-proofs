@@ -29,9 +29,9 @@ def _registry(text="Lance P."):
 
 def test_instructions_are_conditional():
     always = {i.instruction_id for i in DEFAULT_INSTRUCTIONS if i.always}
-    plain = {i.instruction_id for i in select_instructions(frozenset(), frozenset())}
+    plain = {i.instruction_id for i in select_instructions(frozenset())}
     assert plain == always
-    opened = {i.instruction_id for i in select_instructions(frozenset(), frozenset({"sens_open"}))}
+    opened = {i.instruction_id for i in select_instructions(frozenset({"status:open"}))}
     assert opened > plain
 
 

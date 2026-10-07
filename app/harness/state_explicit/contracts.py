@@ -6,7 +6,9 @@ authorizes, acts, writes memory or mutates the kernel (decision authority: KX108
 """
 from __future__ import annotations
 
+import hashlib
 import json
+import math
 from dataclasses import InitVar, dataclass, field
 from enum import Enum
 from types import MappingProxyType
@@ -22,8 +24,52 @@ BOUNDARY: Mapping[str, Any] = MappingProxyType({
     "allowed_to_act": False,
 })
 
-MAX_PAYLOAD_CHARS = 65_536          # bounded payload (canonical JSON)
+# B6 V0 hard bounds (no canonical project-wide context limit exists to reuse; the Brody
+# _GLOBAL_BUDGET / _MAX_* constants are private per-module budgets of other layers)
+MAX_PAYLOAD_CHARS = 65_536          # one entry payload (canonical JSON)
+MAX_ENTRY_CHARS = 81_920            # one whole entry (payload + provenance + uncertainty + tags)
 LONG_PREVIEW_CHARS = 2_048          # LONG exposure: bounded preview, truncation recorded
+MAX_QUERY_CHARS = 4_096             # longer query: fail closed (never silently truncated)
+MAX_STATE_ENTRIES = 64              # entries considered per packet; overflow omitted as ENTRY_LIMIT
+MAX_PACKET_BYTES = 262_144          # canonical UTF-8 packet; overflow reduced / omitted as PACKET_SIZE_LIMIT
+
+
+class ContextBoundError(ValueError):
+    """A hard B6 bound is exceeded and cannot be met by recorded omission: fail closed."""
+
+
+def _check_json(value: Any, path: str, active: set[int]) -> None:
+    if value is None or isinstance(value, (bool, str)):
+        return
+    if isinstance(value, int):
+        return
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise ValueError(f"non-finite float at {path}")
+        return
+    if isinstance(value, (list, tuple, dict)):
+        if id(value) in active:
+            raise ValueError(f"recursive container at {path}")
+        active.add(id(value))
+        try:
+            if isinstance(value, dict):
+                for k, v in value.items():
+                    if not isinstance(k, str):
+                        raise ValueError(f"non-string mapping key at {path}")
+                    _check_json(v, f"{path}.{k}", active)
+            else:
+                for i, v in enumerate(value):
+                    _check_json(v, f"{path}[{i}]", active)
+        finally:
+            active.discard(id(value))
+        return
+    raise ValueError(f"non-JSON value of type {type(value).__name__} at {path}")
+
+
+def canonical_json(value: Any) -> str:
+    """Strict JSON (finite numbers, string keys, no cycles, no coercion), sorted keys."""
+    _check_json(value, "$", set())
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
 
 
 class Visibility(str, Enum):
@@ -42,10 +88,7 @@ class StateStatus(str, Enum):
 
 
 def _canonical(payload: Any) -> str:
-    try:
-        text = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-    except (TypeError, ValueError) as exc:
-        raise ValueError(f"payload is not JSON-serializable: {type(exc).__name__}") from None
+    text = canonical_json(payload)
     if len(text) > MAX_PAYLOAD_CHARS:
         raise ValueError(f"payload exceeds {MAX_PAYLOAD_CHARS} chars")
     return text
@@ -76,6 +119,15 @@ class StateEntry:
         object.__setattr__(self, "status", StateStatus(self.status))
         object.__setattr__(self, "visibility", Visibility(self.visibility))
         object.__setattr__(self, "summary", str(self.summary)[:280])
+        if self.observed_at is not None and not isinstance(self.observed_at, str):
+            raise ValueError("observed_at must be a string when given")
+        if len(canonical_json(self.to_dict())) > MAX_ENTRY_CHARS:
+            raise ValueError(f"entry exceeds {MAX_ENTRY_CHARS} chars")
+
+    @property
+    def content_digest(self) -> str:
+        """Digest of the whole entry: a changed state changes every packet that names it."""
+        return hashlib.sha256(canonical_json(self.to_dict()).encode("utf-8")).hexdigest()[:16]
 
     @property
     def readonly(self) -> bool:
@@ -120,7 +172,7 @@ def render_entry(entry: StateEntry, visibility: Visibility) -> dict[str, Any] | 
     view: dict[str, Any] = {"state_id": entry.state_id, "state_type": entry.state_type,
                             "source_ref": entry.source_ref, "status": entry.status.value,
                             "summary": entry.summary, "exposure": visibility.value,
-                            "visibility_is_permission": False}
+                            "content_digest": entry.content_digest, "visibility_is_permission": False}
     if visibility == Visibility.SHORT:
         return view
     view.update(provenance=list(entry.provenance), uncertainty=list(entry.uncertainty), tags=list(entry.tags))
