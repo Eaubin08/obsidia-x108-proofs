@@ -1,0 +1,91 @@
+{
+  "version": "NATIVE_TASKS_CRM_V0",
+  "status": "CANONICAL_NATIVE_DOMAINS_PROVEN",
+  "date": "2026-10-07",
+  "source_of_truth": {
+    "tasks": "OBSIDIA_NATIVE",
+    "crm": "OBSIDIA_NATIVE",
+    "external_saas": "OPTIONAL_ADAPTER_ONLY"
+  },
+  "tasks": {
+    "schema": "TASK_NATIVE_V0",
+    "operations": [
+      "CREATE_TASK",
+      "UPDATE_TASK",
+      "ASSIGN_TASK",
+      "SET_STATUS",
+      "SET_DUE_AT",
+      "ADD_DEPENDENCY",
+      "REMOVE_DEPENDENCY",
+      "ADD_TAG",
+      "REMOVE_TAG"
+    ],
+    "statuses": [
+      "TODO",
+      "IN_PROGRESS",
+      "BLOCKED",
+      "DONE",
+      "CANCELLED"
+    ],
+    "terminal_statuses": [
+      "DONE",
+      "CANCELLED"
+    ],
+    "replay": true,
+    "append_only_receipts": true
+  },
+  "crm": {
+    "record_types": [
+      "PERSON",
+      "ORGANIZATION",
+      "CASE"
+    ],
+    "entity_kinds": [
+      "record",
+      "relationship",
+      "interaction",
+      "followup"
+    ],
+    "operations": [
+      "CREATE_RECORD",
+      "UPDATE_FIELDS",
+      "SET_OWNER",
+      "SET_RECORD_STATUS",
+      "ADD_RECORD_TAG",
+      "REMOVE_RECORD_TAG",
+      "CREATE_RELATIONSHIP",
+      "DEACTIVATE_RELATIONSHIP",
+      "APPEND_INTERACTION",
+      "CREATE_FOLLOWUP",
+      "CLOSE_FOLLOWUP",
+      "CANCEL_FOLLOWUP"
+    ],
+    "task_link": "CRM_FOLLOWUP.task_ref -> TASK_NATIVE_V0.task_id",
+    "timeline": true,
+    "replay": true,
+    "append_only_receipts": true,
+    "secret_fields_forbidden": true
+  },
+  "governance": {
+    "decision_authority": "KX108_ONLY",
+    "decision_phase": "WORLD_ACTION_PRE_EXECUTION",
+    "exact_prestate_binding": true,
+    "exact_mutation_hash": true,
+    "human_approval_required": true,
+    "hold_or_block_prevents_apply": true,
+    "external_execution_authority": false
+  },
+  "external_sync": {
+    "projection_only": true,
+    "task_projection": "NATIVE_TASK_EXTERNAL_SYNC_PROJECTION_V0",
+    "crm_projection": "NATIVE_CRM_EXTERNAL_SYNC_PROJECTION_V0",
+    "projections_allowed_to_decide": false,
+    "projections_allowed_to_act": false
+  },
+  "proof": {
+    "workflow_run": 37608832419,
+    "result": "104 passed in 0.66s",
+    "protected_files_changed": 0
+  },
+  "main_merge": false
+}

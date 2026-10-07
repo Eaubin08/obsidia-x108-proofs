@@ -82,6 +82,14 @@ WORLD_ACTION_LIVE_GATEWAY_PATH = (
 WORLD_ACTION_BOUNDED_EXECUTOR_PATH = (
     "periphery/world_calls/bounded_connector_executor_v0.py"
 )
+NATIVE_TASKS_PATH = "periphery/native_ops/tasks_native_v0.py"
+NATIVE_CRM_PATH = "periphery/native_ops/crm_native_v0.py"
+NATIVE_OPS_WORLD_ACTION_BRIDGE_PATH = (
+    "periphery/native_ops/world_action_bridge_v0.py"
+)
+NATIVE_OPS_SYNC_PROJECTION_PATH = (
+    "periphery/native_ops/sync_projection_v0.py"
+)
 
 # Multi-domain proof surfaces.
 MULTIDOMAIN_PROOF_PATH = (
@@ -237,6 +245,21 @@ def world_action_bounded_executor_contract_present() -> bool:
     )
 
 
+def native_tasks_crm_domains_present() -> bool:
+    """True when Obsidia-owned TASKS/CRM domains and their KX108 bridge exist.
+
+    Presence means the canonical local models are available. It does not
+    imply any external SaaS synchronization or external world activation.
+    """
+    return (
+        _exists(NATIVE_TASKS_PATH)
+        and _exists(NATIVE_CRM_PATH)
+        and _exists(NATIVE_OPS_WORLD_ACTION_BRIDGE_PATH)
+        and _exists(NATIVE_OPS_SYNC_PROJECTION_PATH)
+        and world_action_pre_execution_rail_present()
+    )
+
+
 def runtime_internal_end_to_end_validated() -> bool:
     """
     Internal governed runtime, end to end — agent through verified KX108
@@ -362,6 +385,21 @@ def runtime_link_facts() -> dict:
 
         "world_action_bounded_executor_path":
             WORLD_ACTION_BOUNDED_EXECUTOR_PATH,
+
+        "native_tasks_crm_domains_present":
+            native_tasks_crm_domains_present(),
+
+        "native_tasks_path":
+            NATIVE_TASKS_PATH,
+
+        "native_crm_path":
+            NATIVE_CRM_PATH,
+
+        "native_ops_world_action_bridge_path":
+            NATIVE_OPS_WORLD_ACTION_BRIDGE_PATH,
+
+        "native_ops_sync_projection_path":
+            NATIVE_OPS_SYNC_PROJECTION_PATH,
 
         "runtime_internal_end_to_end_validated":
             runtime_internal_end_to_end_validated(),
