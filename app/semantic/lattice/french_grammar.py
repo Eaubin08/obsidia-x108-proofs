@@ -141,6 +141,11 @@ class _Clause:
     rel_member: bool = False            # N7: a verb coordinated inside a subject "qui" relative
     rel_sibling: "_Clause | None" = None  # N7b: the relative clause it is coordinated with
     rel_member_possible_request: bool = False  # N7b: homograph under an imperative host (H11 C)
+    main_subject: str | None = None     # R1-R5: the antecedent NP, subject of the main remainder
+    main_subject_members: tuple = ()    # R4: (member token lists, connective) of a coordinated antecedent
+    main_after_relative: bool = False   # R1-R5: main predicate split off after a relative
+    after_rel: "_Clause | None" = None  # R1-R5: the relative clause it follows
+    rel_main_unresolved: bool = False   # R1-R5: subject antecedent whose main predicate was not found
     ni_modal: object = None  # obligation modal of "ne doit ni INF1 ni INF2" (token, then its draft)
     ni_scope_open: object = None  # "vouloir" token of a "ne ... ni INF" whose negated scope is not shared
     neg_scope_open: object = None  # negated operator chain draft whose scope over a bare coordinated INF is open
@@ -1057,6 +1062,149 @@ def _bare_infinitive(clause: _Clause, d0: "_Draft") -> bool:
     ("et exécuter Q", "et ne pas exécuter Q": the negation stays local to the member)."""
     return d0.verb_form == "INFINITIVE" and d0.head_index == d0.lex_index \
         and all(t.low in _MEMBER_NEGATORS for t in clause.toks[:d0.head_index])
+
+
+def _relative_chain_end(toks: list, j: int, raw: str, has_object: bool) -> int:
+    """End (exclusive) of a relative's own chain starting at its first verb j: the verb chain
+    (aux + participle), its object when the relative has one (qui: a symbol or det + noun),
+    its adverbs, and its prep-governed infinitives ("sert à tester Q et à lancer R")."""
+    def obj(e: int) -> int:
+        if not has_object or e >= len(toks):
+            return e
+        if len(toks[e].low) == 1 and raw[toks[e].start:toks[e].end].isupper():
+            return e + 1
+        if toks[e].low in _DETERMINERS and e + 1 < len(toks) and not _is_verb(toks, e + 1):
+            return e + 2
+        return e
+    if _pred(toks[j]) in {"HAVE", "BE"} and j + 1 < len(toks) and _is_verb(toks, j + 1) \
+            and "PP" in _feats(toks[j + 1]):
+        j += 1
+    end = obj(j + 1)
+    while True:
+        e = end
+        while e < len(toks) and (toks[e].low in _MANNER_ADVERBS or toks[e].low in _ADVERBS_SKIPPABLE
+                                 or toks[e].low in _TIME_ADVERBS):
+            e += 1
+        q = e + 1 if e + 1 < len(toks) and toks[e].low in {"et", "ou"} and toks[e + 1].low in {"à", "a", "de", "d'"} \
+            else e
+        if q + 1 < len(toks) and toks[q].low in {"à", "a", "de", "d'", "pour"} and _is_verb(toks, q + 1) \
+                and "INF" in _feats(toks[q + 1]):
+            end = obj(q + 2) if has_object else q + 2
+            if not has_object:
+                end = q + 2 + (1 if q + 2 < len(toks) and len(toks[q + 2].low) == 1
+                               and raw[toks[q + 2].start:toks[q + 2].end].isupper() else 0)
+            continue
+        return e
+
+
+def _split_relative_main(clauses: list[_Clause], raw: str) -> list[_Clause]:
+    """R1-R5: the relative / main-clause boundary.
+
+    A subject antecedent (a verbless bare NP, possibly after "si", after a detached source
+    marker, or coordinated: "Paul et Nadia") followed by a relative chain ("qui ...", "que
+    ...", "que ... et qui ...") has its main predicate after the chain. The relative ends after
+    its own chain (qui: verb chain + one object; que: subject + verb chain); what follows is
+    split into its own clause, whose subject is the antecedent (never the relative's object),
+    which keeps the antecedent's condition and source. Coordinated relatives ("et / ou qui |
+    que") are sibling relatives. Structural only: no nearest / last noun fallback."""
+    # coordinated relatives: "... que Paul lance et qui teste P ..."
+    for k in range(1, len(clauses)):
+        c, p = clauses[k], clauses[k - 1]
+        if c.conn in {"et", "ou"} and c.toks and c.toks[0].low in {"qui", "que", "qu'"} \
+                and (p.conn == "rel" or p.rel_member):
+            c.conn_toks, c.toks = c.conn_toks + [c.toks[0]], c.toks[1:]
+            c.conn, c.rel_member, c.rel_sibling, c.embedding_parent = "rel", True, p, p.embedding_parent
+        elif c.conn == "rel" and c.conn_toks and c.conn_toks[0].low in {"et", "ou"} \
+                and (p.conn == "rel" or p.rel_member):
+            c.rel_member, c.rel_sibling = True, p                  # already "et que" / "ou qui"
+    out = list(clauses)
+    k = 1
+    while k < len(out):
+        c, ante = out[k], out[k - 1]
+        if c.conn != "rel" or c.rel_member or not c.conn_toks \
+                or c.conn_toks[-1].low not in {"qui", "que", "qu'"} or not ante.toks \
+                or any(_is_verb(ante.toks, j) for j in range(len(ante.toks))):
+            k += 1
+            continue
+        # the antecedent NP, after an optional detached source marker
+        np_toks, marker, mspan = list(ante.toks), None, None
+        if "," in [t.low for t in np_toks]:
+            cut = [t.low for t in np_toks].index(",")
+            m = _source_marker(np_toks[:cut])
+            if m is not None:
+                marker, mspan = m, (np_toks[0].start, np_toks[cut - 1].end)
+                np_toks = np_toks[cut + 1:]
+        elif np_toks and np_toks[0].low == "apparemment" and len(np_toks) > 1:
+            marker, mspan = _source_marker(np_toks[:1]), (np_toks[0].start, np_toks[0].end)
+            np_toks = np_toks[1:]
+        conj = None
+        members: list[list] = [[]]
+        for t in np_toks:
+            if t.low in {"et", "ou"} and members[-1]:
+                conj = conj or t.low
+                members.append([])
+            else:
+                members[-1].append(t)
+        if not np_toks or not all(m and _bare_noun_phrase(m) for m in members):
+            k += 1
+            continue
+        chain_end = k
+        while chain_end + 1 < len(out):
+            nxt = out[chain_end + 1]
+            if nxt.rel_member and nxt.conn == "rel":
+                chain_end += 1                             # "et qui / et que" sibling relative
+                continue
+            if nxt.conn in {"et", "ou", "puis"} and nxt.boundary is None and nxt.toks and _is_verb(nxt.toks, 0) \
+                    and ({"P3S", "P3P"} & _feats(nxt.toks[0]) or nxt.toks[0].low in _AUX_PERSON):
+                chain_end += 1                             # "qui testent P et observent R" (N7)
+                continue
+            if nxt.conn in {"et", "ou"} and nxt.boundary is None and len(nxt.toks) > 1 \
+                    and nxt.toks[0].low in {"à", "a", "de", "d'"} and _is_verb(nxt.toks, 1) \
+                    and "INF" in _feats(nxt.toks[1]):
+                chain_end += 1                             # "qui sert à tester Q et à lancer R"
+                continue
+            break
+        last = out[chain_end]
+        toks = last.toks
+        vs = [j for j in range(len(toks)) if _is_verb(toks, j)]
+        if not vs:
+            ante.rel_main_unresolved = True
+            k = chain_end + 1
+            continue
+        end = _relative_chain_end(toks, vs[0], raw, has_object=last.conn_toks[-1].low not in {"que", "qu'"})
+        rest = toks[end:]
+        while rest and rest[-1].is_punct:
+            rest = rest[:-1]
+        if rest and (rest[0].low in _PREPOSITIONS or rest[0].low in {"à", "a", "de", "d'"}) \
+                and not _is_verb(rest, 0):
+            k = chain_end + 1              # a preposition never opens the main predicate: no split
+            continue
+        if not rest or rest[0].is_punct or rest[0].low in set(_CONNECTIVES) | {"et", "ou", "puis", "mais", "qui", "que"}:
+            # the main predicate was not found after the relative chain: named, frame open
+            if not any(c.conn not in {"rel", "et", "ou", "puis"} for c in out[chain_end + 1:chain_end + 2]):
+                ante.rel_main_unresolved = True
+            k = chain_end + 1
+            continue
+        last.toks = toks[:end]
+        main = _Clause(list(rest), "si" if ante.conn == "si" else None, [],
+                       embedding_parent=ante.embedding_parent)
+        main.main_after_relative, main.after_rel = True, last
+        main.main_subject = " ".join(t.low for m in members for t in m if t.low not in _DETERMINERS) \
+            if len(members) == 1 else f" {conj} ".join(
+                " ".join(t.low for t in m if t.low not in _DETERMINERS) for m in members)
+        if len(members) > 1:
+            main.main_subject_members = (members, conj)
+        if marker is not None:
+            main.evidential, main.evidential_span = marker, mspan
+            ante.toks = np_toks
+        elif ante.evidential is not None:
+            main.evidential, main.evidential_span, ante.evidential = ante.evidential, ante.evidential_span, None
+        if ante.conn == "si":
+            # R3: the main predicate of a protasis subject belongs to that protasis
+            main.protasis_head = ante.protasis_head = ante.protasis_head or ante
+        out.insert(chain_end + 1, main)
+        k = chain_end + 2
+    return out
 
 
 def _continues_prep_chain(prev: _Clause, clause: _Clause) -> bool:
@@ -2225,6 +2373,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     toks, disfluencies, ortho = _tokenize(raw)
     normalized = " ".join(t.low for t in toks)
     clauses, interrogative = _segment(toks)
+    clauses = _split_relative_main(clauses, raw)     # R1-R5: relative / main boundary
     _mark_verbal_ni(clauses)
     # "Si P et Q, R" / "si P et que Q" / "si P et si Q": one conjunctive protasis.
     # A bare "et Q" joins only a sentence-initial protasis ("R si P et Q" stays open), or
@@ -2295,7 +2444,9 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                            and not interrogative)
     for k in range(2, len(clauses)):
         prev, clause = clauses[k - 1], clauses[k]
-        rel_qui = (prev.conn == "rel" and prev.conn_toks and prev.conn_toks[-1].low == "qui") or prev.rel_member
+        # (R2: the same H11 option C contract for "que" relatives)
+        rel_qui = (prev.conn == "rel" and prev.conn_toks and prev.conn_toks[-1].low in {"qui", "que", "qu'"}) \
+            or prev.rel_member
         if not rel_qui or clause.conn not in {"et", "ou", "puis"} or clause.boundary is not None \
                 or not clause.toks or not _is_verb(clause.toks, 0):
             continue
@@ -2342,6 +2493,14 @@ def parse_utterance(raw: str) -> UtteranceFrame:
 
     for ci, clause in enumerate(clauses):
         drafts = _build_drafts(clause.toks, interrogative)
+        if clause.main_subject is not None and drafts:
+            # R1-R5: the main predicate after a relative: its subject is the antecedent
+            d0 = min(drafts, key=lambda d: d.head_index)
+            if d0.subject is None and d0.head_index == 0:
+                d0.subject, d0.subject_person = clause.main_subject, "3"
+                if d0.verb_form == "IMPERATIVE":
+                    d0.verb_form, d0.tense = "FINITE", _tense_of(_feats(d0.lex))
+                d0.governed = None
         if clause.conn == "rel" and ci > 0 and not clauses[ci - 1].units \
                 and _bare_noun_phrase(clauses[ci - 1].toks):
             # N6: "Le script qui sert à tester Q sert aussi à arrêter S": after the relative's own
@@ -3103,7 +3262,9 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             link = clause.conn_toks[0].low if clause.conn_toks else "et"
             kind = {"et": RelationKind.COORDINATES, "ou": RelationKind.ALTERNATIVE,
                     "puis": RelationKind.PRECEDES}.get(link, RelationKind.COORDINATES)
-            relations.append(LatticeRelation(kind.value, clause.rel_sibling.units[-1][0].id, h.id, evidence=link))
+            sib = clause.rel_sibling.units[-1][0].id
+            if not any({r.source, r.target} == {sib, h.id} for r in relations):   # (no duplicate)
+                relations.append(LatticeRelation(kind.value, sib, h.id, evidence=link))
         elif clause.prep_member_of is not None:
             # F-B3G-1: a member of one prep-governed chain coordinates with its sibling member
             # (never with the governor, never a main-clause relation)
@@ -3181,7 +3342,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 and not (_copula_evidence(clause) and (in_seq or clause.conn in _COPULA_REPORTED_CONNS)) \
                 and not (clause.conn is None and not any(c.units for c in clauses) and any(
                     t.low in {"que", "qu'", "qui"} and len(clause.toks) - k >= 3
-                    for k, t in enumerate(clause.toks) if k > 0)):
+                    for k, t in enumerate(clause.toks) if k > 0)) \
+                and not clause.main_after_relative:   # R1-R5: a main predicate is never dropped
             # (N8: "Le fichier que Marie ouvre disparaît": an utterance with no unit holding a
             # relative followed by content is a predication with unknown verbs: reported)
             # (a "quand / lorsque" subordinate, a verbless preposed protasis ("Si P, lance R",
@@ -3226,6 +3388,10 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 link = f"{clause.conn}_after={prev_main.id}" if prev_main is not None else clause.conn
             else:
                 link = "root"
+        if clause.main_after_relative and clause.conn != "si" and clause.after_rel is not None \
+                and clause.after_rel.units and not clause.units:
+            # R1-R5: the antecedent's main predicate after a relative (verb not analysed)
+            link = f"main_predicate_after_relative_of={clause.after_rel.units[-1][0].id}"
         ops = _content_operators(clause)
         missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{content[0].start}-{content[-1].end}:{link}"
                        + (f":governed_by={governed_by.id}" if governed_by is not None else "")
@@ -3318,6 +3484,24 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             missing.append(f"coordinated_subject_unrepresented:{np0[0].start}-{np0[-1].end}:subject_of={u1.id}")
             ambiguities.append(f"coordinated_subject_unrepresented:{u1.id}")
 
+    # R4: "Paul et Nadia qui testent P lancent Q": the main predicate after the relative has the
+    # coordinated antecedent as subject, kept as the canonical H14 coordinated_subject
+    # CoordinationRef (no group entity, distributivity unspecified)
+    for clause in clauses:
+        if not clause.main_subject_members or not clause.units:
+            continue
+        members, conj = clause.main_subject_members
+        mu, md = clause.units[0]
+        if md.subject != clause.main_subject:
+            continue
+        texts = tuple(" ".join(t.low for t in m if t.low not in _DETERMINERS) or m[-1].low for m in members)
+        coordinations.append(CoordinationRef(
+            f"c{len(coordinations) + 1}", "OR" if conj == "ou" else "AND",
+            tuple(f"{mu.id}.s{n}" for n in range(1, len(members) + 1)), "coordinated_subject",
+            (",",) * (len(members) - 2) + (conj,), (members[0][0].start, members[-1][-1].end),
+            member_kind="argument", host=mu.id, role="subject", member_texts=texts,
+            member_spans=tuple((m[0].start, m[-1].end) for m in members), distributivity="UNSPECIFIED"))
+
     # D5-N4: a floating "chacun" of a plural NON-coordinated subject ("Ils lancent chacun P",
     # "Les agents ont chacun lancé P"): the object is restored and the distributivity is a
     # ParticipantConfigurationRef (no group); "ils" stays unresolved (no anaphora here)
@@ -3388,7 +3572,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     if clauses and not clauses[0].units and _bare_noun_phrase(clauses[0].toks):
         for ci, clause in enumerate(clauses[1:], start=1):
             if clause.conn != "rel" or not clause.conn_toks or clause.conn_toks[-1].low not in {"que", "qu'"} \
-                    or not clause.units or any(c.conn != "rel" for c in clauses[1:ci]):
+                    or not clause.units or any(c.conn != "rel" for c in clauses[1:ci]) \
+                    or any(c.after_rel is clause for c in clauses):   # (already split, R1-R5)
                 continue
             last_u, last_d = clause.units[-1]
             k = max(last_d.lex_index, last_d.head_index) + 1
@@ -3423,6 +3608,14 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 and not any("main_predicate_after_relative_of=" in m or m.endswith(":unattached") for m in missing):
             missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{clauses[0].toks[0].start}-{clauses[0].toks[-1].end}"
                            f":main_predicate_unresolved")
+    # R1-R5: any subject antecedent (also after "si" or a source marker) whose main predicate was
+    # not found after its relative chain keeps the frame open, named (never a silent closure)
+    for clause in clauses:
+        if clause.rel_main_unresolved and clause.toks:
+            marker = (f"{UNANALYZED_PREDICATIVE_CONTENT}:{clause.toks[0].start}-{clause.toks[-1].end}"
+                      f":main_predicate_unresolved")
+            if marker not in missing:
+                missing.append(marker)
 
     # D5-N3 / S11 conservation: material left right after a unit's objects (or after its verb
     # when it has none) and consumed by no structure is reported, never dropped silently:
