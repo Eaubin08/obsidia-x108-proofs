@@ -5,7 +5,7 @@ Never returns raw tuples. Always returns response_md string.
 Provider-neutral readonly response pipeline.
 """
 from __future__ import annotations
-import json, sys, uuid, os, socket
+import json, sys, uuid, os, socket, hashlib
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
