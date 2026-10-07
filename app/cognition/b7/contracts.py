@@ -144,6 +144,17 @@ def full_digest(value: Any, prefix: str = "") -> str:
     return prefix + hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
 
 
+def origin_full_digest(origin: Any) -> str:
+    """Full-width (256-bit) origin binding over the exact B6 content_digest preimage
+    (canonical_json(origin.to_dict())); its first 16 hex equal the B6 64-bit content_digest."""
+    return full_digest(origin.to_dict(), "b7orig_")
+
+
+def request_identity(origin_state_id: str, origin_full: str, field: str, marker: str) -> str:
+    """Request identity bound to the full origin digest (state_id alone is not unique, e.g. "sens:frame")."""
+    return full_digest([origin_state_id, origin_full, field, marker], "b7req_")
+
+
 def _plain(value: Any) -> Any:
     if isinstance(value, Enum):
         return value.value
@@ -172,6 +183,7 @@ class CognitiveResolutionRequest:
     uncertainty: tuple[str, ...]
     why_resolution_needed: str
     original_state_digest: str
+    origin_full_digest: str
 
     def __post_init__(self) -> None:
         if len(canonical_json(self.to_dict())) > MAX_REQUEST_CHARS:

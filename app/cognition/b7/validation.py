@@ -14,7 +14,8 @@ from dataclasses import dataclass
 from typing import Any, Iterable, Mapping
 
 from app.cognition.b7.contracts import (CandidateStatus, CognitiveResolutionCandidate, CognitiveResolutionRequest,
-                                        CognitiveValidationVerdict, RequiredCandidateKind, candidate_identity)
+                                        CognitiveValidationVerdict, RequiredCandidateKind, candidate_identity,
+                                        origin_full_digest, request_identity)
 from app.harness.state_explicit.context_assembly import ContextPacket
 from app.harness.state_explicit.contracts import StateEntry, StateStatus, Visibility
 from app.harness.state_explicit.registry import WorkingStateRegistry
@@ -144,6 +145,10 @@ def _check(request: CognitiveResolutionRequest, cand: CognitiveResolutionCandida
         return "origin_state_id_mismatch"
     if cand.original_state_digest != request.original_state_digest or origin.content_digest != request.original_state_digest:
         return "original_state_digest_mismatch"
+    field, _, marker = request.problem_refs[0].partition(":") if request.problem_refs else ("", "", "")
+    if (origin_full_digest(origin) != request.origin_full_digest
+            or request_identity(request.origin_state_id, request.origin_full_digest, field, marker) != request.request_id):
+        return "origin_identity_mismatch"     # B7-S: full-width origin binding, independently recomputed
     if cand.candidate_kind != request.required_candidate_kind:
         return "candidate_kind_mismatch"
     if cand.proposer_role not in request.allowed_role_ids:

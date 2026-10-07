@@ -2,15 +2,15 @@
 
 Reads only explicit B6 / SENS markers of a StateEntry (field + marker prefix / link token); never the
 user text, never a model. One explicit marker -> one CognitiveResolutionRequest, in canonical order
-(field order below, then marker string); request ids derive from (origin digest, field, marker).
+(field order below, then marker string); request ids derive from (origin state id, full origin digest, field, marker).
 """
 from __future__ import annotations
 
 import re
 from typing import Any, Iterable
 
-from app.cognition.b7.contracts import (CognitiveResolutionRequest, UnresolvedKind, full_digest,
-                                        forbidden_operations_for, required_candidate_kind_for)
+from app.cognition.b7.contracts import (CognitiveResolutionRequest, UnresolvedKind, origin_full_digest,
+                                        forbidden_operations_for, request_identity, required_candidate_kind_for)
 from app.cognition.b7.router import eligible_roles
 from app.harness.state_explicit.contracts import StateEntry, StateStatus
 
@@ -51,13 +51,15 @@ def classify_marker(field: str, marker: str) -> UnresolvedKind:
 def make_request(entry: StateEntry, kind: UnresolvedKind, field: str, marker: str) -> CognitiveResolutionRequest:
     kind = UnresolvedKind(kind)
     origin_digest = entry.content_digest
+    origin_full = origin_full_digest(entry)
     return CognitiveResolutionRequest(
-        request_id=full_digest([origin_digest, field, marker], "b7req_"),
+        request_id=request_identity(entry.state_id, origin_full, field, marker),
         origin_state_id=entry.state_id, origin_state_type=entry.state_type, unresolved_kind=kind,
         problem_refs=(f"{field}:{marker}",), source_refs=(entry.source_ref,), provenance_refs=tuple(entry.provenance),
         context_refs=(), allowed_role_ids=eligible_roles(kind), forbidden_operations=forbidden_operations_for(kind),
         required_candidate_kind=required_candidate_kind_for(kind), uncertainty=tuple(entry.uncertainty),
-        why_resolution_needed=f"explicit unresolved marker {field}:{marker}", original_state_digest=origin_digest)
+        why_resolution_needed=f"explicit unresolved marker {field}:{marker}", original_state_digest=origin_digest,
+        origin_full_digest=origin_full)
 
 
 def _markers(payload: Any) -> Iterable[tuple[str, str]]:
