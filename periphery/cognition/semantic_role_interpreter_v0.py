@@ -48,20 +48,57 @@ class SemanticRoleInterpretationResultV0:
 
 
 def semantic_role_prompt_v0(raw_utterance: str) -> str:
-    return (
-        "Return JSON only. No explanation, reasoning, markdown, or authority words.\\n"
-        f"schema must be {_SCHEMA}.\\n"
-        "roles must contain only FOCUS, SCOPE, OPERATION, QUALIFIER, "
-        "SOURCE_OR_INSTRUMENT.\\n"
-        "Each role: status is RESOLVED, AMBIGUOUS, or UNKNOWN.\\n"
-        "RESOLVED => exactly one candidate. AMBIGUOUS => at least two candidates. "
-        "UNKNOWN => empty candidates.\\n"
-        "Each candidate contains value plus surface copied exactly from the user "
-        "utterance; evidence_refs may be empty. Never invent spans.\\n"
-        "Do not decide, authorize, execute, route, or choose tools.\\n"
-        "User utterance:\\n" + raw_utterance
-    )
+    """Bounded few-shot prompt for functional semantic roles.
 
+    The examples deliberately contrast topic/focus with source/instrument so
+    small local models do not collapse mere concept presence into semantic role.
+    """
+    return f"""Return exactly one JSON object. No markdown, explanation, reasoning,
+authority decision, tool choice, or action.
+
+Required schema:
+{{
+  "schema": "{_SCHEMA}",
+  "producer": "QWEN_LOCAL",
+  "producer_version": "R6-C3",
+  "roles": {{
+    "FOCUS": {{"status": "...", "candidates": []}},
+    "SCOPE": {{"status": "...", "candidates": []}},
+    "OPERATION": {{"status": "...", "candidates": []}},
+    "QUALIFIER": {{"status": "...", "candidates": []}},
+    "SOURCE_OR_INSTRUMENT": {{"status": "...", "candidates": []}}
+  }}
+}}
+
+Rules:
+- status is RESOLVED, AMBIGUOUS, or UNKNOWN.
+- RESOLVED has exactly one candidate.
+- AMBIGUOUS has at least two candidates.
+- UNKNOWN has zero candidates.
+- Candidate format: {{"value": "ABSTRACT_ROLE_VALUE", "surface": "exact words copied from CURRENT utterance"}}.
+- Never invent a surface. Never output character offsets.
+- FOCUS means what the request is principally about.
+- SCOPE means the entity/domain inside which the focus is considered.
+- OPERATION means what the user asks to do cognitively.
+- QUALIFIER modifies how/how much/which manner.
+- SOURCE_OR_INSTRUMENT means material or instrument explicitly requested to perform the operation.
+- A mentioned concept is not automatically the FOCUS.
+
+Contrast example A:
+Utterance: "Explique ce que tu sais en mémoire sur Obsidia, et détaille."
+Correct functional distinction:
+FOCUS surface="mémoire"; SCOPE surface="Obsidia"; OPERATION surface="Explique";
+QUALIFIER surface="détaille"; SOURCE_OR_INSTRUMENT=UNKNOWN.
+
+Contrast example B:
+Utterance: "Explique Obsidia en utilisant ta mémoire."
+Correct functional distinction:
+FOCUS surface="Obsidia"; OPERATION surface="Explique";
+SOURCE_OR_INSTRUMENT surface="mémoire"; SCOPE=UNKNOWN; QUALIFIER=UNKNOWN.
+
+Now analyze ONLY this CURRENT utterance:
+{raw_utterance}
+"""
 
 def _json_object(value: str | Mapping[str, Any]) -> Mapping[str, Any]:
     if isinstance(value, Mapping):
