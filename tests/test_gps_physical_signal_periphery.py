@@ -112,3 +112,48 @@ def test_live_passive_with_configured_candidate_still_blocks_until_capture(monke
     assert result["envelope"]["proof_level"] == "STRUCTURED_STATE"
     assert result["envelope"]["eligible_for_physical_claim"] is False
     assert "Configuration alone is not proof" in result["next_human_action"]
+
+
+def test_physical_claim_eligibility_does_not_imply_sensor_attestation():
+    mod = load_module()
+    envelope = {
+        "observation_id": "recorded-real-no-attestation",
+        "source_type": "RINEX_OBSERVATION_FILE",
+        "proof_level": "RECORDED_REAL_GNSS",
+        "eligible_for_physical_claim": True,
+        "capture_timestamp": "2026-10-07T00:00:00Z",
+        "processing_timestamp": "2026-10-07T00:00:01Z",
+        "input_hash": "abc",
+        "processor_name": "test",
+        "processor_config_hash": "cfg",
+        "observables_hash": mod.sha256_obj({"freshness_ms": 0}),
+        "observables": {"freshness_ms": 0},
+        "limitations": ["NO_SENSOR_PRIVATE_KEY_ATTESTATION"],
+    }
+    payload = mod.observation_to_domain_payload(envelope)
+
+    assert payload["sensor_attested"] is False
+    assert payload["attestation_ready"] is False
+
+
+def test_explicit_sensor_attestation_can_be_carried_without_changing_authority():
+    mod = load_module()
+    envelope = {
+        "observation_id": "live-attested",
+        "source_type": "LIVE_PASSIVE_RECEIVER",
+        "proof_level": "REAL_PASSIVE_GNSS",
+        "eligible_for_physical_claim": True,
+        "sensor_attestation_proven": True,
+        "capture_timestamp": "2026-10-07T00:00:00Z",
+        "processing_timestamp": "2026-10-07T00:00:01Z",
+        "input_hash": "abc",
+        "processor_name": "test",
+        "processor_config_hash": "cfg",
+        "observables_hash": mod.sha256_obj({"freshness_ms": 0}),
+        "observables": {"freshness_ms": 0},
+        "limitations": [],
+    }
+    payload = mod.observation_to_domain_payload(envelope)
+
+    assert payload["sensor_attested"] is True
+    assert payload["attestation_ready"] is True
