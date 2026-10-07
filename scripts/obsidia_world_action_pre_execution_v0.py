@@ -11,12 +11,13 @@ decision_authority = KX108_ONLY
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
 from typing import Any, Mapping, Optional
 
 from periphery.world_calls.action_risk_classifier import ActionRiskClass
 from periphery.world_calls.world_call_classifier import WorldCallClass
-from sigma.contracts import Domain, DomainAggregate
+from sigma.contracts import DomainAggregate
 from sigma.guard import GuardX108
 
 import obsidia_kx108_decision_store as _DS
@@ -24,6 +25,11 @@ import obsidia_world_action_pre_execution_context_v0 as _CTX
 
 DECISION_AUTHORITY = "KX108_ONLY"
 WORLD_ACTION_DOMAIN = "world_action"
+
+
+class _WorldActionKernelDomain(Enum):
+    """Local structural domain token; protected sigma/contracts.py stays frozen."""
+    WORLD_ACTION = WORLD_ACTION_DOMAIN
 
 _BLOCKED_WORLD_CALL_CLASSES = {
     WorldCallClass.CRITICAL_WORLD_CALL.value,
@@ -116,7 +122,7 @@ def _translated_aggregate(record: Mapping[str, Any]) -> DomainAggregate:
     )
 
     return DomainAggregate(
-        domain=Domain.WORLD_ACTION,
+        domain=_WorldActionKernelDomain.WORLD_ACTION,
         market_verdict="ALLOW",
         confidence=1.0,
         contradictions=sorted(set(contradictions)),
