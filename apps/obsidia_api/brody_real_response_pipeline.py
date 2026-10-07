@@ -30,6 +30,10 @@ from periphery.language.action_meaning_validator import (
     validate_action_meaning,
 )
 
+from periphery.cognition.semantic_roles_v0 import (
+    SemanticRoleProjectionV0,
+)
+
 _TERMINAL = None
 _LOCAL_ENGINE = None
 _HYDRATION = None
@@ -68,6 +72,7 @@ def run_brody_real_response_pipeline(
     x108_root: str | None = None,
     limit: int = 8,
     max_items: int = 6,
+    semantic_role_projection: SemanticRoleProjectionV0 | None = None,
 ) -> dict[str, Any]:
     _load()
     action_id = f"brody_real_{uuid.uuid4().hex[:12]}"
@@ -344,6 +349,51 @@ def run_brody_real_response_pipeline(
         "readonly": True,
     }
 
+    # R6-B: additive semantic-role context only.
+    # It is never consulted for routing, provider/tool selection, memory writes,
+    # verdicts, ACT, or KX authority.
+    semantic_role_context = None
+    semantic_role_projection_sha256 = None
+
+    if semantic_role_projection is not None:
+        if not isinstance(semantic_role_projection, SemanticRoleProjectionV0):
+            raise TypeError(
+                "semantic_role_projection must be SemanticRoleProjectionV0"
+            )
+
+        semantic_role_context = semantic_role_projection.to_brody_context()
+
+        required_invariants = {
+            "readonly": True,
+            "non_sovereign": True,
+            "decision_authority": "KX108_ONLY",
+            "allowed_to_decide": False,
+            "allowed_to_act": False,
+            "emits_act": False,
+            "emits_verdict": False,
+            "memory_write": False,
+            "kernel_mutation": False,
+        }
+        for key, expected in required_invariants.items():
+            if semantic_role_context.get(key) != expected:
+                raise ValueError(
+                    f"semantic role context invariant violation: {key}"
+                )
+
+        semantic_role_projection_sha256 = hashlib.sha256(
+            json.dumps(
+                semantic_role_context,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+            ).encode("utf-8")
+        ).hexdigest()
+
+        ctx_data["semantic_role_projection"] = semantic_role_context
+        ctx_data[
+            "semantic_role_projection_sha256"
+        ] = semantic_role_projection_sha256
+
     r.update({
         "response": response_md,
         "response_md": response_md,
@@ -368,6 +418,8 @@ def run_brody_real_response_pipeline(
         ),
         "material_quality": material_quality, "selected_items": selected_items, "tag_counts": tag_counts,
         "context_packet": ctx_data,
+        "semantic_role_context": semantic_role_context,
+        "semantic_role_projection_sha256": semantic_role_projection_sha256,
         "x108_boundary": {"passed": True, "status": "READONLY"},
         "audit_event": {
             "event_id": f"audit_{action_id}", "type": "brody_real_response",
