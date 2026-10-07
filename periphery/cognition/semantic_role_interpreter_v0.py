@@ -69,7 +69,12 @@ def _json_object(value: str | Mapping[str, Any]) -> Mapping[str, Any]:
     text = str(value or "").strip()
     if not text:
         raise ValueError("EMPTY_INTERPRETATION_OUTPUT")
-    if text.startswith("~~~") or "<thinking>" in text.lower() or "<scratchpad>" in text.lower():
+    if (
+        text.startswith(chr(96) * 3)
+        or text.startswith("~~~")
+        or "<thinking>" in text.lower()
+        or "<scratchpad>" in text.lower()
+    ):
         raise ValueError("NON_JSON_OR_REASONING_WRAPPER_FORBIDDEN")
     try:
         parsed = json.loads(text)
