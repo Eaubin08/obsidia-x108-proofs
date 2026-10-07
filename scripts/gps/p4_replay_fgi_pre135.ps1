@@ -53,6 +53,20 @@ finally {
 
 if ($dockerExitCode -ne 0) { throw "GNSS-SDR replay exited with code $dockerExitCode" }
 
+$stdoutPath = Join-Path $OutDir "gnss_sdr_stdout.log"
+$stdoutText = Get-Content -LiteralPath $stdoutPath -Raw -ErrorAction SilentlyContinue
+$fatalPatterns = @(
+    "Unable to connect flowgraph",
+    "configuration file is not well defined",
+    "itemsize mismatch",
+    "DataTypeAdapter implementation set in the configuration file does not exist"
+)
+foreach ($pattern in $fatalPatterns) {
+    if ($stdoutText -match [regex]::Escape($pattern)) {
+        throw "GNSS-SDR replay failed despite process exit code 0: $pattern"
+    }
+}
+
 Write-Host ""
 Write-Host "REPLAY_PROCESS_EXIT_OK = True"
 Write-Host "OUTPUT_DIR = $OutDir"
