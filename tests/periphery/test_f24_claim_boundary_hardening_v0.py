@@ -1,7 +1,15 @@
 """F24 hardening tests for claim and authority boundaries left open in F15/F16/F18."""
 from periphery.measurement.contracts_v0 import InstrumentRefV0, MeasurementContextV0, SituatedMeasurementV0
-from periphery.physical_evidence.contracts_v0 import CompatibilityStatusV0, assess_physical_compatibility_v0
-from periphery.physical_signal.contracts_v0 import PhysicalSignalEventV0
+from periphery.physical_evidence.contracts_v0 import (
+    CompatibilityStatusV0,
+    assess_physical_compatibility_v0,
+    build_replayable_physical_evidence_candidate_v0,
+)
+from periphery.physical_signal.contracts_v0 import (
+    PhysicalSignalEventV0,
+    PhysicalSignalReportV0,
+    build_world_state_candidate_v0,
+)
 from periphery.science_constraints.contracts_v0 import (
     ConstraintAssessmentV0,
     ConstraintStatusV0,
@@ -46,6 +54,45 @@ def test_f15_single_source_never_claims_source_independence():
     result = assess_physical_compatibility_v0((_event("e1", "source:1"),))
     assert result.independence == CompatibilityStatusV0.UNKNOWN
     assert "SOURCE_INDEPENDENCE_NOT_PROVEN" in result.reasons
+
+
+
+
+def test_f15_replayable_candidate_requires_replay_reference_and_binds_hashes():
+    e1 = _event("e1", "source:1")
+    e2 = _event("e2", "source:2")
+    report = PhysicalSignalReportV0(
+        report_id="report:1",
+        event_refs=("e1", "e2"),
+        evidence_refs=("report:evidence",),
+        provenance_refs=("source:1", "source:2"),
+    )
+    world = build_world_state_candidate_v0(
+        candidate_id="world:1",
+        report=report,
+        events=(e1, e2),
+        valid_at="2026-10-07T00:00:00Z",
+    )
+    try:
+        build_replayable_physical_evidence_candidate_v0(
+            evidence_id="physical:1",
+            report=report,
+            world_candidate=world,
+            events=(e1, e2),
+        )
+    except ValueError as exc:
+        assert "requires replay_refs" in str(exc)
+    else:
+        raise AssertionError("replayable candidate without replay_refs must fail closed")
+
+    candidate = build_replayable_physical_evidence_candidate_v0(
+        evidence_id="physical:2",
+        report=report,
+        world_candidate=world,
+        events=(e1, e2),
+        replay_refs=("replay:1",),
+    )
+    assert set(candidate.source_hash_refs) == {"hash:source:1", "hash:source:2"}
 
 
 def test_f16_preserves_capture_governance_and_visual_primitive_detail():
