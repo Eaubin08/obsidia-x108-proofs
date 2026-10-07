@@ -84,6 +84,32 @@ def _eah(operation_type: str, descriptor: dict) -> str:
     return _sha256_text(payload)
 
 
+def _receipt_path(stores: dict, action_evidence_id: str) -> Path:
+    return stores["receipts"] / f"{action_evidence_id}.json"
+
+
+def _load_envelope_for_replay(action_evidence_id: str, stores: dict) -> tuple[Optional[dict], Optional[str]]:
+    p = _receipt_path(stores, action_evidence_id)
+    if not p.exists():
+        return None, "CANONICAL_RECEIPT_MISSING"
+    try:
+        return json.loads(p.read_text(encoding="utf-8")), None
+    except UnicodeDecodeError:
+        return None, "CANONICAL_RECEIPT_UTF8_INVALID"
+    except json.JSONDecodeError:
+        return None, "CANONICAL_RECEIPT_JSON_INVALID"
+    except OSError:
+        return None, "CANONICAL_RECEIPT_UNREADABLE"
+
+
+def _tampered_result(action_evidence_id: str, reason: str, stores_base_dir=None) -> dict:
+    result = _unknown_result(action_evidence_id, VERDICT_TAMPERED, "", stores_base_dir)
+    result["receipt_found"] = True
+    result["evidence_missing"] = []
+    result["evidence_conflicts"] = [reason]
+    return result
+
+
 def _unknown_result(action_evidence_id: str, verdict: str, reason: str, stores_base_dir=None) -> dict:
     return {
         "schema_version": REPLAY_SCHEMA_VERSION,
@@ -239,6 +265,13 @@ def _verify_realized_state(envelope: dict, result: dict) -> None:
         if ref is not None and expected and _CRE.compute_ref_hash(ref) != expected:
             ok = False
             result["evidence_conflicts"].append(conflict)
+    executor_identity = ((envelope.get("execution") or {}).get("executor_input_ref") or {}).get("element_identity_hash")
+    for ref_key in ("post_state_ref",):
+        ref = realized.get(ref_key)
+        if isinstance(ref, dict) and executor_identity and ref.get("element_identity_hash"):
+            if ref.get("element_identity_hash") != executor_identity:
+                ok = False
+                result["evidence_conflicts"].append("REALIZED_STATE_IDENTITY_MISMATCH")
     if realized.get("proof_strength") in (None, ""):
         ok = False
         result["evidence_missing"].append("PROOF_STRENGTH_MISSING")
@@ -304,9 +337,13 @@ def replay_action_evidence(action_evidence_id: str, *, stores_base_dir) -> dict:
     if not isinstance(action_evidence_id, str) or not _ACTION_ID_RE.match(action_evidence_id):
         return _unknown_result(str(action_evidence_id), VERDICT_NOT_FOUND, "INVALID_ACTION_EVIDENCE_ID", stores_base_dir)
     stores = _stores(stores_base_dir)
-    envelope = _CRE.load_canonical_receipt_envelope(action_evidence_id, stores["receipts"])
+    envelope, load_error = _load_envelope_for_replay(action_evidence_id, stores)
     if envelope is None:
-        return _unknown_result(action_evidence_id, VERDICT_NOT_FOUND, "CANONICAL_RECEIPT_MISSING", stores_base_dir)
+        if load_error == "CANONICAL_RECEIPT_MISSING":
+            return _unknown_result(action_evidence_id, VERDICT_NOT_FOUND, load_error, stores_base_dir)
+        return _tampered_result(action_evidence_id, load_error or "CANONICAL_RECEIPT_INVALID", stores_base_dir)
+    if envelope.get("action_evidence_id") != action_evidence_id:
+        return _tampered_result(action_evidence_id, "ACTION_EVIDENCE_ID_PATH_PAYLOAD_MISMATCH", stores_base_dir)
     result = _unknown_result(action_evidence_id, VERDICT_INCOMPLETE, "", stores_base_dir)
     result["receipt_found"] = True
     result["evidence_missing"] = []
