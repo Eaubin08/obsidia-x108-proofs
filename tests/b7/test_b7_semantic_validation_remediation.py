@@ -180,3 +180,23 @@ def test_d_b7_1b_structured_set_is_closed(b7):
     assert v("le mot") == b7.CognitiveValidationVerdict.REJECT            # noun-like raw phrase outside the closed set
     assert v("le script") == b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
     assert v("Paul") == b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
+
+
+# ── B7-L: closed proposed_resolution schema (unvalidated claim keys never enter accepted context) ─
+@pytest.mark.parametrize("extra", [{"agent": "Nadia"}, {"participant": "Nadia"}, {"subject": "Nadia"},
+                                   {"referent": "le build"}, {"time": "2030-01-01"}, {"source": "Marie"},
+                                   {"cause": "Nadia a cassé le build"}, {"Antecedent": "le build"}])
+def test_unvalidated_proposal_keys_are_rejected(b7, extra):
+    e = _coref("Le script est prêt. Lance-le.", structured={"u1": ["le script"]})
+    (req,) = b7.detect_unresolved(e)
+    res = _verdict(b7, e, req, remaining_unknowns=[],
+                   proposed_resolution={"mention": "u2:le", "antecedent": "le script", **extra})
+    assert res.verdict == b7.CognitiveValidationVerdict.REJECT
+
+
+def test_descriptive_quoted_text_remains_allowed(b7):
+    e = _coref("Le script est prêt. Lance-le.", structured={"u1": ["le script"]})
+    (req,) = b7.detect_unresolved(e)
+    res = _verdict(b7, e, req, remaining_unknowns=[],
+                   proposed_resolution={"mention": "u2:le", "antecedent": "le script", "quoted_text": "ALLOW"})
+    assert res.verdict == b7.CognitiveValidationVerdict.ACCEPT_AS_STRUCTURED_CONTEXT
