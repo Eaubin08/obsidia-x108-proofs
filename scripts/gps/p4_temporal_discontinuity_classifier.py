@@ -80,10 +80,26 @@ def ecef_distance(a: Position, b: Position) -> float:
     return math.sqrt(sum((x - y) ** 2 for x, y in zip(ea, eb)))
 
 
+def read_text_auto(path: Path) -> str:
+    raw = path.read_bytes()
+    if raw.startswith(b"\xff\xfe"):
+        return raw.decode("utf-16-le")
+    if raw.startswith(b"\xfe\xff"):
+        return raw.decode("utf-16-be")
+    if raw.startswith(b"\xef\xbb\xbf"):
+        return raw.decode("utf-8-sig")
+    # Windows PowerShell 5.1 Tee-Object commonly writes UTF-16LE. A BOM can be
+    # lost in copied/concatenated logs, so also detect the interleaved-NUL shape.
+    sample = raw[:4096]
+    if sample and sample.count(b"\x00") > len(sample) // 4:
+        return raw.decode("utf-16-le")
+    return raw.decode("utf-8", errors="replace")
+
+
 def parse_positions(path: Path) -> list[Position]:
     receiver_second = 0
     positions: list[Position] = []
-    for raw in path.read_text(encoding="utf-8", errors="replace").splitlines():
+    for raw in read_text_auto(path).splitlines():
         rx = RX_SEC_RE.search(raw)
         if rx:
             receiver_second = int(rx.group(2)) + 60 * int(rx.group(1) or 0)
