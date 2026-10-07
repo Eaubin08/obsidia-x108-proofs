@@ -1,6 +1,6 @@
 # GPS LIVE Controlled Receiver Readiness V0
 
-Status: IMPLEMENTED / HARDENED / FINAL VALIDATION REQUIRED
+Status: VERIFIED / HARDENED
 
 ## Purpose
 
@@ -105,3 +105,15 @@ Unchanged:
 ## Validation
 
 Targeted tests and repository CI required before this readiness patch is accepted.
+
+
+## Verification finale P1
+
+- Verified HEAD: `b301a270a4ec4026b8467bca741cc3dc4cd2eff1`
+- GitHub Actions run: `37578072151`
+- Global result: `12565 passed / 12 failed / 46 skipped / 207 deselected`
+- P1-specific failures: `0`
+- Eleven failures remain in the historical baseline families.
+- The twelfth failure is the already-observed intermittent `TestApprovalConcurrency::test_concurrent_identical_content_idempotent`, outside GPS/P1 scope.
+
+**Verdict:** P1 `VERIFIED`. No unrelated baseline repair is pulled into the GPS branch.
