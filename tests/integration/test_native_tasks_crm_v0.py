@@ -39,6 +39,14 @@ from periphery.native_ops.world_action_bridge_v0 import (  # noqa: E402
     build_native_human_approval_v0,
     build_native_world_action_request_v0,
 )
+from periphery.native_ops.sync_projection_v0 import (  # noqa: E402
+    project_crm_record_for_external_sync_v0,
+    project_task_for_external_sync_v0,
+)
+from scripts.kernel.kx108_runtime_link_facts_v1 import (  # noqa: E402
+    native_tasks_crm_domains_present,
+    runtime_link_facts,
+)
 
 
 T0 = "2026-10-07T10:00:00+00:00"
@@ -716,3 +724,43 @@ def test_native_bridge_uses_internal_connectors_and_world_action_pre(tmp_path):
     assert request["surface_id"] == "CRM"
     assert pre.x108_gate == "ALLOW"
     assert receipt.world_action_request_hash == request["request_hash"]
+
+
+
+def test_native_task_and_crm_external_sync_projections_are_non_sovereign(tmp_path):
+    store = NativeEntityStoreV0(tmp_path / "native")
+    create_task(tmp_path, store, "projection-task", "Projection Task", T0)
+    create_crm_record(
+        tmp_path,
+        store,
+        "projection-crm",
+        "ORGANIZATION",
+        "Projection CRM",
+        "ACTIVE",
+        T1,
+    )
+
+    task_state = store.load_state(TASK_DOMAIN, TASK_KIND, "projection-task")
+    task_projection = project_task_for_external_sync_v0(task_state)
+    assert task_projection["source_domain"] == "native_tasks"
+    assert task_projection["allowed_to_decide"] is False
+    assert task_projection["allowed_to_act"] is False
+    assert task_projection["decision_authority"] == "KX108_ONLY"
+    assert task_projection["source_state_hash"] == canonical_hash(task_state)
+
+    crm_state = store.load_state(CRM_DOMAIN, KIND_RECORD, "projection-crm")
+    crm_projection = project_crm_record_for_external_sync_v0(crm_state)
+    assert crm_projection["source_domain"] == "native_crm"
+    assert crm_projection["allowed_to_decide"] is False
+    assert crm_projection["allowed_to_act"] is False
+    assert crm_projection["decision_authority"] == "KX108_ONLY"
+    assert crm_projection["source_state_hash"] == canonical_hash(crm_state)
+
+
+def test_native_tasks_crm_runtime_fact_is_present_without_external_activation():
+    facts = runtime_link_facts()
+    assert native_tasks_crm_domains_present() is True
+    assert facts["native_tasks_crm_domains_present"] is True
+    assert facts["world_action_runtime_activated"] is False
+    assert facts["execution_authority"] is False
+    assert facts["emits_act"] is False
