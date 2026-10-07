@@ -1,6 +1,6 @@
 # F13 — Measurement / Evidence Contract V0
 
-Status: IMPLEMENTED / VALIDATION REQUIRED
+Status: VERIFIED / NO F13 REGRESSION
 
 ## Purpose
 
@@ -61,3 +61,13 @@ F14 — Physical Signal Periphery V0:
 - PhysicalRiskHint
 
 No F14 runtime before F13 validation.
+
+## Verification finale
+
+- Code SHA vérifié: `ed0d8fddbc388dd062c4f73ca08672ec07043449`
+- GitHub Actions run: `37558499132`
+- Résultat global: `12495 passed / 11 failed / 46 skipped / 207 deselected`
+- Failures F13 visibles: `0`
+- Les 11 failures restantes correspondent aux familles baseline historiques déjà présentes avant F13.
+
+**Verdict:** F13 `VERIFIED`.
