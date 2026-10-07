@@ -45,18 +45,12 @@ class ValidationResult:
     derived_state: StateEntry | None = None
 
 
-def _origin_raw(origin: StateEntry) -> str:
-    payload = origin.payload if isinstance(origin.payload, dict) else {}
-    return unicodedata.normalize("NFC", str(payload.get("raw") or (payload.get("semantic_frame") or {}).get("raw") or ""))
 
 
 def _tokens(text: str) -> tuple[str, ...]:
     return tuple(_WORD.findall(unicodedata.normalize("NFC", text).casefold()))
 
 
-def _contains_phrase(haystack: tuple[str, ...], phrase: tuple[str, ...]) -> bool:
-    n = len(phrase)
-    return n > 0 and any(haystack[i:i + n] == phrase for i in range(len(haystack) - n + 1))
 
 
 def _structured_referents(origin: StateEntry, anaphor_units: frozenset[str] = frozenset()) -> set[tuple[str, ...]]:
@@ -89,11 +83,21 @@ def _referent_admissible(value: Any, origin: StateEntry, anaphor_units: frozense
     return bool(phrase) and phrase in _structured_referents(origin, anaphor_units)
 
 
+def _structured_deixis(origin: StateEntry) -> set[tuple[str, ...]]:
+    payload = origin.payload if isinstance(origin.payload, dict) else {}
+    frame = payload.get("semantic_frame") or {}
+    out = {_tokens(str(d)) for d in frame.get("deixis") or [] if isinstance(d, str)}
+    out.discard(())
+    return out
+
+
 def _time_admissible(value: Any, origin: StateEntry) -> bool:
-    """Linguistic temporal cue: exact token / phrase present in the original text, nothing more."""
+    """STRUCTURED_TEMPORAL_REFERENCE_ONLY: a temporal cue is admissible only as an exact member of the
+    origin's SENS-structured deixis; raw-text occurrence is never sufficient."""
     if not isinstance(value, str) or _NON_PHRASE.search(value):
         return False
-    return _contains_phrase(_tokens(_origin_raw(origin)), _tokens(value))
+    phrase = _tokens(value)
+    return bool(phrase) and phrase in _structured_deixis(origin)
 
 
 def _origin_relations(origin: StateEntry) -> set[tuple[str, str, str]]:
@@ -160,6 +164,8 @@ def _check(request: CognitiveResolutionRequest, cand: CognitiveResolutionCandida
         return "forbidden_claim"
     if set(proposal) - _VALIDATED_KEYS - _DESCRIPTIVE_KEYS - set(_FORBIDDEN_CLAIMS):
         return "unvalidated_claim_key"
+    if any(not isinstance(proposal[k], str) for k in _DESCRIPTIVE_KEYS if k in proposal):
+        return "descriptive_value_not_string"
     referents = [proposal[k] for k in _REFERENT_SCALARS if k in proposal]
     referents += [v for k in _REFERENT_LISTS for v in proposal.get(k) or []]
     anaphor_units = frozenset(m.split(":", 1)[0] for m in markers if ":" in m)
@@ -182,13 +188,21 @@ def _check(request: CognitiveResolutionRequest, cand: CognitiveResolutionCandida
 
 
 def _derive(request: CognitiveResolutionRequest, cand: CognitiveResolutionCandidate) -> StateEntry:
+    proposal = cand.proposed_resolution
     payload = {
         "derived_from_state_id": request.origin_state_id, "resolution_request_id": request.request_id,
         "resolution_candidate_id": cand.candidate_id, "provider_ref": cand.provider_ref,
         "role_ref": cand.proposer_role.value, "unresolved_kind": request.unresolved_kind.value,
-        "candidate_kind": cand.candidate_kind.value, "proposed_resolution": cand.proposed_resolution,
-        "evidence_refs": list(cand.evidence_refs), "context_refs": list(cand.context_refs),
-        "confidence_class": cand.confidence_class.value, "assumptions": list(cand.assumptions),
+        "candidate_kind": cand.candidate_kind.value,
+        # only gate-validated proposed_resolution fields are structured content
+        "validated": {k: v for k, v in proposal.items() if k in _VALIDATED_KEYS},
+        # everything else the provider supplied is transported as explicitly non-authoritative data
+        "unverified_descriptive": {
+            **{k: v for k, v in proposal.items() if k in _DESCRIPTIVE_KEYS},
+            "evidence_refs": list(cand.evidence_refs), "context_refs": list(cand.context_refs),
+            "assumptions": list(cand.assumptions), "confidence_class": cand.confidence_class.value,
+            "is_truth": False, "is_authority": False, "is_durable_knowledge": False,
+        },
         "contradictions": list(cand.contradictions),
         "validation_verdict": V.ACCEPT_AS_STRUCTURED_CONTEXT.value,
         "physical_chronology_established": False, "world_fact_established": False,
