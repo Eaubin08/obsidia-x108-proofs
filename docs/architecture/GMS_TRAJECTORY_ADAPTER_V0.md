@@ -1,6 +1,6 @@
 # F17 — GMS Trajectory Adapter V0
 
-Status: IMPLEMENTED / VALIDATION REQUIRED
+Status: VERIFIED / NO F17 REGRESSION
 
 ## Purpose
 
@@ -65,3 +65,13 @@ All GMS points and resulting F12 transitions/trajectories remain:
 F18 — Science / Constraint Engine V0.
 
 No F18 runtime before F17 validation.
+
+## Verification finale
+
+- Code SHA vérifié: `867156abee73b1e6fab7725aadb12e8ff74463c6`
+- GitHub Actions run: `37562196791`
+- Résultat global: `12518 passed / 11 failed / 46 skipped / 207 deselected`
+- Failures F17 visibles: `0`
+- Les 11 failures restantes correspondent aux familles baseline historiques.
+
+**Verdict:** F17 `VERIFIED`.
