@@ -487,22 +487,23 @@ table or from guard evaluation order (`REASON_PRIORITY_TABLE=NONE`,
 | `attestation_inadmissible` | attestation identity not from a trusted identity boundary (§7; T5 / T6 human classes) |
 | `attestation_missing` | required attestation kind absent: PRIMARY_DECLARATION for T5 on human classes, REVIEW_AUTHORIZATION for T6 / T9 when `requires_human_review` (§6) |
 | `backdated_record` | same trusted clock-domain monotonic consistency violation (§5.3, §9.1) |
-| `containment_not_satisfied` | required containment fails, evaluated only within one frame and, for T9, only against the unique eligible predecessor: T9 new valid_time does not contain the predecessor's; G2 claim does not contain the gap; G3 successor does not contain the old gap |
+| `containment_not_satisfied` | required containment fails, evaluated only within one frame: T9 only when exactly one eligible predecessor exists and the request designates it correctly (then the new valid_time does not contain the predecessor's); G2 claim does not contain the gap; G3 successor does not contain the old gap |
 | `contradiction_inadmissible` | T7 without admissible contradicting evidence or claim refs |
 | `contradiction_unresolved` | T8 without explicit resolution refs |
 | `evidence_inadmissible` | an EvidenceRef correctly bound to (claim_id, claim_version) that is not admissible / lacks complete provenance, or no EvidenceRef at all (T4, T10); a wrongly bound ref is `ref_binding_mismatch` only |
 | `forbidden_transition` | the request's (expected_state, target_state) pair is outside §9.2 / §8.1, or a half-T9 is requested outside its bundle (§9.4); evaluated on the request alone, independently of the snapshot state (a snapshot mismatch is `stale_request`) |
 | `malformed_object` | structural / schema malformation of the object (missing or invalid class, content, refs, valid_time, temporal_frame_ref, provenance) other than fields that have their own code: a missing reason is `reason_missing`, a slot defect is `malformed_slot`, size is `oversize_object` (T1, G1, §4, §5.1) |
 | `malformed_slot` | slot canonicalization violation, empty subject_refs, invalid element (§5) |
-| `multiple_predecessors_unsupported` | T9: the set of eligible predecessors (same-frame PROMOTED claims on the slot overlapping the new valid_time) has more than one member |
+| `multiple_predecessors_unsupported` | T9: the eligible predecessor set E (same-frame PROMOTED claims on the slot overlapping the new valid_time) has more than one member |
+| `no_eligible_predecessor` | T9: the eligible predecessor set E is empty (no same-frame PROMOTED claim on the slot overlaps the new valid_time); the request is not converted to T6 (`T9_ZERO_ELIGIBLE_AUTO_CONVERTS_TO_T6=NO`) |
 | `no_temporal_overlap` | G4 resolving claim does not overlap the gap |
 | `open_contradiction` | T6 / T9 with an open contradiction on the slot / time |
 | `oversize_object` | canonical JSON above `MAX_CANDIDATE_CHARS` (§3) |
 | `partition_not_partial` | G4 requested while the claim contains the whole gap (G2 applies) |
-| `predecessor_mismatch` | T9: exactly one eligible PROMOTED predecessor exists and the designated predecessor is PROMOTED on the same slot, but `supersedes_claim_id` / `supersedes_record_id` do not identify that predecessor or its latest record |
+| `predecessor_mismatch` | T9: |E| = 1, the designated claim is on the same slot and PROMOTED, but `supersedes_claim_id` / `supersedes_record_id` do not identify the member of E or its latest record (record-binding of the designation is evaluated only when |E| = 1) |
 | `reason_missing` | the required explicit reason field is absent (T2, T3, T10, G1–G4 and every request); the only code for that fact |
 | `ref_binding_mismatch` | a referenced record / object is available but its identity / version binding does not match the request target after re-hashing (e.g. VerificationRecord, attestation or EvidenceRef bound to another claim_id or claim_version) (§9.1) |
-| `referenced_claim_not_promoted` | the claim designated by the request (G2 / G4 resolving claim, T9 `supersedes_claim_id`) is on the same slot but its latest state is not PROMOTED; the only code for that fact |
+| `referenced_claim_not_promoted` | the claim designated by the request (G2 / G4 resolving claim, T9 `supersedes_claim_id`) is on the same slot but its latest state is not PROMOTED; the only code for that fact (a T9 eligibility-set fact, |E| = 0 or |E| > 1, is independent and adds its own code) |
 | `resolution_relation_invalid` | G2 / G4 typed resolution relation missing or invalid |
 | `slot_mismatch` | the designated claim / gap is on another slot (T9, G2, G3, G4); state- or relation-based predicates about it are then not evaluable |
 | `slot_occupied` | T6 with a same-frame PROMOTED claim overlapping the candidate |
@@ -513,7 +514,26 @@ table or from guard evaluation order (`REASON_PRIORITY_TABLE=NONE`,
 | `verification_not_satisfied` | T5 / T12: no VerificationRecord, or a record correctly bound to (claim_id, claim_version) from an admissible verifier family whose verdict is NOT_SATISFIED or INCONCLUSIVE (a wrong binding is `ref_binding_mismatch`, a wrong family `verifier_inadmissible`) |
 | `verifier_inadmissible` | a correctly bound verification artifact from a verifier family not admissible for the claim class, including a human attestation offered as verification of an objective class (§6) |
 
-`TOTAL_REASON_CODES=28`. ReasonCode != TransitionVerdict != ClaimState.
+`TOTAL_REASON_CODES=29`. ReasonCode != TransitionVerdict != ClaimState.
+
+**T9 predecessor partition (D-B8-SA6-1)** — two independent facts: the designation fact (designated
+claim D) and the eligibility-set fact (E). Predecessor-family codes (`T9_PREDECESSOR_PARTITION_
+EXHAUSTIVE=YES`, `T9_PREDECESSOR_PARTITION_DISJOINT=YES`):
+
+| D latest state | |E| | D designation / latest record | Predecessor-family reasons |
+|---|---|---|---|
+| not PROMOTED | 0 | — | `no_eligible_predecessor`, `referenced_claim_not_promoted` |
+| not PROMOTED | 1 | — (D cannot be the member) | `referenced_claim_not_promoted` |
+| not PROMOTED | > 1 | — | `multiple_predecessors_unsupported`, `referenced_claim_not_promoted` |
+| PROMOTED | 0 | (D is not eligible) | `no_eligible_predecessor` |
+| PROMOTED | 1 | D is the member and record current | none (containment then evaluated) |
+| PROMOTED | 1 | D is not the member, or record not latest | `predecessor_mismatch` |
+| PROMOTED | > 1 | any | `multiple_predecessors_unsupported` |
+
+Impossible combinations: D correctly designated while not PROMOTED or while |E| = 0. D on another
+slot → `slot_mismatch` and the D-based predicates are not evaluable; E-based codes still apply.
+Independent failures (e.g. `stale_request`, `temporal_relation_indeterminate`, input codes) still
+accumulate (`T9_PREDECESSOR_REASON_SUPPRESSES_INDEPENDENT_FAILURES=NO`).
 
 ## 10. Point-in-time contract (D-B8-S1)
 
@@ -683,3 +703,8 @@ No duplicate promotion engine survives canonical B8.
   atomic failure partition rule, disjoint predicates for those three plus the neighbouring evidence /
   verifier / forbidden-transition / slot / containment / malformed-object definitions; enum unchanged
   (28 codes). Status stays DRAFT_FOR_AUDIT.
+- Second auditor closure check of ecf43330: SA5-1 closed; REMEDIATE_SPEC for D-B8-SA6-1 (T9 with zero eligible
+  predecessors had no code after the SA5 narrowing; 59 cases). Remediation: new code
+  `no_eligible_predecessor` (enum 29), exhaustive T9 predecessor partition table (designation fact vs
+  eligibility-set fact), containment evaluated only for a correctly designated unique predecessor, no
+  automatic T6 conversion. Status stays DRAFT_FOR_AUDIT.
