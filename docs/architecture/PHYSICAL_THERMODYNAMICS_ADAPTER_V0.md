@@ -1,6 +1,6 @@
 # F19 — Physical Thermodynamics Adapter V0
 
-Status: IMPLEMENTED / VALIDATION REQUIRED
+Status: VERIFIED / NO F19 REGRESSION
 
 ## Purpose
 
@@ -109,3 +109,13 @@ Specialized engines may later evaluate declared thermodynamic models and return 
 F20 — Cross-Modal Coherence V0.
 
 No F20 runtime before F19 validation.
+
+## Verification finale
+
+- Code SHA vérifié: `27e54439fb0b46e9490bb5ddc4efdafebdd031b3`
+- GitHub Actions run: `37566516144`
+- Résultat global: `12531 passed / 11 failed / 46 skipped / 207 deselected`
+- Failures F19 visibles: `0`
+- Les 11 failures restantes correspondent aux familles baseline historiques.
+
+**Verdict:** F19 `VERIFIED`.
