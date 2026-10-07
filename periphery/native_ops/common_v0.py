@@ -91,8 +91,16 @@ def build_native_mutation_v0(
         "decision_authority": DECISION_AUTHORITY,
     }
     return NativeMutationV0(
-        **seed,
+        schema=seed["schema"],
+        mutation_id=mutation_id,
+        domain_id=domain_id,
+        entity_kind=entity_kind,
+        entity_id=entity_id,
+        operation=operation,
+        payload=dict(payload),
+        expected_prestate_hash=expected_prestate_hash,
         source_refs=tuple(source_refs),
+        requested_by=requested_by,
         mutation_hash=canonical_hash(seed),
     )
 
