@@ -257,3 +257,20 @@ def test_interpretation_candidate_does_not_store_raw_material(tmp_path):
 
     for candidate in items.values():
         assert len(candidate.material_fingerprint) == 64
+
+
+
+def test_runtime_fact_exposes_interpretation_without_external_activation():
+    from scripts.kernel.kx108_runtime_link_facts_v1 import (
+        native_source_interpretation_present,
+        runtime_link_facts,
+    )
+
+    facts = runtime_link_facts()
+    assert native_source_interpretation_present() is True
+    assert facts["native_source_interpretation_present"] is True
+    assert facts["source_interpretation_authority"] == "NON_SOVEREIGN_CANDIDATE_ONLY"
+    assert facts["world_action_runtime_activated"] is False
+    assert facts["runtime_allowed_now"] is False
+    assert facts["execution_authority"] is False
+    assert facts["emits_act"] is False
