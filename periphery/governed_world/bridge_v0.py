@@ -19,6 +19,8 @@ def governance_payload_to_aggregate(
     *,
     confidence: float,
 ) -> DomainAggregate:
+    if not 0.0 <= confidence <= 1.0:
+        raise ValueError("confidence must be between 0.0 and 1.0")
     domain = _DOMAIN_MAP.get(payload.domain_id)
     if domain is None:
         raise ValueError(f"unsupported KX108 domain: {payload.domain_id}")
