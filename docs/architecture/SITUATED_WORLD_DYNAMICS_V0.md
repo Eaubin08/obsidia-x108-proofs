@@ -1,6 +1,6 @@
 # F12 — Situated World Dynamics V0
 
-Status: IMPLEMENTED / VALIDATION REQUIRED
+Status: VERIFIED / NO F12 REGRESSION
 
 ## Purpose
 
@@ -57,3 +57,13 @@ F13 — Measurement / Evidence Contract V0:
 phenomenon → signal → instrument/sensor → measurement with unit, precision, calibration, environment, uncertainty and limits.
 
 No F13 runtime should be created before F12 validation.
+
+## Verification finale
+
+- Code SHA vérifié: `af3dc66835da742f75275e6e40faf7db4b4529ef`
+- GitHub Actions run: `37557296648`
+- Résultat global: `12490 passed / 11 failed / 46 skipped / 207 deselected`
+- Failures F12 visibles: `0`
+- Les 11 failures restantes correspondent aux familles baseline historiques déjà présentes avant F12.
+
+**Verdict:** F12 `VERIFIED`. Le statut ne transforme pas les relations temporelles en causalité, n'invente aucun timestamp absent et n'ajoute aucune autorité hors KX108.
