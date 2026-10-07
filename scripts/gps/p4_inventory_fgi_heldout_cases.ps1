@@ -12,17 +12,23 @@ $expected = @(
     @{ scenario = "Meaconing_DFMC"; file = "MCD_L1_E1.dat"; duration_s = 478 }
 )
 
+$rootExists = Test-Path -LiteralPath $FgiRoot -PathType Container
+
 $items = foreach ($case in $expected) {
-    $candidate = Join-Path (Join-Path $FgiRoot $case.scenario) $case.file
-    $exists = Test-Path -LiteralPath $candidate -PathType Leaf
-    $length = if ($exists) { (Get-Item -LiteralPath $candidate).Length } else { $null }
+    $matches = @()
+    if ($rootExists) {
+        $matches = @(Get-ChildItem -LiteralPath $FgiRoot -Recurse -File -Filter $case.file -ErrorAction SilentlyContinue)
+    }
+
+    $first = $matches | Select-Object -First 1
     [pscustomobject]@{
         scenario = $case.scenario
         file = $case.file
         expected_duration_s = $case.duration_s
-        exists = $exists
-        size_bytes = $length
-        path = $candidate
+        exists = ($null -ne $first)
+        match_count = $matches.Count
+        size_bytes = if ($first) { $first.Length } else { $null }
+        path = if ($first) { $first.FullName } else { $null }
         used_for_p4_development = ($case.file -eq "UTD_L1_E1.dat")
         held_out_candidate = ($case.file -ne "UTD_L1_E1.dat")
     }
@@ -31,11 +37,12 @@ $items = foreach ($case in $expected) {
 $result = [ordered]@{
     artifact = "p4_fgi_heldout_local_inventory"
     fgi_root = $FgiRoot
+    fgi_root_exists = $rootExists
     expected_case_count = $expected.Count
     present_case_count = @($items | Where-Object { $_.exists }).Count
     held_out_present_count = @($items | Where-Object { $_.exists -and $_.held_out_candidate }).Count
     cases = $items
-    note = "Inventory only. No RF data is modified, copied, hashed or executed."
+    note = "Recursive filename inventory only. No RF data is modified, copied, hashed or executed."
 }
 
 $json = $result | ConvertTo-Json -Depth 6
