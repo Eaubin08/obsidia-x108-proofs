@@ -56,6 +56,7 @@ class ReplayablePhysicalEvidenceCandidateV0:
     provenance_refs: tuple[str, ...]
     compatibility: EvidenceCompatibilityV0
     replay_refs: tuple[str, ...] = ()
+    source_hash_refs: tuple[str, ...] = ()
     physical_authenticity_proven: bool = False
     readonly: bool = True
     advisory_only: bool = True
@@ -68,6 +69,8 @@ class ReplayablePhysicalEvidenceCandidateV0:
             raise ValueError("physical evidence candidate requires identity and bindings")
         if not self.event_refs:
             raise ValueError("physical evidence candidate requires event refs")
+        if not self.replay_refs:
+            raise ValueError("replayable physical evidence candidate requires replay_refs")
         if self.physical_authenticity_proven:
             raise ValueError("F15 evidence candidate cannot promote itself to physical truth")
         if not self.readonly or not self.advisory_only:
@@ -127,7 +130,7 @@ def assess_physical_compatibility_v0(
     flattened = [ref for group in sources for ref in group]
     independence = (
         CompatibilityStatusV0.COMPATIBLE
-        if len(flattened) == len(set(flattened))
+        if len(events) >= 2 and len(flattened) == len(set(flattened)) and len(flattened) >= 2
         else CompatibilityStatusV0.UNKNOWN
     )
     if independence == CompatibilityStatusV0.UNKNOWN:
@@ -168,6 +171,9 @@ def build_replayable_physical_evidence_candidate_v0(
         *report.provenance_refs,
         *(ref for event in events for ref in event.measurement.source_refs),
     )))
+    source_hash_refs = tuple(dict.fromkeys(
+        ref for event in events for ref in event.measurement.source_hashes
+    ))
 
     return ReplayablePhysicalEvidenceCandidateV0(
         evidence_id=evidence_id,
@@ -178,4 +184,5 @@ def build_replayable_physical_evidence_candidate_v0(
         provenance_refs=provenance_refs,
         compatibility=compatibility,
         replay_refs=replay_refs,
+        source_hash_refs=source_hash_refs,
     )
