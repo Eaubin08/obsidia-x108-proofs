@@ -92,10 +92,7 @@ def test_real_provider_receipt_requires_create_readback_and_cleanup():
     invocation = packet["invocation"]
 
     receipt = ingest_google_calendar_provider_result_v0(
-        invocation=type("InvocationProxy", (), {
-            "to_dict": lambda self: invocation,
-            **invocation,
-        })(),
+        invocation=invocation,
         provider_event_id="provider-event-fixture",
         provider_status="confirmed",
         readback_verified=True,
