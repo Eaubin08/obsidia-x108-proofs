@@ -169,7 +169,7 @@ def observation_to_domain_payload(envelope: dict[str, Any]) -> dict[str, Any]:
         "g_load": float(obs.get("g_load", 1.0) or 1.0),
         "spoof_score": float(obs.get("spoof_score", 0.0) or 0.0),
         "replay_window_detected": bool(obs.get("replay_window_detected", False)),
-        "sensor_attested": envelope.get("eligible_for_physical_claim") is True,
+        "sensor_attested": envelope.get("sensor_attestation_proven") is True,
         "gps_available": bool(obs),
         "inertial_available": bool(obs.get("inertial_available", False)),
         "radio_available": bool(obs.get("radio_available", False)),
@@ -177,7 +177,7 @@ def observation_to_domain_payload(envelope: dict[str, Any]) -> dict[str, Any]:
         "source_conflict_score": float(obs.get("source_conflict_score", 0.0) or 0.0),
         "time_skew_score": float(obs.get("time_skew_score", 0.0) or 0.0),
         "brownout_score": float(obs.get("brownout_score", 0.0) or 0.0),
-        "attestation_ready": envelope.get("eligible_for_physical_claim") is True,
+        "attestation_ready": envelope.get("sensor_attestation_proven") is True,
         "rollback_possible": True,
         "authorized_route_hash": envelope.get("truth_reference", {}).get("route_hash", envelope.get("input_hash")),
     }
@@ -656,25 +656,47 @@ def run_gnss_sdr_run(
 
 
 def detect_live_passive_receiver() -> dict[str, Any]:
+    """Detect receiver *candidates* without promoting configuration into proof.
+
+    An environment variable or executable path is readiness evidence only.
+    REAL_PASSIVE_GNSS requires an observed live capture with a bound input hash,
+    receiver output and current measurement evidence.
+    """
     gnss_sdr = shutil.which("gnss-sdr")
     docker = shutil.which("docker")
     candidates = []
     for env_name in ("OBSIDIA_GNSS_DEVICE", "OBSIDIA_SDR_DEVICE"):
-        if os.environ.get(env_name):
-            candidates.append({"source": env_name, "value": os.environ[env_name]})
+        value = os.environ.get(env_name)
+        if value:
+            candidates.append({"source": env_name, "value": value, "verified": False})
 
-    status = "NO_HARDWARE_DETECTED"
     if candidates:
-        status = "ENV_CONFIGURED_DEVICE_UNVERIFIED"
+        status = "RECEIVER_CANDIDATE_CONFIGURED_UNVERIFIED"
+        limitations = [
+            "LIVE_CAPTURE_NOT_OBSERVED",
+            "RECEIVER_IDENTITY_NOT_VERIFIED",
+            "SENSOR_ATTESTATION_NOT_PROVEN",
+        ]
+    else:
+        status = "NO_HARDWARE_DETECTED"
+        limitations = [
+            "NO_HARDWARE_DETECTED",
+            "LIVE_CAPTURE_NOT_OBSERVED",
+            "WINDOWS_HARDWARE_ENUMERATION_NOT_AVAILABLE",
+        ]
 
     return {
         "status": status,
-        "proof_level": "REAL_PASSIVE_GNSS" if candidates else "STRUCTURED_STATE",
-        "eligible_for_physical_claim": bool(candidates),
+        "proof_level": "STRUCTURED_STATE",
+        "eligible_for_physical_claim": False,
+        "receiver_candidate_detected": bool(candidates),
+        "live_capture_observed": False,
+        "receiver_identity_verified": False,
+        "sensor_attestation_proven": False,
         "gnss_sdr_path": gnss_sdr or "NOT_FOUND",
         "docker_path": docker or "NOT_FOUND",
         "detected_candidates": candidates,
-        "limitations": [] if candidates else ["NO_HARDWARE_DETECTED", "WINDOWS_HARDWARE_ENUMERATION_NOT_AVAILABLE"],
+        "limitations": limitations,
     }
 
 
@@ -713,8 +735,11 @@ def run_live_passive() -> dict[str, Any]:
         "status": detection["status"],
         "physical_gate": asdict(gate),
         "envelope": envelope,
-        "blocked": detection["status"] == "NO_HARDWARE_DETECTED",
-        "next_human_action": "Connect a passive GNSS/SDR receiver and set OBSIDIA_GNSS_DEVICE or provide GNSS-SDR output.",
+        "blocked": not detection["live_capture_observed"],
+        "next_human_action": (
+            "Configure OBSIDIA_GNSS_DEVICE/OBSIDIA_SDR_DEVICE, then provide an actual "
+            "live receiver capture or GNSS-SDR output. Configuration alone is not proof."
+        ),
     }
 
 

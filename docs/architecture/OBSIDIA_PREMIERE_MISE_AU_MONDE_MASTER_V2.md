@@ -327,52 +327,35 @@ F9 Monde READ_ONLY — VERIFIED
 F10 Double structural demo — VERIFIED
 F11 Product skeleton freeze — FROZEN / VERIFIED
 
-## Suite
+## État actuel de la forge
 
-F12 — SITUATED WORLD DYNAMICS V0
-- TimeEnvelopeV0
-- SpatialFrameRefV0
-- TransitionV0
-- TrajectoryV0
-- RelationStatusV0
-- conservation sans invention
-- no authority
+F12 — SITUATED WORLD DYNAMICS V0 — VERIFIED
 
-F13 — MEASUREMENT / EVIDENCE CONTRACT V0
-- phenomenon / signal / sensor / measurement
-- unit
-- precision
-- calibration_ref
-- environment_ref
-- instrument/source refs
-- uncertainty
-- measurement limits
+F13 — MEASUREMENT / EVIDENCE CONTRACT V0 — VERIFIED
 
-F14 — PHYSICAL SIGNAL PERIPHERY V0
-- PhysicalSignalEvent
-- PhysicalSignalReport
-- WorldStateCandidate
-- SignalContradiction
-- PhysicalRiskHint
-- candidate proof only
+F14 — PHYSICAL SIGNAL PERIPHERY V0 — VERIFIED
 
-F15 — PHYSICAL EVIDENCE PLANE V0
+F15 — PHYSICAL EVIDENCE PLANE V0 — VERIFIED / HARDENED
 - cross-source physical coherence
 - compatibility spatial / temporal / metric / causal
 - replayable physical evidence
 - provenance != authenticity
+- source independence fail-closed
+- replay refs required
+- source hashes preserved
 - no automatic truth promotion
 
-F16 — VISION / REAL IMAGE V0
+F16 — VISION / REAL IMAGE V0 — VERIFIED / HARDENED
 - asset/hash
 - capture context
-- visual primitives
+- author/application/consent preserved
+- visual primitive detail/evidence preserved
 - depth/motion/frame
 - candidate interpretations
 - integrity report
 - observed/generated separation
 
-F17 — GMS TRAJECTORY ADAPTER V0
+F17 — GMS TRAJECTORY ADAPTER V0 — VERIFIED
 - semantic position
 - temporal context
 - N→N+1
@@ -381,51 +364,361 @@ F17 — GMS TRAJECTORY ADAPTER V0
 - contradictions
 - MMonde conservation
 
-F18 — SCIENCE / CONSTRAINT ENGINE V0
+F18 — SCIENCE / CONSTRAINT ENGINE V0 — VERIFIED / HARDENED
 - typed constraints
 - invariants
-- possible/impossible
-- model/equation references
+- empirical evidence != formal proof
+- possible/impossible bounded by evidence + model scope
+- inconsistent SATISFIED + IMPOSSIBLE rejected
 - testable predictions
 - no monolithic physics brain
 
-F19 — PHYSICAL THERMO ADAPTER
+F19 — PHYSICAL THERMO ADAPTER — VERIFIED
 - only justified physical laws/models
 - never reuse computational entropy as physical entropy
 
-F20 — CROSS-MODAL COHERENCE V0
+F20 — CROSS-MODAL COHERENCE V0 — VERIFIED
 - image / IMU / GNSS / RF / radar
 - clocks
 - frames
 - calibration
 - contradiction localization
 - candidate realities
+- no truth/causality promotion from agreement alone
 
-F21 — GPS PHYSICAL-WORLD CLOSURE
+F21 — GPS PHYSICAL-WORLD CLOSURE — VERIFIED WITH OPEN PHYSICAL BLOCKERS
+- recorded-real GNSS/RF closure
+- recorded provenance != live sensor attestation
+- controlled LIVE still open
+- hostile RF closure still partial
+- causal attribution not proven
+- baseline duration / TP-TN-FP-FN still incomplete
+
+F22 — REAL END-TO-END DEMOS — VERIFIED
+- recorded-real GPS artifacts replayed through current canonical contracts
+- fail-closed preserved
+- no live promotion
+
+F23 — MONDE UI FINAL INTEGRATION — DEFERRED / OUT OF THIS REPOSITORY RELEASE CHAIN
+- separate `monde-obsidia` build
+- projections only
+- does not block this repo freeze
+
+F24 — GLOBAL REGRESSION / NEGATIVE TESTS — VERIFIED
+- bypass
+- bad provenance
+- missing calibration
+- false source independence
+- false causality
+- generated-as-truth attempt
+- unsupported scientific possibility/impossibility
+- 12556 passed / 11 historical baseline failures / 0 new F24 failures
+
+F25 — PUBLIC FREEZE / RELEASE CANDIDATE — FROZEN
+- exact claim boundary frozen
+- RECORDED_REAL_GNSS / RECORDED_REAL_RF supported
+- live/certification/spoofing-resistance/causal-attribution claims forbidden
+- KX108_ONLY unchanged
+- F23 excluded from this release chain
+
+## POST-FREEZE — CONTINUATION GPS / PHYSICAL WORLD
+
+The first-world release chain F12→F25 is frozen. New physical-world work continues on separate branches and must not rewrite the freeze.
+
+### P1 — CONTROLLED LIVE RECEIVER READINESS — VERIFIED
+
+Branch:
+`feat/gps-live-controlled-receiver-readiness-v0`
+
+Goal:
+- close the semantic gap between "receiver configured" and "receiver physically observed";
+- reuse existing live-passive adapter;
+- do not create a second receiver stack.
+
+Current rule:
+
+`receiver candidate configured != live capture observed`
+
+`receiver candidate configured != verified receiver identity`
+
+`receiver candidate configured != sensor attestation`
+
+`receiver candidate configured != REAL_PASSIVE_GNSS`
+
+Current readiness state:
+- `STRUCTURED_STATE`
+- `eligible_for_physical_claim = false`
+- `live_capture_observed = false`
+- `receiver_identity_verified = false`
+- `sensor_attestation_proven = false`
+
+Promotion to `REAL_PASSIVE_GNSS` requires at minimum:
+- actual live receiver output/capture;
+- immutable input hash;
+- capture time;
+- receiver identity/configuration;
+- current observables;
+- calibration/configuration evidence where applicable;
+- provenance;
+- explicit remaining limitations.
+
+### P2 — REAL PASSIVE GNSS CAPTURE — CURRENT
+
+Only after P1 validation:
+- connect actual passive GNSS/SDR receiver;
+- produce a real live capture/output;
+- bind capture + receiver + config + hashes + timing;
+- normalize into Physical Signal Periphery;
+- pass through GPS domain gate / KX108 fail-closed path;
+- keep physical authenticity separate from mere provenance.
+
+Target status:
+`REAL_PASSIVE_GNSS`
+
+No promotion without observed capture.
+
+### P3 — MULTI-SOURCE PHYSICAL CORROBORATION
+
+Only after real passive GNSS exists:
+- add independent IMU / radar / other justified physical source;
+- align clocks;
+- align spatial frames;
+- preserve calibration;
+- preserve uncertainty;
+- prove only compatibility that evidence actually supports.
+
+Required rule:
+
+`distinct source_ref != independent physical corroboration`
+
+Goal:
+- remove `MULTI_SOURCE_CORROBORATION_NOT_PROVEN` only with actual evidence.
+
+### P4 — HOSTILE RF CLOSURE
+
+Reuse FGI/GSRx/GNSS-SDR work already present.
+
+Required:
+- stable receiver output across pre/post attack windows;
+- NAV/PVT or equivalent evaluable trajectory output;
+- official attack onset used only post-run for scoring;
+- no label leakage into decision pipeline;
+- reproducible run;
+- explicit attack classification logic separated from governance HOLD.
+
+Target:
+- close `RECORDED_RF_ATTACK` honestly.
+
+### P5 — CAUSAL ATTRIBUTION
+
+Only after P4:
+- distinguish anomaly, correlation, and causal spoofing attribution;
+- require evidence path linking hostile RF to observed trajectory effect;
+- preserve alternative explanations;
+- no causal promotion from timing coincidence alone.
+
+Target relation:
+`CAUSAL_PROVEN` only when evidence warrants it.
+
+### P6 — BENCHMARK MATRIX
+
+After hostile RF closure:
+- TP
+- TN
+- FP
+- FN
+- detection rate
+- false positive rate
+- false negative rate
+- detection delay
+- drift before detection
+- reproducibility
+
+No public "spoofing resistance" claim before this matrix is materially populated and validated.
+
+### P7 — CONTROLLED LIVE HOSTILE TEST
+
+Only after recorded hostile RF closure and benchmark validity:
+- controlled test environment;
+- explicit safety envelope;
+- no uncontrolled RF transmission;
+- capture-first;
+- KX108 fail-closed;
+- receipts/replay;
+- compare live behavior to recorded benchmark.
+
+This is the path toward closing the original F21 open items:
 - controlled LIVE
 - hostile RF closure
 - causal attribution
 - baseline duration
 - TP/TN/FP/FN
 
-F22 — REAL END-TO-END DEMOS
-- physical
-- semantic
-- visual
-- proof/replay
+### Post-freeze ordering
 
-F23 — MONDE UI FINAL INTEGRATION
-- projections only
+```text
+F25 FROZEN
+   ↓
+P1 Receiver readiness — VERIFIED
+   ↓
+P2 Real passive GNSS capture — CURRENT
+   ↓
+P3 Multi-source corroboration
+   ↓
+P4 Recorded hostile RF closure
+   ↓
+P5 Causal attribution
+   ↓
+P6 TP/TN/FP/FN benchmark matrix
+   ↓
+P7 Controlled live hostile test
+```
 
-F24 — GLOBAL REGRESSION / NEGATIVE TESTS
-- bypass
-- bad provenance
-- missing calibration
-- time/frame mismatch
-- false causality
-- generated-as-truth attempt
+## POST-FREEZE — RESERVED TRACKS FROM ORIGINAL PLANS
 
-F25 — PUBLIC FREEZE / RELEASE CANDIDATE
+The GPS continuation P1→P7 is the current active path, but it is not the whole post-V0 roadmap.
+
+The following tracks are preserved explicitly so they are not lost while GPS is being closed.
+
+### R1 — UNIVERSALITY PROOF
+
+Goal:
+- prove that domain laws change while the constitutional pipeline does not;
+- compare at least a physical domain and a semantic/cognitive domain;
+- keep X108 world/domain agnostic;
+- never infer universality from a single successful domain.
+
+Minimum evidence:
+- GPS / physical path;
+- Brody/GMS/SENS semantic path;
+- same governance invariants;
+- same KX108 authority boundary;
+- explicit differences in domain laws.
+
+### R2 — COMPUTATIONAL THERMODYNAMICS
+
+Separate from physical thermodynamics.
+
+Potential scope:
+- compute cost;
+- friction;
+- stability;
+- irreversibility heuristics;
+- resource/energy accounting where actually measured.
+
+Rules:
+- computational entropy != physical entropy;
+- observation/recommendation only;
+- no decision or ACT authority.
+
+### R3 — DEEP PHYSICAL / SCIENCE ENGINES
+
+Step-by-step, never as a monolithic physics brain.
+
+Reserved families:
+- mechanics;
+- geometry;
+- energy;
+- physical thermodynamics;
+- information;
+- time / space;
+- other specialized scientific engines only when justified.
+
+Each engine must remain model/constraint bounded and confront predictions with measurements.
+
+### R4 — VISION / VIDEO / PHYSICALLY INFORMED GENERATION
+
+F16 closed real-image observation only.
+
+Still reserved:
+- video temporal continuity;
+- scene evolution;
+- analysis ↔ synthesis;
+- physically informed generation;
+- transformation provenance;
+- explicit separation between observed, simulated and generated content.
+
+Generated imagery never becomes observed truth.
+
+### R5 — MULTIMODAL EXPANSION
+
+F20 closed the coherence contract, not every modality runtime.
+
+Reserved integrations:
+- audio / voice;
+- video;
+- IMU;
+- radar;
+- UWB;
+- Wi-Fi / SDR / satellite;
+- machine telemetry;
+- body-state inputs where justified.
+
+Every modality keeps its own clock, frame, latency, precision, uncertainty and provenance.
+
+### R6 — SENS / COGNITION CONTINUATION
+
+SENS/Cognition remains an independent active chantier and must not be rebuilt inside GPS.
+
+Preserve the handoff:
+`SENS / GMS -> MMonde -> Domain -> KX108`
+
+Before future integration:
+- audit the latest SENS freeze/HEAD;
+- preserve ReviewJoin / Semantic Closure boundaries;
+- keep memory_write=False;
+- keep emits_act=False;
+- keep kernel_mutation=False;
+- keep KX108_ONLY.
+
+### R7 — LIFE / BIOLOGY MODEL
+
+Explicitly reserved as a separate family.
+
+Possible later scope:
+- organisms;
+- biological state;
+- behavior;
+- ecosystems;
+- BodyState where justified.
+
+Rules:
+- biology/domain laws remain outside Kernel;
+- life model != physical model collapsed into one ontology;
+- same constitutional transport/governance, different domain laws.
+
+### R8 — OTHER DOMAINS
+
+Reserved:
+- Trading;
+- Bank / Finance;
+- future industrial / robotic / organizational domains.
+
+Each domain must reuse the same constitutional boundaries without forcing domain-specific laws into Kernel.
+
+### R9 — BODY / OXYGEN / EDUCATION RESEARCH
+
+Preserved as future research, outside the current first-world/GPS closure:
+- BodyState;
+- Oxygen / education / learning-world work;
+- governed continuous learning experiments.
+
+No current GPS milestone depends on these.
+
+## BEFORE CONTINUING P1 — COMPLETENESS CHECK
+
+The project-plan audit found no reason to stop the current GPS P1 path, but the following items must remain visible:
+
+1. GPS P1→P7 closes the **physical benchmark**, not the entire post-V0 roadmap.
+2. Universality proof remains an explicit future validation objective.
+3. Computational thermodynamics remains separate and still unclosed.
+4. Real-image observation is closed; physically informed generation/video are not.
+5. Cross-modal contracts are closed; full modality runtimes are not.
+6. SENS/Cognition is a separate active chantier; reconnect only from its latest stable freeze.
+7. Life/biology and other domains remain reserved future families.
+8. For GPS P2/P3, calibration/configuration evidence must be explicit; if a reusable CalibrationReceipt / physical-coherence object is justified by the implementation, search-before-build before creating one.
+9. GPS hostile-RF evaluation must include an explicit pre-attack baseline acceptance criterion before TP/TN/FP/FN scoring.
+10. No public universality, live, spoofing-resistance, causal-attribution or certification claim may be promoted from the current recorded-real freeze.
 
 ## Rule of forge
 
