@@ -1,6 +1,6 @@
 {
   "schema": "NATIVE_WORK_TO_ACTION_PROJECTION_V0_REGISTRY",
-  "status": "PROVEN_FUNCTIONAL_PENDING_FINAL_HEAD_RERUN",
+  "status": "PROVEN",
   "date": "2026-10-07",
   "branch": "feat/native-work-to-action-projection-v0",
   "base": "feat/interpretation-to-intake-policy-native-v0",
@@ -48,5 +48,11 @@
     "kernel_mutation": false,
     "emits_act": false,
     "main_merge": false
-  }
+  },
+  "documentation_freeze_proof": {
+    "workflow_run": 37631777079,
+    "result": "79 passed in 1.54s",
+    "tested_head": "417a1b030e86e6195b51942a4b87c355dc38fcf2"
+  },
+  "final_metadata_head_proof": "RECORDED_ON_DRAFT_PR_79"
 }
