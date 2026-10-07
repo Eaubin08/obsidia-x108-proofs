@@ -1135,6 +1135,9 @@ def _split_relative_main(clauses: list[_Clause], raw: str) -> list[_Clause]:
         elif c.conn == "rel" and c.conn_toks and c.conn_toks[0].low in {"et", "ou", "puis"} \
                 and (p.conn == "rel" or p.rel_member):
             c.rel_member, c.rel_sibling = True, p                  # already "et que" / "ou qui"
+        elif c.conn == "rel" and c.boundary == "," and c.conn_toks \
+                and c.conn_toks[-1].low in {"qui", "que", "qu'"} and (p.conn == "rel" or p.rel_member):
+            c.rel_member, c.rel_sibling = True, p                  # C1: "..., que Marie observe"
     out = list(clauses)
     k = 1
     while k < len(out):
