@@ -1145,6 +1145,10 @@ def _split_relative_main(clauses: list[_Clause], raw: str) -> list[_Clause]:
         elif np_toks and np_toks[0].low == "apparemment" and len(np_toks) > 1:
             marker, mspan = _source_marker(np_toks[:1]), (np_toks[0].start, np_toks[0].end)
             np_toks = np_toks[1:]
+        si_tok = None
+        if ante.conn is None and len(np_toks) > 1 and np_toks[0].low == "si":
+            # N3-R: "Si Paul et Nadia qui ...": the initial "si" stays the condition marker
+            si_tok, np_toks = np_toks[0], np_toks[1:]
         conj = None
         members: list[list] = [[]]
         for t in np_toks:
@@ -1156,6 +1160,9 @@ def _split_relative_main(clauses: list[_Clause], raw: str) -> list[_Clause]:
         if not np_toks or not all(m and _bare_noun_phrase(m) for m in members):
             k += 1
             continue
+        if si_tok is not None:
+            # the antecedent clause is the protasis opener (its subject NP is the antecedent)
+            ante.conn, ante.conn_toks, ante.toks = "si", [si_tok], list(np_toks)
         chain_end = k
         while chain_end + 1 < len(out):
             nxt = out[chain_end + 1]
