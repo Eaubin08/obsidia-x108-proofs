@@ -39,14 +39,18 @@ Current GNSS-SDR real8 full replay:
 
 ## Cross-receiver comparison
 
-Using the first pre/post displacement figures:
+The historical GSRx artifact reports ECEF deltas, while the first GNSS-SDR summary initially reported a 2D geodesic displacement. Those values must not be compared directly.
 
-- FGI-GSRx: `14638.366 m`
-- GNSS-SDR real8: `14586.871 m`
-- absolute difference: `51.495 m`
-- relative difference versus GSRx: approximately `0.352 %`
+After normalizing the GNSS-SDR coordinates to WGS-84 ECEF:
 
-The two independent receiver implementations therefore converge on the same approximately 14.6 km post-onset displacement effect.
+- FGI-GSRx last-valid A→C ECEF delta: `14639.336 m`
+- GNSS-SDR last-pre→final ECEF delta: approximately `14640.407 m`
+- absolute difference: approximately `1.071 m`
+- relative difference: approximately `0.0073 %`
+
+For the GNSS-SDR onset boundary itself, last-pre→first-post ECEF delta is approximately `14639.905 m`.
+
+The two receiver implementations therefore independently converge on an approximately 14.64 km displaced solution, with like-for-like ECEF comparison agreeing to roughly one metre on the available endpoints.
 
 ## Additional GNSS-SDR temporal evidence
 
