@@ -33,6 +33,7 @@ ADAPTER_SCHEMA_VERSION = "OBSIDURE_MISSION_SEMANTIC_BRIDGE_V1"
 R12_B2_RUNTIME_SCHEMA_VERSION = "OBSIDURE_REAL_BRODY_LOCAL_RUNTIME_BRIDGE_V1"
 STATUS_READY = "R12_MISSION_CANDIDATE_READY_FOR_R11_B2"
 STATUS_HELD = "R12_MISSION_CANDIDATE_HELD"
+EXPECTED_LOCAL_MODEL_ID = "qwen2.5-3b-instruct-q4_k_m"
 
 _SAFE_REF_ID = re.compile(r"^[A-Za-z0-9_.:-]{1,160}$")
 _EXPLICIT_KIND_FIELDS = {
@@ -369,6 +370,7 @@ def run_real_brody_local_runtime_bridge(
     human_request: str,
     session_id: str = "r12-b2",
     language: str = "fr",
+    require_local_model_evidence: bool = False,
 ) -> dict[str, Any]:
     """Invoke the configured local Brody runtime as readonly mission evidence.
 
@@ -446,16 +448,110 @@ def run_real_brody_local_runtime_bridge(
     response = str(runtime.get("response_md") or runtime.get("response") or "").strip()
     source = str(runtime.get("source") or "").strip()
     response_hash = _sha256_text(response) if response else None
+    qwen_result: dict[str, Any] | None = None
+    qwen_evidence: dict[str, Any] | None = None
+    post_model_join: dict[str, Any] | None = None
+    qwen_violations: list[str] = []
+
+    if require_local_model_evidence:
+        try:
+            from apps.obsidia_api.brody_real_cognitive_join import run_real_cognitive_join
+            from scripts.providers.obsidia_qwen_local_evidence_v0 import run_local_qwen_evidence
+
+            qwen_result = run_local_qwen_evidence(text=human_request)
+            if qwen_result.get("status") != "EVIDENCE_READY":
+                qwen_violations.append(
+                    "LOCAL_MODEL_EVIDENCE_NOT_READY:"
+                    + str(qwen_result.get("status") or "UNKNOWN")
+                )
+            elif qwen_result.get("model_call_used") is not True:
+                qwen_violations.append("LOCAL_MODEL_CALL_NOT_OBSERVED")
+            elif qwen_result.get("provider") != "QWEN_LOCAL":
+                qwen_violations.append(
+                    "LOCAL_MODEL_PROVIDER_MISMATCH:"
+                    + str(qwen_result.get("provider") or "UNKNOWN")
+                )
+            elif qwen_result.get("model") != EXPECTED_LOCAL_MODEL_ID:
+                qwen_violations.append(
+                    "LOCAL_MODEL_ID_MISMATCH:"
+                    + str(qwen_result.get("model") or "UNKNOWN")
+                )
+            else:
+                evidence = qwen_result.get("evidence")
+                if not isinstance(evidence, Mapping):
+                    qwen_violations.append("LOCAL_MODEL_EVIDENCE_MISSING")
+                elif evidence.get("model") != qwen_result.get("model"):
+                    qwen_violations.append(
+                        "LOCAL_MODEL_EVIDENCE_ID_MISMATCH:"
+                        + str(evidence.get("model") or "UNKNOWN")
+                    )
+                else:
+                    qwen_evidence = dict(evidence)
+                    qwen_evidence.setdefault(
+                        "source_ref",
+                        "model-evidence:qwen_local:"
+                        + str(qwen_evidence.get("evidence_hash") or "")[:16],
+                    )
+                    post_model_join = run_real_cognitive_join(
+                        message=human_request,
+                        language=language,
+                        session_id=session_id + ":local-model-evidence",
+                        precomputed_brody_runtime=runtime,
+                        precomputed_model_evidence=qwen_evidence,
+                    )
+                    if post_model_join.get("local_model_evidence_applied") is not True:
+                        qwen_violations.append(
+                            "LOCAL_MODEL_EVIDENCE_REJECTED:"
+                            + str(
+                                post_model_join.get("local_model_evidence_status")
+                                or post_model_join.get("components", {}).get("W4B_LOCAL_MODEL_EVIDENCE")
+                                or "UNKNOWN"
+                            )
+                        )
+        except Exception as exc:
+            qwen_violations.append(
+                "LOCAL_MODEL_EVIDENCE_EXCEPTION:"
+                + type(exc).__name__
+                + ":"
+                + str(exc)[:160]
+            )
 
     evidence = {
         "adapter_schema_version": R12_B2_RUNTIME_SCHEMA_VERSION,
-        "status": STATUS_HELD if violations else "R12_REAL_BRODY_RUNTIME_READY",
-        "reason": "|".join(violations) if violations else None,
-        "runtime_available": not violations,
+        "status": STATUS_HELD if (violations or qwen_violations) else "R12_REAL_BRODY_RUNTIME_READY",
+        "reason": "|".join(violations + qwen_violations) if (violations or qwen_violations) else None,
+        "runtime_available": not (violations or qwen_violations),
         "runtime_source": source or None,
         "runtime_chain": dict(runtime.get("runtime_chain") or {}),
         "model_id": "BRODY_FULL_RUNTIME_ORCHESTRATOR_V5B_READONLY",
-        "model_call_used": False,
+        "model_call_used": bool(qwen_result and qwen_result.get("model_call_used") is True),
+        "local_model_required": bool(require_local_model_evidence),
+        "local_model_verified": bool(
+            require_local_model_evidence
+            and qwen_result
+            and qwen_result.get("model_call_used") is True
+            and post_model_join
+            and post_model_join.get("local_model_evidence_applied") is True
+        ),
+        "local_model_provider": qwen_result.get("provider") if qwen_result else None,
+        "local_model_id": qwen_result.get("model") if qwen_result else None,
+        "local_model_status": qwen_result.get("status") if qwen_result else "NOT_REQUESTED",
+        "local_model_tokens": int(qwen_result.get("tokens_local") or 0) if qwen_result else 0,
+        "local_model_finish_reason": qwen_result.get("finish_reason") if qwen_result else None,
+        "local_model_evidence_hash": (
+            qwen_evidence.get("evidence_hash") if isinstance(qwen_evidence, dict) else None
+        ),
+        "local_model_evidence_source_ref": (
+            qwen_evidence.get("source_ref") if isinstance(qwen_evidence, dict) else None
+        ),
+        "local_model_evidence": qwen_evidence,
+        "local_model_join_status": post_model_join.get("status") if post_model_join else None,
+        "local_model_join_components": (
+            dict(post_model_join.get("components") or {}) if isinstance(post_model_join, Mapping) else {}
+        ),
+        "local_model_context_packet": (
+            dict(post_model_join.get("context_packet_v2") or {}) if isinstance(post_model_join, Mapping) else {}
+        ),
         "provider_status": provider_status,
         "response_hash": response_hash,
         "response_chars": len(response),
@@ -488,6 +584,7 @@ def build_real_brody_obsidure_mission_candidate(
     provider_config: Mapping[str, Any] | None = None,
     session_id: str = "r12-b2",
     language: str = "fr",
+    require_local_model_evidence: bool = False,
 ) -> dict[str, Any]:
     """Build an R11-B2 MissionCandidate from real local Brody evidence.
 
@@ -499,6 +596,7 @@ def build_real_brody_obsidure_mission_candidate(
         human_request=human_request,
         session_id=session_id,
         language=language,
+        require_local_model_evidence=require_local_model_evidence,
     )
     if brody_runtime.get("status") != "R12_REAL_BRODY_RUNTIME_READY":
         out = _hold(str(brody_runtime.get("reason") or "BRODY_RUNTIME_UNAVAILABLE"))
@@ -527,7 +625,11 @@ def build_real_brody_obsidure_mission_candidate(
     bridge["adapter_schema_version"] = R12_B2_RUNTIME_SCHEMA_VERSION
     bridge["brody_runtime_evidence"] = brody_runtime
     bridge["brody_runtime_connected"] = True
-    bridge["real_local_model_verified"] = False
+    bridge["real_local_model_verified"] = bool(brody_runtime.get("local_model_verified"))
+    bridge["model_call_used"] = bool(brody_runtime.get("model_call_used"))
+    bridge["local_model_evidence"] = brody_runtime.get("local_model_evidence")
+    bridge["local_model_context_packet"] = brody_runtime.get("local_model_context_packet")
+    bridge["local_model_evidence_source_ref"] = brody_runtime.get("local_model_evidence_source_ref")
     bridge["real_brody_runtime_verified"] = True
     bridge["mission_prepare_only"] = True
     bridge["executor_invoked"] = False
