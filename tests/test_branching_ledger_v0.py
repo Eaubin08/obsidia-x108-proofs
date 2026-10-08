@@ -1129,6 +1129,9 @@ class TestPrebuildHardening:
         puis depuis un cwd externe (chemin absolu) -> une seule entree
         semantique dans le Ledger reel (LOCALAPPDATA)."""
         import subprocess
+        import os
+        env = os.environ.copy()
+        env["LOCALAPPDATA"] = str(tmp_path / "shared_localappdata")
         src_dir = tmp_path / "cross_cwd_src"
         src_dir.mkdir()
         src = src_dir / "cross_cwd_candidate.py"
@@ -1138,7 +1141,7 @@ class TestPrebuildHardening:
         r1 = subprocess.run(
             [sys.executable, cli, "ledger", "register-source", str(src),
              "--reason", "cross-cwd-e2e"],
-            capture_output=True, text=True, cwd=str(_REPO_ROOT),
+            capture_output=True, text=True, cwd=str(_REPO_ROOT), env=env,
         )
         assert r1.returncode == 0
         d1 = json.loads(r1.stdout)
@@ -1146,7 +1149,7 @@ class TestPrebuildHardening:
         r2 = subprocess.run(
             [sys.executable, cli, "ledger", "register-source", str(src.resolve()),
              "--reason", "cross-cwd-e2e"],
-            capture_output=True, text=True, cwd=str(tmp_path),
+            capture_output=True, text=True, cwd=str(tmp_path), env=env,
         )
         assert r2.returncode == 0
         d2 = json.loads(r2.stdout)
