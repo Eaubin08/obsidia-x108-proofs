@@ -62,9 +62,9 @@ class AtomicOfflineReservationJournalV0(OfflineReservationLifecycleV0):
             import hashlib,json
             receipt_hash=hashlib.sha256(json.dumps({"idempotency_key":idempotency_key,
                 "final_status":disposition},sort_keys=True,separators=(",",":")).encode()).hexdigest()
+            self._append(db,idempotency_key,disposition)
             db.execute("UPDATE reservations SET status=? WHERE idempotency_key=?",(disposition,idempotency_key))
             db.execute("INSERT INTO lifecycle_receipts VALUES(?,?,?)",(idempotency_key,disposition,receipt_hash))
-            self._append(db,idempotency_key,disposition)
             db.commit()
         return "CLOSED_LOGGED_FIXTURE_NO_EXECUTION_AUTHORITY"
 
@@ -77,8 +77,8 @@ class AtomicOfflineReservationJournalV0(OfflineReservationLifecycleV0):
                 db.rollback();return False
             active=db.execute("SELECT idempotency_key FROM reservations WHERE organization=? AND delegate=? AND connector=? AND capability=? AND status='RESERVED_NO_EXECUTION' ORDER BY idempotency_key",scope).fetchall()
             for (key,) in active:
-                db.execute("UPDATE reservations SET status='INVALIDATED' WHERE idempotency_key=?",(key,))
                 self._append(db,key,"INVALIDATED")
+                db.execute("UPDATE reservations SET status='INVALIDATED' WHERE idempotency_key=?",(key,))
             db.commit()
             return True
 
