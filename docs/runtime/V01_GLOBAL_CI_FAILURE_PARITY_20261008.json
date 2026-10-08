@@ -1,0 +1,170 @@
+{
+  "schema": "OBSIDIA_V01_GLOBAL_REGRESSION_FAILURE_PARITY_V0",
+  "date": "2026-10-08",
+  "source": "GITHUB_ACTIONS_VERIFIED_LOG_SUMMARIES",
+  "origin_branch": "feat/obsidia-universal-cross-domain-conformance-v0",
+  "origin_sha": "7a54bb5cb74fd3f88b1fb657db38a012246b2c3a",
+  "runs": {
+    "pre_C1_baseline_A": {
+      "run_id": 37706140705,
+      "run_url": "https://github.com/Eaubin08/obsidia-x108-proofs/actions/runs/37706140705",
+      "failed": 11,
+      "passed": 12675,
+      "failed_test_ids": [
+        "tests/api/test_brody_routes_registered.py::test_brody_routes_registered",
+        "tests/api/test_f67_sigma_live_smoke_api_audit.py::test_f67_no_new_sigma_or_bus_routes_beyond_expected",
+        "tests/cli/test_mission_authority_conformance_v0.py::test_lean_runtime_canonical_conformance",
+        "tests/cli/test_mission_authority_conformance_v0.py::test_scope_le_conformance",
+        "tests/test_batch_execution_v0.py::TestCLIBatchExecution::test_cli_execution_prepare_real_batch",
+        "tests/test_batch_execution_v0.py::TestCLIBatchExecution::test_cli_execution_status_and_inspect",
+        "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_batch_not_ready",
+        "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_bridge_plans_explicit_scope_exactly",
+        "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_bridge_never_writes_anything",
+        "tests/test_branching_ledger_v0.py::TestPrebuildHardening::test_identity_cross_cwd_real_cli",
+        "tests/test_git_worktree_repository_identity_v0.py::TestIndependentCloneNegativeResolution::test_clone_with_same_content_imported_as_new_commit_still_rejected"
+      ]
+    },
+    "pre_C1_baseline_B": {
+      "run_id": 37706164058,
+      "run_url": "https://github.com/Eaubin08/obsidia-x108-proofs/actions/runs/37706164058",
+      "failed": 12,
+      "passed": 12674,
+      "failed_test_ids": [
+        "tests/api/test_brody_routes_registered.py::test_brody_routes_registered",
+        "tests/api/test_f67_sigma_live_smoke_api_audit.py::test_f67_no_new_sigma_or_bus_routes_beyond_expected",
+        "tests/cli/test_mission_authority_conformance_v0.py::test_lean_runtime_canonical_conformance",
+        "tests/cli/test_mission_authority_conformance_v0.py::test_scope_le_conformance",
+        "tests/test_batch_execution_v0.py::TestCLIBatchExecution::test_cli_execution_prepare_real_batch",
+        "tests/test_batch_execution_v0.py::TestCLIBatchExecution::test_cli_execution_status_and_inspect",
+        "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_batch_not_ready",
+        "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_bridge_plans_explicit_scope_exactly",
+        "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_bridge_never_writes_anything",
+        "tests/test_batch_execution_v0.py::TestApprovalConcurrency::test_concurrent_identical_content_idempotent",
+        "tests/test_branching_ledger_v0.py::TestPrebuildHardening::test_identity_cross_cwd_real_cli",
+        "tests/test_git_worktree_repository_identity_v0.py::TestIndependentCloneNegativeResolution::test_clone_with_same_content_imported_as_new_commit_still_rejected"
+      ]
+    },
+    "C1": {
+      "run_id": 37709282643,
+      "run_url": "https://github.com/Eaubin08/obsidia-x108-proofs/actions/runs/37709282643",
+      "failed": 11,
+      "passed": 12685,
+      "failed_test_ids": [
+        "tests/api/test_brody_routes_registered.py::test_brody_routes_registered",
+        "tests/api/test_f67_sigma_live_smoke_api_audit.py::test_f67_no_new_sigma_or_bus_routes_beyond_expected",
+        "tests/cli/test_mission_authority_conformance_v0.py::test_lean_runtime_canonical_conformance",
+        "tests/cli/test_mission_authority_conformance_v0.py::test_scope_le_conformance",
+        "tests/test_batch_execution_v0.py::TestCLIBatchExecution::test_cli_execution_prepare_real_batch",
+        "tests/test_batch_execution_v0.py::TestCLIBatchExecution::test_cli_execution_status_and_inspect",
+        "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_batch_not_ready",
+        "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_bridge_plans_explicit_scope_exactly",
+        "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_bridge_never_writes_anything",
+        "tests/test_branching_ledger_v0.py::TestPrebuildHardening::test_identity_cross_cwd_real_cli",
+        "tests/test_git_worktree_repository_identity_v0.py::TestIndependentCloneNegativeResolution::test_clone_with_same_content_imported_as_new_commit_still_rejected"
+      ]
+    },
+    "C2": {
+      "run_id": 37711906619,
+      "run_url": "https://github.com/Eaubin08/obsidia-x108-proofs/actions/runs/37711906619",
+      "failed": 11,
+      "passed": 12700,
+      "failed_test_ids": [
+        "tests/api/test_brody_routes_registered.py::test_brody_routes_registered",
+        "tests/api/test_f67_sigma_live_smoke_api_audit.py::test_f67_no_new_sigma_or_bus_routes_beyond_expected",
+        "tests/cli/test_mission_authority_conformance_v0.py::test_lean_runtime_canonical_conformance",
+        "tests/cli/test_mission_authority_conformance_v0.py::test_scope_le_conformance",
+        "tests/test_batch_execution_v0.py::TestCLIBatchExecution::test_cli_execution_prepare_real_batch",
+        "tests/test_batch_execution_v0.py::TestCLIBatchExecution::test_cli_execution_status_and_inspect",
+        "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_batch_not_ready",
+        "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_bridge_plans_explicit_scope_exactly",
+        "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_bridge_never_writes_anything",
+        "tests/test_branching_ledger_v0.py::TestPrebuildHardening::test_identity_cross_cwd_real_cli",
+        "tests/test_git_worktree_repository_identity_v0.py::TestIndependentCloneNegativeResolution::test_clone_with_same_content_imported_as_new_commit_still_rejected"
+      ]
+    },
+    "C3_attempt_1": {
+      "run_id": 37712388567,
+      "run_url": "https://github.com/Eaubin08/obsidia-x108-proofs/actions/runs/37712388567",
+      "failed": 11,
+      "passed": 12712,
+      "failed_test_ids": [
+        "tests/api/test_brody_routes_registered.py::test_brody_routes_registered",
+        "tests/api/test_f67_sigma_live_smoke_api_audit.py::test_f67_no_new_sigma_or_bus_routes_beyond_expected",
+        "tests/cli/test_mission_authority_conformance_v0.py::test_lean_runtime_canonical_conformance",
+        "tests/cli/test_mission_authority_conformance_v0.py::test_scope_le_conformance",
+        "tests/test_batch_execution_v0.py::TestCLIBatchExecution::test_cli_execution_prepare_real_batch",
+        "tests/test_batch_execution_v0.py::TestCLIBatchExecution::test_cli_execution_status_and_inspect",
+        "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_batch_not_ready",
+        "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_bridge_plans_explicit_scope_exactly",
+        "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_bridge_never_writes_anything",
+        "tests/test_branching_ledger_v0.py::TestPrebuildHardening::test_identity_cross_cwd_real_cli",
+        "tests/test_git_worktree_repository_identity_v0.py::TestIndependentCloneNegativeResolution::test_clone_with_same_content_imported_as_new_commit_still_rejected"
+      ]
+    },
+    "C3_attempt_2": {
+      "run_id": 37712341246,
+      "run_url": "https://github.com/Eaubin08/obsidia-x108-proofs/actions/runs/37712341246",
+      "failed": 12,
+      "passed": 12711,
+      "failed_test_ids": [
+        "tests/api/test_brody_routes_registered.py::test_brody_routes_registered",
+        "tests/api/test_f67_sigma_live_smoke_api_audit.py::test_f67_no_new_sigma_or_bus_routes_beyond_expected",
+        "tests/cli/test_mission_authority_conformance_v0.py::test_lean_runtime_canonical_conformance",
+        "tests/cli/test_mission_authority_conformance_v0.py::test_scope_le_conformance",
+        "tests/test_batch_execution_v0.py::TestCLIBatchExecution::test_cli_execution_prepare_real_batch",
+        "tests/test_batch_execution_v0.py::TestCLIBatchExecution::test_cli_execution_status_and_inspect",
+        "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_batch_not_ready",
+        "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_bridge_plans_explicit_scope_exactly",
+        "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_bridge_never_writes_anything",
+        "tests/test_batch_execution_v0.py::TestApprovalConcurrency::test_concurrent_identical_content_idempotent",
+        "tests/test_branching_ledger_v0.py::TestPrebuildHardening::test_identity_cross_cwd_real_cli",
+        "tests/test_git_worktree_repository_identity_v0.py::TestIndependentCloneNegativeResolution::test_clone_with_same_content_imported_as_new_commit_still_rejected"
+      ]
+    },
+    "C4": {
+      "run_id": 37713023215,
+      "run_url": "https://github.com/Eaubin08/obsidia-x108-proofs/actions/runs/37713023215",
+      "failed": 11,
+      "passed": 12756,
+      "failed_test_ids": [
+        "tests/api/test_brody_routes_registered.py::test_brody_routes_registered",
+        "tests/api/test_f67_sigma_live_smoke_api_audit.py::test_f67_no_new_sigma_or_bus_routes_beyond_expected",
+        "tests/cli/test_mission_authority_conformance_v0.py::test_lean_runtime_canonical_conformance",
+        "tests/cli/test_mission_authority_conformance_v0.py::test_scope_le_conformance",
+        "tests/test_batch_execution_v0.py::TestCLIBatchExecution::test_cli_execution_prepare_real_batch",
+        "tests/test_batch_execution_v0.py::TestCLIBatchExecution::test_cli_execution_status_and_inspect",
+        "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_batch_not_ready",
+        "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_bridge_plans_explicit_scope_exactly",
+        "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_bridge_never_writes_anything",
+        "tests/test_branching_ledger_v0.py::TestPrebuildHardening::test_identity_cross_cwd_real_cli",
+        "tests/test_git_worktree_repository_identity_v0.py::TestIndependentCloneNegativeResolution::test_clone_with_same_content_imported_as_new_commit_still_rejected"
+      ]
+    }
+  },
+  "stable_failing_test_ids": [
+    "tests/api/test_brody_routes_registered.py::test_brody_routes_registered",
+    "tests/api/test_f67_sigma_live_smoke_api_audit.py::test_f67_no_new_sigma_or_bus_routes_beyond_expected",
+    "tests/cli/test_mission_authority_conformance_v0.py::test_lean_runtime_canonical_conformance",
+    "tests/cli/test_mission_authority_conformance_v0.py::test_scope_le_conformance",
+    "tests/test_batch_execution_v0.py::TestCLIBatchExecution::test_cli_execution_prepare_real_batch",
+    "tests/test_batch_execution_v0.py::TestCLIBatchExecution::test_cli_execution_status_and_inspect",
+    "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_batch_not_ready",
+    "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_bridge_plans_explicit_scope_exactly",
+    "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_bridge_never_writes_anything",
+    "tests/test_branching_ledger_v0.py::TestPrebuildHardening::test_identity_cross_cwd_real_cli",
+    "tests/test_git_worktree_repository_identity_v0.py::TestIndependentCloneNegativeResolution::test_clone_with_same_content_imported_as_new_commit_still_rejected"
+  ],
+  "intermittent_test_id": "tests/test_batch_execution_v0.py::TestApprovalConcurrency::test_concurrent_identical_content_idempotent",
+  "original_pre_C1_baseline_test_id_parity_verified": true,
+  "zero_new_persistent_failures_C1_to_C4": true,
+  "zero_new_persistent_failures_original_baseline_to_C4": true,
+  "global_green": false,
+  "known_causes": [
+    "LEGACY_API_ROUTE_REGISTRATION",
+    "LEAN_LAKE_NOT_AVAILABLE_ON_RUNNER",
+    "BATCH_EXECUTION_CLI_STATE",
+    "GIT_LEDGER_AND_IDENTITY_ENVIRONMENT",
+    "ONE_INTERMITTENT_BATCH_CONCURRENCY_TEST"
+  ],
+  "next": "FIX_STABLE_BASELINE_AND_ISOLATE_CONCURRENCY_FLAKE_SEPARATELY"
+}
