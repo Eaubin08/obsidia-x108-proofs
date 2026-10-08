@@ -32,4 +32,4 @@ def install_state_guard_fixture_v0(path):
 def inspect_state_guard_fixture_v0(path):
     with sqlite3.connect(str(path)) as db:
         row=db.execute("SELECT sql FROM sqlite_master WHERE type='trigger' AND name='c232_state_transition_guard'").fetchone()
-    return {"status":"BLOCK","reason":("C232_LOCAL_GUARD_PRESENT_NOT_ATTESTED" if row and row[0] and row[0].strip()==TRIGGER_SQL.strip() else "C232_GUARD_MISSING_OR_MODIFIED"),"egress_allowed":False}
+    return {"status":"BLOCK","reason":("C232_LOCAL_GUARD_PRESENT_NOT_ATTESTED" if row and row[0] and " ".join(row[0].split()).replace(" IF NOT EXISTS "," ")==" ".join(TRIGGER_SQL.split()).replace(" IF NOT EXISTS "," ") else "C232_GUARD_MISSING_OR_MODIFIED"),"egress_allowed":False}
