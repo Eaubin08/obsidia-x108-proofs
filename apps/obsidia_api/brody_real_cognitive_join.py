@@ -871,11 +871,30 @@ def run_real_cognitive_join(
         micro.get("hold_required", False)
     )
 
+    upstream_x108_gate_constraint = None
+    upstream_x108_gate_evidence_ref = None
+
+    if (
+        sigma_domain_packet_source == "PRECOMPUTED_READONLY"
+        and isinstance(sigma_result, dict)
+    ):
+        observed_gate = str(
+            sigma_result.get("x108_gate") or ""
+        ).strip().upper()
+        if observed_gate in {"ALLOW", "HOLD", "BLOCK"}:
+            upstream_x108_gate_constraint = observed_gate
+            upstream_x108_gate_evidence_ref = (
+                "sigma-envelope-sha256:"
+                + str(sigma_domain_packet_sha256 or "UNKNOWN")
+            )
+
     try:
         ticket = admit_cognitive_context(
             v2,
             signal_id,
             critical_action_requested=critical_action_requested,
+            upstream_gate_constraint=upstream_x108_gate_constraint,
+            upstream_gate_evidence_ref=upstream_x108_gate_evidence_ref,
         )
         components["W2_X108_ADMISSION"] = "READY:DRY_RUN"
 
@@ -970,6 +989,12 @@ def run_real_cognitive_join(
         "w1_runtime_context_packet": _asdict(runtime_packet),
 
         "critical_action_requested": critical_action_requested,
+        "upstream_x108_gate_constraint": (
+            upstream_x108_gate_constraint
+        ),
+        "upstream_x108_gate_evidence_ref": (
+            upstream_x108_gate_evidence_ref
+        ),
 
         "kx108_admission": "DRY_RUN",
         "decision_ticket_dry_run": _asdict(ticket),
