@@ -28,7 +28,7 @@ def case(tmp_path):
     )
     ticket = issue_sovereign_ticket(
         action_id="action-1", os3_ticket_id="os3-fixture",
-        x108_gate="HOLD", scope="calendar:write", autonomy_level=3,
+        x108_gate="ACT", scope="calendar:write", autonomy_level=3,
         world_call_class="REVERSIBLE_WORLD_CALL"
     )
     params = dict(
@@ -72,4 +72,27 @@ def test_gateway_refuses_forbidden_class(tmp_path):
     p["world_call_class"] = WorldCallClass.FORBIDDEN_WORLD_CALL
     result = inspect_fixture_composition_v0(**p)
     assert result["egress_allowed"] is False
-    assert result["gateway_gate_result"] == "BLOCK"
+    assert result["reason"] == "C25_GATEWAY_PREFLIGHT_DENIED"
+
+def test_hold_denied_without_consuming_nonce(tmp_path):
+    _, p = case(tmp_path)
+    p["ticket"].x108_gate = "HOLD"
+    denied = inspect_fixture_composition_v0(**p)
+    assert denied["status"] == "BLOCK"
+    assert denied["reason"] == "C25_KX108_ALLOW_NOT_VERIFIED"
+    p["ticket"].x108_gate = "ACT"
+    assert inspect_fixture_composition_v0(**p)["status"] == "NO_EXECUTION"
+
+def test_block_denied_without_consuming_nonce(tmp_path):
+    _, p = case(tmp_path)
+    p["ticket"].x108_gate = "BLOCK"
+    assert inspect_fixture_composition_v0(**p)["status"] == "BLOCK"
+    p["ticket"].x108_gate = "ACT"
+    assert inspect_fixture_composition_v0(**p)["status"] == "NO_EXECUTION"
+
+def test_gateway_rejection_does_not_consume_nonce(tmp_path):
+    _, p = case(tmp_path)
+    p["world_call_class"] = WorldCallClass.FORBIDDEN_WORLD_CALL
+    assert inspect_fixture_composition_v0(**p)["reason"] == "C25_GATEWAY_PREFLIGHT_DENIED"
+    p["world_call_class"] = WorldCallClass.REVERSIBLE_WORLD_CALL
+    assert inspect_fixture_composition_v0(**p)["status"] == "NO_EXECUTION"
