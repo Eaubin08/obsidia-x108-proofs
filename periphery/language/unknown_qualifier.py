@@ -22,6 +22,8 @@ from typing import Any
 
 _FR_SURFACE_WORDS = {
     "retrouve",
+    "sais",
+    "utilisant",
     "dans",
     "precedente",
     "a",
