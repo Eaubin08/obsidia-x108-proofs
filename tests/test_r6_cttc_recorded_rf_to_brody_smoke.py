@@ -24,6 +24,11 @@ def test_recorded_rf_smoke_contract(monkeypatch):
             "response_md": "readonly",
             "decision_authority": "KX108_ONLY",
             "emits_act": False,
+            "pre_reasoning_snapshot": {
+                "reasoning_directive": {
+                    "resolution_targets": [],
+                },
+            },
         },
     )
 
@@ -67,4 +72,6 @@ def test_recorded_rf_smoke_contract(monkeypatch):
     assert report["checks"]["sigma_envelope_hash_present"] is True
     assert report["checks"]["no_decision_promotion"] is True
     assert report["checks"]["recorded_gate_preserved_in_cognitive_ticket"] is True
+    assert report["checks"]["brody_pre_reasoning_unblocked"] is True
+    assert report["brody_remaining_resolution_targets"] == []
     assert report["cognitive_ticket_decision"] == "HOLD"
