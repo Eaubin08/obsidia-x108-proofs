@@ -1,9 +1,9 @@
-from periphery.enterprise_canonical_guard_catalog_v0 import canonical_guards_present_v0
 """C2.38 offline guarded reservation writes, verifying triggers under BEGIN IMMEDIATE.
 
 A local SQLite guard check is not independent attestation or execution authority.
 """
 from periphery.enterprise_atomic_reservation_journal_v0 import AtomicOfflineReservationJournalV0
+from periphery.enterprise_canonical_guard_catalog_v0 import canonical_guards_present_v0
 from periphery.enterprise_sqlite_write_guard_audit_v0 import LocalWriteGuardV0
 from periphery.enterprise_sqlite_state_update_guard_v0 import TRIGGER_SQL as STATE_SQL
 from periphery.enterprise_sqlite_reservation_binding_guard_v0 import TRIGGER_SQL as BINDING_SQL
