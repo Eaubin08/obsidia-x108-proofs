@@ -9,3 +9,7 @@ A trusted verifier key is injected by the caller and not persisted. The included
 The verifier returns an integrity/scope verdict, NOT KX108 ALLOW or any connector dispatch permission. C2.1 remains fail-closed even when the fixture proof passes. No real provider, broker, mailbox or kernel is contacted.
 
 Still required: authenticated org/issuer and key registry; independent KX108 and SovereignTicket validation; strict issuance/expiry and nonce replay tracking; durable shared revocation; atomic dispatch fencing and concurrency tests. Never promote the current fixture verification alone to action permission. No main merge.
+
+## C2.2 replay fixture extension
+
+A process-local, lock-protected nonce registry now rejects a repeated valid signed proof with `C22_NONCE_REPLAY`. A failed signature does not reserve a nonce. This is only a single-process test of replay semantics; **not** a durable, transactional, cross-process anti-replay control. Restart loses state. No connector action or KX108 authorization is conferred.
