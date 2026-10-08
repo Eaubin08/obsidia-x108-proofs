@@ -23,6 +23,11 @@ def test_p4_p5_smoke_contract(monkeypatch):
             "response_source": "REAL_BRODY_RUNTIME",
             "decision_authority": "KX108_ONLY",
             "emits_act": False,
+            "pre_reasoning_snapshot": {
+                "reasoning_directive": {
+                    "resolution_targets": [],
+                },
+            },
         },
     )
 
@@ -66,4 +71,6 @@ def test_p4_p5_smoke_contract(monkeypatch):
     assert report["recorded_x108_gate"] == "HOLD"
     assert report["cognitive_ticket_decision"] == "HOLD"
     assert report["checks"]["spoofing_causal_claim_forbidden"] is True
+    assert report["checks"]["brody_pre_reasoning_unblocked"] is True
+    assert report["brody_remaining_resolution_targets"] == []
     assert report["checks"]["no_act_or_verdict"] is True
