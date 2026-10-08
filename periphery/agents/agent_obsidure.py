@@ -4045,6 +4045,380 @@ class AgentObsidure:
             repair_budget=repair_budget,
         )
 
+    def ingest_repair_execution_outcome(
+        self,
+        *,
+        action_evidence_id: str = "",
+        stores_base_dir: str | Path,
+        prepared_repair: Optional[Dict[str, Any]] = None,
+        mission_context: Optional[Dict[str, Any]] = None,
+        repair_budget: Optional[int] = None,
+        attempt_history: Tuple[Dict[str, Any], ...] = (),
+    ) -> Dict[str, Any]:
+        """
+        Read-only R10-B3 feedback ingress for already-persisted R8 evidence.
+
+        This consumes canonical receipt/replay/reconciliation evidence and
+        returns an advisory classification for the current repair attempt. It
+        never executes a prepared action, invokes KX108, retries, writes memory,
+        or mutates canonical R8 evidence.
+        """
+
+        schema = "OBSIDURE_REPAIR_OUTCOME_FEEDBACK_V1"
+
+        def _obj_dict(value: Any) -> Dict[str, Any]:
+            if value is None:
+                return {}
+            if isinstance(value, dict):
+                return dict(value)
+            to_dict = getattr(value, "to_dict", None)
+            if callable(to_dict):
+                try:
+                    return dict(to_dict())
+                except Exception:
+                    return {}
+            data = getattr(value, "__dict__", None)
+            return dict(data) if isinstance(data, dict) else {}
+
+        def _field(value: Any, name: str, default: Any = "") -> Any:
+            if isinstance(value, dict):
+                return value.get(name, default)
+            return getattr(value, name, default)
+
+        def _hold(
+            reason: str,
+            classification: str = "EVIDENCE_INCOMPLETE",
+            recommendation: str = "ESCALATE",
+            **extra: Any,
+        ) -> Dict[str, Any]:
+            return {
+                "schema_version": schema,
+                "status": "R10_REPAIR_OUTCOME_HELD",
+                "reason": reason,
+                "derived_outcome_classification": classification,
+                "recommendation": recommendation,
+                "readonly": True,
+                "advisory_only": True,
+                "authority": "NON_SOVEREIGN",
+                "decision_authority": "KX108_ONLY",
+                "executor_invoked": False,
+                "physical_mutation": False,
+                "memory_promotion": False,
+                "canonical_receipt_mutation": False,
+                "automatic_retry": False,
+                **extra,
+            }
+
+        def _done(classification: str, recommendation: str, **extra: Any) -> Dict[str, Any]:
+            return {
+                "schema_version": schema,
+                "status": "R10_REPAIR_OUTCOME_INGESTED",
+                "reason": None,
+                "derived_outcome_classification": classification,
+                "recommendation": recommendation,
+                "readonly": True,
+                "advisory_only": True,
+                "authority": "NON_SOVEREIGN",
+                "decision_authority": "KX108_ONLY",
+                "executor_invoked": False,
+                "physical_mutation": False,
+                "memory_promotion": False,
+                "canonical_receipt_mutation": False,
+                "automatic_retry": False,
+                **extra,
+            }
+
+        request = self._last_repair_request
+        proposal = self._last_repair_proposal
+        verdict = self._last_repair_verdict
+        if request is None:
+            return _hold("REPAIR_REQUEST_MISSING")
+        if proposal is None:
+            return _hold("REPAIR_PROPOSAL_MISSING")
+        if verdict is None:
+            return _hold("REPAIR_VERDICT_MISSING")
+
+        repair_lineage = {
+            "repair_request_id": str(_field(request, "request_id", "") or ""),
+            "repair_proposal_id": str(_field(proposal, "proposal_id", "") or ""),
+            "repair_verdict_id": str(_field(verdict, "verdict_id", "") or ""),
+        }
+
+        prep = dict(prepared_repair or {})
+        if not prep:
+            return _hold("PREPARED_REPAIR_CONTEXT_REQUIRED", repair_lineage=repair_lineage)
+
+        prep_lineage = dict(prep.get("repair_lineage") or {})
+        for key, expected in repair_lineage.items():
+            observed = str(prep_lineage.get(key, "") or "")
+            if not observed:
+                return _hold(
+                    "PREPARED_REPAIR_LINEAGE_INCOMPLETE",
+                    missing_lineage_key=key,
+                    repair_lineage=repair_lineage,
+                )
+            if observed != expected:
+                return _hold(
+                    "PREPARED_REPAIR_LINEAGE_MISMATCH",
+                    classification="GOVERNANCE_MISMATCH",
+                    recommendation="STOP_BLOCKED",
+                    lineage_key=key,
+                    expected=expected,
+                    observed=observed,
+                    repair_lineage=repair_lineage,
+                )
+
+        r9_proposal = _obj_dict(prep.get("r9_proposal"))
+        r9_manifest = _obj_dict(prep.get("r9_manifest"))
+        r9_validation = _obj_dict(prep.get("r9_validation"))
+        r9_handoff = _obj_dict(prep.get("r9_handoff"))
+        prepared_action = dict(prep.get("prepared_action") or {})
+        builder_lineage = dict(prepared_action.get("builder_lineage") or {})
+        expected_builder = {
+            "builder_proposal_id": str(
+                r9_proposal.get("proposal_id")
+                or prepared_action.get("proposal_id_bound")
+                or builder_lineage.get("builder_proposal_id")
+                or ""
+            ),
+            "builder_manifest_id": str(
+                r9_manifest.get("manifest_id")
+                or prepared_action.get("manifest_id_bound")
+                or builder_lineage.get("builder_manifest_id")
+                or ""
+            ),
+            "builder_validation_id": str(
+                r9_validation.get("validation_id")
+                or prepared_action.get("validation_id_bound")
+                or builder_lineage.get("builder_validation_id")
+                or ""
+            ),
+            "builder_handoff_id": str(
+                r9_handoff.get("handoff_id")
+                or prepared_action.get("handoff_id_bound")
+                or builder_lineage.get("builder_handoff_id")
+                or ""
+            ),
+            "v2_exec_id": str(prepared_action.get("v2_exec_id") or ""),
+        }
+
+        missing_builder = tuple(key for key, value in expected_builder.items() if not value)
+        if missing_builder:
+            return _hold(
+                "PREPARED_BUILDER_LINEAGE_INCOMPLETE",
+                missing_lineage_keys=missing_builder,
+                repair_lineage=repair_lineage,
+            )
+
+        if not str(action_evidence_id or "").strip():
+            return _hold(
+                "ACTION_EVIDENCE_ID_MISSING",
+                classification="PREPARED_ONLY",
+                recommendation="ESCALATE",
+                repair_lineage=repair_lineage,
+                builder_lineage=expected_builder,
+                prepared_status=prepared_action.get("status"),
+            )
+
+        scripts_dir = str(REPO_ROOT / "scripts")
+        if scripts_dir not in sys.path:
+            sys.path.insert(0, scripts_dir)
+        try:
+            import obsidia_canonical_receipt_envelope_v1 as cre
+            import obsidia_canonical_receipt_replay_v1 as r8_replay
+            import obsidia_governance_decision_replay_v1 as r8_decision
+            import obsidia_realized_state_reconciliation_v1 as r8_reconcile
+        except Exception as exc:
+            return _hold("R8_OUTCOME_APIS_UNAVAILABLE", detail=f"{type(exc).__name__}: {exc}")
+
+        stores = Path(stores_base_dir)
+        receipt = cre.load_canonical_receipt_envelope(str(action_evidence_id), stores / "receipts")
+        if receipt is None:
+            replay = r8_replay.replay_action_evidence(str(action_evidence_id), stores_base_dir=stores)
+            return _hold(
+                "ACTION_EVIDENCE_NOT_FOUND",
+                r8_evidence_replay=replay,
+                repair_lineage=repair_lineage,
+                builder_lineage=expected_builder,
+            )
+
+        observed_action_id = str(receipt.get("action_evidence_id") or "")
+        if observed_action_id != str(action_evidence_id):
+            return _hold(
+                "ACTION_EVIDENCE_ID_MISMATCH",
+                classification="EVIDENCE_TAMPERED",
+                recommendation="STOP_BLOCKED",
+                expected_action_evidence_id=str(action_evidence_id),
+                observed_action_evidence_id=observed_action_id,
+            )
+
+        receipt_builder = dict(((receipt.get("request_ref") or {}).get("builder_lineage") or {}))
+        receipt_prepare_builder = dict(((receipt.get("prepare") or {}).get("builder_lineage") or {}))
+        for key in (
+            "builder_proposal_id",
+            "builder_manifest_id",
+            "builder_validation_id",
+            "builder_handoff_id",
+        ):
+            observed = str(receipt_builder.get(key) or receipt_prepare_builder.get(key) or "")
+            if not observed:
+                return _hold(
+                    "ACTION_EVIDENCE_LINEAGE_INCOMPLETE",
+                    lineage_key=key,
+                    repair_lineage=repair_lineage,
+                    builder_lineage=expected_builder,
+                )
+            if observed != expected_builder[key]:
+                return _hold(
+                    "ACTION_EVIDENCE_LINEAGE_MISMATCH",
+                    classification="GOVERNANCE_MISMATCH",
+                    recommendation="STOP_BLOCKED",
+                    lineage_key=key,
+                    expected=expected_builder[key],
+                    observed=observed,
+                    repair_lineage=repair_lineage,
+                    builder_lineage=expected_builder,
+                )
+
+        observed_v2 = str((receipt.get("session_ref") or {}).get("v2_exec_id") or "")
+        if observed_v2 != expected_builder["v2_exec_id"]:
+            return _hold(
+                "ACTION_EVIDENCE_V2_EXEC_MISMATCH",
+                classification="GOVERNANCE_MISMATCH",
+                recommendation="STOP_BLOCKED",
+                expected=expected_builder["v2_exec_id"],
+                observed=observed_v2,
+                repair_lineage=repair_lineage,
+                builder_lineage=expected_builder,
+            )
+
+        evidence_replay = r8_replay.replay_action_evidence(str(action_evidence_id), stores_base_dir=stores)
+        decision_replay = r8_decision.replay_governance_decision(str(action_evidence_id), stores_base_dir=stores)
+        reconciliation = r8_reconcile.reconcile_action_evidence(str(action_evidence_id), stores_base_dir=stores)
+
+        replay_verdict = evidence_replay.get("replay_verdict")
+        decision_verdict = decision_replay.get("replay_verdict")
+        reconciliation_status = reconciliation.get("reconciliation_status")
+        realized = receipt.get("realized_state") or {}
+        outcome = realized.get("outcome", evidence_replay.get("outcome", "UNKNOWN"))
+        physical_dispatched = bool(realized.get("physical_effect_dispatched"))
+        dispatch_boundary = str(realized.get("dispatch_boundary") or "")
+        kx_verdict = str((receipt.get("authorization") or {}).get("kx108_verdict") or "")
+        evidence_limits = (
+            tuple(evidence_replay.get("evidence_missing") or ())
+            + tuple(decision_replay.get("evidence_limits") or ())
+            + tuple(reconciliation.get("evidence_limits") or ())
+        )
+
+        advisory = {
+            "repair_lineage": repair_lineage,
+            "builder_lineage": expected_builder,
+            "action_evidence_id": str(action_evidence_id),
+            "r8_evidence_replay": evidence_replay,
+            "r8_decision_replay": decision_replay,
+            "r8_reconciliation": reconciliation,
+            "r8_outcome": outcome,
+            "r8_replay_verdict": replay_verdict,
+            "r8_decision_verdict": decision_verdict,
+            "r8_reconciliation_status": reconciliation_status,
+            "r8_evidence_limits": evidence_limits,
+            "attempt_history_entry": {
+                **repair_lineage,
+                **expected_builder,
+                "action_evidence_id": str(action_evidence_id),
+                "r8_replay_verdict": replay_verdict,
+                "r8_decision_verdict": decision_verdict,
+                "r8_reconciliation_status": reconciliation_status,
+                "r8_outcome": outcome,
+            },
+            "attempt_history_preserved": True,
+            "attempt_history_input_count": len(tuple(attempt_history or ())),
+        }
+
+        if replay_verdict in {"TAMPERED", "CONFLICTING"} or reconciliation_status == "TAMPERED":
+            return _done("EVIDENCE_TAMPERED", "STOP_BLOCKED", **advisory)
+        if decision_verdict in {"TAMPERED", "MISMATCH"}:
+            return _done("GOVERNANCE_MISMATCH", "STOP_BLOCKED", **advisory)
+        if outcome in {"KX108_HOLD", "KX108_BLOCK"} or kx_verdict in {"HOLD", "BLOCK"}:
+            return _done("PRE_DISPATCH_FAILURE", "STOP_BLOCKED", **advisory)
+        if (
+            replay_verdict in {"NOT_FOUND", "INCOMPLETE"}
+            or reconciliation_status in {"NOT_FOUND", "INCOMPLETE", "NOT_APPLICABLE"}
+        ):
+            return _done("EVIDENCE_INCOMPLETE", "ESCALATE", **advisory)
+        if (
+            reconciliation_status == "UNCERTAIN"
+            or outcome == "DISPATCHED_OUTCOME_UNCERTAIN"
+            or dispatch_boundary == "POST_DISPATCH_UNCERTAINTY"
+        ):
+            return _done("DISPATCHED_OUTCOME_UNCERTAIN", "ESCALATE", **advisory)
+        if decision_verdict != "MATCH":
+            return _done("GOVERNANCE_MISMATCH", "STOP_BLOCKED", **advisory)
+
+        replay_admissible = replay_verdict in {"VERIFIED", "VERIFIED_WITH_LIMITS"}
+        if (
+            replay_admissible
+            and reconciliation_status in {"MATCH", "NOOP_CONFIRMED"}
+            and outcome in {"SUCCESS", "NOOP"}
+        ):
+            return _done(
+                "EXECUTED_VERIFIED",
+                "STOP_SUCCESS",
+                limited_verdict=(replay_verdict == "VERIFIED_WITH_LIMITS"),
+                **advisory,
+            )
+
+        if outcome == "REALIZED_STATE_MISMATCH" or reconciliation_status == "MISMATCH":
+            return _done("EXECUTED_NOT_REALIZED", "ESCALATE", **advisory)
+
+        retry_scope_ok = False
+        if mission_context is not None:
+            state = str(mission_context.get("status") or mission_context.get("phase") or "").upper()
+            revoked = bool(mission_context.get("revoked")) or state == "REVOKED"
+            closed = state in {"CLOSED", "COMPLETED", "PLAN_COMPLETED"}
+            retry_scope_ok = not revoked and not closed and state in {"ACTIVE", "PLAN_BOUND", "MISSION_ACTIVE", ""}
+            targets = tuple(str(v) for v in ((receipt.get("request_ref") or {}).get("target_paths") or ()))
+            allowed_targets = tuple(
+                str(v).replace("\\", "/").lstrip("./")
+                for v in mission_context.get("allowed_targets", ()) or ()
+            )
+            if allowed_targets and not set(targets).issubset(set(allowed_targets)):
+                retry_scope_ok = False
+            max_attempts = mission_context.get("max_attempts")
+            attempt_index = int(mission_context.get("attempt_index", 0) or 0)
+            if isinstance(max_attempts, int) and attempt_index >= max_attempts:
+                retry_scope_ok = False
+
+        attempts_spent = int(_field(request, "attempts_spent", 0) or 0)
+        if repair_budget is not None and attempts_spent >= repair_budget:
+            retry_scope_ok = False
+
+        pre_dispatch_failure = (
+            outcome
+            in {
+                "TOCTOU_ABORTED",
+                "PREPARE_REJECTED",
+                "APPROVAL_MISSING_OR_INVALID",
+                "BINDER_REJECTED",
+                "EXECUTOR_FAILED_BEFORE_ACTION",
+            }
+            or reconciliation_status == "NOT_REALIZED"
+        ) and not physical_dispatched
+        if replay_admissible and pre_dispatch_failure:
+            recommendation = "RETRY_CANDIDATE" if retry_scope_ok else "ESCALATE"
+            classification = "EXECUTION_FAILED" if outcome == "EXECUTOR_FAILED_BEFORE_ACTION" else "PRE_DISPATCH_FAILURE"
+            return _done(
+                classification,
+                recommendation,
+                retry_scope_verified=retry_scope_ok,
+                **advisory,
+            )
+
+        if decision_verdict in {"NOT_FOUND", "INCOMPLETE", "NOT_REPLAYABLE"}:
+            return _done("EVIDENCE_INCOMPLETE", "ESCALATE", **advisory)
+
+        return _done("EVIDENCE_INCOMPLETE", "ESCALATE", **advisory)
+
 
     def evaluate_repair_proposal(
         self,
