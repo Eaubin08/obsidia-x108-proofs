@@ -3,23 +3,29 @@
 A local SQLite guard check is not independent attestation or execution authority.
 """
 from periphery.enterprise_atomic_reservation_journal_v0 import AtomicOfflineReservationJournalV0
-from periphery.enterprise_sqlite_trigger_definition_audit_v0 import EXPECTED
+from periphery.enterprise_sqlite_write_guard_audit_v0 import LocalWriteGuardV0
 from periphery.enterprise_sqlite_state_update_guard_v0 import TRIGGER_SQL as STATE_SQL
 from periphery.enterprise_sqlite_reservation_binding_guard_v0 import TRIGGER_SQL as BINDING_SQL
 
 def _normalize(sql):
     return " ".join(sql.split()).replace(" IF NOT EXISTS "," ").rstrip(";")
 
+CANONICAL_LEGACY_TRIGGERS = {
+    name: f"CREATE TRIGGER {name} BEFORE {verb} ON {table} BEGIN SELECT RAISE(ABORT,'{message}'); END"
+    for name, (table, verb, message) in {
+        'c230_journal_no_update': ('transition_events','UPDATE','C230_JOURNAL_UPDATE_FORBIDDEN'),
+        'c230_journal_no_delete': ('transition_events','DELETE','C230_JOURNAL_DELETE_FORBIDDEN'),
+        'c230_reservation_no_delete': ('reservations','DELETE','C230_RESERVATION_DELETE_FORBIDDEN'),
+        'c230_receipt_no_update': ('lifecycle_receipts','UPDATE','C230_RECEIPT_UPDATE_FORBIDDEN'),
+        'c230_receipt_no_delete': ('lifecycle_receipts','DELETE','C230_RECEIPT_DELETE_FORBIDDEN'),
+    }.items()
+}
+
 class TransactionGuardedReservationV0(AtomicOfflineReservationJournalV0):
     def _guard_transaction(self,db):
         catalog=dict(db.execute("SELECT name,sql FROM sqlite_master WHERE type='trigger'").fetchall())
-        for name,(table,verb,message) in EXPECTED.items():
-            sql=catalog.get(name)
-            if not isinstance(sql,str):
-                return False
-            upper=" ".join(sql.upper().split())
-            if not (f"BEFORE {verb} ON {table.upper()}" in upper
-                    and f"RAISE(ABORT,'{message}')" in upper):
+        for name, reference in CANONICAL_LEGACY_TRIGGERS.items():
+            if not isinstance(catalog.get(name), str) or _normalize(catalog[name]) != _normalize(reference):
                 return False
         return all(isinstance(catalog.get(name),str) and _normalize(catalog[name])==_normalize(ref)
                    for name,ref in (
