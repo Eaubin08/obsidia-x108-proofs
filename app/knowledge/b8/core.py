@@ -564,8 +564,8 @@ def evaluate_transition(snapshot: SlotSnapshot, request: TransitionRequest, *, r
             superseded_by_link=(old.claim_id, record.claim_id), recorded_at=recorded_at,
             gate_contract_version=GATE_CONTRACT_VERSION)
         after = replace(snapshot, slot_revision=snapshot.slot_revision + 1,
-                        records=tuple(new_rec if r is record else old_rec if r is old else r
-                                      for r in snapshot.records),
+                        # append-only (§10); (old, new) is a non-semantic serialization order (§9.3 field order)
+                        records=snapshot.records + (old_rec, new_rec),
                         applied_requests={**snapshot.applied_requests, request_id: bundle})
         return TransitionResult(TransitionVerdict.APPLIED, new_receipt, after, bundle)
 
@@ -573,6 +573,6 @@ def evaluate_transition(snapshot: SlotSnapshot, request: TransitionRequest, *, r
     new_record = _successor(record, request.target_state, request, recorded_at, **links)
     receipt = _receipt(request_id, record, new_record, recorded_at)
     after = replace(snapshot, slot_revision=snapshot.slot_revision + 1,
-                    records=tuple(new_record if r is record else r for r in snapshot.records),
+                    records=snapshot.records + (new_record,),          # append-only history (§10)
                     applied_requests={**snapshot.applied_requests, request_id: receipt})
     return TransitionResult(TransitionVerdict.APPLIED, receipt, after)
