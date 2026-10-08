@@ -13,7 +13,7 @@ Base: C4.2.1 commit `314542254be27e252e866547826d21a05f7c3378`.
 
 ## New narrow prototype
 
-`periphery/enterprise_connector_entry_revocation_guard_v0.py` is a deny-only, in-memory *pre-dispatch check*. It rejects absent claimed attestations, mismatched tenant/connector/capability, stale generation and revoked delegation. The result `CHECKS_PASSED_NOT_EXECUTION_AUTHORITY` is intentionally **not ALLOW**. No provider transport, credential storage, KX108 changes or connector invocation is added.
+`periphery/enterprise_connector_entry_revocation_guard_v0.py` is a deny-only, in-memory *pre-dispatch check*. It rejects absent claimed attestations, mismatched tenant/connector/capability, stale generation and revoked delegation. Even if all caller-provided flags are true, the result is now `BLOCK:C21_INDEPENDENT_ATTESTATION_VERIFIER_NOT_BOUND`. No permissive fallback exists. No provider transport, credential storage, KX108 changes or connector invocation is added.
 
 Tests cover revocation after a prior pass, cross-tenant isolation, mismatch, missing claims and generation staleness.
 
