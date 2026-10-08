@@ -306,16 +306,17 @@ def run_local_composition(
     }
     if len(set(roots.values())) != 4:
         raise ValueError("C42_REPOSITORY_ROOTS_MUST_BE_DISTINCT")
-    observed = {
-        "core": check_local_checkout(
-            roots["core"], expected_sha=EXPECTED_CORE_ANCESTOR,
-            allow_descendant=True,
-        )
-    }
+    # Check the three external checkouts FIRST, so missing prerequisites
+    # produce the exact fail-closed dependency result even under shallow CI.
+    observed = {}
     for key, (_, pinned) in EXPECTED_EXTERNAL.items():
         observed[key] = check_local_checkout(
             roots[key], expected_sha=pinned, allow_descendant=False,
         )
+    observed["core"] = check_local_checkout(
+        roots["core"], expected_sha=EXPECTED_CORE_ANCESTOR,
+        allow_descendant=True,
+    )
     c4_path = roots["core"] / "docs/runtime/V01_ENTERPRISE_C4_SECTOR_EVIDENCE_PROFILES_V0.json"
     c41_path = roots["core"] / "docs/runtime/V01_ENTERPRISE_C41_CROSSREPO_CONTRACT_FREEZE_V0.json"
     registry = json.loads(c4_path.read_text(encoding="utf8"))
