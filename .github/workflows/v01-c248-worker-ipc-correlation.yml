@@ -1,0 +1,14 @@
+name: c248-worker-ipc-correlation
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pytest cryptography
+      - run: python -m pytest -q tests/integration/test_v01_c248_worker_ipc_correlation_v0.py tests/integration/test_v01_c247_ipc_reply_correlation_v0.py tests/integration/test_v01_c246_postcommit_worker_crash_v0.py
