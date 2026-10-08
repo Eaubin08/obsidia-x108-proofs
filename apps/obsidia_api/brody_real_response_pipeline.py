@@ -30,6 +30,9 @@ from periphery.language.action_meaning_validator import (
     validate_action_meaning,
 )
 
+from periphery.cognition.brody_semantic_focus_v1 import (
+    build_brody_semantic_focus_projection_v1,
+)
 from periphery.cognition.semantic_roles_v0 import (
     SemanticRoleProjectionV0,
 )
@@ -82,6 +85,35 @@ def run_brody_real_response_pipeline(
     r["language"] = language
     r["timestamp"] = datetime.now(timezone.utc).isoformat()
 
+    # R6-D2 canonical cognition order: deterministic Brody/SENS first.
+    # External/model projections are never trusted to resolve lexical unknowns.
+    trusted_brody_sens_projection = (
+        build_brody_semantic_focus_projection_v1(
+            message
+        )
+    )
+
+    effective_semantic_role_projection = (
+        semantic_role_projection
+        if semantic_role_projection is not None
+        else trusted_brody_sens_projection
+    )
+
+    r["brody_sens_semantic_role_context"] = (
+        trusted_brody_sens_projection.to_brody_context()
+        if trusted_brody_sens_projection is not None
+        else None
+    )
+    r["semantic_role_source"] = (
+        "EXTERNAL_PROJECTION"
+        if semantic_role_projection is not None
+        else (
+            "BRODY_SENS_V1"
+            if trusted_brody_sens_projection is not None
+            else "NONE"
+        )
+    )
+
     # ------------------------------------------------------------
     # PRE-REASONING CAUSAL GATE
     #
@@ -103,6 +135,7 @@ def run_brody_real_response_pipeline(
             authority_snapshot={
                 "request_type": "PURE_RESPONSE",
             },
+            semantic_role_projection=trusted_brody_sens_projection,
         )
     )
 
@@ -355,13 +388,13 @@ def run_brody_real_response_pipeline(
     semantic_role_context = None
     semantic_role_projection_sha256 = None
 
-    if semantic_role_projection is not None:
-        if not isinstance(semantic_role_projection, SemanticRoleProjectionV0):
+    if effective_semantic_role_projection is not None:
+        if not isinstance(effective_semantic_role_projection, SemanticRoleProjectionV0):
             raise TypeError(
                 "semantic_role_projection must be SemanticRoleProjectionV0"
             )
 
-        semantic_role_context = semantic_role_projection.to_brody_context()
+        semantic_role_context = effective_semantic_role_projection.to_brody_context()
 
         required_invariants = {
             "readonly": True,
