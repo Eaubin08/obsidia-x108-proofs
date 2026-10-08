@@ -429,7 +429,7 @@ NO_OP_DUPLICATE with the original receipt / bundle; an old receipt never re-appl
 | T9 | compound: new VERIFIED → PROMOTED **and** predecessor PROMOTED → SUPERSEDED | request carries `supersedes_claim_id` + `supersedes_record_id` + expected_slot_revision identifying exactly the predecessor whose latest state is PROMOTED on the same slot; it is the **only** PROMOTED claim on the slot overlapping the new valid_time (else REJECTED `multiple_predecessors_unsupported`: no winner, no repeated T9); the new valid_time **contains** the predecessor's (partial overlap → REJECTED `containment_not_satisfied`; no implicit claim split in V1); the new claim meets every T6 condition except the free-slot one; atomic bundle (§9.3), slot_revision +1 once; every temporal relation used here requires `TEMPORALLY_COMPARABLE` (§5.1), else REJECTED `temporal_relation_indeterminate` (state unchanged) |
 | T10 | CANDIDATE / HELD / SUPPORTED / VERIFIED / PROMOTED / CONTESTED / STALE → INVALIDATED | explicit reason + evidence ref |
 | T11 | PROMOTED → STALE | staleness trigger evidence per class mechanism (§6) |
-| T12 | STALE → VERIFIED | fresh SATISFIED VerificationRecord for the same (claim_id, claim_version); T6 / T9 again to PROMOTED |
+| T12 | STALE → VERIFIED | fresh SATISFIED VerificationRecord for the same (claim_id, claim_version) — fresh = structurally new: its verification identity is not referenced by any existing KnowledgeRecord of that same (claim_id, claim_version), current record included (`FRESHNESS_MODEL=STRUCTURAL_NOVELTY_NOT_CLOCK_TIME`, `FRESH != RECENT`, `TIMESTAMP != FRESHNESS_AUTHORITY`: no recorded_at / valid_time / wall-clock / recency / provider-order comparison); T6 / T9 again to PROMOTED |
 
 `LEGAL_TRANSITION_COUNT=12` claim rules (T9 compound) + 4 gap rules (G1–G3, G4 compound).
 Claim (from, to) pairs: 22 (T9 contributes VERIFIED → PROMOTED on the new claim and PROMOTED →
@@ -514,7 +514,7 @@ table or from guard evaluation order (`REASON_PRIORITY_TABLE=NONE`,
 | `staleness_trigger_inadmissible` | T11 without staleness trigger evidence for the class mechanism (§6) |
 | `successor_gap_not_open` | G3 successor gap not OPEN |
 | `temporal_relation_indeterminate` | required temporal relation across different temporal frames (§5.1) |
-| `verification_not_satisfied` | T5 / T12: no VerificationRecord, or a record correctly bound to (claim_id, claim_version) from an admissible verifier family whose verdict is NOT_SATISFIED or INCONCLUSIVE (a wrong binding is `ref_binding_mismatch`, a wrong family `verifier_inadmissible`) |
+| `verification_not_satisfied` | T5 / T12: no VerificationRecord, or a record correctly bound to (claim_id, claim_version) from an admissible verifier family whose verdict is NOT_SATISFIED or INCONCLUSIVE, or — T12 only — every correctly bound, admissible-family, SATISFIED record is not fresh (already referenced by an existing KnowledgeRecord of the same (claim_id, claim_version); structural freshness, §9.2 T12) (a wrong binding is `ref_binding_mismatch`, a wrong family `verifier_inadmissible`) |
 | `verifier_inadmissible` | a correctly bound verification artifact from a verifier family not admissible for the claim class, including a human attestation offered as verification of an objective class (§6) |
 
 `TOTAL_REASON_CODES=29`. ReasonCode != TransitionVerdict != ClaimState.
