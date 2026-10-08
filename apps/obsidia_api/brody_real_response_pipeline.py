@@ -382,9 +382,10 @@ def run_brody_real_response_pipeline(
         "readonly": True,
     }
 
-    # R6-B: additive semantic-role context only.
-    # It is never consulted for routing, provider/tool selection, memory writes,
-    # verdicts, ACT, or KX authority.
+    # R6-D2 semantic-role context.
+    # Deterministic Brody/SENS roles may already have qualified lexical
+    # unknowns before reasoning. The context below remains non-sovereign and is
+    # never itself a route, provider/tool choice, verdict, ACT, or KX authority.
     semantic_role_context = None
     semantic_role_projection_sha256 = None
 
@@ -392,6 +393,17 @@ def run_brody_real_response_pipeline(
         if not isinstance(effective_semantic_role_projection, SemanticRoleProjectionV0):
             raise TypeError(
                 "semantic_role_projection must be SemanticRoleProjectionV0"
+            )
+
+        expected_utterance_sha256 = hashlib.sha256(
+            message.encode("utf-8")
+        ).hexdigest()
+        if (
+            effective_semantic_role_projection.utterance_sha256
+            != expected_utterance_sha256
+        ):
+            raise ValueError(
+                "SEMANTIC_ROLE_PROJECTION_UTTERANCE_HASH_MISMATCH"
             )
 
         semantic_role_context = effective_semantic_role_projection.to_brody_context()
