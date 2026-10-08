@@ -3,6 +3,9 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -65,6 +68,37 @@ def evidence_data():
         },
     }
 
+
+
+def test_c42_standalone_runner_resolves_periphery_without_pythonpath(
+    tmp_path, contract_data
+):
+    """Regression: PowerShell direct script invocation lacked core import path."""
+    payload = {"evidence": evidence_data(), "registry": contract_data[0],
+               "c41": contract_data[1]}
+    payload_file = tmp_path / "payload.json"
+    payload_file.write_text(json.dumps(payload), encoding="utf-8")
+    code = """
+import importlib.util
+import json
+import sys
+spec = importlib.util.spec_from_file_location('c42_isolated', sys.argv[1])
+mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(mod)
+data = json.load(open(sys.argv[2], encoding='utf-8'))
+result = mod.verify_handoffs(**data['evidence'],
+                             registry=data['registry'], c41=data['c41'])
+print(result['status'])
+"""
+    env = dict(os.environ)
+    env.pop("PYTHONPATH", None)
+    completed = subprocess.run(
+        [sys.executable, "-I", "-c", code, str(SCRIPT), str(payload_file)],
+        cwd=tmp_path, env=env, capture_output=True, text=True,
+        timeout=30, check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stdout.strip() == runner().SUCCESS
 
 def test_c42_valid_structural_handoffs_remain_non_sovereign(contract_data):
     data = evidence_data()
