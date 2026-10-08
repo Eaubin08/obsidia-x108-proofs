@@ -5,6 +5,8 @@ under the same OS identity. No network, SQL commands, or external dispatch.
 """
 import multiprocessing as mp
 import queue
+import threading
+import time
 from periphery.enterprise_offline_storage_service_boundary_v0 import OfflineStorageServiceV0
 
 def _worker(path, requests, responses):
@@ -29,6 +31,7 @@ class OfflineStorageWorkerV0:
         self._responses=mp.Queue()
         self._process=None
         self._sequence=0
+        self._request_lock=threading.Lock()
 
     def start(self):
         if self._process is not None and self._process.is_alive():
@@ -38,20 +41,32 @@ class OfflineStorageWorkerV0:
         return "C244_WORKER_STARTED_FIXTURE_ONLY"
 
     def request_fixture(self,operation,payload=None,timeout=3):
-        if self._process is None or not self._process.is_alive():
-            return "BLOCK:C244_WORKER_UNAVAILABLE"
-        if operation not in ("initialize_fixture","enroll","reserve","close","revoke","inspect"):
-            return "BLOCK:C244_OPERATION_DENIED"
-        self._sequence+=1
-        sequence=self._sequence
-        self._requests.put((sequence,operation,payload))
-        try:
-            returned,answer=self._responses.get(timeout=timeout)
-        except queue.Empty:
-            return "BLOCK:C244_WORKER_TIMEOUT"
-        if returned!=sequence:
-            return "BLOCK:C244_RESPONSE_MISMATCH"
-        return answer
+        # Serialize use of this client queue across threads. Unmatched late
+        # replies are discarded, never attached to another request.
+        with self._request_lock:
+            if self._process is None or not self._process.is_alive():
+                return "BLOCK:C244_WORKER_UNAVAILABLE"
+            if operation not in ("initialize_fixture","enroll","reserve","close","revoke","inspect"):
+                return "BLOCK:C244_OPERATION_DENIED"
+            self._sequence+=1
+            sequence=self._sequence
+            try:
+                self._requests.put((sequence,operation,payload))
+                deadline=time.monotonic()+max(0,timeout)
+                while True:
+                    remaining=deadline-time.monotonic()
+                    if remaining<=0:
+                        return "BLOCK:C244_WORKER_TIMEOUT"
+                    try:
+                        returned,answer=self._responses.get(timeout=remaining)
+                    except queue.Empty:
+                        return "BLOCK:C244_WORKER_TIMEOUT"
+                    if returned!=sequence:
+                        # Old/foreign responses are discarded; no replay.
+                        continue
+                    return answer
+            except (TypeError,ValueError,EOFError,OSError):
+                return "BLOCK:C248_IPC_UNAVAILABLE"
 
     def stop(self):
         if self._process is not None and self._process.is_alive():
