@@ -60,8 +60,17 @@ def test_t9_applies_one_atomic_bundle_with_one_revision_increment(b8):
     assert bundle.new_transition_receipt.verdict is bundle.old_transition_receipt.verdict is b8.TransitionVerdict.APPLIED
     assert bundle.supersedes_link and bundle.superseded_by_link
     assert re.fullmatch(r"b8bundle_[0-9a-f]{64}", bundle.bundle_id)
-    promoted = [r for r in after.records if r.state is b8.ClaimState.PROMOTED]
-    assert promoted == [new_rec]                                             # never two current PROMOTED
+    # never two CURRENT PROMOTED: current record = unique max record_version per claim (historical != current)
+    by_claim = {}
+    for r in after.records:
+        by_claim.setdefault(r.claim_id, []).append(r)
+    current_records = {}
+    for cid, recs in by_claim.items():
+        top = max(r.record_version for r in recs)
+        (current_records[cid],) = {r for r in recs if r.record_version == top}   # ambiguous maximum fails
+    promoted = [r for r in current_records.values() if r.state is b8.ClaimState.PROMOTED]
+    assert promoted == [new_rec]
+    assert current_records[pred.claim_id] == old_rec and old_rec.state is b8.ClaimState.SUPERSEDED
     # input snapshot untouched
     assert latest(snap, new).state is b8.ClaimState.VERIFIED and latest(snap, pred).state is b8.ClaimState.PROMOTED
 
