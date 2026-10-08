@@ -1,0 +1,31 @@
+name: obsidia-universal-cross-domain-conformance-v0
+
+on:
+  push:
+    branches:
+      - feat/obsidia-universal-cross-domain-conformance-v0
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  universal-cross-domain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip pytest
+      - name: Verify composed universal stack and unchanged KX108 governance
+        run: >-
+          python -m pytest
+          tests/integration/test_obsidia_universal_cross_domain_conformance_v0.py
+          tests/integration/test_world_action_multidomain_conformance_v0.py
+          tests/integration/test_universal_enterprise_stack_adapter_v0.py
+          tests/integration/test_enterprise_office_full_loop_e2e_v0.py
+          tests/integration/test_monde_native_read_model_v0.py
+          tests/integration/test_enterprise_interrepo_global_freeze_v0.py
+          -q
