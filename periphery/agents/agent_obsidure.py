@@ -1,4 +1,4 @@
-﻿"""
+"""
 periphery/agents/agent_obsidure.py  —  v2.0 CLI STANDALONE
 =============================================================
 Agent Obsidure — CO_PILOTE_CODE (#6) × CI_REPO_SURGEON (#7)
