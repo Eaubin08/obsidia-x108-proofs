@@ -67,15 +67,6 @@ except ImportError:
     build_brody_readonly_activation_state = None  # type: ignore[assignment]
 
 try:
-    from runtime_wiring.source_runtime.graphiti_memory_readonly_activation import (
-        build_graphiti_memory_readonly_activation_state,
-    )
-    _P52_AVAILABLE = True
-except ImportError:
-    _P52_AVAILABLE = False
-    build_graphiti_memory_readonly_activation_state = None  # type: ignore[assignment]
-
-try:
     from runtime_wiring.source_runtime.world_action_bus_dry_run_activation import (
         build_world_action_bus_dry_run_state,
     )
@@ -707,15 +698,6 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
             query=req.message,
         )
 
-    # P52 — Graphiti / Memory readonly activation
-    _graphiti_memory_state: dict = {}
-    if _P52_AVAILABLE and build_graphiti_memory_readonly_activation_state is not None:
-        _graphiti_memory_state = safe_call_snapshot(
-            "graphiti_memory_readonly_activation",
-            build_graphiti_memory_readonly_activation_state,
-            query=req.message,
-        )
-
     # P53 — World Action Bus dry-run activation
     _world_action_bus_state: dict = {}
     if _P53_AVAILABLE and build_world_action_bus_dry_run_state is not None:
@@ -1167,9 +1149,9 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         "brody_no_act": True,
         "brody_no_write": True,
         "brody_kx108_only": True,
-        # P52 — Graphiti / Memory readonly activation
-        "real_memory_component_found": _graphiti_memory_state.get("memory_real_module", False),
-        "memory_read_enabled": _graphiti_memory_state.get("memory_read_enabled", False),
+        # Active memory truth — Obsidia Native Memory (readonly).
+        "real_memory_component_found": bool(proj_snap.get("native_memory_ready", False)),
+        "memory_read_enabled": bool(proj_snap.get("native_memory_ready", False)),
         "memory_write_enabled": False,
         # P53 — World Action Bus dry-run activation
         "world_action_bus_dry_run_status": _world_action_bus_state.get(
