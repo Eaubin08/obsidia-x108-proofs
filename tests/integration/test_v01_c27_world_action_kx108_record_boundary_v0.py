@@ -106,7 +106,16 @@ def test_real_world_action_pipeline_hold_and_block_never_escalate(tmp_path):
         record = store.load_kx108_decision_record(
             result.decision_record_id, root / "decisions"
         )
-        expected = {key: record[key] for key in BINDING}
+        expected = {
+        "world_action_request_hash": result.world_action_request_hash,
+        "connector_call_hash": result.connector_call_hash,
+        "human_approval_hash": result.human_approval_hash,
+        "target_prestate_hash": result.target_prestate_hash,
+        "required_scope": result.required_scope,
+        "idempotency_key": result.idempotency_key,
+        "source_domain": result.source_domain,
+        "action_id": result.action_id,
+    }
         checked = inspect_world_action_kx108_record_v0(
             record=record, expected_binding=expected
         )
