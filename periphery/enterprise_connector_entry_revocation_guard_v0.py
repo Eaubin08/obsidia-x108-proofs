@@ -89,5 +89,7 @@ class ConnectorEntryGuardV0:
                 return "BLOCK:C21_DELEGATION_REVOKED"
             if ctx.generation != self._generation.get(key, 0):
                 return "BLOCK:C21_GENERATION_STALE"
-            # Still not an execution permit: external policy/gateway owns dispatch.
-            return "CHECKS_PASSED_NOT_EXECUTION_AUTHORITY"
+            # Boolean attestations are caller-controlled and cannot prove identity,
+            # delegation, ticket or KX108 authenticity. No trusted verifier is
+            # attached to this prototype: fail closed even if all flags are true.
+            return "BLOCK:C21_INDEPENDENT_ATTESTATION_VERIFIER_NOT_BOUND"
