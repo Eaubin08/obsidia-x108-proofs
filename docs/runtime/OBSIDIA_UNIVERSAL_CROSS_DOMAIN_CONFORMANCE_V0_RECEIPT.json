@@ -1,0 +1,50 @@
+{
+  "schema": "OBSIDIA_UNIVERSAL_CROSS_DOMAIN_CONFORMANCE_V0",
+  "as_of": "2026-10-08",
+  "status": "FOCUSED_COMPOSITION_PROVEN_GLOBAL_CI_NOT_GREEN",
+  "branch": "feat/obsidia-universal-cross-domain-conformance-v0",
+  "base": "feat/enterprise-interrepo-global-freeze-v0",
+  "fixture_provenance": "tests/fixtures/world_action_multidomain_conformance_v0.json",
+  "observed_real_business_data": false,
+  "original_multidomain": {
+    "cases": 16,
+    "domains": 11,
+    "kx108_pre_allow": 11,
+    "kx108_pre_hold": 1,
+    "kx108_pre_block": 4
+  },
+  "composed_domains": [
+    "administration",
+    "ecom",
+    "trading"
+  ],
+  "composed_provider_classes": [
+    "NATIVE_SANDBOX",
+    "EXTERNAL_SANDBOX"
+  ],
+  "invariants": {
+    "stable_intent_same_per_domain_across_provider": true,
+    "proposal_hash_same_per_domain_across_provider": true,
+    "request_hash_differs_across_provider": true,
+    "fail_closed_undeclared_capability": true,
+    "fail_closed_tampered_binding": true,
+    "no_cross_domain_approval_reuse": true,
+    "duplicate_execution_blocked": true,
+    "hold_cannot_issue_ticket": true,
+    "gps_critical_pre_block": true,
+    "finance_pre_allow_independent_live_policy_block": true,
+    "decision_authority": "KX108_ONLY",
+    "kernel_mutation": false,
+    "live_network_calls": 0,
+    "real_external_effects": 0,
+    "main_merge": false
+  },
+  "focused_proof": {
+    "workflow_run": 37706027327,
+    "result": "58 passed in 1.33s",
+    "tested_head": "e7962cbb8dd6a3ee30a317735898d9f8a5a20a30"
+  },
+  "global_ci_green": false,
+  "ready_for_arbitrary_domain_live_integration": false,
+  "next_gap": "DOMAIN_CAPABILITY_COMPATIBILITY_REGISTRY_AND_REAL_PAYLOAD_AUDIT"
+}
