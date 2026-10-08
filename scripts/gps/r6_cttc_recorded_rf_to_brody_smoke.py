@@ -75,8 +75,20 @@ def build_report(artifact_path: Path) -> dict[str, Any]:
     sigma = joined.get("sigma_domain_packet") or {}
     ticket = joined.get("decision_ticket_dry_run") or {}
     components = joined.get("components") or {}
+    pre = brody.get("pre_reasoning_snapshot") or {}
+    resolution_targets = (
+        (pre.get("reasoning_directive") or {}).get(
+            "resolution_targets",
+            [],
+        )
+        or []
+    )
 
     checks = {
+        "brody_pre_reasoning_unblocked": (
+            brody.get("response_source") == "REAL_BRODY_RUNTIME"
+            and resolution_targets == []
+        ),
         "physical_proof_level_preserved": (
             sigma.get("proof_status") == "RECORDED_REAL_RF"
         ),
@@ -150,6 +162,7 @@ def build_report(artifact_path: Path) -> dict[str, Any]:
         "recorded_x108_gate": envelope.get("x108_gate"),
         "recorded_reason_code": envelope.get("reason_code"),
         "brody_response_source": brody.get("response_source"),
+        "brody_remaining_resolution_targets": resolution_targets,
         "cognitive_join_status": joined.get("status"),
         "cognitive_join_completeness": joined.get("completeness"),
         "cognitive_ticket_decision": ticket.get("decision"),

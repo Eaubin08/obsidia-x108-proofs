@@ -77,6 +77,7 @@ def build_brody_semantic_focus_projection_v1(
 
     memory = _match(r"\b(?:mémoire|memoire|memory)\b", raw)
     obsidia = _match(r"\b(?:obsidia|obsidian|obsidio)\b", raw)
+    gps = _match(r"\b(?:gps|gnss)\b", raw)
     explain = _match(
         r"\b(?:explique|expliquer|expliquez|explain|describe|décris|decris)\b",
         raw,
@@ -89,6 +90,14 @@ def build_brody_semantic_focus_projection_v1(
     knowledge = _match(
         r"\b(?:sais|savoir|connais|connait|connaît|know|contient|contenu|"
         r"retrouve|rappelle)\b",
+        raw,
+    )
+    noncausal_no_action = _match(
+        r"\bsans\s+conclure\s+[àa]\s+une\s+cause\s+ni\s+agir\b",
+        raw,
+    )
+    no_decision_no_action = _match(
+        r"\bsans\s+(?:décider|decider)\s+ni\s+agir\b",
         raw,
     )
 
@@ -176,6 +185,20 @@ def build_brody_semantic_focus_projection_v1(
             rationale="direct project/entity request",
         )
 
+    # Case D: GPS/GNSS defense evidence request.
+    # The domain term is the focus. Claim boundaries remain qualifiers/context;
+    # this layer never promotes anomaly evidence into a hostile/causal claim.
+    elif gps is not None:
+        bindings[SemanticRoleKindV0.FOCUS] = _resolved(
+            SemanticRoleKindV0.FOCUS,
+            _candidate(
+                "GPS_DEFENSE_EVIDENCE",
+                gps,
+                evidence="brody-sens-v1:gps-domain-focus",
+            ),
+            rationale="explicit GPS/GNSS evidence domain focus",
+        )
+
     else:
         return None
 
@@ -200,7 +223,27 @@ def build_brody_semantic_focus_projection_v1(
             rationale="explicit knowledge interrogation",
         )
 
-    if detail is not None:
+    if noncausal_no_action is not None:
+        bindings[SemanticRoleKindV0.QUALIFIER] = _resolved(
+            SemanticRoleKindV0.QUALIFIER,
+            _candidate(
+                "NON_CAUSAL_NO_ACTION",
+                noncausal_no_action,
+                evidence="brody-sens-v1:gps-noncausal-no-action",
+            ),
+            rationale="explicit non-causal/no-action claim boundary",
+        )
+    elif no_decision_no_action is not None:
+        bindings[SemanticRoleKindV0.QUALIFIER] = _resolved(
+            SemanticRoleKindV0.QUALIFIER,
+            _candidate(
+                "NO_DECISION_NO_ACTION",
+                no_decision_no_action,
+                evidence="brody-sens-v1:gps-no-decision-no-action",
+            ),
+            rationale="explicit no-decision/no-action boundary",
+        )
+    elif detail is not None:
         bindings[SemanticRoleKindV0.QUALIFIER] = _resolved(
             SemanticRoleKindV0.QUALIFIER,
             _candidate(

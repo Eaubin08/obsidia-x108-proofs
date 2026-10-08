@@ -62,6 +62,7 @@ class RealityAuthenticityResult:
     anti_replay_ok: bool
     multisource_coherent: bool
     physical_envelope_ok: bool
+    temporal_integrity_ok: bool
     freshness_ms: float
     reasons: tuple[str, ...]
 
@@ -110,6 +111,10 @@ class GpsX108Gate:
             and drift_score < 0.45
         )
         physical_envelope_ok = velocity_kt <= 520 and g_load <= 2.1
+        temporal_classification = str(
+            payload.get("temporal_integrity_classification", "NOMINAL")
+        ).upper()
+        temporal_integrity_ok = temporal_classification != "ANOMALY"
 
         reasons: list[str] = []
         if not is_fresh:
@@ -122,6 +127,8 @@ class GpsX108Gate:
             reasons.append("MULTI_SOURCE_COHERENCE_FAILED")
         if not physical_envelope_ok:
             reasons.append("PHYSICAL_ENVELOPE_FAILED")
+        if not temporal_integrity_ok:
+            reasons.append("TEMPORAL_INTEGRITY_ANOMALY")
 
         return RealityAuthenticityResult(
             is_fresh=is_fresh,
@@ -129,6 +136,7 @@ class GpsX108Gate:
             anti_replay_ok=anti_replay_ok,
             multisource_coherent=multisource_coherent,
             physical_envelope_ok=physical_envelope_ok,
+            temporal_integrity_ok=temporal_integrity_ok,
             freshness_ms=freshness_ms,
             reasons=tuple(reasons),
         )
@@ -213,6 +221,18 @@ class GpsX108Gate:
             "source_conflict_score": float(payload.get("source_conflict_score", 0.0) or 0.0),
             "time_skew_score": float(payload.get("time_skew_score", 0.0) or 0.0),
             "brownout_score": float(payload.get("brownout_score", 0.0) or 0.0),
+            "temporal_integrity_classification": str(
+                payload.get("temporal_integrity_classification", "NOMINAL")
+            ).upper(),
+            "temporal_integrity_evidence_hash": str(
+                payload.get("temporal_integrity_evidence_hash", "")
+            ),
+            "temporal_integrity_algorithm_version": str(
+                payload.get("temporal_integrity_algorithm_version", "")
+            ),
+            "temporal_integrity_status": str(
+                payload.get("temporal_integrity_status", "")
+            ),
             "attestation_ready": bool(payload.get("attestation_ready", payload.get("sensor_attested", False))),
             "rollback_possible": bool(payload.get("rollback_possible", True)),
             "T_mean": domain_state.risk_score,

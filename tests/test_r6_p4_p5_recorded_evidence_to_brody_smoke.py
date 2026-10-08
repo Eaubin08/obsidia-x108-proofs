@@ -3,10 +3,10 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "scripts" / "gps" / "r6_cttc_recorded_rf_to_brody_smoke.py"
+SCRIPT = ROOT / "scripts" / "gps" / "r6_p4_p5_recorded_evidence_to_brody_smoke.py"
 
 SPEC = importlib.util.spec_from_file_location(
-    "r6_cttc_recorded_rf_to_brody_smoke",
+    "r6_p4_p5_recorded_evidence_to_brody_smoke",
     SCRIPT,
 )
 MODULE = importlib.util.module_from_spec(SPEC)
@@ -15,13 +15,12 @@ sys.modules[SPEC.name] = MODULE
 SPEC.loader.exec_module(MODULE)
 
 
-def test_recorded_rf_smoke_contract(monkeypatch):
+def test_p4_p5_smoke_contract(monkeypatch):
     monkeypatch.setattr(
         MODULE,
         "run_brody_real_response_pipeline",
         lambda **kwargs: {
             "response_source": "REAL_BRODY_RUNTIME",
-            "response_md": "readonly",
             "decision_authority": "KX108_ONLY",
             "emits_act": False,
             "pre_reasoning_snapshot": {
@@ -39,16 +38,10 @@ def test_recorded_rf_smoke_contract(monkeypatch):
             "completeness": "COMPLETE",
             "sigma_domain_packet": envelope,
             "sigma_domain_packet_source": "PRECOMPUTED_READONLY",
-            "sigma_domain_packet_sha256": "a" * 64,
-            "components": {
-                "W3_BRODY": "READY:REAL_RUNTIME_ADAPTER",
-            },
-            "kx108_admission": "DRY_RUN",
-            "upstream_x108_gate_constraint": envelope["x108_gate"],
+            "upstream_x108_gate_constraint": "HOLD",
             "decision_ticket_dry_run": {
                 "decision": "HOLD",
                 "x108_gate_status": "X108_DRY_RUN_UPSTREAM_HOLD",
-                "dry_run": True,
                 "decision_authority": "KX108_ONLY",
                 "emits_act": False,
             },
@@ -61,17 +54,23 @@ def test_recorded_rf_smoke_contract(monkeypatch):
 
     monkeypatch.setattr(MODULE, "run_real_cognitive_join", fake_join)
 
-    report = MODULE.build_report(MODULE.DEFAULT_ARTIFACT)
+    report = MODULE.build_report()
 
-    assert report["status"] == "RECORDED_REAL_RF_TO_BRODY_VERIFIED"
+    assert report["status"] == "P4_P5_RECORDED_EVIDENCE_TO_BRODY_VERIFIED"
     assert report["verified"] is True
-    assert report["source_proof_level"] == "RECORDED_REAL_RF"
+    assert report["p4_classification"] == "ANOMALY"
+    assert report["p4_first_anomaly_transition"] == {
+        "from_receiver_second": 132,
+        "to_receiver_second": 174,
+    }
+    assert (
+        report["p5_support_level"]
+        == "STRONG_OBSERVATIONAL_SUPPORT_NOT_CAUSAL"
+    )
+    assert report["causal_attribution_closed"] is False
     assert report["recorded_x108_gate"] == "HOLD"
-    assert report["recorded_market_verdict"] == "RECALC_TRAJECTORY"
-    assert report["checks"]["evidence_envelope_preserved_exactly"] is True
-    assert report["checks"]["sigma_envelope_hash_present"] is True
-    assert report["checks"]["no_decision_promotion"] is True
-    assert report["checks"]["recorded_gate_preserved_in_cognitive_ticket"] is True
+    assert report["cognitive_ticket_decision"] == "HOLD"
+    assert report["checks"]["spoofing_causal_claim_forbidden"] is True
     assert report["checks"]["brody_pre_reasoning_unblocked"] is True
     assert report["brody_remaining_resolution_targets"] == []
-    assert report["cognitive_ticket_decision"] == "HOLD"
+    assert report["checks"]["no_act_or_verdict"] is True

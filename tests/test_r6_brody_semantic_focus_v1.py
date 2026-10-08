@@ -53,3 +53,35 @@ def test_brody_sens_v1_is_non_sovereign():
     assert ctx["allowed_to_act"] is False
     assert ctx["memory_write"] is False
     assert ctx["kernel_mutation"] is False
+
+
+def test_brody_sens_v1_gps_p4_p5_noncausal_focus():
+    raw = (
+        "Explique en lecture seule l'anomalie d'intégrité GPS observée et "
+        "ses limites de preuve, sans conclure à une cause ni agir."
+    )
+    projection = build_brody_semantic_focus_projection_v1(raw)
+
+    assert projection is not None
+    assert projection.resolved(SemanticRoleKindV0.FOCUS) == "GPS_DEFENSE_EVIDENCE"
+    assert projection.resolved(SemanticRoleKindV0.OPERATION) == "EXPLAIN"
+    assert projection.resolved(SemanticRoleKindV0.QUALIFIER) == "NON_CAUSAL_NO_ACTION"
+
+    ctx = projection.to_brody_context()
+    assert ctx["readonly"] is True
+    assert ctx["decision_authority"] == "KX108_ONLY"
+    assert ctx["allowed_to_decide"] is False
+    assert ctx["allowed_to_act"] is False
+
+
+def test_brody_sens_v1_gps_recorded_evidence_no_decision_focus():
+    raw = (
+        "Explique en lecture seule le statut de cette preuve GPS enregistrée, "
+        "sans décider ni agir."
+    )
+    projection = build_brody_semantic_focus_projection_v1(raw)
+
+    assert projection is not None
+    assert projection.resolved(SemanticRoleKindV0.FOCUS) == "GPS_DEFENSE_EVIDENCE"
+    assert projection.resolved(SemanticRoleKindV0.OPERATION) == "EXPLAIN"
+    assert projection.resolved(SemanticRoleKindV0.QUALIFIER) == "NO_DECISION_NO_ACTION"

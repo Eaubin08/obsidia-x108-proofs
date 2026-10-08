@@ -131,6 +131,33 @@ _TOPIC_ROUTES: list[tuple[list[str], str, str, str, list[str]]] = [
     # sont des mots français courants. L'ordre inverse faisait tomber toute
     # question Lean contenant "boucle" dans OPERATOR_LOOP.
     (
+        [
+            "gps",
+            "gnss",
+            "gps défense",
+            "gps defense",
+            "gps aviation",
+            "intégrité gps",
+            "integrite gps",
+            "navigation integrity",
+        ],
+        "GPS_DEFENSE_EVIDENCE",
+        "GPS GNSS défense aviation intégrité anomalie preuve",
+        "gps",
+        [
+            "gnss",
+            "intégrité",
+            "anomalie",
+            "preuve",
+            "lecture seule",
+            "limites",
+            "statut",
+            "enregistrée",
+            "observée",
+        ],
+    ),
+
+    (
         ["preuve", "proof", "lean", "tla", "merkle", "os3"],
         "PROOF_QUERY",
         "OS3 preuve Lean TLA Merkle",
