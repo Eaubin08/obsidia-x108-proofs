@@ -2,8 +2,8 @@
 
 Canonical order:
 1. accept a Brody-produced structured semantic proposal when available;
-2. validate it through R6-C1;
-3. only if absent/rejected, optionally ask local Qwen on loopback once;
+2. otherwise run deterministic Brody/SENS semantic focus V1;
+3. only if Brody/SENS is insufficient, optionally ask local Qwen on loopback once;
 4. validate Qwen output through R6-C1;
 5. otherwise remain unresolved.
 
@@ -21,6 +21,9 @@ from dataclasses import dataclass
 from typing import Any, Callable
 from urllib.parse import urlparse
 
+from periphery.cognition.brody_semantic_focus_v1 import (
+    build_brody_semantic_focus_projection_v1,
+)
 from periphery.cognition.semantic_role_interpreter_v0 import (
     SemanticRoleInterpretationResultV0,
     interpret_semantic_roles_v0,
@@ -229,6 +232,34 @@ def resolve_semantic_role_projection_v0(
                 errors=(),
             )
         errors.extend(f"BRODY:{item}" for item in brody_result.errors)
+
+    # Canonical deterministic Brody/SENS focus layer recovered from the
+    # historical semantic-focus/query-roles work. This is attempted before
+    # any model escalation and returns None rather than guessing.
+    brody_sens_projection = build_brody_semantic_focus_projection_v1(
+        raw_utterance
+    )
+    brody_attempted = True
+
+    if brody_sens_projection is not None:
+        brody_sens_result = SemanticRoleInterpretationResultV0(
+            status="SEMANTIC_ROLE_INTERPRETATION_ACCEPTED",
+            projection=brody_sens_projection,
+            producer="BRODY_SENS_V1",
+            producer_version="V1",
+            errors=(),
+        )
+        return SemanticRoleProducerResultV0(
+            status="SEMANTIC_ROLE_PROJECTION_RESOLVED",
+            selected_producer="BRODY_SENS_V1",
+            interpretation=brody_sens_result,
+            brody_attempted=True,
+            qwen_attempted=False,
+            qwen_available=False,
+            errors=tuple(errors),
+        )
+
+    errors.append("BRODY_SENS_V1:INSUFFICIENT")
 
     available = (
         qwen_semantic_roles_available_v0()
