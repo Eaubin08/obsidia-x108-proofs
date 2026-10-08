@@ -3870,6 +3870,181 @@ class AgentObsidure:
             "target_mutated": False,
         }
 
+    def prepare_last_validated_repair(
+        self,
+        *,
+        base_commit_sha: str,
+        repo_identity_ref: str,
+        execution_worktree_path: str | Path,
+        main_worktree_path: str | Path,
+        branch_name: str,
+        stores_base_dir: str | Path,
+        session_id: str = "",
+        mission_context: Optional[Dict[str, Any]] = None,
+        require_delegation: bool = False,
+        attempt_history: Tuple[Dict[str, Any], ...] = (),
+        repair_budget: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        """
+        Connect the latest validated repair evidence to the canonical R10-B1
+        adapter and stop at governed prepare.
+
+        This method does not create a repair engine, manifest, validator,
+        handoff, executor, approval, commit, push or merge. It only checks the
+        explicit Git/worktree context, preserves actual repair evidence already
+        observed by AgentObsidure, then delegates to
+        adapt_validated_repair_to_r9_prepare().
+        """
+
+        def _hold(reason: str, **extra: Any) -> Dict[str, Any]:
+            return {
+                "adapter_schema_version": "OBSIDURE_REPAIR_R9_ADAPTER_V1",
+                "status": "R10_REPAIR_HELD",
+                "reason": reason,
+                "handoff_created": False,
+                "prepared": False,
+                "approval_created": False,
+                "kx108_called": False,
+                "executor_invoked": False,
+                "physical_mutation": False,
+                "commit_created": False,
+                "push_performed": False,
+                "merge_performed": False,
+                **extra,
+            }
+
+        def _git(root: Path, *args: str) -> Tuple[int, str, str]:
+            try:
+                proc = subprocess.run(
+                    ["git", *args],
+                    cwd=str(root),
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
+                )
+            except Exception as exc:
+                return 1, "", f"{type(exc).__name__}: {exc}"
+            return proc.returncode, proc.stdout.strip(), proc.stderr.strip()
+
+        required = {
+            "base_commit_sha": base_commit_sha,
+            "repo_identity_ref": repo_identity_ref,
+            "execution_worktree_path": execution_worktree_path,
+            "main_worktree_path": main_worktree_path,
+            "branch_name": branch_name,
+            "stores_base_dir": stores_base_dir,
+        }
+        missing = tuple(name for name, value in required.items() if not str(value or "").strip())
+        if missing:
+            return _hold("EXPLICIT_CONTEXT_MISSING", missing_context=missing)
+
+        exec_root = Path(execution_worktree_path).resolve()
+        main_root = Path(main_worktree_path).resolve()
+        if not exec_root.exists() or not exec_root.is_dir():
+            return _hold("EXECUTION_WORKTREE_MISSING", execution_worktree_path=str(exec_root))
+        if not main_root.exists() or not main_root.is_dir():
+            return _hold("MAIN_WORKTREE_MISSING", main_worktree_path=str(main_root))
+        if exec_root == main_root:
+            return _hold("EXECUTION_WORKTREE_IS_MAIN_WORKTREE", execution_worktree_path=str(exec_root))
+
+        rc, observed_head, err = _git(exec_root, "rev-parse", "HEAD")
+        if rc != 0:
+            return _hold("EXECUTION_WORKTREE_HEAD_UNAVAILABLE", detail=err)
+        if observed_head.lower() != str(base_commit_sha).strip().lower():
+            return _hold(
+                "BASE_SHA_MISMATCH",
+                expected_base_sha=str(base_commit_sha).strip().lower(),
+                observed_base_sha=observed_head.lower(),
+            )
+
+        rc, observed_branch, err = _git(exec_root, "branch", "--show-current")
+        if rc != 0:
+            return _hold("EXECUTION_WORKTREE_BRANCH_UNAVAILABLE", detail=err)
+        if observed_branch != str(branch_name).strip():
+            return _hold(
+                "BRANCH_MISMATCH",
+                expected_branch=str(branch_name).strip(),
+                observed_branch=observed_branch,
+            )
+
+        request = self._last_repair_request
+        proposal = self._last_repair_proposal
+        c278_evidence = self._last_proposal_meaning_validation
+        verdict = self._last_repair_verdict
+        if request is None:
+            return _hold("REPAIR_REQUEST_MISSING")
+        if proposal is None:
+            return _hold("REPAIR_PROPOSAL_MISSING")
+        if c278_evidence is None:
+            return _hold("C278_EVIDENCE_MISSING")
+        if verdict is None:
+            return _hold("REPAIR_VERDICT_MISSING")
+
+        request_payload = request.to_dict() if callable(getattr(request, "to_dict", None)) else request
+        request_id = str(getattr(request, "request_id", "") or "")
+        attempts_spent = int(getattr(request, "attempts_spent", 0) or 0)
+        actual_attempts: List[Dict[str, Any]] = []
+        for ctx in getattr(request, "error_contexts", []) or []:
+            attempt = int(getattr(ctx, "attempt", 0) or 0)
+            actual_attempts.append({
+                "repair_request_id": request_id,
+                "agent_attempt": attempt,
+                "error_type": str(getattr(ctx, "error_type", "") or ""),
+                "outcome": "AGENT_LOOP_FAILURE_CONTEXT",
+            })
+
+        supplied_history = tuple(dict(item) for item in (attempt_history or ()))
+        for idx, item in enumerate(supplied_history):
+            hist_request_id = str(item.get("repair_request_id") or request_id)
+            if hist_request_id != request_id:
+                return _hold(
+                    "ATTEMPT_HISTORY_INCONSISTENT",
+                    history_index=idx,
+                    detail="REPAIR_REQUEST_ID_MISMATCH",
+                )
+            hist_attempt = item.get("agent_attempt", item.get("attempt"))
+            if hist_attempt is not None:
+                try:
+                    n = int(hist_attempt)
+                except (TypeError, ValueError):
+                    return _hold(
+                        "ATTEMPT_HISTORY_INCONSISTENT",
+                        history_index=idx,
+                        detail="ATTEMPT_NOT_INTEGER",
+                    )
+                if attempts_spent and (n < 1 or n > attempts_spent):
+                    return _hold(
+                        "ATTEMPT_HISTORY_INCONSISTENT",
+                        history_index=idx,
+                        detail="ATTEMPT_OUTSIDE_AGENT_HISTORY",
+                    )
+
+        scripts_dir = str(REPO_ROOT / "scripts")
+        if scripts_dir not in sys.path:
+            sys.path.insert(0, scripts_dir)
+        try:
+            from obsidure_repair_r9_adapter_v1 import adapt_validated_repair_to_r9_prepare
+        except Exception as exc:
+            return _hold("R10_B1_ADAPTER_UNAVAILABLE", detail=f"{type(exc).__name__}: {exc}")
+
+        return adapt_validated_repair_to_r9_prepare(
+            repair_request=request_payload,
+            repair_proposal=proposal,
+            c278_evidence=c278_evidence,
+            repair_verdict=verdict,
+            base_commit_sha=base_commit_sha,
+            repo_identity_ref=repo_identity_ref,
+            execution_worktree_path=exec_root,
+            main_worktree_path=main_root,
+            branch_name=branch_name,
+            stores_base_dir=stores_base_dir,
+            session_id=session_id,
+            mission_context=mission_context,
+            require_delegation=require_delegation,
+            attempt_history=tuple(actual_attempts) + supplied_history,
+            repair_budget=repair_budget,
+        )
+
 
     def evaluate_repair_proposal(
         self,
