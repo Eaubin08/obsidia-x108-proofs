@@ -299,7 +299,7 @@ def _attestation_guard(ctx, reasons, kind):
         return
     if candidates:
         reasons.add(_R.attestation_inadmissible)
-    elif not ctx.wrong_of(HumanAttestation):
+    else:                                        # a wrongly bound attestation is no candidate (own fact: ref_binding_mismatch)
         reasons.add(_R.attestation_missing)
 
 
