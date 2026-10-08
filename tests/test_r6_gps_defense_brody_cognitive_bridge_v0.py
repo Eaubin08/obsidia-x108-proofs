@@ -80,8 +80,11 @@ def test_defense_bridge_preserves_precomputed_gps_sigma_evidence():
 
     ticket = result["decision_ticket_dry_run"]
     assert ticket["dry_run"] is True
+    assert ticket["decision"] == "HOLD"
+    assert ticket["x108_gate_status"] == "X108_DRY_RUN_UPSTREAM_HOLD"
     assert ticket["decision_authority"] == "KX108_ONLY"
     assert ticket["emits_act"] is False
+    assert result["upstream_x108_gate_constraint"] == "HOLD"
 
 
 def test_defense_bridge_can_take_domain_from_precomputed_evidence_when_text_has_none():
@@ -174,6 +177,12 @@ def test_defense_bridge_does_not_promote_observed_sigma_gate_to_brody_authority(
     # Brody consumes evidence only. The actual cognition admission remains
     # a separate KX108 dry-run ticket and never emits ACT/verdict.
     assert result["kx108_admission"] == "DRY_RUN"
+    assert result["decision_ticket_dry_run"]["decision"] == "BLOCK"
+    assert (
+        result["decision_ticket_dry_run"]["x108_gate_status"]
+        == "X108_DRY_RUN_UPSTREAM_BLOCK"
+    )
     assert result["decision_ticket_dry_run"]["decision_authority"] == "KX108_ONLY"
     assert result["decision_ticket_dry_run"]["emits_act"] is False
+    assert result["upstream_x108_gate_constraint"] == "BLOCK"
     assert result["emits_verdict"] is False
