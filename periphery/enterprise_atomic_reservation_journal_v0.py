@@ -30,6 +30,10 @@ class AtomicOfflineReservationJournalV0(OfflineReservationLifecycleV0):
         current=digest({"sequence":seq,"idempotency_key":key,"event_kind":kind,"previous_hash":prev})
         db.execute("INSERT INTO transition_events VALUES(?,?,?,?,?)",(seq,key,kind,prev,current))
 
+    def _guard_transaction(self, db):
+        """Extension point: guarded fixture validates triggers under this write lock."""
+        return True
+
     def reserve_logged_fixture(self,*,scope,generation,nonce,idempotency_key):
         scope=self._scope(scope)
         if not isinstance(generation,int) or isinstance(generation,bool) or generation<0 or any(
@@ -37,6 +41,8 @@ class AtomicOfflineReservationJournalV0(OfflineReservationLifecycleV0):
             return "BLOCK:C228_FIELDS_INVALID"
         with self._connect() as db:
             db.execute("BEGIN IMMEDIATE")
+            if not self._guard_transaction(db):
+                db.rollback();return "BLOCK:C238_GUARD_INVALID"
             row=db.execute("SELECT generation,revoked FROM scopes WHERE organization=? AND delegate=? AND connector=? AND capability=?",scope).fetchone()
             if not row or row[1] or row[0]!=generation:
                 db.rollback();return "BLOCK:C228_SCOPE_REVOKED_OR_STALE"
@@ -56,6 +62,8 @@ class AtomicOfflineReservationJournalV0(OfflineReservationLifecycleV0):
             return "BLOCK:C228_DISPOSITION_INVALID"
         with self._connect() as db:
             db.execute("BEGIN IMMEDIATE")
+            if not self._guard_transaction(db):
+                db.rollback();return "BLOCK:C238_GUARD_INVALID"
             row=db.execute("SELECT status FROM reservations WHERE idempotency_key=?",(idempotency_key,)).fetchone()
             if row is None or row[0]!="RESERVED_NO_EXECUTION":
                 db.rollback();return "BLOCK:C228_RESERVATION_NOT_ACTIVE"
@@ -72,6 +80,8 @@ class AtomicOfflineReservationJournalV0(OfflineReservationLifecycleV0):
         scope=self._scope(scope)
         with self._connect() as db:
             db.execute("BEGIN IMMEDIATE")
+            if not self._guard_transaction(db):
+                db.rollback();return "BLOCK:C238_GUARD_INVALID"
             cur=db.execute("UPDATE scopes SET revoked=1,generation=generation+1 WHERE organization=? AND delegate=? AND connector=? AND capability=?",scope)
             if not cur.rowcount:
                 db.rollback();return False
