@@ -6,7 +6,10 @@ from tests.b8.conftest import CLAIM, RECORDED_AT, candidate_snapshot, hold_reque
 
 
 def _record(snapshot, claim_id=CLAIM):
-    (rec,) = [r for r in snapshot.records if r.claim_id == claim_id]
+    """Current record = the unique record with maximal record_version (history is append-only)."""
+    recs = [r for r in snapshot.records if r.claim_id == claim_id]
+    top = max(r.record_version for r in recs)
+    (rec,) = {r for r in recs if r.record_version == top}   # ambiguous maximum fails here, no tie-break
     return rec
 
 

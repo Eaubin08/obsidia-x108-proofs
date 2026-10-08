@@ -116,7 +116,10 @@ def ids(*artifacts):
 
 
 def latest(snap, claim):
-    (rec,) = [r for r in snap.records if r.claim_id == claim.claim_id]
+    """Current record = the unique record with maximal record_version (history is append-only)."""
+    recs = [r for r in snap.records if r.claim_id == claim.claim_id]
+    top = max(r.record_version for r in recs)
+    (rec,) = {r for r in recs if r.record_version == top}   # ambiguous maximum fails here, no tie-break
     return rec
 
 
