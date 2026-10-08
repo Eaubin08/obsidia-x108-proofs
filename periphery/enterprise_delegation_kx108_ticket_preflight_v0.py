@@ -15,6 +15,12 @@ def inspect_c219_preflight_v0(*, request, approval, record, ticket,
                 "egress_allowed": False, "execution_authority": False}
     if not isinstance(delegation_inputs, dict):
         return block("C219_DELEGATION_INPUTS_MISSING")
+    required = ("registry", "claim", "public_key_pem", "delegation",
+                "delegation_secret", "delegation_issuer", "organization",
+                "actor", "delegate", "connector", "capability", "request_hash",
+                "audience", "identity_issuer", "now", "revocation_ledger", "generation")
+    if any(k not in delegation_inputs for k in required):
+        return block("C219_DELEGATION_INPUTS_INCOMPLETE")
     # C2.18 may consume an offline fixture nonce; never a real dispatch.
     try:
         delegation = inspect_identity_delegation_fixture_v0(**delegation_inputs)
