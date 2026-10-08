@@ -1,0 +1,14 @@
+name: c233-sqlite-bypass-audit
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pytest cryptography
+      - run: python -m pytest -q tests/integration/test_v01_c233_sqlite_bypass_audit_v0.py tests/integration/test_v01_c232_sqlite_state_update_guard_v0.py
