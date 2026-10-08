@@ -2,12 +2,12 @@
 
 This is an opt-in façade, not a replacement for independent trust/permissions.
 """
-from periphery.enterprise_atomic_reservation_journal_v0 import AtomicOfflineReservationJournalV0
+from periphery.enterprise_transaction_guarded_reservation_v0 import TransactionGuardedReservationV0
 from periphery.enterprise_unified_sqlite_guards_v0 import UnifiedOfflineSqliteGuardsV0
 
 class GuardedOfflineReservationV0:
     def __init__(self,path):
-        self._ledger=AtomicOfflineReservationJournalV0(path)
+        self._ledger=TransactionGuardedReservationV0(path)
         self._guards=UnifiedOfflineSqliteGuardsV0(path)
 
     def initialize_fixture(self):
@@ -22,8 +22,8 @@ class GuardedOfflineReservationV0:
     def enroll_fixture(self,scope):
         if not self._ready():
             return "BLOCK:C236_GUARDS_NOT_READY"
-        self._ledger.enroll_fixture(scope)
-        return "C236_SCOPE_ENROLLED_FIXTURE_ONLY"
+        outcome=self._ledger.enroll_fixture(scope)
+        return "C236_SCOPE_ENROLLED_FIXTURE_ONLY" if outcome=="C238_SCOPE_ENROLLED_FIXTURE_ONLY" else outcome
 
     def reserve_fixture(self,*,scope,generation,nonce,idempotency_key):
         if not self._ready():
