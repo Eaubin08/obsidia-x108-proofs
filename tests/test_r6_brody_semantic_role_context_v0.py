@@ -161,9 +161,13 @@ def test_r6_b_context_does_not_change_brody_response_or_route(monkeypatch):
     ):
         assert enriched[key] == baseline[key]
 
-    assert baseline["semantic_role_context"] is None
-    assert baseline["semantic_role_projection_sha256"] is None
+    assert baseline["semantic_role_context"] is not None
+    assert baseline["semantic_role_source"] == "BRODY_SENS_V1"
+    assert baseline["semantic_role_context"]["roles"]["FOCUS"]["resolved_value"] == "MEMORY"
+    assert baseline["semantic_role_projection_sha256"] is not None
+
     assert enriched["semantic_role_context"] is not None
+    assert enriched["semantic_role_source"] == "EXTERNAL_PROJECTION"
 
 
 def test_r6_b_rejects_non_contract_semantic_context(monkeypatch):
@@ -173,4 +177,17 @@ def test_r6_b_rejects_non_contract_semantic_context(monkeypatch):
         pipeline.run_brody_real_response_pipeline(
             message="Explique Obsidia.",
             semantic_role_projection={"FOCUS": "OBSIDIA"},
+        )
+
+
+def test_r6_b_rejects_projection_from_different_utterance(monkeypatch):
+    _patch_stable_brody(monkeypatch)
+
+    with pytest.raises(
+        ValueError,
+        match="SEMANTIC_ROLE_PROJECTION_UTTERANCE_HASH_MISMATCH",
+    ):
+        pipeline.run_brody_real_response_pipeline(
+            message="Explique Obsidia.",
+            semantic_role_projection=_projection(),
         )
