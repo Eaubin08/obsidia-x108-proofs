@@ -1,0 +1,12 @@
+name: c214-identity-boundary
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pytest
+      - run: python -m pytest -q tests/integration/test_v01_c214_trust_root_admission_boundary_v0.py
