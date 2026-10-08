@@ -323,6 +323,155 @@ def _with_canonical_failure(base: dict, envelope: dict, store_status: str) -> di
     return base
 
 
+def _descriptor_record_hash(record: dict) -> str:
+    return _sha256(json.dumps(record, sort_keys=True, ensure_ascii=False).encode("utf-8"))
+
+
+def _build_apply_patch_envelope(*, stores: dict, v2id: str, child: str, exp_eah: str,
+                                mh: str, dh: str, descriptor_record: dict,
+                                patch_sha256: str, target_paths: list,
+                                before_digests: dict, runtime_receipt: dict,
+                                outcome: str, failure_stage: str,
+                                dispatch_boundary: str,
+                                physical_effect_dispatched: bool,
+                                mutation_performed: bool,
+                                execution_state: str, executor_status: str,
+                                reason_code: str = "", apr: Optional[dict] = None,
+                                kx: Optional[dict] = None,
+                                after_digests: Optional[dict] = None,
+                                sar_rec: Optional[dict] = None,
+                                sre_ids: Optional[list] = None,
+                                proof_strength: str = "NONE",
+                                realized_state_verified: bool = False,
+                                uncertainty_state: str = "NONE",
+                                uncertainty_reason: str = "",
+                                toctou_phase: str = "") -> tuple[dict, str]:
+    descriptor = descriptor_record.get("descriptor") or {}
+    lineage = descriptor.get("descriptor_lineage") or {}
+    request_ref = {
+        "public_action": "APPLY_PATCH",
+        "patch_sha256": patch_sha256,
+        "target_paths": sorted(target_paths),
+        "builder_lineage": lineage,
+    }
+    session_ref = {
+        "session_id": runtime_receipt.get("session_id", ""),
+        "v2_exec_id": v2id,
+        "child_id": child,
+    }
+    executor_input_ref = {
+        "executor": "git apply",
+        "patch_sha256": patch_sha256,
+        "target_paths": sorted(target_paths),
+        "before_digests": dict(sorted((before_digests or {}).items())),
+    }
+    reason_ref = _safe_reason_ref(reason_code) if reason_code else {
+        "reason_code": "NONE",
+        "reason_hash": _ref_hash({"reason_code": "NONE"}),
+    }
+    kx_record = (kx or {}).get("record") or {}
+    post_state_ref = None
+    if after_digests is not None:
+        post_state_ref = {
+            "target_paths": sorted(target_paths),
+            "after_digests": dict(sorted(after_digests.items())),
+            "sealed_apply_receipt_id": (sar_rec or {}).get("sealed_apply_receipt_id", ""),
+            "sealed_rollback_evidence_ids": list(sre_ids or []),
+        }
+    realized_state = {
+        "outcome": outcome,
+        "failure_stage": failure_stage,
+        "dispatch_boundary": dispatch_boundary,
+        "physical_effect_dispatched": bool(physical_effect_dispatched),
+        "proof_strength": proof_strength,
+        "realized_state_verified": bool(realized_state_verified),
+        "mutation_performed": bool(mutation_performed),
+        "prepared_pre_state_hash": _ref_hash(before_digests or {}),
+        "prepared_pre_state_ref": {
+            "target_paths": sorted(target_paths),
+            "before_digests": dict(sorted((before_digests or {}).items())),
+        },
+        "execution_state": execution_state,
+        "uncertainty_state": uncertainty_state,
+        "uncertainty_reason": uncertainty_reason,
+        "failure_reason_code": reason_ref["reason_code"],
+        "failure_reason_hash": reason_ref["reason_hash"],
+        "builder_lineage": lineage,
+    }
+    if toctou_phase:
+        realized_state["toctou_phase"] = toctou_phase
+    if post_state_ref is not None:
+        realized_state["post_state_ref"] = post_state_ref
+        realized_state["post_state_hash"] = _ref_hash(post_state_ref)
+    if sar_rec is not None:
+        realized_state["sealed_apply_receipt_id"] = sar_rec.get("sealed_apply_receipt_id", "")
+        realized_state["sealed_apply_receipt_hash"] = _ref_hash(sar_rec)
+    envelope = _CRE.build_canonical_receipt_envelope(
+        capability=_CAP_PATCH_EXECUTE,
+        operation_type=OP_APPLY_PATCH,
+        request_ref=request_ref,
+        session_ref=session_ref,
+        action_identity=_canonical_action_identity(
+            _CAP_PATCH_EXECUTE, OP_APPLY_PATCH, request_ref, session_ref, dh, exp_eah
+        ),
+        prepare={
+            "descriptor_ref": v2id,
+            "descriptor_hash": dh,
+            "manifest_hash": mh,
+            "patch_sha256": patch_sha256,
+            "target_paths": sorted(target_paths),
+            "before_digests_hash": _ref_hash(before_digests or {}),
+            "builder_lineage": lineage,
+        },
+        authorization={
+            "execution_authority_hash": exp_eah,
+            "approval_id": (apr or {}).get("approval_id", _CRE.STATUS_NOT_REACHED),
+            "approval_status": (apr or {}).get("approval_status", _CRE.STATUS_NOT_REACHED),
+            "approved_by": (apr or {}).get("approved_by", _CRE.STATUS_NOT_REACHED),
+            "approval_record_hash": (apr or {}).get("approval_record_hash", _CRE.STATUS_NOT_REACHED),
+            "kx108_pre_decision_record_id": (kx or {}).get("decision_record_id", _CRE.STATUS_NOT_REACHED),
+            "kx108_pre_decision_record_hash": kx_record.get("decision_record_hash", _CRE.STATUS_NOT_REACHED),
+            "kx108_verdict": (kx or {}).get("x108_gate", _CRE.STATUS_NOT_REACHED),
+            "binder_verdict_status": "OBSERVED_INLINE" if apr is not None else _CRE.STATUS_NOT_REACHED,
+            "binder_verdict_ref": "NOT_SEPARATELY_PERSISTED" if apr is not None else _CRE.STATUS_NOT_REACHED,
+        },
+        execution={
+            "executor_kind": "GIT_APPLY",
+            "executor_backend": "git",
+            "executor_operation": "git apply",
+            "executor_status": executor_status,
+            "executor_input_hash": _ref_hash(executor_input_ref),
+            "executor_input_ref": executor_input_ref,
+            "executor_invoked": executor_status != _CRE.STATUS_NOT_REACHED,
+            "physical_effect_dispatched": bool(physical_effect_dispatched),
+            "mutation_performed": bool(mutation_performed),
+            "execution_state": execution_state,
+            "dispatch_boundary": dispatch_boundary,
+            "failure_stage": failure_stage,
+            "failure_reason_code": reason_ref["reason_code"],
+            "failure_reason_hash": reason_ref["reason_hash"],
+        },
+        realized_state=realized_state,
+        receipt={
+            "existing_runtime_receipt_id": runtime_receipt.get("receipt_id"),
+            "existing_receipt_hash": _ref_hash(runtime_receipt),
+            "existing_receipt_ref": "runtime_result.receipt",
+        },
+        replay={
+            "physical_replay_allowed": False,
+            "evidence_replay_allowed": True,
+            "automatic_retry": False,
+            "automatic_physical_resubmission": False,
+        },
+        privacy={
+            "redaction_policy": "HASHES_AND_REFS_ONLY",
+            "plaintext_sensitive_data_present": False,
+        },
+        domain="PC_FILESYSTEM",
+    )
+    return _store_canonical_envelope(envelope, stores)
+
+
 def _build_browser_set_checked_envelope(*, stores: dict, executor, v2id: str, child: str,
                                         exp_eah: str, mh: str, dh: str, descriptor: dict,
                                         identity: dict, selector: str, target_checked: bool,
@@ -802,7 +951,8 @@ def pc_v2_apply_patch_prepare(
     if chk.returncode != 0:
         return _prep_rej(OP_APPLY_PATCH, _CAP_PATCH_PREPARE, "PATCH_DRY_RUN_FAILED:"+chk.stderr.strip()[:200], session_id)
     desc = {"patch_sha256": psha, "target_paths": sorted(targets), "before_digests": before,
-            "execution_worktree": str(ew), "branch_name": branch_name, "base_sha": base_sha,
+            "execution_worktree": str(ew), "main_worktree": str(mw),
+            "branch_name": branch_name, "base_sha": base_sha,
             "session_id": session_id, "operation_type": OP_APPLY_PATCH}
     if descriptor_lineage is not None:
         desc["descriptor_lineage"] = dict(descriptor_lineage)
@@ -833,15 +983,86 @@ def pc_v2_apply_patch_execute(
     child = prepared_result.get("child_id", ""); mh = prepared_result.get("manifest_hash", ""); dh = prepared_result.get("desc_hash", "")
     desc = _load_desc(v2id, st["v2exec"])
     if not desc or desc.get("eah") != exp_eah: return _exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, "DESCRIPTOR_EAH_MISMATCH", session_id)
-    base_sha = desc["descriptor"]["base_sha"]
+    if _descriptor_record_hash(desc) != dh: return _exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, "DESCRIPTOR_HASH_MISMATCH", session_id)
+    descriptor = desc["descriptor"]
+    base_sha = descriptor["base_sha"]
+    branch_name = descriptor.get("branch_name", "")
+    main_wt = Path(descriptor.get("main_worktree") or descriptor.get("main_worktree_path") or prepared_result.get("main_worktree_path") or ew).resolve()
+    late_iso = _check_isolation(ew, main_wt, branch_name, base_sha)
+    if not late_iso["ok"]:
+        reason_code = "LATE_ISOLATION_FAILED:" + late_iso["reason"]
+        runtime_receipt = _rcpt(_CAP_PATCH_EXECUTE, OP_APPLY_PATCH, EXECUTE_REJECTED, session_id, reason=reason_code)
+        envelope, store_status = _build_apply_patch_envelope(
+            stores=st, v2id=v2id, child=child, exp_eah=exp_eah, mh=mh, dh=dh,
+            descriptor_record=desc, patch_sha256=psha, target_paths=list(targets),
+            before_digests=before, runtime_receipt=runtime_receipt,
+            outcome=_CRE.OUTCOME_TOCTOU_ABORTED, failure_stage=_CRE.STAGE_TOCTOU,
+            dispatch_boundary=_CRE.DISPATCH_PRE_FAILURE,
+            physical_effect_dispatched=False, mutation_performed=False,
+            execution_state="LATE_ISOLATION_FAILED", executor_status=_CRE.STATUS_NOT_REACHED,
+            reason_code=reason_code, toctou_phase="WORKTREE_ISOLATION",
+        )
+        return _with_canonical_failure(_exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, reason_code, session_id), envelope, store_status)
     pp = st["v2exec"] / (v2id+".patch")
-    if not pp.exists(): return _exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, "PATCH_CANDIDATE_NOT_FOUND", session_id)
+    if not pp.exists():
+        reason_code = "PATCH_CANDIDATE_NOT_FOUND"
+        runtime_receipt = _rcpt(_CAP_PATCH_EXECUTE, OP_APPLY_PATCH, EXECUTE_REJECTED, session_id, reason=reason_code)
+        envelope, store_status = _build_apply_patch_envelope(
+            stores=st, v2id=v2id, child=child, exp_eah=exp_eah, mh=mh, dh=dh,
+            descriptor_record=desc, patch_sha256=psha, target_paths=list(targets),
+            before_digests=before, runtime_receipt=runtime_receipt,
+            outcome=_CRE.OUTCOME_PREPARE_REJECTED, failure_stage=_CRE.STAGE_PREPARE,
+            dispatch_boundary=_CRE.DISPATCH_PRE_FAILURE,
+            physical_effect_dispatched=False, mutation_performed=False,
+            execution_state="PATCH_CANDIDATE_NOT_FOUND", executor_status=_CRE.STATUS_NOT_REACHED,
+            reason_code=reason_code,
+        )
+        return _with_canonical_failure(_exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, reason_code, session_id), envelope, store_status)
     pt = pp.read_text("utf-8")
-    if _sha256(pt.encode("utf-8")) != psha: return _exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, "PATCH_MODIFIED_AFTER_PREPARE", session_id)
+    if _sha256(pt.encode("utf-8")) != psha:
+        reason_code = "PATCH_MODIFIED_AFTER_PREPARE"
+        runtime_receipt = _rcpt(_CAP_PATCH_EXECUTE, OP_APPLY_PATCH, EXECUTE_REJECTED, session_id, reason=reason_code)
+        envelope, store_status = _build_apply_patch_envelope(
+            stores=st, v2id=v2id, child=child, exp_eah=exp_eah, mh=mh, dh=dh,
+            descriptor_record=desc, patch_sha256=psha, target_paths=list(targets),
+            before_digests=before, runtime_receipt=runtime_receipt,
+            outcome=_CRE.OUTCOME_TOCTOU_ABORTED, failure_stage=_CRE.STAGE_TOCTOU,
+            dispatch_boundary=_CRE.DISPATCH_PRE_FAILURE,
+            physical_effect_dispatched=False, mutation_performed=False,
+            execution_state="PATCH_MODIFIED_AFTER_PREPARE", executor_status=_CRE.STATUS_NOT_REACHED,
+            reason_code=reason_code, toctou_phase="PATCH_ARTIFACT",
+        )
+        return _with_canonical_failure(_exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, reason_code, session_id), envelope, store_status)
     for rel, exp_sha in before.items():
         pa = _canon(rel, ew)
-        if pa is None or not pa.exists(): return _exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, "TARGET_GONE:"+rel, session_id)
-        if _sha256(pa.read_bytes()) != exp_sha: return _exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, "PRE_STATE_CHANGED:"+rel, session_id)
+        if pa is None or not pa.exists():
+            reason_code = "TARGET_GONE:"+rel
+            runtime_receipt = _rcpt(_CAP_PATCH_EXECUTE, OP_APPLY_PATCH, EXECUTE_REJECTED, session_id, reason=reason_code)
+            envelope, store_status = _build_apply_patch_envelope(
+                stores=st, v2id=v2id, child=child, exp_eah=exp_eah, mh=mh, dh=dh,
+                descriptor_record=desc, patch_sha256=psha, target_paths=list(targets),
+                before_digests=before, runtime_receipt=runtime_receipt,
+                outcome=_CRE.OUTCOME_TOCTOU_ABORTED, failure_stage=_CRE.STAGE_TOCTOU,
+                dispatch_boundary=_CRE.DISPATCH_PRE_FAILURE,
+                physical_effect_dispatched=False, mutation_performed=False,
+                execution_state="TARGET_GONE", executor_status=_CRE.STATUS_NOT_REACHED,
+                reason_code=reason_code, toctou_phase="TARGET_PRE_STATE",
+            )
+            return _with_canonical_failure(_exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, reason_code, session_id), envelope, store_status)
+        if _sha256(pa.read_bytes()) != exp_sha:
+            reason_code = "PRE_STATE_CHANGED:"+rel
+            runtime_receipt = _rcpt(_CAP_PATCH_EXECUTE, OP_APPLY_PATCH, EXECUTE_REJECTED, session_id, reason=reason_code)
+            envelope, store_status = _build_apply_patch_envelope(
+                stores=st, v2id=v2id, child=child, exp_eah=exp_eah, mh=mh, dh=dh,
+                descriptor_record=desc, patch_sha256=psha, target_paths=list(targets),
+                before_digests=before, runtime_receipt=runtime_receipt,
+                outcome=_CRE.OUTCOME_TOCTOU_ABORTED, failure_stage=_CRE.STAGE_TOCTOU,
+                dispatch_boundary=_CRE.DISPATCH_PRE_FAILURE,
+                physical_effect_dispatched=False, mutation_performed=False,
+                execution_state="PRE_STATE_CHANGED", executor_status=_CRE.STATUS_NOT_REACHED,
+                reason_code=reason_code, toctou_phase="TARGET_PRE_STATE",
+            )
+            return _with_canonical_failure(_exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, reason_code, session_id), envelope, store_status)
     before_bytes = {}
     for rel in targets:
         pa = _canon(rel, ew)
@@ -852,13 +1073,56 @@ def pc_v2_apply_patch_execute(
     kx = _kx108_pre(v2id, child, exp_eah, apv_id, dh, base_sha, mh, list(targets), OP_APPLY_PATCH, kxpre=st["kxpre"])
     if not kx.get("verify_ok"): return _exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, "KX108_PRE_FAILED", session_id)
     gate = kx.get("x108_gate", ""); kx_id = kx.get("decision_record_id", ""); kx_hash = kx.get("record", {}).get("decision_record_hash", "")
-    if gate != "ALLOW": return _exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, "KX108_PRE_GATE:"+gate, session_id)
+    if gate != "ALLOW":
+        reason_code = "KX108_PRE_GATE:"+gate
+        outcome = _CRE.OUTCOME_KX108_HOLD if gate == "HOLD" else _CRE.OUTCOME_KX108_BLOCK
+        runtime_receipt = _rcpt(_CAP_PATCH_EXECUTE, OP_APPLY_PATCH, EXECUTE_REJECTED, session_id, reason=reason_code)
+        envelope, store_status = _build_apply_patch_envelope(
+            stores=st, v2id=v2id, child=child, exp_eah=exp_eah, mh=mh, dh=dh,
+            descriptor_record=desc, patch_sha256=psha, target_paths=list(targets),
+            before_digests=before, runtime_receipt=runtime_receipt,
+            outcome=outcome, failure_stage=_CRE.STAGE_KX108,
+            dispatch_boundary=_CRE.DISPATCH_PRE_FAILURE,
+            physical_effect_dispatched=False, mutation_performed=False,
+            execution_state="KX108_PRE_GATE_NOT_ALLOW", executor_status=_CRE.STATUS_NOT_REACHED,
+            reason_code=reason_code, apr=apr, kx=kx,
+        )
+        return _with_canonical_failure(_exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, reason_code, session_id), envelope, store_status)
     appl = subprocess.run(["git", "apply", str(pp)], cwd=str(ew), capture_output=True, text=True, timeout=60)
-    if appl.returncode != 0: return _exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, "PATCH_APPLY_FAILED:"+appl.stderr.strip()[:200], session_id)
+    if appl.returncode != 0:
+        reason_code = "PATCH_APPLY_FAILED:"+appl.stderr.strip()[:200]
+        runtime_receipt = _rcpt(_CAP_PATCH_EXECUTE, OP_APPLY_PATCH, EXECUTE_REJECTED, session_id, reason=reason_code)
+        envelope, store_status = _build_apply_patch_envelope(
+            stores=st, v2id=v2id, child=child, exp_eah=exp_eah, mh=mh, dh=dh,
+            descriptor_record=desc, patch_sha256=psha, target_paths=list(targets),
+            before_digests=before, runtime_receipt=runtime_receipt,
+            outcome=_CRE.OUTCOME_EXECUTOR_FAILED_BEFORE_ACTION, failure_stage=_CRE.STAGE_EXECUTOR,
+            dispatch_boundary=_CRE.DISPATCH_PRE_FAILURE,
+            physical_effect_dispatched=False, mutation_performed=False,
+            execution_state="PATCH_APPLY_FAILED", executor_status="FAILED",
+            reason_code=reason_code, apr=apr, kx=kx,
+        )
+        return _with_canonical_failure(_exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, reason_code, session_id), envelope, store_status)
     after = {}
     for rel in targets:
         pa = _canon(rel, ew)
-        if pa is None or not pa.exists(): return _exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, "REALIZED_TARGET_MISSING:"+rel, session_id)
+        if pa is None or not pa.exists():
+            reason_code = "REALIZED_TARGET_MISSING:"+rel
+            runtime_receipt = _rcpt(_CAP_PATCH_EXECUTE, OP_APPLY_PATCH, EXECUTE_REJECTED, session_id, reason=reason_code)
+            envelope, store_status = _build_apply_patch_envelope(
+                stores=st, v2id=v2id, child=child, exp_eah=exp_eah, mh=mh, dh=dh,
+                descriptor_record=desc, patch_sha256=psha, target_paths=list(targets),
+                before_digests=before, runtime_receipt=runtime_receipt,
+                outcome=_CRE.OUTCOME_DISPATCHED_OUTCOME_UNCERTAIN,
+                failure_stage=_CRE.STAGE_POST_OBSERVATION,
+                dispatch_boundary=_CRE.DISPATCH_POST_UNCERTAINTY,
+                physical_effect_dispatched=True, mutation_performed=True,
+                execution_state=_CRE.OUTCOME_DISPATCHED_OUTCOME_UNCERTAIN,
+                executor_status="INVOKED", reason_code=reason_code, apr=apr, kx=kx,
+                uncertainty_state=_CRE.OUTCOME_DISPATCHED_OUTCOME_UNCERTAIN,
+                uncertainty_reason=reason_code,
+            )
+            return _with_canonical_failure(_exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, reason_code, session_id), envelope, store_status)
         after[rel] = _sha256(pa.read_bytes())
     sre_ids = []
     total_bytes = 0
@@ -874,16 +1138,31 @@ def pc_v2_apply_patch_execute(
     sar_rec = _sar(v2id, child, exp_eah, apv_id, kx_id, kx_hash, sre0_id, sre0_hash, p0,
                   before.get(p0, _EMPTY_SHA256), after.get(p0, ""), psha, total_bytes, OP_APPLY_PATCH)
     _SEV.store_sealed_apply_receipt(sar_rec, st["sar"])
+    runtime_receipt = _rcpt(_CAP_PATCH_EXECUTE, OP_APPLY_PATCH, EXECUTED_OK, session_id,
+                            kx108_pre_gate=gate, target_paths=targets, after_digests=after,
+                            sealed_apply_receipt_id=sar_rec["sealed_apply_receipt_id"],
+                            sealed_rollback_evidence_ids=sre_ids)
+    envelope, store_status = _build_apply_patch_envelope(
+        stores=st, v2id=v2id, child=child, exp_eah=exp_eah, mh=mh, dh=dh,
+        descriptor_record=desc, patch_sha256=psha, target_paths=list(targets),
+        before_digests=before, runtime_receipt=runtime_receipt,
+        outcome=_CRE.OUTCOME_SUCCESS, failure_stage=_CRE.STATUS_NOT_APPLICABLE,
+        dispatch_boundary=_CRE.DISPATCH_POST_CONFIRMED,
+        physical_effect_dispatched=True, mutation_performed=True,
+        execution_state="POSTCONDITION_CONFIRMED", executor_status="INVOKED",
+        apr=apr, kx=kx, after_digests=after, sar_rec=sar_rec, sre_ids=sre_ids,
+        proof_strength="STRONG", realized_state_verified=True,
+    )
     return {"status": EXECUTED_OK, "j5_phase": "EXECUTE", "operation_type": OP_APPLY_PATCH,
             "jarvis_authority": JARVIS_AUTHORITY, "decision_authority": KX_DECISION_AUTHORITY,
             "kx108_pre_gate": gate, "human_authorization_consumed": True,
             "target_paths": targets, "after_digests": after,
             "sealed_apply_receipt_id": sar_rec["sealed_apply_receipt_id"],
             "sealed_rollback_evidence_ids": sre_ids,
-            "receipt": _rcpt(_CAP_PATCH_EXECUTE, OP_APPLY_PATCH, EXECUTED_OK, session_id,
-                              kx108_pre_gate=gate, target_paths=targets, after_digests=after,
-                              sealed_apply_receipt_id=sar_rec["sealed_apply_receipt_id"],
-                              sealed_rollback_evidence_ids=sre_ids)}
+            "action_evidence_id": envelope["action_evidence_id"],
+            "canonical_receipt_envelope": envelope,
+            "canonical_receipt_store_status": store_status,
+            "receipt": runtime_receipt}
 
 # ====
 # GOVERNED_CREATE_DIR

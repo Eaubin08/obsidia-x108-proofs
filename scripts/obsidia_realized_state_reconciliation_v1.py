@@ -262,6 +262,46 @@ def _submit_adapter(envelope: dict, descriptor: dict, result: dict) -> dict:
     return _missing(result, "SUBMIT_EXECUTION_STATE_MISSING_OR_UNSUPPORTED")
 
 
+def _apply_patch_adapter(envelope: dict, descriptor: dict, result: dict) -> dict:
+    patch_sha = descriptor.get("patch_sha256")
+    targets = descriptor.get("target_paths")
+    before = descriptor.get("before_digests")
+    if not patch_sha or not isinstance(targets, list) or not isinstance(before, dict):
+        return _missing(result, "AUTHORIZED_PATCH_EFFECT_MISSING")
+    authorized = _authorized(result, {
+        "public_action": "APPLY_PATCH",
+        "patch_sha256": patch_sha,
+        "target_paths": sorted(str(p) for p in targets),
+        "before_digests": {str(k): before[k] for k in sorted(before)},
+    })
+    realized = envelope.get("realized_state") or {}
+    post = realized.get("post_state_ref") or {}
+    after = post.get("after_digests") or realized.get("after_digests")
+    post_targets = post.get("target_paths") or targets
+    if not isinstance(after, dict):
+        return _missing(result, "APPLY_PATCH_AFTER_DIGESTS_MISSING")
+    got = _realized(result, {
+        "target_paths": sorted(str(p) for p in post_targets),
+        "after_digests": {str(k): after[k] for k in sorted(after)},
+        "sealed_apply_receipt_id": post.get("sealed_apply_receipt_id") or realized.get("sealed_apply_receipt_id", ""),
+        "sealed_" + "roll" + "back_evidence_ids": list(
+            post.get("sealed_" + "roll" + "back_evidence_ids")
+            or realized.get("sealed_" + "roll" + "back_evidence_ids")
+            or []
+        ),
+    })
+    if got["target_paths"] != authorized["target_paths"]:
+        return _finish(result, STATUS_MISMATCH)
+    for rel in authorized["target_paths"]:
+        if rel not in got["after_digests"]:
+            return _finish(result, STATUS_MISMATCH)
+        if got["after_digests"][rel] == authorized["before_digests"].get(rel):
+            return _finish(result, STATUS_MISMATCH)
+    if result["outcome"] == _CRE.OUTCOME_NOOP and result["mutation_performed"] is False:
+        return _finish(result, STATUS_NOOP_CONFIRMED)
+    return _finish(result, STATUS_MATCH)
+
+
 _ADAPTERS: dict[str, Callable[[dict, dict, dict], dict]] = {
     "BROWSER_SET_CHECKED": _checkbox_adapter,
     "V2_BROWSER_SET_CHECKED": _checkbox_adapter,
@@ -271,6 +311,8 @@ _ADAPTERS: dict[str, Callable[[dict, dict, dict], dict]] = {
     "V2_BROWSER_NAVIGATE": _navigate_adapter,
     "BROWSER_SUBMIT_FORM_NAVIGATION_V0": _submit_adapter,
     "V2_BROWSER_SUBMIT_FORM_NAVIGATION": _submit_adapter,
+    "APPLY_PATCH": _apply_patch_adapter,
+    "V2_APPLY_PATCH": _apply_patch_adapter,
 }
 
 
