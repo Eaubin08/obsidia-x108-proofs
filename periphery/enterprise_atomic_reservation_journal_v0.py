@@ -56,6 +56,20 @@ class AtomicOfflineReservationJournalV0(OfflineReservationLifecycleV0):
             db.commit()
         return "CLOSED_LOGGED_FIXTURE_NO_EXECUTION_AUTHORITY"
 
+    def revoke(self,scope):
+        scope=self._scope(scope)
+        with self._connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            cur=db.execute("UPDATE scopes SET revoked=1,generation=generation+1 WHERE organization=? AND delegate=? AND connector=? AND capability=?",scope)
+            if not cur.rowcount:
+                db.rollback();return False
+            active=db.execute("SELECT idempotency_key FROM reservations WHERE organization=? AND delegate=? AND connector=? AND capability=? AND status='RESERVED_NO_EXECUTION' ORDER BY idempotency_key",scope).fetchall()
+            for (key,) in active:
+                db.execute("UPDATE reservations SET status='INVALIDATED' WHERE idempotency_key=?",(key,))
+                self._append(db,key,"INVALIDATED")
+            db.commit()
+            return True
+
     def verify_logged_fixture(self):
         with self._connect() as db:
             rows=db.execute("SELECT sequence,idempotency_key,event_kind,previous_hash,event_hash FROM transition_events ORDER BY sequence").fetchall()
