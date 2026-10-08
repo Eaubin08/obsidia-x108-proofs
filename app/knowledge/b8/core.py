@@ -287,9 +287,12 @@ class _Context:
 
 
 def _evidence_guard(ctx, reasons, failure):
-    if any(e.complete_provenance for e in ctx.bound_of(EvidenceRef)):
+    bound = ctx.bound_of(EvidenceRef)
+    if any(e.complete_provenance for e in bound):
         return
-    if not ctx.wrong_of(EvidenceRef):           # a wrongly bound ref is ref_binding_mismatch only
+    # a correctly bound inadmissible ref, or no ref at all, fails; a wrongly bound ref alone is
+    # ref_binding_mismatch only (§9.5) and never hides a different bound ref's own failure
+    if bound or not ctx.wrong_of(EvidenceRef):
         reasons.add(failure)
 
 
