@@ -196,10 +196,12 @@ def test_t5_human_attestation_is_inadmissible_until_an_identity_boundary_is_wire
     assert_rejected(b8, snap, result, ["attestation_inadmissible"])
 
 
-def test_t5_human_wrongly_bound_declaration_is_ref_binding_mismatch(b8):
+def test_t5_human_wrongly_bound_declaration_is_binding_mismatch_and_missing(b8):
+    """Two independent facts (§9.5): the ref is wrongly bound, and no correctly bound PRIMARY_DECLARATION
+    exists (attestation_missing has no 'only' clause, unlike evidence_inadmissible)."""
     claim, _ = _world(b8, "SUPPORTED", H)
     claim, snap, result = _run(b8, "SUPPORTED", "VERIFIED", [attestation(b8, claim, claim_version=2)], cls=H)
-    assert_rejected(b8, snap, result, ["ref_binding_mismatch"])
+    assert_rejected(b8, snap, result, ["attestation_missing", "ref_binding_mismatch"])
 
 
 # ---------------------------------------------------------------- T12 re-verification
