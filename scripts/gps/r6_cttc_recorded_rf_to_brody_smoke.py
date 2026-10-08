@@ -106,6 +106,11 @@ def build_report(artifact_path: Path) -> dict[str, Any]:
             joined.get("kx108_admission") == "DRY_RUN"
             and ticket.get("dry_run") is True
         ),
+        "recorded_gate_preserved_in_cognitive_ticket": (
+            ticket.get("decision") == envelope.get("x108_gate")
+            and joined.get("upstream_x108_gate_constraint")
+            == envelope.get("x108_gate")
+        ),
         "kx108_only_preserved": (
             joined.get("decision_authority") == "KX108_ONLY"
             and ticket.get("decision_authority") == "KX108_ONLY"
@@ -148,8 +153,13 @@ def build_report(artifact_path: Path) -> dict[str, Any]:
         "cognitive_join_status": joined.get("status"),
         "cognitive_join_completeness": joined.get("completeness"),
         "cognitive_ticket_decision": ticket.get("decision"),
+        "cognitive_ticket_gate_status": ticket.get("x108_gate_status"),
+        "upstream_x108_gate_constraint": joined.get(
+            "upstream_x108_gate_constraint"
+        ),
         "cognitive_ticket_note": (
-            "Context admission only; never a trajectory authorization."
+            "Dry-run preservation of recorded X108 constraint; "
+            "never a trajectory authorization."
         ),
         "checks": checks,
         "decision_authority": "KX108_ONLY",
