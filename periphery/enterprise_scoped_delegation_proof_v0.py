@@ -12,6 +12,7 @@ import hashlib
 import hmac
 import json
 import re
+from threading import RLock
 
 _HEX = re.compile(r"^[0-9a-f]{64}$")
 SCHEMA = "OBSIDIA_C22_SCOPED_DELEGATION_PROOF_V0"
@@ -82,3 +83,26 @@ def verify_scoped_delegation_v0(proof, *, trusted_issuer_id, verifier_secret,
     if not hmac.compare_digest(expected_signature, proof.signature):
         return False, "C22_SIGNATURE_INVALID"
     return True, None
+
+
+class FixtureNonceReplayGuardV0:
+    """Process-local replay detection for isolated tests, not durable authority.
+
+    This is intentionally not a provider execution permission or a distributed
+    anti-replay store; restart and concurrent processes need a real shared ledger.
+    """
+
+    def __init__(self):
+        self._lock = RLock()
+        self._seen = set()
+
+    def verify_once(self, proof, **verification):
+        ok, reason = verify_scoped_delegation_v0(proof, **verification)
+        if not ok:
+            return False, reason
+        identity = (proof.issuer_id, proof.organization_id, proof.nonce)
+        with self._lock:
+            if identity in self._seen:
+                return False, "C22_NONCE_REPLAY"
+            self._seen.add(identity)
+            return True, None
