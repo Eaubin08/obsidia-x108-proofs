@@ -1,6 +1,6 @@
 # V0.1 C4.2 — Local offline inter-repository code composition
 
-**Status: HARNESS_IMPLEMENTED / ACTUAL_INTERREPO_RUN_REQUIRES_LOCAL_PINNED_CLONES**
+**Status: HARNESS_IMPLEMENTED / LOCAL_PINNED_COMPOSITION_USER_OBSERVED_PASS / NO_LIVE_EXECUTION**
 
 2026-10-08. Base: C4.1 `f08623c28681151703a29c79e3452e45bd323ea0`.
 
@@ -91,6 +91,28 @@ and use the network; the actual C4.2 probe itself is offline. Do not clone
 over pre-existing local folders; use known, clean repos or a new directory.
 Private repo access may require authorized GitHub credentials. The runner
 does not request, receive, or log credentials.
+
+## C4.2.1 standalone import closure (2026-10-08)
+
+The user's first local execution of the four pinned checkouts completed with
+`OFFLINE_CROSSREPO_CONTRACT_COMPOSITION_PASS_NO_LIVE_EXECUTION` only after
+a temporary `PYTHONPATH` override. Observed local report SHA-256:
+`897450d1939dfd85436362014521aba7a614f828f12470590aec7bdec00d79bc`.
+This is a **user-provided local observation**, not a GitHub CI result or
+independent live-runtime attestation. The original checked-out commit was
+`0c5376644746d306328d3c382c6b0a35526868a4`.
+
+C4.2.1 makes the runner resolve `periphery` from its own repository location,
+without relying on the caller's PowerShell current directory or `PYTHONPATH`.
+A regression test executes the validator in an isolated Python child process
+from an unrelated working directory. Existing checkouts at the earlier commit
+still require `git fetch` and an updated clean worktree to use the correction.
+The three external feature SHAs remain unchanged.
+
+**Important:** this fix does not repeat the local four-repository execution,
+activate real Trading/GPS/CSSA integrations, or close the historical global CI
+failures. Re-run the pinned local probe at the new HEAD before claiming
+C4.2.1 closure.
 
 ## Actual CI vs unexecuted work
 
