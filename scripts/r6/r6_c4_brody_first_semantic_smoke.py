@@ -112,6 +112,8 @@ def build_brody_first_semantic_smoke_report(
             "brody_pre_reasoning_role_context": False,
             "brody_effective_role_context_match": False,
             "resolved_roles_not_reopened_as_unknowns": False,
+            "brody_response_unblocked": False,
+            "role_path_passed": False,
             "passed": False,
         }
 
@@ -139,6 +141,10 @@ def build_brody_first_semantic_smoke_report(
         brody = brody_runner(message=raw)
         row["brody_response_source"] = brody.get("response_source")
         row["brody_semantic_role_source"] = brody.get("semantic_role_source")
+        row["brody_response_unblocked"] = (
+            brody.get("response_source")
+            != "PRE_REASONING_UNRESOLVED_SYMBOL"
+        )
 
         pre = brody.get("pre_reasoning_snapshot") or {}
         pre_ctx = pre.get("semantic_role_context")
@@ -176,7 +182,7 @@ def build_brody_first_semantic_smoke_report(
             not bool(resolution_targets & expected_role_terms)
         )
 
-        row["passed"] = bool(
+        row["role_path_passed"] = bool(
             produced.selected_producer == "BRODY_SENS_V1"
             and produced.qwen_attempted is False
             and row["roles_match"]
@@ -184,20 +190,39 @@ def build_brody_first_semantic_smoke_report(
             and row["brody_effective_role_context_match"]
             and row["resolved_roles_not_reopened_as_unknowns"]
         )
+        row["passed"] = bool(
+            row["role_path_passed"]
+            and row["brody_response_unblocked"]
+        )
         evidence.append(row)
 
+    role_passed = sum(
+        1 for row in evidence if row.get("role_path_passed")
+    )
     passed = sum(1 for row in evidence if row.get("passed"))
-    verified = passed == len(PROBES) and qwen_calls == 0
+    role_path_verified = (
+        role_passed == len(PROBES)
+        and qwen_calls == 0
+    )
+    verified = (
+        passed == len(PROBES)
+        and role_path_verified
+    )
+
+    if verified:
+        status = "BRODY_FIRST_SEMANTIC_PATH_VERIFIED"
+    elif role_path_verified:
+        status = "BRODY_FIRST_ROLE_PATH_VERIFIED_RESPONSE_BLOCKED"
+    else:
+        status = "BRODY_FIRST_SEMANTIC_PATH_FAILED_CLOSED"
 
     return {
         "artifact": "r6_c4_brody_first_semantic_smoke",
-        "status": (
-            "BRODY_FIRST_SEMANTIC_PATH_VERIFIED"
-            if verified
-            else "BRODY_FIRST_SEMANTIC_PATH_FAILED_CLOSED"
-        ),
+        "status": status,
         "brody_first_verified": verified,
+        "role_path_verified": role_path_verified,
         "probe_count": len(PROBES),
+        "role_path_passed_probe_count": role_passed,
         "passed_probe_count": passed,
         "qwen_calls": qwen_calls,
         "decision_authority": "KX108_ONLY",
