@@ -54,7 +54,7 @@ def test_r6_c2_brody_valid_wins_without_qwen_call():
     ) == "OBSIDIA"
 
 
-def test_r6_c2_invalid_brody_can_fallback_to_qwen_once():
+def test_r6_c2_invalid_brody_uses_brody_sens_before_qwen():
     called = {"qwen": 0}
 
     def qwen(_raw):
@@ -76,14 +76,14 @@ def test_r6_c2_invalid_brody_can_fallback_to_qwen_once():
     )
 
     assert result.status == "SEMANTIC_ROLE_PROJECTION_RESOLVED"
-    assert result.selected_producer == "QWEN_LOCAL"
+    assert result.selected_producer == "BRODY_SENS_V1"
     assert result.brody_attempted is True
-    assert result.qwen_attempted is True
-    assert called["qwen"] == 1
+    assert result.qwen_attempted is False
+    assert called["qwen"] == 0
     assert any(x.startswith("BRODY:") for x in result.errors)
 
 
-def test_r6_c2_invalid_qwen_output_stays_unresolved():
+def test_r6_c2_invalid_qwen_output_stays_unresolved_when_brody_sens_is_insufficient():
     def qwen(_raw):
         return {
             "success": True,
@@ -97,7 +97,7 @@ def test_r6_c2_invalid_qwen_output_stays_unresolved():
                         "FOCUS": {
                             "status": "RESOLVED",
                             "candidates": [
-                                {"value": "OBSIDIA", "surface": "NOT_IN_INPUT"}
+                                {"value": "UNKNOWN_ENTITY", "surface": "NOT_IN_INPUT"}
                             ],
                         }
                     },
@@ -106,7 +106,7 @@ def test_r6_c2_invalid_qwen_output_stays_unresolved():
         }
 
     result = resolve_semantic_role_projection_v0(
-        raw_utterance="Explique Obsidia.",
+        raw_utterance="Analyse le florvaxium.",
         brody_structured_output=None,
         qwen_available=True,
         qwen_caller=qwen,
@@ -122,7 +122,7 @@ def test_r6_c2_invalid_qwen_output_stays_unresolved():
 
 def test_r6_c2_no_qwen_available_stays_unresolved_without_attempt():
     result = resolve_semantic_role_projection_v0(
-        raw_utterance="Explique Obsidia.",
+        raw_utterance="Analyse le florvaxium.",
         brody_structured_output=None,
         qwen_available=False,
     )
@@ -156,3 +156,36 @@ def test_r6_c2_result_is_non_sovereign():
     assert result.emits_verdict is False
     assert result.memory_write is False
     assert result.kernel_mutation is False
+
+def test_r6_c2_brody_sens_resolves_contrastive_memory_roles_without_qwen():
+    called = {"qwen": 0}
+
+    def qwen(_raw):
+        called["qwen"] += 1
+        raise AssertionError("Qwen must not be called when Brody/SENS resolves")
+
+    first = resolve_semantic_role_projection_v0(
+        raw_utterance="Explique ce que tu sais en mémoire sur Obsidia, et détaille.",
+        qwen_available=True,
+        qwen_caller=qwen,
+    )
+    second = resolve_semantic_role_projection_v0(
+        raw_utterance="Explique Obsidia en utilisant ta mémoire.",
+        qwen_available=True,
+        qwen_caller=qwen,
+    )
+
+    assert first.selected_producer == "BRODY_SENS_V1"
+    assert second.selected_producer == "BRODY_SENS_V1"
+    assert first.interpretation.projection.resolved(
+        SemanticRoleKindV0.FOCUS
+    ) == "MEMORY"
+    assert second.interpretation.projection.resolved(
+        SemanticRoleKindV0.FOCUS
+    ) == "OBSIDIA"
+    assert second.interpretation.projection.resolved(
+        SemanticRoleKindV0.SOURCE_OR_INSTRUMENT
+    ) == "MEMORY"
+    assert first.qwen_attempted is False
+    assert second.qwen_attempted is False
+    assert called["qwen"] == 0
