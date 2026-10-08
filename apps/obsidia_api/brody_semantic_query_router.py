@@ -131,7 +131,7 @@ _TOPIC_ROUTES: list[tuple[list[str], str, str, str, list[str]]] = [
     # sont des mots français courants. L'ordre inverse faisait tomber toute
     # question Lean contenant "boucle" dans OPERATOR_LOOP.
     (
-        ["preuve", "proof", "lean", "tla", "merkle", "os3"],
+        ["preuve formelle", "formal proof", "lean", "tla", "merkle", "os3"],
         "PROOF_QUERY",
         "OS3 preuve Lean TLA Merkle",
         "proof",
@@ -410,6 +410,55 @@ def build_semantic_query(user_message: str) -> dict[str, Any]:
         }
     
     # Try canonical topic routes — match on both accented and accent-folded
+    # R6-D3 GPS/GNSS integrity compound route.
+    # A generic word such as "preuve"/"proof" must not steal a physical-domain
+    # request from GPS/GNSS. Domain + integrity context is required.
+    gps_domain_present = (
+        _trigger_matches("gps", normalized_lower, folded_lower)
+        or _trigger_matches("gnss", normalized_lower, folded_lower)
+    )
+
+    gps_integrity_terms = (
+        "integrite",
+        "integrity",
+        "anomalie",
+        "anomaly",
+        "trajectoire",
+        "trajectory",
+        "position",
+        "positioning",
+        "signal",
+        "rf",
+        "spoofing",
+        "jamming",
+    )
+
+    gps_context_present = any(
+        term in folded_lower
+        for term in gps_integrity_terms
+    )
+
+    if gps_domain_present and gps_context_present:
+        return {
+            "topic": "GPS_DEFENSE_INTEGRITY",
+            "semantic_query": (
+                "GPS GNSS integrity anomaly observed evidence causality"
+            ),
+            "primary_query": "gps",
+            "fallback_queries": [
+                "gnss",
+                "integrity",
+                "anomaly",
+                "evidence",
+                "causality",
+            ],
+            "original_message": user_message,
+            "normalized_message": normalized,
+            "is_canonical": True,
+            "route": "COMPOUND_MATCH",
+            "matched_trigger": "gps_integrity_context",
+        }
+
     for triggers, topic, query, primary, fallbacks in _TOPIC_ROUTES:
         matched_trigger = next(
             (
