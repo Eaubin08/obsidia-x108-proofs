@@ -28,3 +28,21 @@ def test_expired_and_wrong_issuer():
 def test_wrong_key_and_missing_key():
     assert check(sample(), verifier_secret=bytes(range(1,33)))[0] is False
     assert check(sample(), verifier_secret=b"")[0] is False
+
+
+def test_fixture_nonce_once_then_replay_denied():
+    from periphery.enterprise_scoped_delegation_proof_v0 import FixtureNonceReplayGuardV0
+    g = FixtureNonceReplayGuardV0()
+    args = dict(trusted_issuer_id='fixture-issuer', verifier_secret=KEY, organization_id='org-a', principal_id='human-a', delegate_id='delegate-a', connector_id='calendar', capability_id='CALENDAR.EVENT.CREATE', action_request_hash='a'*64, now=NOW)
+    p = sample()
+    assert g.verify_once(p, **args) == (True, None)
+    assert g.verify_once(p, **args) == (False, 'C22_NONCE_REPLAY')
+
+
+def test_invalid_proof_does_not_reserve_nonce():
+    from periphery.enterprise_scoped_delegation_proof_v0 import FixtureNonceReplayGuardV0
+    g = FixtureNonceReplayGuardV0()
+    args = dict(trusted_issuer_id='fixture-issuer', verifier_secret=KEY, organization_id='org-a', principal_id='human-a', delegate_id='delegate-a', connector_id='calendar', capability_id='CALENDAR.EVENT.CREATE', action_request_hash='a'*64, now=NOW)
+    p = sample()
+    assert g.verify_once(replace(p, signature='0'*64), **args)[0] is False
+    assert g.verify_once(p, **args) == (True, None)
