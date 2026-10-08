@@ -30,6 +30,7 @@ from periphery.brody_runtime.f32_full_runtime_integration_readonly_packet import
 )
 
 ADAPTER_SCHEMA_VERSION = "OBSIDURE_MISSION_SEMANTIC_BRIDGE_V1"
+R12_B2_RUNTIME_SCHEMA_VERSION = "OBSIDURE_REAL_BRODY_LOCAL_RUNTIME_BRIDGE_V1"
 STATUS_READY = "R12_MISSION_CANDIDATE_READY_FOR_R11_B2"
 STATUS_HELD = "R12_MISSION_CANDIDATE_HELD"
 
@@ -363,11 +364,213 @@ def build_brody_obsidure_mission_candidate(
     }
 
 
+def run_real_brody_local_runtime_bridge(
+    *,
+    human_request: str,
+    session_id: str = "r12-b2",
+    language: str = "fr",
+) -> dict[str, Any]:
+    """Invoke the configured local Brody runtime as readonly mission evidence.
+
+    This uses the existing in-process Brody runtime. It never enables provider
+    access, manual apply, memory candidates, KX108, execution, or memory writes.
+    """
+
+    from apps.obsidia_api.brody_full_runtime_orchestrator import run_full_brody_runtime
+
+    try:
+        runtime = run_full_brody_runtime(
+            message=human_request,
+            session_id=session_id,
+            language=language,
+            allow_provider=False,
+            allow_memory_candidate=False,
+            allow_manual_apply=False,
+        )
+    except Exception as exc:
+        return {
+            "adapter_schema_version": R12_B2_RUNTIME_SCHEMA_VERSION,
+            "status": STATUS_HELD,
+            "reason": "BRODY_RUNTIME_EXCEPTION",
+            "error_type": type(exc).__name__,
+            "error": str(exc)[:240],
+            "runtime_available": False,
+            "model_call_used": False,
+            "provider_status": "NOT_CALLED",
+            "decision_authority": "KX108_ONLY",
+            "brody_authority": "NONE",
+            "executor_invoked": False,
+            "memory_write": False,
+            "graphiti_write": False,
+        }
+
+    if not isinstance(runtime, Mapping):
+        return {
+            "adapter_schema_version": R12_B2_RUNTIME_SCHEMA_VERSION,
+            "status": STATUS_HELD,
+            "reason": "BRODY_RUNTIME_NOT_DICT",
+            "runtime_available": False,
+            "model_call_used": False,
+            "provider_status": "UNKNOWN",
+            "decision_authority": "KX108_ONLY",
+            "brody_authority": "NONE",
+            "executor_invoked": False,
+            "memory_write": False,
+            "graphiti_write": False,
+        }
+
+    required_false = (
+        "allowed_to_decide",
+        "allowed_to_act",
+        "emits_act",
+        "emits_verdict",
+        "memory_write",
+        "graphiti_write",
+        "neo4j_write",
+        "kernel_mutation",
+        "x108_mutation",
+        "real_action",
+    )
+    violations = []
+    if runtime.get("readonly") is not True:
+        violations.append("READONLY_REQUIRED")
+    if runtime.get("decision_authority") != "KX108_ONLY":
+        violations.append("DECISION_AUTHORITY_MISMATCH")
+    for key in required_false:
+        if runtime.get(key) is not False:
+            violations.append(key.upper() + "_MUST_BE_FALSE")
+    provider_status = str(runtime.get("provider_status") or "UNKNOWN")
+    if provider_status not in {"NOT_REQUESTED", "DISABLED_BY_POLICY"}:
+        violations.append("UNSAFE_PROVIDER_STATUS:" + provider_status)
+
+    response = str(runtime.get("response_md") or runtime.get("response") or "").strip()
+    source = str(runtime.get("source") or "").strip()
+    response_hash = _sha256_text(response) if response else None
+
+    evidence = {
+        "adapter_schema_version": R12_B2_RUNTIME_SCHEMA_VERSION,
+        "status": STATUS_HELD if violations else "R12_REAL_BRODY_RUNTIME_READY",
+        "reason": "|".join(violations) if violations else None,
+        "runtime_available": not violations,
+        "runtime_source": source or None,
+        "runtime_chain": dict(runtime.get("runtime_chain") or {}),
+        "model_id": "BRODY_FULL_RUNTIME_ORCHESTRATOR_V5B_READONLY",
+        "model_call_used": False,
+        "provider_status": provider_status,
+        "response_hash": response_hash,
+        "response_chars": len(response),
+        "response_preview": response[:300],
+        "graphiti_status": runtime.get("graphiti_status"),
+        "graphiti_blocker": runtime.get("graphiti_blocker"),
+        "context_packet": dict(runtime.get("context_packet") or {}),
+        "pre_reasoning_snapshot_present": bool(runtime.get("pre_reasoning_snapshot")),
+        "boundary_ok": not violations,
+        "readonly": runtime.get("readonly") is True,
+        "decision_authority": "KX108_ONLY",
+        "brody_authority": "NONE",
+        "executor_invoked": False,
+        "kx108_called": False,
+        "approval_created": False,
+        "memory_write": False,
+        "graphiti_write": False,
+        "legacy_direct_apply": False,
+    }
+    return evidence
+
+
+def build_real_brody_obsidure_mission_candidate(
+    *,
+    human_request: str,
+    repository_context: Mapping[str, Any],
+    proposed_scope: Mapping[str, Any],
+    human_mandate: Mapping[str, Any] | None = None,
+    explicit_references: Mapping[str, Mapping[str, Any]] | None = None,
+    provider_config: Mapping[str, Any] | None = None,
+    session_id: str = "r12-b2",
+    language: str = "fr",
+) -> dict[str, Any]:
+    """Build an R11-B2 MissionCandidate from real local Brody evidence.
+
+    Brody may contribute interpretation evidence and provenance. The explicit
+    mission contract and human mandate still define authority and scope.
+    """
+
+    brody_runtime = run_real_brody_local_runtime_bridge(
+        human_request=human_request,
+        session_id=session_id,
+        language=language,
+    )
+    if brody_runtime.get("status") != "R12_REAL_BRODY_RUNTIME_READY":
+        out = _hold(str(brody_runtime.get("reason") or "BRODY_RUNTIME_UNAVAILABLE"))
+        out["brody_runtime_evidence"] = brody_runtime
+        return out
+
+    context_packet = dict(brody_runtime.get("context_packet") or {})
+    bridge = build_brody_obsidure_mission_candidate(
+        human_request=human_request,
+        repository_context=repository_context,
+        proposed_scope=proposed_scope,
+        human_mandate=human_mandate,
+        explicit_references=explicit_references,
+        brody_context_packet={
+            "packet_id": context_packet.get("packet_id"),
+            "integration_status": "REAL_BRODY_RUNTIME_ATTACHED",
+            "decision_authority": "KX108_ONLY",
+            "readonly": True,
+            "emits_act": False,
+            "emits_verdict": False,
+            "memory_write": False,
+            "graphiti_write": False,
+        },
+        provider_config=provider_config,
+    )
+    bridge["adapter_schema_version"] = R12_B2_RUNTIME_SCHEMA_VERSION
+    bridge["brody_runtime_evidence"] = brody_runtime
+    bridge["brody_runtime_connected"] = True
+    bridge["real_local_model_verified"] = False
+    bridge["real_brody_runtime_verified"] = True
+    bridge["mission_prepare_only"] = True
+    bridge["executor_invoked"] = False
+    bridge["kx108_called"] = False
+    bridge["approval_created"] = False
+    bridge["memory_write"] = False
+    bridge["graphiti_write"] = False
+    bridge["provenance"] = {
+        **dict(bridge.get("provenance") or {}),
+        "source": R12_B2_RUNTIME_SCHEMA_VERSION,
+        "brody_runtime_source": brody_runtime.get("runtime_source"),
+        "brody_response_hash": brody_runtime.get("response_hash"),
+    }
+    return bridge
+
+
+def _hold(reason: str, **extra: Any) -> dict[str, Any]:
+    return {
+        "adapter_schema_version": R12_B2_RUNTIME_SCHEMA_VERSION,
+        "status": STATUS_HELD,
+        "reason": reason,
+        "decision_authority": "KX108_ONLY",
+        "brody_authority": "NONE",
+        "sens_authority": "NONE",
+        "obsidure_authority": "NONE",
+        "approval_created": False,
+        "kx108_called": False,
+        "executor_invoked": False,
+        "memory_write": False,
+        "graphiti_write": False,
+        "legacy_direct_apply": False,
+        **extra,
+    }
+
+
 __all__ = [
     "ADAPTER_SCHEMA_VERSION",
+    "R12_B2_RUNTIME_SCHEMA_VERSION",
     "STATUS_HELD",
     "STATUS_READY",
+    "build_real_brody_obsidure_mission_candidate",
     "build_brody_obsidure_mission_candidate",
     "build_brody_readonly_context_packet",
     "build_mission_semantic_context",
+    "run_real_brody_local_runtime_bridge",
 ]
