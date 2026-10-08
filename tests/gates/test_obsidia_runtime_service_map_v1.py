@@ -24,11 +24,9 @@ _REG = cli.load_registry(cli.REGISTRY_PATH)
 
 _EXPECTED_SERVICES = {
     "api_health", "api_readiness", "api_status",
-    "kernel_3001", "graphiti_8011",
-    "neo4j_bolt_7688", "neo4j_browser_7475",
-    "ui_5173", "sigma_domains", "sigma_evaluate",
+    "kernel_3001", "sigma_domains", "sigma_evaluate",
 }
-_EXPECTED_LOCAL = {"gates", "lean_manifest", "oie_reports", "patch_proposals", "corpus"}
+_EXPECTED_LOCAL = {"native_memory", "gates", "lean_manifest", "oie_reports", "patch_proposals", "corpus"}
 
 
 def _a(q: str) -> dict:
@@ -244,17 +242,40 @@ def test_runtime_local_checks_include_patch_proposals() -> None:
 
 
 # ---------------------------------------------------------------------------
-# 8. obsidia_registry.yaml non touché dans ce lot
+# 8. Verite runtime actuelle
 # ---------------------------------------------------------------------------
-def test_registry_yaml_not_touched_in_this_lot() -> None:
-    """Vérification statique : le code runtime ne lit pas obsidia_registry.yaml
-    autrement que via load_registry (appel standard inchange)."""
-    src = (_CLI_DIR / "obsidia_cli.py").read_text(encoding="utf-8")
-    idx_start = src.find("def build_runtime_service_map_v1")
-    idx_end = src.find("\ndef format_runtime_service_map_v1", idx_start)
-    block = src[idx_start:idx_end] if idx_end != -1 else src[idx_start:idx_start + 3000]
-    assert "obsidia_registry.yaml" not in block, (
-        "build_runtime_service_map_v1 ne doit pas lire obsidia_registry.yaml directement")
+def test_legacy_services_are_not_active_runtime_dependencies() -> None:
+    declared = set(cli.RUNTIME_SERVICE_MAP_V1.keys())
+    for legacy in ("graphiti_8011", "neo4j_bolt_7688", "neo4j_browser_7475", "ui_5173"):
+        assert legacy not in declared
+
+
+def test_native_memory_is_an_active_local_runtime_check() -> None:
+    result = cli.build_runtime_service_map_v1()
+    assert "native_memory" in result["local"]
+    assert result["local"]["native_memory"]["label"] == "NATIVE_MEMORY"
+
+
+def test_legacy_services_are_reported_as_historical_only() -> None:
+    result = cli.build_runtime_service_map_v1()
+    assert result["legacy"]["graphiti_8011"] == "HISTORICAL_NOT_ACTIVE"
+    assert result["legacy"]["neo4j_bolt_7688"] == "HISTORICAL_NOT_ACTIVE"
+    assert result["legacy"]["neo4j_browser_7475"] == "HISTORICAL_NOT_ACTIVE"
+    assert result["legacy"]["ui_5173"] == "LEGACY_SURFACE_NOT_CURRENT_MONDE"
+
+
+def test_kernel_probe_is_socket_only_not_fake_health_get() -> None:
+    spec = cli.RUNTIME_SERVICE_MAP_V1["kernel_3001"]
+    assert spec["kind"] == "socket"
+    assert spec["not_confirmed"] is True
+    assert "url" not in spec
+
+
+def test_sigma_uses_current_f63_readonly_routes() -> None:
+    assert cli.RUNTIME_SERVICE_MAP_V1["sigma_domains"]["url"].endswith(
+        "/api/periphery/monitoring/sigma/domains")
+    assert cli.RUNTIME_SERVICE_MAP_V1["sigma_evaluate"]["url"].endswith(
+        "/api/periphery/monitoring/sigma/evaluate")
 
 
 # ---------------------------------------------------------------------------
