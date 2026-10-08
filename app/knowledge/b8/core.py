@@ -186,7 +186,7 @@ class SupersessionTransitionBundle:
 
 @dataclass(frozen=True)
 class SlotSnapshot:
-    """One canonical slot snapshot: latest record per claim, claim objects, applied request results (§5.2)."""
+    """One canonical slot snapshot: record history (current state = unique max record_version), claims, applied results."""
     slot_id: str
     slot_revision: int
     records: tuple
@@ -209,16 +209,31 @@ class TransitionResult:
 
 # ---------------------------------------------------------------- gate context
 
+def current_records(records) -> tuple[dict, frozenset]:
+    """The single canonical current-state selector (§10 LATEST_EPISTEMIC_STATE).
+
+    Current record of a claim = the unique record with maximal record_version; history is expected and kept.
+    Two distinct records at the maximal version make the history ambiguous: the claim is reported, never
+    resolved by input order, recorded_at or record id. Returns ({claim_id: record}, ambiguous claim ids).
+    """
+    tops: dict = {}
+    for r in records:
+        best = tops.get(r.claim_id)
+        if best is None or r.record_version > best[0].record_version:
+            tops[r.claim_id] = [r]
+        elif r.record_version == best[0].record_version and r not in best:
+            best.append(r)
+    current = {cid: recs[0] for cid, recs in tops.items() if len(recs) == 1}
+    return current, frozenset(cid for cid, recs in tops.items() if len(recs) > 1)
+
+
 class _Context:
     """Immutable read-only view of the pre-transition inputs (built once, never written back)."""
 
     def __init__(self, snapshot, request, artifacts, trusted):
         self.snapshot, self.request, self.trusted = snapshot, request, frozenset(trusted)
         self.claims = {c.claim_id: c for c in snapshot.claims}
-        self.latest = {}
-        for r in snapshot.records:
-            self.latest.setdefault(r.claim_id, []).append(r)
-        self.latest = {k: v[0] for k, v in self.latest.items() if len(v) == 1}
+        self.latest, self.ambiguous = current_records(snapshot.records)
         self.record = self.latest.get(request.claim_id)
         supplied = {}
         for a in artifacts:
@@ -470,9 +485,14 @@ def evaluate_transition(snapshot: SlotSnapshot, request: TransitionRequest, *, r
         reasons.add(_R.reason_missing)
     if request.slot_id != snapshot.slot_id:
         reasons.add(_R.slot_mismatch)
+    if ctx.ambiguous:                                 # ambiguous history: fail closed, no hidden tie-break
+        reasons.add(_R.malformed_object)
     if request.expected_state is None:                # T1 compare-and-set: the claim must not exist yet
-        stale = (request.claim_id in ctx.latest or request.expected_record_version != 0
+        stale = (request.claim_id in ctx.latest or request.claim_id in ctx.ambiguous
+                 or request.expected_record_version != 0
                  or (ctx.subject is not None and request.expected_claim_version != ctx.subject.claim_version))
+    elif request.claim_id in ctx.ambiguous:           # subject version guard not evaluable
+        stale = False
     else:
         stale = (record is None or request.expected_claim_version != record.claim_version
                  or request.expected_state is not record.state
@@ -518,9 +538,9 @@ def evaluate_transition(snapshot: SlotSnapshot, request: TransitionRequest, *, r
             new_transition_receipt=new_receipt, supersedes_link=(record.claim_id, old.claim_id),
             superseded_by_link=(old.claim_id, record.claim_id), recorded_at=recorded_at,
             gate_contract_version=GATE_CONTRACT_VERSION)
-        swap = {record.claim_id: new_rec, old.claim_id: old_rec}
         after = replace(snapshot, slot_revision=snapshot.slot_revision + 1,
-                        records=tuple(swap.get(r.claim_id, r) for r in snapshot.records),
+                        records=tuple(new_rec if r is record else old_rec if r is old else r
+                                      for r in snapshot.records),
                         applied_requests={**snapshot.applied_requests, request_id: bundle})
         return TransitionResult(TransitionVerdict.APPLIED, new_receipt, after, bundle)
 
