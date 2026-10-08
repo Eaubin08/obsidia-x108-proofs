@@ -105,11 +105,23 @@ def build_report() -> dict[str, Any]:
 
     sigma = joined.get("sigma_domain_packet") or {}
     ticket = joined.get("decision_ticket_dry_run") or {}
+    pre = brody.get("pre_reasoning_snapshot") or {}
+    resolution_targets = (
+        (pre.get("reasoning_directive") or {}).get(
+            "resolution_targets",
+            [],
+        )
+        or []
+    )
 
     blockers = set(sigma.get("unknowns") or [])
     forbidden = set(sigma.get("forbidden_claims") or [])
 
     checks = {
+        "brody_pre_reasoning_unblocked": (
+            brody.get("response_source") == "REAL_BRODY_RUNTIME"
+            and resolution_targets == []
+        ),
         "p4_frozen_classifier_preserved": (
             sigma.get("p4_classifier_status")
             == "FROZEN_DEVELOPMENT_CLASSIFIER_AWAITING_BLIND_VALIDATION"
@@ -178,6 +190,7 @@ def build_report() -> dict[str, Any]:
         ),
         "verified": verified,
         "brody_response_source": brody.get("response_source"),
+        "brody_remaining_resolution_targets": resolution_targets,
         "cognitive_join_status": joined.get("status"),
         "cognitive_join_completeness": joined.get("completeness"),
         "p4_classification": sigma.get("p4_classification"),
