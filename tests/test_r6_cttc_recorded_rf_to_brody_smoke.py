@@ -39,8 +39,10 @@ def test_recorded_rf_smoke_contract(monkeypatch):
                 "W3_BRODY": "READY:REAL_RUNTIME_ADAPTER",
             },
             "kx108_admission": "DRY_RUN",
+            "upstream_x108_gate_constraint": envelope["x108_gate"],
             "decision_ticket_dry_run": {
-                "decision": "ALLOW_CONTEXT_ONLY",
+                "decision": "HOLD",
+                "x108_gate_status": "X108_DRY_RUN_UPSTREAM_HOLD",
                 "dry_run": True,
                 "decision_authority": "KX108_ONLY",
                 "emits_act": False,
@@ -64,3 +66,5 @@ def test_recorded_rf_smoke_contract(monkeypatch):
     assert report["checks"]["evidence_envelope_preserved_exactly"] is True
     assert report["checks"]["sigma_envelope_hash_present"] is True
     assert report["checks"]["no_decision_promotion"] is True
+    assert report["checks"]["recorded_gate_preserved_in_cognitive_ticket"] is True
+    assert report["cognitive_ticket_decision"] == "HOLD"
