@@ -16,6 +16,7 @@ from periphery.native_ops.common_v0 import (  # noqa: E402
     ABSENT_STATE_HASH,
     NativeEntityStoreV0,
     canonical_hash,
+    filesystem_component_v0,
 )
 from periphery.native_ops.crm_native_v0 import (  # noqa: E402
     DOMAIN_ID as CRM_DOMAIN,
@@ -72,7 +73,7 @@ def governed_apply_task(
         approved_by="HUMAN:TEST_OPERATOR",
         approval_reference=f"review:{mutation.mutation_id}",
     )
-    root = tmp_path / "governance" / mutation.mutation_id
+    root = tmp_path / "governance" / filesystem_component_v0(mutation.mutation_id)
     pre = run_world_action_pre_execution_v0(
         request=request,
         human_approval=approval,
@@ -110,7 +111,7 @@ def governed_apply_crm(
         approved_by="HUMAN:TEST_OPERATOR",
         approval_reference=f"review:{mutation.mutation_id}",
     )
-    root = tmp_path / "governance" / mutation.mutation_id
+    root = tmp_path / "governance" / filesystem_component_v0(mutation.mutation_id)
     pre = run_world_action_pre_execution_v0(
         request=request,
         human_approval=approval,
