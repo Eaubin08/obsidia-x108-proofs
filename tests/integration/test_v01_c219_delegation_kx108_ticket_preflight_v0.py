@@ -18,7 +18,7 @@ def test_missing_delegation_blocks_without_egress():
 def test_untrusted_partial_delegation_blocks():
     out=invoke(delegation_inputs={})
     assert out["status"]=="BLOCK"
-    assert out["reason"].startswith("C219_DELEGATION_REJECTED:")
+    assert out["reason"]=="C219_DELEGATION_INPUTS_INCOMPLETE"
     assert out["egress_allowed"] is False
 
 def test_forged_delegate_input_cannot_turn_into_permission():
