@@ -44,6 +44,8 @@ def test_c4_canonical_brody_first_path_never_calls_qwen():
 
     assert report["status"] == "BRODY_FIRST_SEMANTIC_PATH_VERIFIED"
     assert report["brody_first_verified"] is True
+    assert report["role_path_verified"] is True
+    assert report["role_path_passed_probe_count"] == 2
     assert report["passed_probe_count"] == 2
     assert report["qwen_calls"] == 0
     assert all(
@@ -76,4 +78,35 @@ def test_c4_fails_closed_if_brody_does_not_carry_pre_reasoning_context():
 
     assert report["status"] == "BRODY_FIRST_SEMANTIC_PATH_FAILED_CLOSED"
     assert report["brody_first_verified"] is False
+    assert report["passed_probe_count"] == 0
+
+
+def test_c4_distinguishes_role_path_from_response_block():
+    def blocked_brody(message):
+        projection = build_brody_semantic_focus_projection_v1(message)
+        ctx = projection.to_brody_context()
+        return {
+            "response_source": "PRE_REASONING_UNRESOLVED_SYMBOL",
+            "semantic_role_source": "BRODY_SENS_V1",
+            "semantic_role_context": ctx,
+            "pre_reasoning_snapshot": {
+                "semantic_role_context": ctx,
+                "reasoning_directive": {
+                    "resolution_required": True,
+                    "resolution_targets": ["autre_inconnu"],
+                },
+            },
+        }
+
+    report = MODULE.build_brody_first_semantic_smoke_report(
+        brody_runner=blocked_brody,
+    )
+
+    assert (
+        report["status"]
+        == "BRODY_FIRST_ROLE_PATH_VERIFIED_RESPONSE_BLOCKED"
+    )
+    assert report["role_path_verified"] is True
+    assert report["brody_first_verified"] is False
+    assert report["role_path_passed_probe_count"] == 2
     assert report["passed_probe_count"] == 0
