@@ -12,6 +12,16 @@ class AtomicOfflineReservationJournalV0(OfflineReservationLifecycleV0):
                 event_kind TEXT NOT NULL, previous_hash TEXT NOT NULL,
                 event_hash TEXT NOT NULL)""")
 
+    def reserve_fixture(self, *, scope, generation, nonce, idempotency_key):
+        """Route inherited write API through atomic journal."""
+        return self.reserve_logged_fixture(scope=scope, generation=generation,
+                                           nonce=nonce, idempotency_key=idempotency_key)
+
+    def close_fixture(self, *, idempotency_key, disposition):
+        """Route inherited write API through atomic journal."""
+        return self.close_logged_fixture(idempotency_key=idempotency_key,
+                                         disposition=disposition)
+
     @staticmethod
     def _append(db,key,kind):
         last=db.execute("SELECT sequence,event_hash FROM transition_events ORDER BY sequence DESC LIMIT 1").fetchone()
@@ -34,6 +44,8 @@ class AtomicOfflineReservationJournalV0(OfflineReservationLifecycleV0):
                 db.execute("INSERT INTO reservations VALUES(?,?,?,?,?,?,?,?)",
                     (idempotency_key,*scope,generation,nonce,"RESERVED_NO_EXECUTION"))
                 self._append(db,idempotency_key,"RESERVED_NO_EXECUTION")
+            except __import__('sqlite3').IntegrityError:
+                db.rollback();return 'BLOCK:C228_REPLAY_OR_DUPLICATE'
             except Exception:
                 db.rollback();raise
             db.commit()
