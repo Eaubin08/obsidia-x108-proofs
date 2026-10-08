@@ -1,0 +1,14 @@
+name: c246-postcommit-worker-crash
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pytest cryptography
+      - run: python -m pytest -q tests/integration/test_v01_c246_postcommit_worker_crash_v0.py tests/integration/test_v01_c245_ipc_ambiguous_commit_recovery_v0.py
