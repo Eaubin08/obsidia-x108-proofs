@@ -19,6 +19,12 @@ import sys
 import tempfile
 from typing import Any
 
+# Direct script execution (including Windows PowerShell) must resolve the core
+# package independently of the caller's current directory or PYTHONPATH.
+CORE_PACKAGE_ROOT = str(Path(__file__).resolve().parents[1])
+if CORE_PACKAGE_ROOT not in sys.path:
+    sys.path.insert(0, CORE_PACKAGE_ROOT)
+
 EXPECTED_EXTERNAL = {
     "gps": ("Eaubin08/obsidia-gps-defense-",
             "d1221fce6914274f7b0c445a829739367b0c6abb"),
