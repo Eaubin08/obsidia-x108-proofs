@@ -37,4 +37,5 @@ def test_inherited_close_is_journaled(tmp_path):
 
 def test_duplicate_never_adds_event(tmp_path):
     x=make(tmp_path)
-    import sqlite3\n    import pytest\n    with pytest.raises(sqlite3.IntegrityError):\n        x.reserve_logged_fixture(scope=SCOPE,generation=0,nonce=NONCE,idempotency_key=KEY)\n    assert x.verify_logged_fixture()=="BLOCK:C228_LOCAL_JOURNAL_CONSISTENT_NOT_ATTESTED"
+    assert x.reserve_logged_fixture(scope=SCOPE,generation=0,nonce=NONCE,idempotency_key=KEY)=="BLOCK:C228_REPLAY_OR_DUPLICATE"
+    assert x.verify_logged_fixture()=="BLOCK:C228_LOCAL_JOURNAL_CONSISTENT_NOT_ATTESTED"
