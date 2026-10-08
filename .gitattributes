@@ -1,3 +1,28 @@
-# CRLF natif Windows — désactive le signalement du \r comme trailing whitespace
-*.py whitespace=cr-at-eol
-*.ps1 whitespace=cr-at-eol
+# Repository canonical text files: LF on Windows and Linux, regardless of core.autocrlf.
+# Hash-sensitive source/doc manifests read working-tree bytes; do not silently rewrite proofs.
+*.py text eol=lf whitespace=cr-at-eol
+*.json text eol=lf
+*.jsonl text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+*.txt text eol=lf
+
+# Windows command files require CRLF where cmd.exe / batch syntax is used.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Binary files must never undergo text normalization.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.sqlite binary
+*.db binary
+
+# PowerShell scripts accept LF; retain whitespace compatibility.
+*.ps1 text eol=lf whitespace=cr-at-eol
