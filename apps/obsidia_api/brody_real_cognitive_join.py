@@ -2,6 +2,7 @@
 
 import dataclasses
 import hashlib
+import json
 from datetime import datetime, timezone
 from typing import Any
 
@@ -123,6 +124,58 @@ def _normalize_domain(raw: Any) -> str | None:
     return value or None
 
 
+def _validate_precomputed_sigma_domain(
+    envelope: dict[str, Any],
+) -> str:
+    if not isinstance(envelope, dict):
+        raise TypeError("PRECOMPUTED_SIGMA_DOMAIN_ENVELOPE_REQUIRED")
+
+    domain = _normalize_domain(envelope.get("domain"))
+    if domain not in SUPPORTED_SIGMA_DOMAINS:
+        raise ValueError(
+            "PRECOMPUTED_SIGMA_UNSUPPORTED_DOMAIN:"
+            + str(domain or "NONE")
+        )
+
+    required = {
+        "readonly": True,
+        "decision_authority": "KX108_ONLY",
+        "allowed_to_decide": False,
+        "emits_act": False,
+        "emits_verdict": False,
+        "memory_write": False,
+        "kernel_mutation": False,
+        "x108_mutation": False,
+    }
+    for key, expected in required.items():
+        if envelope.get(key) != expected:
+            raise ValueError(
+                f"PRECOMPUTED_SIGMA_BOUNDARY_VIOLATION:{key}"
+            )
+
+    if not (
+        envelope.get("domain_sigma_envelope") is True
+        or envelope.get("mode") == "READONLY_DOMAIN_SIGMA_ENVELOPE"
+    ):
+        raise ValueError(
+            "PRECOMPUTED_SIGMA_NOT_READONLY_DOMAIN_ENVELOPE"
+        )
+
+    return domain
+
+
+def _canonical_sha256(value: dict[str, Any]) -> str:
+    return hashlib.sha256(
+        json.dumps(
+            value,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+            default=str,
+        ).encode("utf-8")
+    ).hexdigest()
+
+
 def _extract_activations(wrapper: dict[str, Any]) -> list[float]:
     packet = wrapper.get("tree_signal_packet", wrapper)
     if not isinstance(packet, dict):
@@ -212,6 +265,7 @@ def run_real_cognitive_join(
     precomputed_tree_wrapper: dict[str, Any] | None = None,
     precomputed_brody_runtime: dict[str, Any] | None = None,
     precomputed_memory_chain: dict[str, Any] | None = None,
+    precomputed_domain_sigma_envelope: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
 
     signal_id = _signal_id(message, session_id)
@@ -369,23 +423,116 @@ def run_real_cognitive_join(
         components["TREE_34D_SHAZAM_MEMORY_WORLD"] = errors[-1]
 
     # --------------------------------------------------------
-    # 6 — Sigma only when a real supported domain was detected.
+    # 6 — Sigma readonly domain evidence.
+    #
+    # Canonical defense bridge rule:
+    # - a precomputed REAL/recorded/live GPS Sigma envelope may be supplied;
+    # - Brody never fabricates or mutates that envelope;
+    # - domain mismatch fails closed;
+    # - absent precomputed evidence keeps the historical readonly evaluator.
     # --------------------------------------------------------
-    domain = _normalize_domain(micro.get("domain_detected"))
+    detected_domain = _normalize_domain(
+        micro.get("domain_detected")
+    )
+    domain = detected_domain
     sigma_result: dict[str, Any] | None = None
     sigma_signal = None
+    sigma_domain_packet_source = "NONE"
+    sigma_domain_packet_sha256 = None
 
-    if domain is None:
+    if isinstance(precomputed_domain_sigma_envelope, dict):
+        try:
+            precomputed_domain = _validate_precomputed_sigma_domain(
+                precomputed_domain_sigma_envelope
+            )
+
+            if (
+                detected_domain is not None
+                and detected_domain != precomputed_domain
+            ):
+                raise ValueError(
+                    "PRECOMPUTED_SIGMA_DOMAIN_MISMATCH:"
+                    f"detected={detected_domain}:"
+                    f"provided={precomputed_domain}"
+                )
+
+            domain = precomputed_domain
+            sigma_result = dict(
+                precomputed_domain_sigma_envelope
+            )
+            sigma_domain_packet_source = "PRECOMPUTED_READONLY"
+            sigma_domain_packet_sha256 = _canonical_sha256(
+                sigma_result
+            )
+
+            contradictions = (
+                list(sigma_result.get("contradictions", []))
+                if isinstance(
+                    sigma_result.get("contradictions", []),
+                    list,
+                )
+                else []
+            )
+            missing_context = (
+                list(sigma_result.get("unknowns", []))
+                if isinstance(
+                    sigma_result.get("unknowns", []),
+                    list,
+                )
+                else []
+            )
+
+            sigma_signal = build_sigma_readonly_signal(
+                signal_id=(
+                    f"{signal_id}:sigma:{domain}:"
+                    f"{sigma_domain_packet_sha256[:16]}"
+                ),
+                contradictions=contradictions,
+                proof_status=str(
+                    sigma_result.get("proof_status")
+                    or "PRECOMPUTED_DOMAIN_SIGMA_READONLY"
+                ),
+                missing_context=missing_context,
+            )
+            components["SIGMA"] = (
+                f"READY:PRECOMPUTED_READONLY:{domain}"
+            )
+
+        except Exception as exc:
+            errors.append(
+                _error(
+                    "SIGMA_PRECOMPUTED",
+                    exc,
+                )
+            )
+            components["SIGMA"] = errors[-1]
+            return _blocked_receipt(
+                signal_id=signal_id,
+                components=components,
+                errors=errors,
+                stage="SIGMA_PRECOMPUTED",
+            )
+
+    elif domain is None:
         components["SIGMA"] = (
             "SKIPPED_NOT_AVAILABLE:DOMAIN_NOT_DETECTED"
         )
+
     elif domain not in SUPPORTED_SIGMA_DOMAINS:
         components["SIGMA"] = (
             f"SKIPPED_NOT_AVAILABLE:UNSUPPORTED_DOMAIN:{domain}"
         )
+
     else:
         try:
-            sigma_result = evaluate_sigma_domain(domain, None)
+            sigma_result = evaluate_sigma_domain(
+                domain,
+                None,
+            )
+            sigma_domain_packet_source = "DERIVED_NOW_READONLY"
+            sigma_domain_packet_sha256 = _canonical_sha256(
+                sigma_result
+            )
 
             contradictions = (
                 list(sigma_result.get("contradictions", []))
@@ -406,7 +553,10 @@ def run_real_cognitive_join(
             )
 
             sigma_signal = build_sigma_readonly_signal(
-                signal_id=f"{signal_id}:sigma:{domain}",
+                signal_id=(
+                    f"{signal_id}:sigma:{domain}:"
+                    f"{sigma_domain_packet_sha256[:16]}"
+                ),
                 contradictions=contradictions,
                 proof_status=str(
                     sigma_result.get("proof_status")
@@ -721,11 +871,30 @@ def run_real_cognitive_join(
         micro.get("hold_required", False)
     )
 
+    upstream_x108_gate_constraint = None
+    upstream_x108_gate_evidence_ref = None
+
+    if (
+        sigma_domain_packet_source == "PRECOMPUTED_READONLY"
+        and isinstance(sigma_result, dict)
+    ):
+        observed_gate = str(
+            sigma_result.get("x108_gate") or ""
+        ).strip().upper()
+        if observed_gate in {"ALLOW", "HOLD", "BLOCK"}:
+            upstream_x108_gate_constraint = observed_gate
+            upstream_x108_gate_evidence_ref = (
+                "sigma-envelope-sha256:"
+                + str(sigma_domain_packet_sha256 or "UNKNOWN")
+            )
+
     try:
         ticket = admit_cognitive_context(
             v2,
             signal_id,
             critical_action_requested=critical_action_requested,
+            upstream_gate_constraint=upstream_x108_gate_constraint,
+            upstream_gate_evidence_ref=upstream_x108_gate_evidence_ref,
         )
         components["W2_X108_ADMISSION"] = "READY:DRY_RUN"
 
@@ -798,6 +967,12 @@ def run_real_cognitive_join(
         ),
 
         "sigma_domain_packet": sigma_result,
+        "sigma_domain_packet_source": (
+            sigma_domain_packet_source
+        ),
+        "sigma_domain_packet_sha256": (
+            sigma_domain_packet_sha256
+        ),
         "sigma_readonly_signal": (
             _asdict(sigma_signal)
             if sigma_signal is not None
@@ -814,6 +989,12 @@ def run_real_cognitive_join(
         "w1_runtime_context_packet": _asdict(runtime_packet),
 
         "critical_action_requested": critical_action_requested,
+        "upstream_x108_gate_constraint": (
+            upstream_x108_gate_constraint
+        ),
+        "upstream_x108_gate_evidence_ref": (
+            upstream_x108_gate_evidence_ref
+        ),
 
         "kx108_admission": "DRY_RUN",
         "decision_ticket_dry_run": _asdict(ticket),

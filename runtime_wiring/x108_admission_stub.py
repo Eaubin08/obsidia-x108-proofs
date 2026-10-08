@@ -47,14 +47,19 @@ def evaluate_dry_run(
     packets: List[ContextPacket],
     envelope: Optional[IntentEnvelope] = None,
     critical_action_requested: bool = False,
+    upstream_gate_constraint: Optional[str] = None,
+    upstream_gate_evidence_ref: Optional[str] = None,
 ) -> DecisionTicketDryRun:
     """
     X108 admission stub — deterministic decision (BLOCK > HOLD > ALLOW_CONTEXT_ONLY).
 
     Rule 1: boundary violation on any packet → BLOCK
-    Rule 2: critical_action_requested=True → HOLD
-    Rule 3/4: otherwise → ALLOW_CONTEXT_ONLY
+    Rule 2: validated upstream X108 BLOCK constraint → BLOCK
+    Rule 3: validated upstream X108 HOLD constraint → HOLD
+    Rule 4: critical_action_requested=True → HOLD
+    Rule 5: otherwise → ALLOW_CONTEXT_ONLY
 
+    An upstream ALLOW is observational only and never promotes authority.
     Never returns ACT. Never a real ALLOW.
     """
     now = _utcnow()
@@ -78,7 +83,66 @@ def evaluate_dry_run(
         ticket.validate_invariants()
         return ticket
 
-    # Rule 2: critical action requested → HOLD
+    upstream_gate = None
+    if upstream_gate_constraint is not None:
+        upstream_gate = str(upstream_gate_constraint).strip().upper()
+        if upstream_gate not in {"ALLOW", "HOLD", "BLOCK"}:
+            raise ValueError(
+                "INVALID_UPSTREAM_X108_GATE_CONSTRAINT:"
+                + upstream_gate
+            )
+
+    evidence_refs = (
+        [str(upstream_gate_evidence_ref)]
+        if upstream_gate_evidence_ref
+        else []
+    )
+
+    # Rule 2: preserve an upstream X108 BLOCK as a hard dry-run constraint.
+    if upstream_gate == "BLOCK":
+        ticket = DecisionTicketDryRun(
+            ticket_id=_make_ticket_id(envelope_ref),
+            intent_envelope_ref=envelope_ref,
+            decision="BLOCK",
+            reason_codes=[
+                "UPSTREAM_X108_GATE_CONSTRAINT:BLOCK",
+                "UPSTREAM_X108_EVIDENCE_PRESERVED",
+            ],
+            x108_gate_status="X108_DRY_RUN_UPSTREAM_BLOCK",
+            timestamp_or_tick=now,
+            context_packet_refs=context_refs,
+            evidence_ticket_refs=evidence_refs,
+            notes=(
+                "Upstream X108 BLOCK preserved as a dry-run constraint. "
+                "No ACT and no authority transfer."
+            ),
+        )
+        ticket.validate_invariants()
+        return ticket
+
+    # Rule 3: preserve an upstream X108 HOLD as a hard dry-run constraint.
+    if upstream_gate == "HOLD":
+        ticket = DecisionTicketDryRun(
+            ticket_id=_make_ticket_id(envelope_ref),
+            intent_envelope_ref=envelope_ref,
+            decision="HOLD",
+            reason_codes=[
+                "UPSTREAM_X108_GATE_CONSTRAINT:HOLD",
+                "UPSTREAM_X108_EVIDENCE_PRESERVED",
+            ],
+            x108_gate_status="X108_DRY_RUN_UPSTREAM_HOLD",
+            timestamp_or_tick=now,
+            context_packet_refs=context_refs,
+            evidence_ticket_refs=evidence_refs,
+            notes=(
+                "Upstream X108 HOLD preserved as a dry-run constraint. "
+                "No ACT and no authority transfer."
+            ),
+        )
+        ticket.validate_invariants()
+        return ticket
+
+    # Rule 4: critical action requested → HOLD
     if critical_action_requested:
         reason = ["CRITICAL_ACTION_REQUIRES_HOLD", "DRY_RUN_NO_REAL_GATE"]
         if envelope:
@@ -96,8 +160,10 @@ def evaluate_dry_run(
         ticket.validate_invariants()
         return ticket
 
-    # Rule 3 & 4: ALLOW_CONTEXT_ONLY
+    # Rule 5: ALLOW_CONTEXT_ONLY
     reason = ["CONTEXT_ADVISORY_ONLY", "NO_CRITICAL_ACTION", "DRY_RUN_READONLY"]
+    if upstream_gate == "ALLOW":
+        reason.append("UPSTREAM_X108_ALLOW_NOT_PROMOTED")
     if envelope:
         reason.append(f"INTENT:{envelope.action_candidate_type}")
     ticket = DecisionTicketDryRun(
