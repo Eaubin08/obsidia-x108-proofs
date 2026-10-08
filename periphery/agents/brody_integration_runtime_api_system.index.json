@@ -627,7 +627,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_semantic_query_router.py",
-      "sha256": "774dfe980e3ddc1bdf3b9297d9c90a5137b5c5fca8d766f7f346ac27c49b1b90",
+      "sha256": "2f16300dbd19382b91a5380e25bd6c909d902b450db4ede25e4686070d72cdc0",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
