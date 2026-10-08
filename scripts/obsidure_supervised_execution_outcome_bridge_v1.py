@@ -373,6 +373,15 @@ def execute_supervised_governed_ticket(
         return _fail(
             STATUS_HELD,
             "MISSING_R8_RECEIPT",
+            mission_id=state.get("mission_id"),
+            selected_ticket_id=ticket.get("ticket_id"),
+            mandate_reference=state.get("human_mandate_reference"),
+            prepared_proposal_id=bound["feedback"].get("proposal_id"),
+            prepared_patch_hash=action.get("patch_sha256") or _r9_patch_hash(prepare_handoff_result),
+            authority_reference={
+                "execution_authority_hash": expected_eah,
+                "human_authorization_reference": human_authorization_reference,
+            },
             execution_phase=PHASE_OUTCOME_UNCERTAIN,
             execution_attempted=True,
             executor_invoked=True,
