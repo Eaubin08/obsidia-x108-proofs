@@ -1,0 +1,94 @@
+{
+  "schema": "OBSIDIA_V01_C41_CROSSREPO_CONTRACT_FREEZE_V0",
+  "recorded_at": "2026-10-08",
+  "authority": "KX108_ONLY",
+  "audit_based_on": {
+    "repo": "Eaubin08/obsidia-x108-proofs",
+    "branch": "feat/v01-c4-sector-evidence-conformance-v0",
+    "sha": "4861feed4c12784f38e21f400ad12304b528b710",
+    "pr": 91
+  },
+  "status": "PARTIAL_CONTRACT_PATCHES_CI_VALIDATED_NOT_INTERREPO_INTEGRATED",
+  "core_kernel_modified": false,
+  "production_permission_granted": false,
+  "domain_updates": [
+    {
+      "sector_id": "GPS_DEFENSE_PUBLIC_EXPORT",
+      "repo": "Eaubin08/obsidia-gps-defense-",
+      "branch": "feat/c41-gps-kernel-response-and-claim-boundary-v0",
+      "base_sha": "db1b1777faaa598f08e314c915b274520e5f601b",
+      "feature_sha": "d1221fce6914274f7b0c445a829739367b0c6abb",
+      "pull_request": "https://github.com/Eaubin08/obsidia-gps-defense-/pull/1",
+      "draft": true,
+      "tests": {
+        "count": 21,
+        "conclusion": "success",
+        "run_id": 37713468080
+      },
+      "contract_closure": [
+        "X108_GATE_CANONICAL_RESPONSE_READ",
+        "LEGACY_VERDICT_CONFLICT_HOLD",
+        "RECORDED_RF_ATTACK_SOURCE_LABEL_QUARANTINED"
+      ],
+      "claim_limits": [
+        "NO_RF_CAUSAL_SPOOFING_PROOF",
+        "NO_AIRCRAFT_CONTROL",
+        "NO_LIVE_RF"
+      ]
+    },
+    {
+      "sector_id": "TRADING_REFERENCE",
+      "repo": "Eaubin08/OBSIDIA_TRADING",
+      "branch": "test/c41-v01-paper-proof-convergence-v0",
+      "base_sha": "6dfee86778810829a2e9d89d3cc6caaaaa0996e9",
+      "feature_sha": "4c2438d97191ec780369b230e597c711471243ca",
+      "pull_request": "https://github.com/Eaubin08/OBSIDIA_TRADING/pull/1",
+      "draft": true,
+      "tests": {
+        "count": 53,
+        "conclusion": "success",
+        "run_id": 37713756603
+      },
+      "contract_closure": [
+        "CONTRADICTORY_KX_HTTP_AUTHORITY_FAIL_CLOSED",
+        "PAPER_ONLY_WITH_PROOF_REQUIRED_GUARD",
+        "NATIVE_EXTERNAL_FAIL_CLOSED_WHEN_KERNEL_UNAVAILABLE"
+      ],
+      "claim_limits": [
+        "NO_LIVE_BROKER",
+        "NO_NEW_REAL_KERNEL_HTTP_ROUNDTRIP_IN_C41",
+        "NO_CROSSREPO_V01_TRADING_EXECUTION_YET"
+      ]
+    }
+  ],
+  "blocked_domain": {
+    "sector_id": "CSSA_ADMIN_SHADOW",
+    "repo": "Eaubin08/cssa-v01--entreprise-universelle-domaien-obsidia-",
+    "sha": "a3125ce211e0c55d6608b39396f1f7633dbab72c",
+    "internal_operational_mailbox_authorized": false,
+    "internal_repository_authorized": false,
+    "pilot_started": false,
+    "real_native_promotions": 0,
+    "next_dependency": "AUTHORIZED_CLUB_READONLY_OPERATIONAL_SOURCE"
+  },
+  "core_baseline_ci": {
+    "branch_sha": "4861feed4c12784f38e21f400ad12304b528b710",
+    "run_id": 37713023215,
+    "status": "failure",
+    "passed": 12756,
+    "failed": 11,
+    "skipped": 46,
+    "deselected": 207,
+    "known_comparable_fail_count": 11,
+    "per_test_identity_parity_verified": false,
+    "green": false
+  },
+  "remaining": [
+    "VERIFY_BASELINE_FAILURE_IDENTITY_AND_FIX_ENVIRONMENT",
+    "AUTHORIZE_ENTERPRISE_IDENTITY_AND_SCOPE_C2",
+    "RUN_INTERREPO_E2E_AGAINST_TRADING_PAPER_AND_DOMAIN_GPS_RAW_OBSERVATION",
+    "RESOLVE_GPS_PHYSICAL_PROOF_LABEL_UPSTREAM_WITH_INDEPENDENT_EVIDENCE",
+    "CSSA_REAL_OPERATIONAL_ACCESS_AWAITED",
+    "NO_MONDE_C5"
+  ]
+}
