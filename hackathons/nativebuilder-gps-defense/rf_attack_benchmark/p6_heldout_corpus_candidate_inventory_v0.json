@@ -1,0 +1,48 @@
+{
+  "artifact": "gps_p6_heldout_corpus_candidate_inventory_v0",
+  "status": "CANDIDATES_ONLY_NOT_ADMITTED",
+  "decision_authority": "KX108_ONLY",
+  "claim_boundary": "TRAJECTORY_DISCONTINUITY_CLASSIFIER_ONLY_NO_SPOOFING_OR_CAUSAL_ATTRIBUTION",
+  "candidates": [
+    {
+      "candidate_id": "TUNI2025_GPS_L1",
+      "priority": 1,
+      "provider": "Tampere University",
+      "source_kind": "RAW_IQ_RECORDED_RF",
+      "positive_candidate_available": true,
+      "negative_candidate_available": true,
+      "current_status": "NOT_DOWNLOADED_NOT_ADMITTED"
+    },
+    {
+      "candidate_id": "TEXBAT",
+      "priority": 2,
+      "provider": "University of Texas Radionavigation Laboratory",
+      "source_kind": "RAW_RF_BINARY",
+      "positive_candidate_available": true,
+      "negative_candidate_available": true,
+      "current_status": "NOT_DOWNLOADED_NOT_ADMITTED"
+    },
+    {
+      "candidate_id": "ANDROID_MULTI_FREQUENCY_GNSS_SPOOFING",
+      "priority": 3,
+      "provider": "Public research dataset",
+      "source_kind": "ANDROID_GNSS_RAW_MEASUREMENTS",
+      "positive_candidate_available": true,
+      "negative_candidate_available": true,
+      "current_status": "SECONDARY_FORMAT_MISMATCH"
+    }
+  ],
+  "admitted_case_count": 0,
+  "heldout_positive_admitted": 0,
+  "heldout_negative_admitted": 0,
+  "ready_to_compute_matrix": false,
+  "certification_status": "NOT_CERTIFIED",
+  "readonly": true,
+  "allowed_to_decide": false,
+  "allowed_to_act": false,
+  "emits_act": false,
+  "emits_verdict": false,
+  "memory_write": false,
+  "kernel_mutation": false,
+  "x108_mutation": false
+}
