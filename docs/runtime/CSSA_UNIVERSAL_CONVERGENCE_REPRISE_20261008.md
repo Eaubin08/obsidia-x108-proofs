@@ -29,12 +29,12 @@ Généralisation: même chaîne sur une **PME fictive** (commande, facture, cont
 Sur `feat/cssa-v01-active` au commit `382812edd5654924cf8dc1a623ba46bcd3ea9582`, les workflows recensés sur la branche affichent 82 succès et 3 échecs historiques, sans job en attente. Les CI ciblées C2.28 et C2.29 *récentes* sont SUCCESS, mais la CI globale `X108 Periphery CI` sur le correctif C2.28 échoue encore (run #37816141333): **12 976 PASS, 11 FAIL, 46 SKIP, 207 deselected**.
 
 Familles des 11 échecs:
-- `tests/api/test_f67_sigma_live_smoke_api_audit.py`: divergence d'inventaire de routes;
+- `tests/api/test_brody_routes_registered.py` et `tests/api/test_f67_sigma_live_smoke_api_audit.py` (2): divergences d’inventaire de routes;
 - `tests/cli/test_mission_authority_conformance_v0.py` (2): exécutable `lake` absent de l'environnement;
 - `tests/test_batch_execution_v0.py` (5): contrat/statut CLI et chemin batch;
 - `tests/test_branching_ledger_v0.py`: résultat DISCOVERED vs ALREADY_REGISTERED;
 - `tests/test_git_worktree_repository_identity_v0.py`: identité auteur Git absente sur runner;
-- un autre échec à inventorier précisément dans les logs, sans spéculation.
+- Total confirmé par les onze identifiants de tests en échec dans les logs.
 
 ## Gates de réparation, dans cet ordre
 1. Reproduire et classer tous les 11 échecs sur une **même SHA** : défaut code, test obsolète, isolation runner ou prérequis manquant. Ne pas réécrire un test pour cacher un échec métier.
