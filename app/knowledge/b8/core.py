@@ -232,13 +232,20 @@ class _Context:
 
     def __init__(self, snapshot, request, artifacts, trusted):
         self.snapshot, self.request, self.trusted = snapshot, request, frozenset(trusted)
-        self.claims = {c.claim_id: c for c in snapshot.claims}
+        registry: dict = {}
+        for c in snapshot.claims:
+            objs = registry.setdefault(c.claim_id, [])
+            if c not in objs:
+                objs.append(c)
+        self.claims = {cid: objs[0] for cid, objs in registry.items() if len(objs) == 1}
+        self.ambiguous_claims = frozenset(cid for cid, objs in registry.items() if len(objs) > 1)
         self.latest, self.ambiguous = current_records(snapshot.records)
         self.record = self.latest.get(request.claim_id)
         supplied = {}
         for a in artifacts:
             supplied[a.claim_id if isinstance(a, KnowledgeClaim) else a.identity] = a
         self.supplied = supplied
+        self.artifact_claims = tuple(a for a in artifacts if isinstance(a, KnowledgeClaim))
         self.subject = self.claims.get(request.claim_id) or (
             supplied.get(request.claim_id) if isinstance(supplied.get(request.claim_id), KnowledgeClaim) else None)
         version = self.record.claim_version if self.record else request.expected_claim_version
@@ -258,6 +265,16 @@ class _Context:
 
     def wrong_of(self, kind):
         return any(isinstance(a, kind) for a in self.wrong)
+
+    def slot_view_complete(self) -> bool:
+        """Complete canonical slot view (T6 / T9): every current record has exactly one claim in the snapshot
+        registry, and no supplied claim object disagrees with it. Artifacts never complete the registry and
+        no claim is reconstructed from records (CURRENT_RECORD_WITHOUT_CLAIM_OBJECT = not evaluable)."""
+        if self.ambiguous or self.ambiguous_claims:
+            return False
+        if any(cid not in self.claims for cid in self.latest):
+            return False
+        return all(a == self.claims[a.claim_id] for a in self.artifact_claims if a.claim_id in self.claims)
 
     def slot_claims(self):
         """Other claims of this slot with their latest record, in canonical identity order."""
@@ -307,6 +324,11 @@ def _verification_guard(ctx, reasons):
 def _promotion_guards(ctx, reasons):
     """T6 / T9 shared conditions + free slot (T6) or eligible predecessor set E (T9)."""
     subj, req = ctx.subject, ctx.request
+    if not ctx.slot_view_complete():             # slot semantics not evaluable: no occupancy / E conclusion
+        reasons.add(_R.malformed_object)
+        if subj is not None and subj.claim_class in REQUIRES_HUMAN_REVIEW:
+            _attestation_guard(ctx, reasons, AttestationKind.REVIEW_AUTHORIZATION)
+        return None
     if subj is None:
         reasons.add(_R.malformed_object)
         return None
