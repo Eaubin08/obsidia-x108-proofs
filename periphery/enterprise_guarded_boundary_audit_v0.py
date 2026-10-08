@@ -2,7 +2,6 @@
 
 Do not confuse Python API discipline with process isolation or DB ownership.
 """
-import sqlite3
 from periphery.enterprise_transaction_guarded_reservation_v0 import TransactionGuardedReservationV0
 from periphery.enterprise_sqlite_trigger_definition_audit_v0 import inspect_trigger_definitions_v0
 from periphery.enterprise_sqlite_state_update_guard_v0 import inspect_state_guard_fixture_v0
@@ -20,15 +19,10 @@ class GuardedBoundaryAuditV0:
             (inspect_reservation_binding_guard_fixture_v0,"C234_LOCAL_BINDING_GUARD_PRESENT_NOT_ATTESTED"),
         )
         try:
-            with sqlite3.connect(self.path,timeout=10,isolation_level=None) as db:
-                db.execute("BEGIN IMMEDIATE")
-                # This fixture audit is observational; the three helper checks use
-                # separate connections, therefore they are NOT an atomic attestation.
-                db.commit()
             for check,expected in checks:
                 if check(self.path).get("reason")!=expected:
                     return block("C239_GUARD_INCONSISTENT")
-        except (sqlite3.Error,TypeError,ValueError):
+        except Exception:
             return block("C239_AUDIT_UNAVAILABLE")
         return block("C239_LOCAL_BOUNDARY_PRESENT_NOT_ENFORCED_GLOBALLY")
 
