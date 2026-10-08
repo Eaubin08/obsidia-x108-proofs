@@ -51,7 +51,9 @@ def test_cross_tenant_and_delegate_scope_rejected(tmp_path):
     _,args=scenario(tmp_path)
     args["organization"]="org-b"
     assert "IDENTITY_REJECTED" in inspect_identity_delegation_fixture_v0(**args)["reason"]
-    _,args=scenario(tmp_path/"other")
+    other=tmp_path/"other"
+    other.mkdir()
+    _,args=scenario(other)
     args["delegate"]="different"
     assert "DELEGATION_REJECTED" in inspect_identity_delegation_fixture_v0(**args)["reason"]
 
