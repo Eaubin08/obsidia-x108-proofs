@@ -17,7 +17,7 @@ BEGIN
 END;"""
 
 def _normalized(sql):
-    return " ".join(sql.split()).replace(" IF NOT EXISTS "," ")
+    return " ".join(sql.split()).replace(" IF NOT EXISTS "," ").rstrip(";")
 
 def install_reservation_binding_guard_fixture_v0(path):
     with sqlite3.connect(str(path)) as db:
