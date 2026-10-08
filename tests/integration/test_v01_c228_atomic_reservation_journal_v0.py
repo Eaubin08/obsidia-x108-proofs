@@ -30,10 +30,10 @@ def test_direct_state_mutation_detected(tmp_path):
         db.execute("UPDATE reservations SET status='CLOSED_NO_EXECUTION' WHERE idempotency_key=?",(KEY,))
     assert x.verify_logged_fixture()=="BLOCK:C228_STATE_JOURNAL_MISMATCH"
 
-def test_unjournaled_inherited_close_detected(tmp_path):
+def test_inherited_close_is_journaled(tmp_path):
     x=make(tmp_path)
     x.close_fixture(idempotency_key=KEY,disposition="ABANDONED_NO_EXECUTION")
-    assert x.verify_logged_fixture()=="BLOCK:C228_STATE_JOURNAL_MISMATCH"
+    assert x.verify_logged_fixture()=="BLOCK:C228_LOCAL_JOURNAL_CONSISTENT_NOT_ATTESTED"
 
 def test_duplicate_never_adds_event(tmp_path):
     x=make(tmp_path)
