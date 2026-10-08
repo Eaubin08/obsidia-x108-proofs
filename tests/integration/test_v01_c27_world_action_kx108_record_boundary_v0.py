@@ -46,3 +46,69 @@ def test_forged_allow_record_cannot_bypass_canonical_verifier():
     assert result["status"] == "BLOCK"
     assert result["reason"] == "C27_CANONICAL_RECORD_NOT_VERIFIED"
     assert result["execution_authority"] is False
+
+
+def test_real_world_action_pipeline_stored_allow_is_bound_but_no_egress(tmp_path):
+    """Use the existing pipeline fixture; never synthesize an ALLOW record."""
+    import importlib.util
+    from pathlib import Path
+    from scripts import obsidia_kx108_decision_store as store
+
+    fixture_path = Path(__file__).with_name("test_world_action_pre_execution_v0.py")
+    spec = importlib.util.spec_from_file_location("existing_world_action_fixture_c27", fixture_path)
+    fixture = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(fixture)
+
+    request = fixture.build_request()
+    result = fixture.run(tmp_path, request)
+    assert result.x108_gate == "ALLOW"
+    assert result.egress_allowed is False
+
+    record = store.load_kx108_decision_record(
+        result.decision_record_id, tmp_path / "decisions"
+    )
+    assert store.verify_kx108_decision_record(record) == (True, None)
+    expected = {
+        key: record[key]
+        for key in BINDING
+    }
+    checked = inspect_world_action_kx108_record_v0(
+        record=record, expected_binding=expected
+    )
+    assert checked["status"] == "VERIFIED_RECORD_ONLY_NO_EXECUTION_AUTHORITY"
+    assert checked["egress_allowed"] is False
+    assert checked["execution_authority"] is False
+
+    tampered = dict(record)
+    tampered["world_action_request_hash"] = "f" * 64
+    assert inspect_world_action_kx108_record_v0(
+        record=tampered, expected_binding=expected
+    )["status"] == "BLOCK"
+
+
+def test_real_world_action_pipeline_hold_and_block_never_escalate(tmp_path):
+    import importlib.util
+    from pathlib import Path
+    from scripts import obsidia_kx108_decision_store as store
+
+    fixture_path = Path(__file__).with_name("test_world_action_pre_execution_v0.py")
+    spec = importlib.util.spec_from_file_location("existing_world_action_fixture_negative_c27", fixture_path)
+    fixture = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(fixture)
+
+    for gate, extras in (
+        ("HOLD", {"unknowns": ("RECIPIENT_SCOPE_UNKNOWN", "FACT_FRESHNESS_UNKNOWN")}),
+        ("BLOCK", {"contradictions": ("TARGET_CONFLICT", "AUTHORITY_CONFLICT")}),
+    ):
+        root = tmp_path / gate.lower()
+        result = fixture.run(root, **extras)
+        assert result.x108_gate == gate
+        record = store.load_kx108_decision_record(
+            result.decision_record_id, root / "decisions"
+        )
+        expected = {key: record[key] for key in BINDING}
+        checked = inspect_world_action_kx108_record_v0(
+            record=record, expected_binding=expected
+        )
+        assert checked["status"] == "BLOCK"
+        assert checked["reason"] == "C27_SOVEREIGN_GATE_NOT_ALLOW"
