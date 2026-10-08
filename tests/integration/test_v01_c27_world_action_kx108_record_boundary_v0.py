@@ -69,8 +69,14 @@ def test_real_world_action_pipeline_stored_allow_is_bound_but_no_egress(tmp_path
     )
     assert store.verify_kx108_decision_record(record) == (True, None)
     expected = {
-        key: record[key]
-        for key in BINDING
+        "world_action_request_hash": result.world_action_request_hash,
+        "connector_call_hash": result.connector_call_hash,
+        "human_approval_hash": result.human_approval_hash,
+        "target_prestate_hash": result.target_prestate_hash,
+        "required_scope": result.required_scope,
+        "idempotency_key": result.idempotency_key,
+        "source_domain": result.source_domain,
+        "action_id": result.action_id,
     }
     checked = inspect_world_action_kx108_record_v0(
         record=record, expected_binding=expected
@@ -107,15 +113,15 @@ def test_real_world_action_pipeline_hold_and_block_never_escalate(tmp_path):
             result.decision_record_id, root / "decisions"
         )
         expected = {
-        "world_action_request_hash": result.world_action_request_hash,
-        "connector_call_hash": result.connector_call_hash,
-        "human_approval_hash": result.human_approval_hash,
-        "target_prestate_hash": result.target_prestate_hash,
-        "required_scope": result.required_scope,
-        "idempotency_key": result.idempotency_key,
-        "source_domain": result.source_domain,
-        "action_id": result.action_id,
-    }
+            "world_action_request_hash": result.world_action_request_hash,
+            "connector_call_hash": result.connector_call_hash,
+            "human_approval_hash": result.human_approval_hash,
+            "target_prestate_hash": result.target_prestate_hash,
+            "required_scope": result.required_scope,
+            "idempotency_key": result.idempotency_key,
+            "source_domain": result.source_domain,
+            "action_id": result.action_id,
+        }
         checked = inspect_world_action_kx108_record_v0(
             record=record, expected_binding=expected
         )
