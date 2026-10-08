@@ -87,10 +87,12 @@ def build_report(artifact_path: Path) -> dict[str, Any]:
             sigma.get("recorded_decision_id")
             == envelope.get("recorded_decision_id")
         ),
-        "evidence_hash_preserved": (
-            joined.get("sigma_domain_packet_sha256")
-            and joined.get("sigma_domain_packet_sha256")
-            == joined.get("sigma_domain_packet_sha256")
+        "evidence_envelope_preserved_exactly": (
+            sigma == envelope
+        ),
+        "sigma_envelope_hash_present": (
+            isinstance(joined.get("sigma_domain_packet_sha256"), str)
+            and len(joined.get("sigma_domain_packet_sha256")) == 64
         ),
         "precomputed_sigma_used": (
             joined.get("sigma_domain_packet_source")
