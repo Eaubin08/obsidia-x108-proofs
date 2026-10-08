@@ -30,7 +30,6 @@ def test_stale_active_reservation_and_orphan_receipt_detected(tmp_path):
     with ledger._connect() as db:
         db.execute("UPDATE scopes SET revoked=1,generation=1 WHERE organization='org-a'")
     assert audit_reservation_integrity_v0(ledger)["reason"]=="C226_STALE_ACTIVE_RESERVATION"
-    ledger=setup(tmp_path/"second") if False else ledger
     with ledger._connect() as db:
         db.execute("UPDATE reservations SET status='INVALIDATED'")
         db.execute("INSERT INTO lifecycle_receipts VALUES(?,?,?)",("orphan","CLOSED_NO_EXECUTION","0"*64))
