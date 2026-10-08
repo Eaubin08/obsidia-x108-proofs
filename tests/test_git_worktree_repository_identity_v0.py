@@ -143,6 +143,8 @@ class TestIndependentCloneNegativeResolution:
         subprocess.run(["git", "clone", "-q", str(main_repo), str(clone)], check=True, capture_output=True)
         # Reecrit le meme contenu dans un NOUVEAU commit du clone (meme blob sha possible).
         (clone / "src" / "module.py").write_bytes(b"SOURCE_CONTENT_V0\n")
+        _git(clone, "config", "user.email", "test@example.com")
+        _git(clone, "config", "user.name", "Test")
         _git(clone, "commit", "-q", "--allow-empty", "-m", "reimport")
 
         child = _source_child(main_repo, commit_sha)
