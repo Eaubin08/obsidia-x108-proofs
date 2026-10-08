@@ -1,3 +1,4 @@
+from periphery.enterprise_canonical_guard_catalog_v0 import canonical_guards_present_v0
 """C2.38 offline guarded reservation writes, verifying triggers under BEGIN IMMEDIATE.
 
 A local SQLite guard check is not independent attestation or execution authority.
@@ -23,14 +24,7 @@ CANONICAL_LEGACY_TRIGGERS = {
 
 class TransactionGuardedReservationV0(AtomicOfflineReservationJournalV0):
     def _guard_transaction(self,db):
-        catalog=dict(db.execute("SELECT name,sql FROM sqlite_master WHERE type='trigger'").fetchall())
-        for name, reference in CANONICAL_LEGACY_TRIGGERS.items():
-            if not isinstance(catalog.get(name), str) or _normalize(catalog[name]) != _normalize(reference):
-                return False
-        return all(isinstance(catalog.get(name),str) and _normalize(catalog[name])==_normalize(ref)
-                   for name,ref in (
-                       ("c232_state_transition_guard",STATE_SQL),
-                       ("c234_reservation_binding_immutable",BINDING_SQL)))
+        return canonical_guards_present_v0(db)
 
     def enroll_fixture(self,scope):
         scope=self._scope(scope)
