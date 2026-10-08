@@ -1,0 +1,46 @@
+{
+  "artifact": "p4_temporal_classifier_freeze_v0",
+  "status": "FROZEN_DEVELOPMENT_CLASSIFIER_AWAITING_BLIND_VALIDATION",
+  "algorithm_version": "P4_TEMPORAL_DISCONTINUITY_V0",
+  "decision_authority": "KX108_ONLY",
+  "emits_verdict": false,
+  "development_status": "DEVELOPMENT_POST_HOC_NOT_BLIND",
+  "calibration_contract": {
+    "source_kind": "GNSS_SDR_RECEIVER_OUTPUT",
+    "max_receiver_second": 120,
+    "baseline_log_sha256": "233968690585d90bfa0e1255c6e7148f4168a0f346378c50ca8d5223dafa29fc",
+    "baseline_position_count": 156,
+    "baseline_transition_count": 155,
+    "baseline_feature_maxima": {
+      "ecef_step_m": 16.963550135639597,
+      "clock_residual_s": 0.5,
+      "receiver_gap_s": 1
+    }
+  },
+  "thresholds": {
+    "ecef_step_m": 169.63550135639596,
+    "clock_residual_s": 5,
+    "receiver_gap_s": 10
+  },
+  "decision_rule": {
+    "ANOMALY": "at least two threshold violations in one PVT transition",
+    "UNKNOWN": "exactly one threshold violation in one PVT transition",
+    "NOMINAL": "no threshold violations"
+  },
+  "development_result": {
+    "classification": "ANOMALY",
+    "first_anomaly_transition": {
+      "from_receiver_second": 132,
+      "to_receiver_second": 174
+    },
+    "ecef_step_m": 14639.905457614153,
+    "clock_residual_s": 35269.5,
+    "receiver_gap_s": 42,
+    "violation_count": 3,
+    "truth_or_onset_consumed": false,
+    "domain_evidence_sha256": "eb7b6ad4b128bcc7a4810208478bb28784162d20b1b6955dc7915f32e914c46c"
+  },
+  "claim_boundary": "TRAJECTORY_DISCONTINUITY_ONLY_NO_HOSTILE_OR_CAUSAL_ATTRIBUTION",
+  "blind_validation_required": true,
+  "thresholds_may_change_before_blind_validation": false
+}
