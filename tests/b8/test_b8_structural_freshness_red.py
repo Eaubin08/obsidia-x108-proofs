@@ -59,9 +59,9 @@ def _create_knowledge_record(b8, claim, state, rv=3, previous_record_id=None, re
 def test_d12_a1_already_consumed_verification(b8):
     claim = make_claim(b8, "d12-a1")
     v1 = verification(b8, claim)
-    old_ver_rec = make_record(b8, claim, "VERIFIED", rv=2, refs=[v1.identity])
-    prom_rec = make_record(b8, claim, "PROMOTED", rv=3, previous_record_id=old_ver_rec.identity)
-    stale_rec = make_record(b8, claim, "STALE", rv=4, previous_record_id=prom_rec.identity)
+    old_ver_rec = b8.KnowledgeRecord(claim_id=claim.claim_id, claim_version=claim.claim_version, record_version=2, state=b8.ClaimState("VERIFIED"), previous_record_id=None, refs=(v1.identity,))
+    prom_rec = b8.KnowledgeRecord(claim_id=claim.claim_id, claim_version=claim.claim_version, record_version=3, state=b8.ClaimState("PROMOTED"), previous_record_id=old_ver_rec.record_id)
+    stale_rec = b8.KnowledgeRecord(claim_id=claim.claim_id, claim_version=claim.claim_version, record_version=4, state=b8.ClaimState("STALE"), previous_record_id=prom_rec.record_id)
     snap = snapshot(b8, [(claim, stale_rec), (claim, prom_rec), (claim, old_ver_rec)], slot_id=claim.slot_id)
     
     req = request(b8, claim, stale_rec, "VERIFIED", refs=[v1.identity])
@@ -74,7 +74,7 @@ def test_d12_a2_fresh_verification(b8):
     stale_rec = make_record(b8, claim, "STALE", rv=4)
     snap = snapshot(b8, [(claim, stale_rec)], slot_id=claim.slot_id)
     
-    v = _create_verification(b8, claim, basis_record_id=stale_rec.identity)
+    v = _create_verification(b8, claim, basis_record_id=stale_rec.record_id)
     req = request(b8, claim, stale_rec, "VERIFIED", refs=[v.identity])
     res = evaluate(b8, snap, req, [v])
     assert res.verdict.value == "APPLIED"
@@ -83,10 +83,10 @@ def test_d12_a3_reused_plus_fresh_existential(b8):
     claim = make_claim(b8, "d12-a3")
     v1 = verification(b8, claim)
     old_rec = make_record(b8, claim, "VERIFIED", rv=2, refs=[v1.identity])
-    stale_rec = make_record(b8, claim, "STALE", rv=4, previous_record_id=old_rec.identity)
+    stale_rec = b8.KnowledgeRecord(claim_id=claim.claim_id, claim_version=claim.claim_version, record_version=4, state=b8.ClaimState("STALE"), previous_record_id=old_rec.record_id)
     snap = snapshot(b8, [(claim, stale_rec), (claim, old_rec)], slot_id=claim.slot_id)
     
-    v2 = _create_verification(b8, claim, basis_record_id=stale_rec.identity)
+    v2 = _create_verification(b8, claim, basis_record_id=stale_rec.record_id)
     req = request(b8, claim, stale_rec, "VERIFIED", refs=[v1.identity, v2.identity])
     res = evaluate(b8, snap, req, [v1, v2])
     assert res.verdict.value == "APPLIED"
@@ -96,13 +96,13 @@ def test_d12_a4_consumed_by_another_claim(b8):
     claim2 = make_claim(b8, "d12-a4-c2")
     v1 = _create_verification(b8, claim1)
     
-    c2_ver = make_record(b8, claim2, "VERIFIED", rv=2, refs=[v1.identity])
+    c2_ver = b8.KnowledgeRecord(claim_id=claim2.claim_id, claim_version=claim2.claim_version, record_version=2, state=b8.ClaimState("VERIFIED"), previous_record_id=None, refs=(v1.identity,))
     snap = snapshot(b8, [(claim2, c2_ver)], slot_id="slot-c")
     
     stale_rec = make_record(b8, claim1, "STALE", rv=4)
     snap = b8.SlotSnapshot(slot_id="slot", slot_revision=5, records=snap.records + (stale_rec,), applied_requests={}, claims=(claim1, claim2))
     
-    v1_fresh_for_c1 = _create_verification(b8, claim1, basis_record_id=stale_rec.identity)
+    v1_fresh_for_c1 = _create_verification(b8, claim1, basis_record_id=stale_rec.record_id)
     req = request(b8, claim1, stale_rec, "VERIFIED", refs=[v1_fresh_for_c1.identity])
     res = evaluate(b8, snap, req, [v1_fresh_for_c1])
     assert res.verdict.value == "APPLIED"
@@ -112,12 +112,12 @@ def test_d12_a5_consumed_by_another_version(b8):
     claim_v2 = b8.KnowledgeClaim(lineage_id="L1", claim_version=2, previous_claim_id=claim_v1.identity, claim_class=b8.ClaimClass.CODE_BUILD_CLAIM, slot_id="S1", valid_time=b8.ValidTimeInterval(temporal_frame_ref=b8.TemporalFrameRef("F1"), start=None, end=None), content="c2")
     
     v_old = _create_verification(b8, claim_v1)
-    rec_v1 = make_record(b8, claim_v1, "VERIFIED", refs=[v_old.identity])
+    rec_v1 = b8.KnowledgeRecord(claim_id=claim_v1.claim_id, claim_version=claim_v1.claim_version, record_version=3, state=b8.ClaimState("VERIFIED"), previous_record_id=None, refs=(v_old.identity,))
     
     stale_rec_v2 = make_record(b8, claim_v2, "STALE", rv=4)
     snap = snapshot(b8, [(claim_v1, rec_v1), (claim_v2, stale_rec_v2)], slot_id="S1")
     
-    v_fresh = _create_verification(b8, claim_v2, basis_record_id=stale_rec_v2.identity)
+    v_fresh = _create_verification(b8, claim_v2, basis_record_id=stale_rec_v2.record_id)
     req = request(b8, claim_v2, stale_rec_v2, "VERIFIED", refs=[v_fresh.identity])
     res = evaluate(b8, snap, req, [v_fresh])
     assert res.verdict.value == "APPLIED"
@@ -150,10 +150,10 @@ def test_d12_b2_basis_points_to_earlier_verified(b8):
 def test_d12_b3_basis_points_to_earlier_promoted(b8):
     claim = make_claim(b8, "d12-b3")
     prom_rec = make_record(b8, claim, "PROMOTED", rv=3)
-    stale_rec = make_record(b8, claim, "STALE", rv=4, previous_record_id=prom_rec.identity)
+    stale_rec = b8.KnowledgeRecord(claim_id=claim.claim_id, claim_version=claim.claim_version, record_version=4, state=b8.ClaimState("STALE"), previous_record_id=prom_rec.record_id)
     snap = snapshot(b8, [(claim, stale_rec), (claim, prom_rec)], slot_id=claim.slot_id)
     
-    v = _create_verification(b8, claim, basis_record_id=prom_rec.identity)
+    v = _create_verification(b8, claim, basis_record_id=prom_rec.record_id)
     req = request(b8, claim, stale_rec, "VERIFIED", refs=[v.identity])
     res = evaluate(b8, snap, req, [v])
     assert res.verdict.value == "REJECTED"
@@ -162,7 +162,7 @@ def test_d12_b4_basis_points_to_exact_current(b8):
     claim = make_claim(b8, "d12-b4")
     stale_rec = make_record(b8, claim, "STALE")
     snap = snapshot(b8, [(claim, stale_rec)], slot_id=claim.slot_id)
-    v = _create_verification(b8, claim, basis_record_id=stale_rec.identity)
+    v = _create_verification(b8, claim, basis_record_id=stale_rec.record_id)
     req = request(b8, claim, stale_rec, "VERIFIED", refs=[v.identity])
     res = evaluate(b8, snap, req, [v])
     assert res.verdict.value == "APPLIED"
@@ -173,7 +173,7 @@ def test_d12_b5_basis_points_to_other_claim(b8):
     stale1 = make_record(b8, c1, "STALE")
     stale2 = make_record(b8, c2, "STALE")
     snap = snapshot(b8, [(c1, stale1), (c2, stale2)], slot_id=c1.slot_id)
-    v = _create_verification(b8, c1, basis_record_id=stale2.identity)
+    v = _create_verification(b8, c1, basis_record_id=stale2.record_id)
     req = request(b8, c1, stale1, "VERIFIED", refs=[v.identity])
     res = evaluate(b8, snap, req, [v])
     assert res.verdict.value == "REJECTED"
@@ -181,11 +181,11 @@ def test_d12_b5_basis_points_to_other_claim(b8):
 def test_d12_b6_basis_historical_stale(b8):
     claim = make_claim(b8, "d12-b6")
     old_stale = make_record(b8, claim, "STALE", rv=3)
-    ver2 = make_record(b8, claim, "VERIFIED", rv=4, previous_record_id=old_stale.identity)
-    new_stale = make_record(b8, claim, "STALE", rv=5, previous_record_id=ver2.identity)
+    ver2 = b8.KnowledgeRecord(claim_id=claim.claim_id, claim_version=claim.claim_version, record_version=4, state=b8.ClaimState("VERIFIED"), previous_record_id=old_stale.record_id)
+    new_stale = b8.KnowledgeRecord(claim_id=claim.claim_id, claim_version=claim.claim_version, record_version=5, state=b8.ClaimState("STALE"), previous_record_id=ver2.record_id)
     snap = snapshot(b8, [(claim, old_stale), (claim, ver2), (claim, new_stale)], slot_id=claim.slot_id)
     
-    v = _create_verification(b8, claim, basis_record_id=old_stale.identity)
+    v = _create_verification(b8, claim, basis_record_id=old_stale.record_id)
     req = request(b8, claim, new_stale, "VERIFIED", refs=[v.identity])
     res = evaluate(b8, snap, req, [v])
     assert res.verdict.value == "REJECTED"
@@ -203,8 +203,8 @@ def test_d11_c1_one_qualifying_trigger(b8):
     req = request(b8, claim, prom_rec, "STALE", refs=[ev.identity])
     res = evaluate(b8, snap, req, [ev])
     assert res.verdict.value == "APPLIED"
-    assert hasattr(res.bundle.new_record, "staleness_trigger_refs")
-    assert list(res.bundle.new_record.staleness_trigger_refs) == [ev.identity]
+    assert hasattr(latest(res.snapshot, claim), "staleness_trigger_refs")
+    assert list(latest(res.snapshot, claim).staleness_trigger_refs) == [ev.identity]
 
 def test_d11_c2_two_qualifying_triggers(b8):
     claim = make_claim(b8, "d11-c2")
@@ -216,8 +216,8 @@ def test_d11_c2_two_qualifying_triggers(b8):
     req = request(b8, claim, prom_rec, "STALE", refs=[ev1.identity, ev2.identity])
     res = evaluate(b8, snap, req, [ev1, ev2])
     assert res.verdict.value == "APPLIED"
-    assert hasattr(res.bundle.new_record, "staleness_trigger_refs")
-    assert set(res.bundle.new_record.staleness_trigger_refs) == {ev1.identity, ev2.identity}
+    assert hasattr(latest(res.snapshot, claim), "staleness_trigger_refs")
+    assert set(latest(res.snapshot, claim).staleness_trigger_refs) == {ev1.identity, ev2.identity}
 
 def test_d11_c3_mixed_refs(b8):
     claim = make_claim(b8, "d11-c3")
@@ -229,8 +229,8 @@ def test_d11_c3_mixed_refs(b8):
     req = request(b8, claim, prom_rec, "STALE", refs=[ev_trigger.identity, ev_other.identity])
     res = evaluate(b8, snap, req, [ev_trigger, ev_other])
     assert res.verdict.value == "APPLIED"
-    assert hasattr(res.bundle.new_record, "staleness_trigger_refs")
-    assert list(res.bundle.new_record.staleness_trigger_refs) == [ev_trigger.identity]
+    assert hasattr(latest(res.snapshot, claim), "staleness_trigger_refs")
+    assert list(latest(res.snapshot, claim).staleness_trigger_refs) == [ev_trigger.identity]
 
 def test_d11_c4_duplicate_qualifying(b8):
     claim = make_claim(b8, "d11-c4")
@@ -241,8 +241,8 @@ def test_d11_c4_duplicate_qualifying(b8):
     req = request(b8, claim, prom_rec, "STALE", refs=[ev.identity, ev.identity])
     res = evaluate(b8, snap, req, [ev])
     assert res.verdict.value == "APPLIED"
-    assert hasattr(res.bundle.new_record, "staleness_trigger_refs")
-    assert len(res.bundle.new_record.staleness_trigger_refs) == 1
+    assert hasattr(latest(res.snapshot, claim), "staleness_trigger_refs")
+    assert len(latest(res.snapshot, claim).staleness_trigger_refs) == 1
 
 def test_d11_c5_permuted_order(b8):
     claim = make_claim(b8, "d11-c5")
@@ -257,8 +257,8 @@ def test_d11_c5_permuted_order(b8):
     req2 = request(b8, claim, prom_rec, "STALE", refs=[ev2.identity, ev1.identity])
     res2 = evaluate(b8, snap, req2, [ev1, ev2])
     
-    assert hasattr(res1.bundle.new_record, "staleness_trigger_refs")
-    assert set(res1.bundle.new_record.staleness_trigger_refs) == set(res2.bundle.new_record.staleness_trigger_refs)
+    assert hasattr(latest(res1.snapshot, claim), "staleness_trigger_refs")
+    assert set(latest(res1.snapshot, claim).staleness_trigger_refs) == set(latest(res2.snapshot, claim).staleness_trigger_refs)
 
 def test_d11_c6_wrong_bound(b8):
     claim = make_claim(b8, "d11-c6")
@@ -280,8 +280,8 @@ def test_d11_c7_incomplete_provenance(b8):
     res = evaluate(b8, snap, req, [ev])
     # Show it does not pass into staleness_trigger_refs
     if res.verdict.value == "APPLIED":
-        assert hasattr(res.bundle.new_record, "staleness_trigger_refs")
-        assert ev.identity not in res.bundle.new_record.staleness_trigger_refs
+        assert hasattr(latest(res.snapshot, claim), "staleness_trigger_refs")
+        assert ev.identity not in latest(res.snapshot, claim).staleness_trigger_refs
 
 # ============================================================================
 # 9. T12 - TRIGGER COVERAGE RED
@@ -295,7 +295,7 @@ def test_d12_c1_empty_coverage(b8):
     stale_rec = _create_knowledge_record(b8, claim, "STALE", staleness_trigger_refs=[evA.identity, evB.identity])
     snap = snapshot(b8, [(claim, stale_rec)], slot_id=claim.slot_id)
     
-    v = _create_verification(b8, claim, basis_record_id=stale_rec.identity, evidence_refs=[])
+    v = _create_verification(b8, claim, basis_record_id=stale_rec.record_id, evidence_refs=[])
     req = request(b8, claim, stale_rec, "VERIFIED", refs=[v.identity])
     res = evaluate(b8, snap, req, [v])
     assert res.verdict.value == "REJECTED"
@@ -308,7 +308,7 @@ def test_d12_c2_partial_coverage_A(b8):
     stale_rec = _create_knowledge_record(b8, claim, "STALE", staleness_trigger_refs=[evA.identity, evB.identity])
     snap = snapshot(b8, [(claim, stale_rec)], slot_id=claim.slot_id)
     
-    v = _create_verification(b8, claim, basis_record_id=stale_rec.identity, evidence_refs=[evA.identity])
+    v = _create_verification(b8, claim, basis_record_id=stale_rec.record_id, evidence_refs=[evA.identity])
     req = request(b8, claim, stale_rec, "VERIFIED", refs=[v.identity])
     res = evaluate(b8, snap, req, [v])
     assert res.verdict.value == "REJECTED"
@@ -321,7 +321,7 @@ def test_d12_c3_partial_coverage_B(b8):
     stale_rec = _create_knowledge_record(b8, claim, "STALE", staleness_trigger_refs=[evA.identity, evB.identity])
     snap = snapshot(b8, [(claim, stale_rec)], slot_id=claim.slot_id)
     
-    v = _create_verification(b8, claim, basis_record_id=stale_rec.identity, evidence_refs=[evB.identity])
+    v = _create_verification(b8, claim, basis_record_id=stale_rec.record_id, evidence_refs=[evB.identity])
     req = request(b8, claim, stale_rec, "VERIFIED", refs=[v.identity])
     res = evaluate(b8, snap, req, [v])
     assert res.verdict.value == "REJECTED"
@@ -334,7 +334,7 @@ def test_d12_c4_full_coverage(b8):
     stale_rec = _create_knowledge_record(b8, claim, "STALE", staleness_trigger_refs=[evA.identity, evB.identity])
     snap = snapshot(b8, [(claim, stale_rec)], slot_id=claim.slot_id)
     
-    v = _create_verification(b8, claim, basis_record_id=stale_rec.identity, evidence_refs=[evA.identity, evB.identity])
+    v = _create_verification(b8, claim, basis_record_id=stale_rec.record_id, evidence_refs=[evA.identity, evB.identity])
     req = request(b8, claim, stale_rec, "VERIFIED", refs=[v.identity])
     res = evaluate(b8, snap, req, [v])
     assert res.verdict.value == "APPLIED"
@@ -348,7 +348,7 @@ def test_d12_c5_excess_coverage(b8):
     stale_rec = _create_knowledge_record(b8, claim, "STALE", staleness_trigger_refs=[evA.identity, evB.identity])
     snap = snapshot(b8, [(claim, stale_rec)], slot_id=claim.slot_id)
     
-    v = _create_verification(b8, claim, basis_record_id=stale_rec.identity, evidence_refs=[evA.identity, evB.identity, evX.identity])
+    v = _create_verification(b8, claim, basis_record_id=stale_rec.record_id, evidence_refs=[evA.identity, evB.identity, evX.identity])
     req = request(b8, claim, stale_rec, "VERIFIED", refs=[v.identity])
     res = evaluate(b8, snap, req, [v])
     assert res.verdict.value == "APPLIED"
@@ -361,7 +361,7 @@ def test_d12_c6_permuted_order(b8):
     stale_rec = _create_knowledge_record(b8, claim, "STALE", staleness_trigger_refs=[evA.identity, evB.identity])
     snap = snapshot(b8, [(claim, stale_rec)], slot_id=claim.slot_id)
     
-    v = _create_verification(b8, claim, basis_record_id=stale_rec.identity, evidence_refs=[evB.identity, evA.identity])
+    v = _create_verification(b8, claim, basis_record_id=stale_rec.record_id, evidence_refs=[evB.identity, evA.identity])
     req = request(b8, claim, stale_rec, "VERIFIED", refs=[v.identity])
     res = evaluate(b8, snap, req, [v])
     assert res.verdict.value == "APPLIED"
@@ -374,7 +374,7 @@ def test_d12_c7_wrong_claim_trigger_in_verification(b8):
     stale_rec = _create_knowledge_record(b8, claim, "STALE", staleness_trigger_refs=[ev_wrong.identity])
     snap = snapshot(b8, [(claim, stale_rec)], slot_id=claim.slot_id)
     
-    v = _create_verification(b8, claim, basis_record_id=stale_rec.identity, evidence_refs=[ev_wrong.identity])
+    v = _create_verification(b8, claim, basis_record_id=stale_rec.record_id, evidence_refs=[ev_wrong.identity])
     req = request(b8, claim, stale_rec, "VERIFIED", refs=[v.identity])
     res = evaluate(b8, snap, req, [v])
     assert res.verdict.value == "REJECTED"
@@ -387,7 +387,7 @@ def test_prefabrication_attack_red_witness(b8):
     claim = make_claim(b8, "prefab-attack")
     v2 = b8.VerificationRecord(verifier_family="TEST_BUILD_PROOF_VERIFIER", claim_id=claim.claim_id, claim_version=claim.claim_version, verdict=b8.VerificationVerdict.SATISFIED, evidence_refs=(), method_ref="m2", produced_at=RECORDED_AT)
     prom_rec = make_record(b8, claim, "PROMOTED")
-    stale_rec = make_record(b8, claim, "STALE", previous_record_id=prom_rec.identity)
+    stale_rec = b8.KnowledgeRecord(claim_id=claim.claim_id, claim_version=claim.claim_version, record_version=4, state=b8.ClaimState("STALE"), previous_record_id=prom_rec.record_id)
     snap = snapshot(b8, [(claim, stale_rec), (claim, prom_rec)], slot_id=claim.slot_id)
     
     req = request(b8, claim, stale_rec, "VERIFIED", refs=[v2.identity])
@@ -407,7 +407,7 @@ def test_trigger_blind_red_witness(b8):
     stale_rec = _create_knowledge_record(b8, claim, "STALE", staleness_trigger_refs=[evA.identity])
     snap = snapshot(b8, [(claim, stale_rec)], slot_id=claim.slot_id)
     
-    v = _create_verification(b8, claim, basis_record_id=stale_rec.identity, evidence_refs=[])
+    v = _create_verification(b8, claim, basis_record_id=stale_rec.record_id, evidence_refs=[])
     req = request(b8, claim, stale_rec, "VERIFIED", refs=[v.identity])
     res = evaluate(b8, snap, req, [v])
     
@@ -420,10 +420,10 @@ def test_trigger_blind_red_witness(b8):
 def test_old_basis_red_witness(b8):
     claim = make_claim(b8, "old-basis")
     prom_rec = make_record(b8, claim, "PROMOTED", rv=2)
-    stale_rec = _create_knowledge_record(b8, claim, "STALE", rv=3, previous_record_id=prom_rec.identity)
+    stale_rec = _create_knowledge_record(b8, claim, "STALE", rv=3, previous_record_id=prom_rec.record_id)
     snap = snapshot(b8, [(claim, stale_rec), (claim, prom_rec)], slot_id=claim.slot_id)
     
-    v = _create_verification(b8, claim, basis_record_id=prom_rec.identity)
+    v = _create_verification(b8, claim, basis_record_id=prom_rec.record_id)
     req = request(b8, claim, stale_rec, "VERIFIED", refs=[v.identity])
     res = evaluate(b8, snap, req, [v])
     
@@ -439,7 +439,7 @@ def test_valid_t12_positive_control(b8):
     stale_rec = _create_knowledge_record(b8, claim, "STALE", staleness_trigger_refs=[evA.identity])
     snap = snapshot(b8, [(claim, stale_rec)], slot_id=claim.slot_id)
     
-    v = _create_verification(b8, claim, basis_record_id=stale_rec.identity, evidence_refs=[evA.identity])
+    v = _create_verification(b8, claim, basis_record_id=stale_rec.record_id, evidence_refs=[evA.identity])
     req = request(b8, claim, stale_rec, "VERIFIED", refs=[v.identity])
     res = evaluate(b8, snap, req, [v])
     
@@ -452,8 +452,8 @@ def test_valid_t12_positive_control(b8):
 def test_d8_1_reused_no_withdrawal(b8):
     claim = make_claim(b8, "d8-1")
     v1 = verification(b8, claim)
-    old_rec = make_record(b8, claim, "VERIFIED", refs=[v1.identity], rv=2)
-    contested_rec = make_record(b8, claim, "CONTESTED", previous_record_id=old_rec.identity, rv=3)
+    old_rec = b8.KnowledgeRecord(claim_id=claim.claim_id, claim_version=claim.claim_version, record_version=2, state=b8.ClaimState("VERIFIED"), previous_record_id=None, refs=(v1.identity,))
+    contested_rec = b8.KnowledgeRecord(claim_id=claim.claim_id, claim_version=claim.claim_version, record_version=3, state=b8.ClaimState("CONTESTED"), previous_record_id=old_rec.record_id, contested_by=())
     snap = snapshot(b8, [(claim, contested_rec), (claim, old_rec)], slot_id=claim.slot_id)
     
     req = request(b8, claim, contested_rec, "SUPPORTED", refs=[v1.identity])
@@ -462,12 +462,12 @@ def test_d8_1_reused_no_withdrawal(b8):
 
 def test_d8_2_new_eligible_verification(b8):
     claim = make_claim(b8, "d8-2")
-    v1 = verification(b8, claim, method_ref="m1")
-    old_rec = make_record(b8, claim, "VERIFIED", refs=[v1.identity], rv=2)
-    contested_rec = make_record(b8, claim, "CONTESTED", previous_record_id=old_rec.identity, rv=3)
+    v1 = b8.VerificationRecord(verifier_family="TEST_BUILD_PROOF_VERIFIER", claim_id=claim.claim_id, claim_version=claim.claim_version, verdict=b8.VerificationVerdict("SATISFIED"), evidence_refs=(), method_ref="m1", produced_at="2026-10-07T00:00:00Z")
+    old_rec = b8.KnowledgeRecord(claim_id=claim.claim_id, claim_version=claim.claim_version, record_version=2, state=b8.ClaimState("VERIFIED"), previous_record_id=None, refs=(v1.identity,))
+    contested_rec = b8.KnowledgeRecord(claim_id=claim.claim_id, claim_version=claim.claim_version, record_version=3, state=b8.ClaimState("CONTESTED"), previous_record_id=old_rec.record_id, contested_by=())
     snap = snapshot(b8, [(claim, contested_rec), (claim, old_rec)], slot_id=claim.slot_id)
     
-    v2 = verification(b8, claim, method_ref="m2")
+    v2 = b8.VerificationRecord(verifier_family="TEST_BUILD_PROOF_VERIFIER", claim_id=claim.claim_id, claim_version=claim.claim_version, verdict=b8.VerificationVerdict("SATISFIED"), evidence_refs=(), method_ref="m2", produced_at="2026-10-07T00:00:00Z")
     req = request(b8, claim, contested_rec, "SUPPORTED", refs=[v2.identity])
     res = evaluate(b8, snap, req, [v2])
     assert res.verdict.value == "APPLIED"
@@ -478,12 +478,12 @@ def test_d8_3_reused_with_withdrawal(b8):
 
 def test_d8_4_reused_plus_fresh(b8):
     claim = make_claim(b8, "d8-4")
-    v1 = verification(b8, claim, method_ref="m1")
-    old_rec = make_record(b8, claim, "VERIFIED", refs=[v1.identity], rv=2)
-    contested_rec = make_record(b8, claim, "CONTESTED", previous_record_id=old_rec.identity, rv=3)
+    v1 = b8.VerificationRecord(verifier_family="TEST_BUILD_PROOF_VERIFIER", claim_id=claim.claim_id, claim_version=claim.claim_version, verdict=b8.VerificationVerdict("SATISFIED"), evidence_refs=(), method_ref="m1", produced_at="2026-10-07T00:00:00Z")
+    old_rec = b8.KnowledgeRecord(claim_id=claim.claim_id, claim_version=claim.claim_version, record_version=2, state=b8.ClaimState("VERIFIED"), previous_record_id=None, refs=(v1.identity,))
+    contested_rec = b8.KnowledgeRecord(claim_id=claim.claim_id, claim_version=claim.claim_version, record_version=3, state=b8.ClaimState("CONTESTED"), previous_record_id=old_rec.record_id, contested_by=())
     snap = snapshot(b8, [(claim, contested_rec), (claim, old_rec)], slot_id=claim.slot_id)
     
-    v2 = verification(b8, claim, method_ref="m2")
+    v2 = b8.VerificationRecord(verifier_family="TEST_BUILD_PROOF_VERIFIER", claim_id=claim.claim_id, claim_version=claim.claim_version, verdict=b8.VerificationVerdict("SATISFIED"), evidence_refs=(), method_ref="m2", produced_at="2026-10-07T00:00:00Z")
     req = request(b8, claim, contested_rec, "SUPPORTED", refs=[v1.identity, v2.identity])
     res = evaluate(b8, snap, req, [v1, v2])
     assert res.verdict.value == "APPLIED"
@@ -497,10 +497,10 @@ def test_no_clock_tests(b8):
     stale_rec = make_record(b8, claim, "STALE", rv=4)
     snap = snapshot(b8, [(claim, stale_rec)], slot_id=claim.slot_id)
     
-    v1 = _create_verification(b8, claim, basis_record_id=stale_rec.identity)
+    v1 = _create_verification(b8, claim, basis_record_id=stale_rec.record_id)
     # v1 uses RECORDED_AT. Let's create v2 with far future produced_at
     try:
-        v2 = b8.VerificationRecord(verifier_family="TEST_BUILD_PROOF_VERIFIER", claim_id=claim.claim_id, claim_version=claim.claim_version, verdict=b8.VerificationVerdict.SATISFIED, evidence_refs=(), method_ref="m_future", produced_at="2099-01-01T00:00:00Z", basis_record_id=stale_rec.identity)
+        v2 = b8.VerificationRecord(verifier_family="TEST_BUILD_PROOF_VERIFIER", claim_id=claim.claim_id, claim_version=claim.claim_version, verdict=b8.VerificationVerdict.SATISFIED, evidence_refs=(), method_ref="m_future", produced_at="2099-01-01T00:00:00Z", basis_record_id=stale_rec.record_id)
     except TypeError:
         pytest.fail("Production lacks basis_record_id contract field on VerificationRecord")
         
@@ -521,7 +521,7 @@ def test_duplicate_semantics_preserved(b8):
     
     # applied request
     req_applied = request(b8, claim, stale_rec, "VERIFIED", refs=["dummy_v"])
-    receipt = b8.TransitionReceipt(request_id=req_applied.request_id, verdict=b8.TransitionVerdict.APPLIED, claim_id=claim.claim_id, claim_version=claim.claim_version, from_state=b8.ClaimState.STALE, to_state=b8.ClaimState.VERIFIED, from_record_version=4, to_record_version=5, from_record_id=stale_rec.identity, to_record_id="dummy_to", reasons=(), gate_contract_version="v1", recorded_at=RECORDED_AT)
+    receipt = b8.TransitionReceipt(request_id=req_applied.request_id, verdict=b8.TransitionVerdict.APPLIED, claim_id=claim.claim_id, claim_version=claim.claim_version, from_state=b8.ClaimState.STALE, to_state=b8.ClaimState.VERIFIED, from_record_version=4, to_record_version=5, from_record_id=stale_rec.record_id, to_record_id="dummy_to", reasons=(), gate_contract_version="v1", recorded_at=RECORDED_AT)
     
     snap = b8.SlotSnapshot(slot_id=claim.slot_id, slot_revision=5, records=(stale_rec,), applied_requests={req_applied.request_id: receipt}, claims=(claim,))
     
@@ -538,7 +538,7 @@ def test_order_invariance(b8):
     snap = snapshot(b8, [(claim, stale_rec)], slot_id=claim.slot_id)
     
     # We already tested trigger order invariance. Let's test request ref order invariance
-    v1 = _create_verification(b8, claim, basis_record_id=stale_rec.identity)
+    v1 = _create_verification(b8, claim, basis_record_id=stale_rec.record_id)
     req = request(b8, claim, stale_rec, "VERIFIED", refs=[v1.identity, "dummy"])
     # Not full implementation needed, duplicate coverage handles it.
     pass
