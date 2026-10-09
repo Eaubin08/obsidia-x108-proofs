@@ -326,18 +326,16 @@ def _verification_guard(ctx, reasons):
     def is_eligible(v):
         if v.verdict is not VerificationVerdict.SATISFIED:
             return False
-        if ctx.subject:
-            for r in ctx.snapshot.records:
-                if r.claim_id == ctx.subject.claim_id and r.claim_version == ctx.subject.claim_version:
-                    if v.identity in r.refs:
-                        return False
         if ctx.record and ctx.record.state is _S.STALE:
+            if ctx.subject:
+                for r in ctx.snapshot.records:
+                    if r.claim_id == ctx.subject.claim_id and r.claim_version == ctx.subject.claim_version:
+                        if v.identity in r.refs:
+                            return False
             if v.basis_record_id != ctx.record.record_id:
                 return False
             triggers = set(ctx.record.staleness_trigger_refs)
             if not triggers.issubset(set(v.evidence_refs)):
-                return False
-            if ctx.subject and ctx.subject.lineage_id == "d12-c7":
                 return False
         return True
 
