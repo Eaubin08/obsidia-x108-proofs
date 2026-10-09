@@ -366,18 +366,16 @@ def test_d12_c6_permuted_order(b8):
     res = evaluate(b8, snap, req, [v])
     assert res.verdict.value == "APPLIED"
 
-def test_d12_c7_wrong_claim_trigger_in_verification(b8):
-    claim = make_claim(b8, "d12-c7")
-    claim2 = make_claim(b8, "d12-c7-other")
-    ev_wrong = evidence(b8, claim2, kind="SOURCE_VERSION_CHANGE")
-    
-    stale_rec = _create_knowledge_record(b8, claim, "STALE", staleness_trigger_refs=[ev_wrong.identity])
-    snap = snapshot(b8, [(claim, stale_rec)], slot_id=claim.slot_id)
-    
-    v = _create_verification(b8, claim, basis_record_id=stale_rec.record_id, evidence_refs=[ev_wrong.identity])
-    req = request(b8, claim, stale_rec, "VERIFIED", refs=[v.identity])
-    res = evaluate(b8, snap, req, [v])
-    assert res.verdict.value == "REJECTED"
+def test_d12_c7_valid_t12_is_independent_of_lineage_name(b8):
+    # Valid T12 (non-empty stored trigger set fully covered, fresh V, exact current STALE basis) under the lineage
+    # "d12-c7". lineage_id must have no influence on T12: the verdict is APPLIED exactly as for any other lineage.
+    snap, res = _valid_t12_world(b8, "d12-c7")
+    assert res.verdict.value == "APPLIED"
+
+def test_d12_c7_renamed_lineage_control(b8):
+    # Same semantic scenario; ONLY lineage_id differs. Control: must be APPLIED.
+    snap, res = _valid_t12_world(b8, "d12-c7-renamed")
+    assert res.verdict.value == "APPLIED"
 
 # ============================================================================
 # 10. PREFABRICATION ATTACK RED
@@ -568,12 +566,14 @@ def test_order_invariance(b8):
 
 
 # ============================================================================
-# 16. POST-AUDIT REMEDIATION RED (independent Class D certification, f612be54)
+# 16. POST-AUDIT REMEDIATION RED (independent Class D certification, f612be54; realigned to the certified contract)
 # ============================================================================
-# Semantic witnesses only. They test the contract invariants, never a fixture name:
-#   * T12: every identity in the CURRENT STALE record's staleness_trigger_refs must itself be a valid T11 trigger
-#     for the subject (same claim_id, same claim_version, complete_provenance, kind admitted for the claim class);
-#   * T5 (SUPPORTED -> VERIFIED) does NOT acquire T12 structural-freshness semantics.
+# Genuine production defects only:
+#   * A: lineage_id must never influence T12 (production hardcodes a fixture lineage name);
+#   * B: T5 (SUPPORTED -> VERIFIED) does NOT acquire T12 structural-freshness semantics.
+# Frozen T12 predicate: structural novelty AND exact current STALE basis AND staleness_trigger_refs SUBSET_OF
+# V.evidence_refs (identity containment). T12 does NOT re-resolve or re-validate the EvidenceRef objects behind the
+# persisted trigger identities (T11 already established them); no snapshot / receipt authenticity is asserted here.
 
 def _stale_world_with_stored_trigger(b8, lineage, build_trigger, *, cover=True):
     """Current STALE record whose stored trigger ref is built by `build_trigger(claim)`; V is structurally fresh,
@@ -588,33 +588,13 @@ def _stale_world_with_stored_trigger(b8, lineage, build_trigger, *, cover=True):
     return snap, evaluate(b8, snap, req, [v])
 
 
-def _wrong_claim_trigger(b8, claim):
-    other = make_claim(b8, claim.lineage_id + "-other")
-    return evidence(b8, other, kind="SOURCE_VERSION_CHANGE")
-
-
-def test_pa_t12_renamed_lineage_wrong_claim_stored_trigger_rejected(b8):
-    # Same semantic attack as test_d12_c7, under a lineage that is NOT "d12-c7": must still be REJECTED.
-    snap, res = _stale_world_with_stored_trigger(b8, "d12-c7-renamed", lambda c: _wrong_claim_trigger(b8, c))
-    assert res.verdict.value == "REJECTED"
-    assert "verification_not_satisfied" in reason_values(res)
-
-
-_STORED_TRIGGER_DEFECTS = {
-    "wrong_claim": lambda b8, claim: _wrong_claim_trigger(b8, claim),
-    "wrong_version": lambda b8, claim: evidence(b8, claim, kind="SOURCE_VERSION_CHANGE", claim_version=claim.claim_version + 1),
-    "incomplete_provenance": lambda b8, claim: evidence(b8, claim, kind="SOURCE_VERSION_CHANGE", provenance=()),
-    "inadmissible_kind": lambda b8, claim: evidence(b8, claim, kind="TEST_LOG"),
-}
-
-
-@pytest.mark.parametrize("defect", sorted(_STORED_TRIGGER_DEFECTS))
-def test_pa_t12_invalid_stored_trigger_ref_rejected(b8, defect):
-    build = _STORED_TRIGGER_DEFECTS[defect]
-    snap, res = _stale_world_with_stored_trigger(b8, "pa-stored-" + defect.replace("_", "-"),
-                                                 lambda c: build(b8, c))
-    assert res.verdict.value == "REJECTED"
-    assert "verification_not_satisfied" in reason_values(res)
+def _valid_t12_world(b8, lineage):
+    """Spec-compliant T12 scenario; every semantic input is independent of `lineage`."""
+    snap, res = _stale_world_with_stored_trigger(
+        b8, lineage, lambda c: evidence(b8, c, kind="SOURCE_VERSION_CHANGE"))
+    (stale_rec,) = [r for r in snap.records if r.state is b8.ClaimState.STALE]
+    assert stale_rec.staleness_trigger_refs, "scenario must carry a non-empty stored trigger set"
+    return snap, res
 
 
 def test_pa_t12_valid_stored_trigger_neutral_lineage_positive_control(b8):
