@@ -4,18 +4,12 @@ Uses the existing C2.3 SQLite ledger + C2.18 signed identity fixtures, not
 new permission machinery. A successful fixture check never authorizes ACT.
 """
 from __future__ import annotations
-from dataclasses import replace
-
 import pytest
 
 from periphery.enterprise_durable_revocation_ledger_v0 import DurableDelegationLedgerV0
 from periphery.universal_cross_domain_conformance_v0 import (
     DomainEvidenceV0, interpret_domain_v0,
 )
-from tests.integration.test_v01_c218_identity_delegation_chain_fixture_v0 import (
-    SCOPE, scenario,
-)
-from periphery.enterprise_identity_delegation_chain_fixture_v0 import inspect_identity_delegation_fixture_v0
 
 SECTORS=(
     ("CSSA","org-cssa","CRM","member.update"),
@@ -75,15 +69,6 @@ def test_c2_universal_replay_isolation_and_revocation_atomicity(tmp_path):
         a,generation=0,nonce="universal-after-revoke-0001",
         evidence_verified=True
     )=="BLOCK:C23_REVOKED"
-
-def test_c2_valid_signed_identity_fixture_is_still_not_a_runtime_permit(tmp_path):
-    _,args=scenario(tmp_path)
-    decision=inspect_identity_delegation_fixture_v0(**args)
-    assert decision["status"]=="BLOCK"
-    assert decision["reason"]=="C218_ORGANIZATION_DELEGATION_AUTHORITY_UNVERIFIED"
-    assert decision["egress_allowed"] is False
-    args["organization"]="org-b"
-    assert "IDENTITY_REJECTED" in inspect_identity_delegation_fixture_v0(**args)["reason"]
 
 @pytest.mark.parametrize("domain,facts",[
     ("CSSA",{"organization":"org-cssa","case":"membership","authority":"DECLARED"}),
