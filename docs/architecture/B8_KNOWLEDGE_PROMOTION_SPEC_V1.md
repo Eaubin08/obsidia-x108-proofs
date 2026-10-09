@@ -440,6 +440,13 @@ Future C1 RED tests must fail only because current runtime does not yet canonica
 - **C1-R8**: T9 invariance. Permuting/duplicating refs must not change predecessor semantics, candidate-domain semantics, T9 verdict, or T9 compound supersession behavior.
 - **C1-R9**: Class D invariance. Permuting/duplicating request refs must not change T8 freshness semantics, T12 structural novelty, T12 basis binding, or T12 trigger coverage.
 
+**Mixed Temporal Contradiction Policy (D-B8-C2-1).** `C2_MIXED_TEMPORAL_POLICY=FAIL_CLOSED`.
+- A T7 transition is REJECTED with `temporal_relation_indeterminate` if any conflicting claim referenced in `refs` has an indeterminate temporal relation (e.g., from an incomparable temporal frame) to the target claim.
+- A fully comparable contradiction in the same request does not override this blocker (`DO_NOT_CREATE_UNREPRESENTABLE_MIXED_STATE=YES`).
+- A non-conflicting incomparable claim reference does NOT poison a valid contest.
+- Only fully comparable contradictory claims can be stored in `contested_by`.
+- The canonicalization / temporal comparison distinction remains explicit: request `refs` canonicalization (§9.1) occurs before and independently of temporal evaluation.
+
 An applied transition
 produces exactly one new immutable `KnowledgeRecord` (`record_version + 1`) and one
 `TransitionReceipt` (T9: one bundle, §9.3). An identical request already applied →
