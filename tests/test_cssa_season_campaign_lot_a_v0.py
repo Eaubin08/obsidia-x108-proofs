@@ -8,9 +8,9 @@ from periphery.cssa_season_campaign_lot_a_v0 import (
 
 
 def event(key, kind="MATCH", **kw):
-    return {"id": key, "kind": kind, "owner": "manager",
-            "slot": "2026-10-20T18:00+02:00", "source_ref": "synthetic:" + key,
-            **kw}
+    return dict({"id": key, "kind": kind, "owner": "manager",
+                 "slot": "2026-10-20T18:00+02:00",
+                 "source_ref": "synthetic:" + key}, **kw)
 
 
 def test_integrated_multi_service_campaign():
