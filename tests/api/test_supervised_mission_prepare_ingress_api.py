@@ -4,6 +4,7 @@ import difflib
 import hashlib
 import subprocess
 from pathlib import Path
+from types import MappingProxyType
 
 from fastapi.testclient import TestClient
 
@@ -263,6 +264,50 @@ def test_valid_request_prepares_and_saves_canonical_checkpoint(monkeypatch, tmp_
     projection = client.get(f"/api/supervised-missions/checkpoints/{data['checkpoint_id']}/projection")
     assert projection.status_code == 200
     assert projection.json()["mission_id"] == "mission-r12-f6-c1"
+
+
+def test_accepted_response_sanitizes_real_shaped_brody_qwen_metadata(monkeypatch, tmp_path):
+    world = _world(tmp_path)
+    _install_paths(monkeypatch, world)
+    original_response_builder = S._prepare_ingress_response
+
+    class RealShapedQwenEvidence:
+        pass
+
+    def response_with_runtime_metadata(**kwargs):
+        body = original_response_builder(**kwargs)
+        body["provider_provenance"]["runtime_class"] = RealShapedQwenEvidence
+        body["provider_provenance"]["runtime_metadata"] = MappingProxyType(
+            {
+                "provider": "QWEN_LOCAL",
+                "model": "qwen2.5-3b-instruct-q4_k_m",
+                "model_call_used": True,
+                "readonly": True,
+            }
+        )
+        return body
+
+    monkeypatch.setattr(S, "_prepare_ingress_response", response_with_runtime_metadata)
+
+    response = client.post("/api/supervised-missions/prepare-only", json=_request(world))
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == S.PREPARE_STATUS_ACCEPTED
+    assert data["state"] == "PREPARED_AWAITING_APPROVAL"
+    assert data["provider_provenance"]["runtime_class"].endswith("RealShapedQwenEvidence")
+    assert data["provider_provenance"]["runtime_metadata"] == {
+        "provider": "QWEN_LOCAL",
+        "model": "qwen2.5-3b-instruct-q4_k_m",
+        "model_call_used": True,
+        "readonly": True,
+    }
+    assert data["provider_provenance"]["real_local_model_verified"] is True
+    assert data["provider_provenance"]["model_call_used"] is True
+    assert data["executor_invoked"] is False
+    assert data["approval_created"] is False
+    assert data["memory_write"] is False
+    assert (Path(world["exec_wt"]) / TARGET).read_text(encoding="utf-8") == BEFORE
 
 
 def test_missing_revoked_or_invalid_mandate_fails_closed(monkeypatch, tmp_path):

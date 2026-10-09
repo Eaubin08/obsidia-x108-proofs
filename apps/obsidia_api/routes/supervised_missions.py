@@ -11,11 +11,14 @@ import os
 import re
 import subprocess
 import sys
+import json
 from copy import deepcopy
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, Mapping, Sequence
 
 from fastapi import APIRouter, Body, HTTPException, Query
+from fastapi.responses import JSONResponse
 
 _SCRIPTS_DIR = Path(__file__).resolve().parents[3] / "scripts"
 if str(_SCRIPTS_DIR) not in sys.path:
@@ -88,6 +91,34 @@ def _as_list(value: Any) -> list[str]:
     if isinstance(value, Sequence) and not isinstance(value, (bytes, bytearray)):
         return [str(item) for item in value if str(item)]
     return []
+
+
+def _json_default(value: Any) -> Any:
+    if isinstance(value, MappingProxyType):
+        return dict(value)
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, type):
+        return f"{value.__module__}.{value.__qualname__}"
+    if isinstance(value, (set, tuple)):
+        return list(value)
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    if hasattr(value, "to_dict"):
+        return value.to_dict()
+    raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
+
+
+def _json_response(value: Mapping[str, Any]) -> JSONResponse:
+    body = json.loads(
+        json.dumps(
+            value,
+            ensure_ascii=False,
+            allow_nan=False,
+            default=_json_default,
+        )
+    )
+    return JSONResponse(content=body)
 
 
 def _norm_rel(value: Any) -> str:
@@ -451,8 +482,8 @@ def _load_projection(checkpoint_id: str) -> dict[str, Any]:
     return _projection(record)
 
 
-@router.post("/prepare-only")
-async def prepare_supervised_mission_ingress(payload: Mapping[str, Any] = Body(...)) -> dict[str, Any]:
+@router.post("/prepare-only", response_model=None)
+async def prepare_supervised_mission_ingress(payload: Mapping[str, Any] = Body(...)) -> Any:
     """Create a governed PREPARE_ONLY supervised mission checkpoint.
 
     This route is an ingress adapter only. It validates an explicit human
@@ -557,11 +588,13 @@ async def prepare_supervised_mission_ingress(payload: Mapping[str, Any] = Body(.
         )
 
     projection = _projection(saved["checkpoint"])
-    return _prepare_ingress_response(
-        checkpoint=saved["checkpoint"],
-        projection=projection,
-        candidate=mission_candidate,
-        handoff=handoff,
+    return _json_response(
+        _prepare_ingress_response(
+            checkpoint=saved["checkpoint"],
+            projection=projection,
+            candidate=mission_candidate,
+            handoff=handoff,
+        )
     )
 
 
