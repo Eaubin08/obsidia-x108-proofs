@@ -154,6 +154,7 @@ from apps.obsidia_api.routes.source_runtime_status import router as source_runti
 from apps.obsidia_api.routes.live_kernel_bridge import router as live_kernel_bridge_router
 from apps.obsidia_api.routes.os_map import router as os_map_router
 from apps.obsidia_api.routes.jarvis_governed import router as jarvis_governed_router
+from apps.obsidia_api.routes.supervised_missions import router as supervised_missions_router
 
 for r in [status_router, brody_router, translation_router, os_trad_ir_reverse_router, context_router,
            memory_router, gencoin_router, graphiti_router, x108_router,
@@ -163,6 +164,8 @@ for r in [status_router, brody_router, translation_router, os_trad_ir_reverse_ro
            live_kernel_bridge_router,
            os_map_router, jarvis_governed_router]:
     app.include_router(r)
+
+app.include_router(supervised_missions_router)
 
 
 @app.get("/")
