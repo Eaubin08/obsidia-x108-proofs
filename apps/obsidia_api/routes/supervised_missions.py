@@ -58,6 +58,12 @@ from obsidure_supervised_execution_feedback_projection_v1 import (  # noqa: E402
     STATUS_PROJECTED as F5C1_STATUS_PROJECTED,
     project_supervised_execution_feedback,
 )
+from obsidure_supervised_independent_verification_v1 import (  # noqa: E402
+    STATUS_HELD as F5C2_STATUS_HELD,
+    STATUS_REJECTED as F5C2_STATUS_REJECTED,
+    STATUS_VERIFIED as F5C2_STATUS_VERIFIED,
+    verify_supervised_ticket_and_mission_closure,
+)
 from obsidia_pc_capabilities_v2 import (  # noqa: E402
     OP_APPLY_PATCH,
     PREPARED_AWAITING_HUMAN_APPROVAL,
@@ -77,6 +83,11 @@ AUTH_HANDOFF_SCHEMA_VERSION = "OBSIDURE_SUPERVISED_MISSION_AUTHORIZATION_HANDOFF
 AUTH_STATUS_ACCEPTED = "R12_F6_D1_EXECUTION_OUTCOME_ACCEPTED"
 AUTH_STATUS_HELD = "R12_F6_D1_EXECUTION_HELD"
 AUTH_STATUS_REJECTED = "R12_F6_D1_EXECUTION_REJECTED"
+VERIFICATION_SCHEMA_VERSION = "OBSIDURE_SUPERVISED_MISSION_VERIFICATION_OPERATOR_API_V1"
+VERIFICATION_STATUS_PROJECTED = "R12_F6_D2_VERIFICATION_PROJECTED"
+VERIFICATION_STATUS_ASSESSED = "R12_F6_D2_VERIFICATION_ASSESSED"
+VERIFICATION_STATUS_HELD = "R12_F6_D2_VERIFICATION_HELD"
+VERIFICATION_STATUS_REJECTED = "R12_F6_D2_VERIFICATION_REJECTED"
 _DEFAULT_STORE = Path(os.getenv("OBSIDIA_SUPERVISED_MISSION_CHECKPOINT_DIR", "runtime_data/supervised_mission_checkpoints"))
 _DEFAULT_PREPARE_STORE = Path(os.getenv("OBSIDIA_SUPERVISED_MISSION_PREPARE_STORE_DIR", "runtime_data/supervised_mission_prepare"))
 _CHECKPOINT_ID = re.compile(r"^smc-[A-Za-z0-9_.:-]{1,80}$")
@@ -245,6 +256,29 @@ def _auth_fail(reason: str, *, status: str = AUTH_STATUS_HELD, http_status: int 
         "no_automatic_retry": True,
         **_NO_AUTHORITY,
         "readonly": False,
+        **extra,
+    }
+    if http_status >= 400:
+        raise HTTPException(status_code=http_status, detail=api_projection(body))
+    return api_projection(body)
+
+
+def _verification_fail(reason: str, *, status: str = VERIFICATION_STATUS_HELD, http_status: int = 200, **extra: Any) -> dict[str, Any]:
+    body = {
+        "schema_version": VERIFICATION_SCHEMA_VERSION,
+        "status": status,
+        "state": "HOLD" if status == VERIFICATION_STATUS_HELD else "REJECTED",
+        "reason": reason,
+        "mission_id": extra.pop("mission_id", None),
+        "checkpoint_id": extra.pop("checkpoint_id", None),
+        "ticket_id": extra.pop("ticket_id", None),
+        "closure_eligibility": "CLOSURE_BLOCKED",
+        "hold_reasons": [reason],
+        "verification_projection": None,
+        "verification_assessment": None,
+        "no_false_closure": True,
+        **_NO_AUTHORITY,
+        "readonly": True,
         **extra,
     }
     if http_status >= 400:
@@ -737,6 +771,103 @@ def _handoff_from_checkpoint(
     }, None
 
 
+def _execution_feedback_projection_from_checkpoint(record: Mapping[str, Any], ticket_id: str) -> tuple[dict[str, Any] | None, str | None]:
+    state = record.get("accepted_state") if isinstance(record.get("accepted_state"), Mapping) else {}
+    ticket = _find_ticket(state, ticket_id)
+    if ticket is None:
+        return None, "VERIFICATION_TICKET_NOT_FOUND"
+    action_evidence_id = ticket.get("action_evidence_id") or record.get("action_evidence_id")
+    execution_attempt_id = ticket.get("execution_attempt_id") or record.get("execution_attempt_id")
+    if not action_evidence_id:
+        return None, "EXECUTION_OBSERVATION_REQUIRED"
+    dep = record.get("dependency_projection") if isinstance(record.get("dependency_projection"), Mapping) else {}
+    return {
+        "status": F5C1_STATUS_PROJECTED,
+        "mission_update_accepted": True,
+        "execution_feedback_projected": True,
+        "mission_id": record.get("mission_id") or state.get("mission_id"),
+        "selected_ticket_id": ticket_id,
+        "accepted_state": deepcopy(dict(state)),
+        "dependency_projection": deepcopy(dict(dep)),
+        "next_step": deepcopy(dict(record.get("next_step") or {})),
+        "action_evidence_id": action_evidence_id,
+        "execution_attempt_id": execution_attempt_id,
+        "execution_phase": ticket.get("execution_phase") or record.get("execution_phase"),
+        "git_base_evolution": deepcopy(dict(record.get("git_base_evolution") or {})),
+        "transitive_dependency_blocks": deepcopy(list(dep.get("transitive_dependency_blocks") or [])),
+        "root_dependency_blocks": deepcopy(list(dep.get("root_dependency_blocks") or [])),
+        "decision_authority": DECISION_AUTHORITY,
+        "supervisor_authority": "NONE",
+        **_NO_AUTHORITY,
+    }, None
+
+
+def _verification_projection(record: Mapping[str, Any], ticket_id: str, assessment: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    state = record.get("accepted_state") if isinstance(record.get("accepted_state"), Mapping) else {}
+    ticket = _find_ticket(state, ticket_id) or {}
+    replay = assessment.get("verification_evidence", {}).get("r8_replay") if isinstance(assessment, Mapping) and isinstance(assessment.get("verification_evidence"), Mapping) else None
+    if not isinstance(replay, Mapping) and isinstance(assessment, Mapping):
+        replay = assessment.get("r8_replay") if isinstance(assessment.get("r8_replay"), Mapping) else None
+    reconciliation = assessment.get("verification_evidence", {}).get("realized_state_reconciliation") if isinstance(assessment, Mapping) and isinstance(assessment.get("verification_evidence"), Mapping) else None
+    if not isinstance(reconciliation, Mapping) and isinstance(assessment, Mapping):
+        reconciliation = assessment.get("realized_state_reconciliation") if isinstance(assessment.get("realized_state_reconciliation"), Mapping) else None
+    binder_status = str((replay or {}).get("binder_replay_status") or "")
+    replay_verdict = str((replay or {}).get("replay_verdict") or "UNKNOWN")
+    assessment_status = str((assessment or {}).get("status") or "")
+    assessment_reason = str((assessment or {}).get("reason") or "")
+    closure = "CLOSURE_BLOCKED"
+    if assessment_status == F5C2_STATUS_VERIFIED:
+        closure = "MISSION_CLOSURE_ELIGIBLE" if assessment.get("mission_done") is True else "TICKET_CLOSURE_ELIGIBLE"
+    elif ticket.get("closed") is True and state.get("mission_done_verified") is True:
+        closure = "MISSION_DONE_VERIFIED"
+    reason = assessment_reason or ticket.get("hold_reason") or record.get("hold_reason")
+    if binder_status == "INLINE_STATUS_ONLY" or "BINDER_DECISION_RECONSTRUCTION_REQUIRED" in str(reason or ""):
+        reason = "BINDER_DECISION_RECONSTRUCTION_REQUIRED"
+        closure = "CLOSURE_BLOCKED"
+    action_evidence_id = ticket.get("action_evidence_id") or record.get("action_evidence_id")
+    receipt_refs = _as_list(ticket.get("receipt_refs") or ticket.get("r8_receipt_refs"))
+    return {
+        "schema_version": "OBSIDURE_SUPERVISED_MISSION_VERIFICATION_PROJECTION_V1",
+        "mission_id": record.get("mission_id") or state.get("mission_id"),
+        "ticket_id": ticket_id,
+        "execution_observation": {
+            "phase": ticket.get("execution_phase") or record.get("execution_phase") or "UNKNOWN",
+            "action_evidence_id": action_evidence_id,
+            "execution_attempt_id": ticket.get("execution_attempt_id") or record.get("execution_attempt_id"),
+            "executed_observed_is_verified": False,
+        },
+        "receipt_integrity": {
+            "receipt_refs": receipt_refs,
+            "r8_replay_verdict": replay_verdict,
+            "realized_state_reconciliation": (reconciliation or {}).get("reconciliation_status", "UNKNOWN"),
+        },
+        "r8_replay": {
+            "replay_verdict": replay_verdict,
+            "binder_replay_status": binder_status or "UNKNOWN",
+            "verified_with_limits": replay_verdict == "VERIFIED_WITH_LIMITS",
+        },
+        "binder_independence": {
+            "fully_independent": bool(replay_verdict == "VERIFIED" and binder_status not in {"INLINE_STATUS_ONLY", "NOT_REACHED", "UNKNOWN", ""}),
+            "limitation": "BINDER_DECISION_RECONSTRUCTION_REQUIRED" if binder_status == "INLINE_STATUS_ONLY" else None,
+        },
+        "independent_verification": {
+            "status": ticket.get("independent_verification_status") or assessment_status or "UNKNOWN",
+            "level": ticket.get("verification_level") or (assessment or {}).get("verification_level") or "UNKNOWN",
+            "assessment_status": assessment_status or None,
+            "assessment_reason": assessment_reason or None,
+        },
+        "closure_eligibility": closure,
+        "hold_reasons": [reason] if reason else [],
+        "mission_completion_proof_ref": _completion_reference(record, state),
+        "status_distinctions": {
+            "executed_observed_is_verified": False,
+            "verified_is_closed": False,
+            "closed_is_mission_done_verified": False,
+            "http_success_is_closure": False,
+        },
+    }
+
+
 def _load_projection(checkpoint_id: str) -> dict[str, Any]:
     if not _CHECKPOINT_ID.fullmatch(checkpoint_id):
         raise HTTPException(status_code=422, detail={"reason": "INVALID_CHECKPOINT_ID", **_NO_AUTHORITY})
@@ -1019,6 +1150,110 @@ async def authorize_supervised_ticket_execution(
             "commit_created": False,
             "push_performed": False,
             "merge_performed": False,
+        }
+    )
+
+
+@router.get("/{mission_id}/verification-projection")
+async def supervised_verification_projection(
+    mission_id: str,
+    checkpoint_id: str = Query(..., description="Canonical F5-A checkpoint id to inspect."),
+    ticket_id: str = Query(..., description="Prepared or executed supervised ticket id."),
+) -> dict[str, Any]:
+    if not _MISSION_ID.fullmatch(mission_id):
+        raise HTTPException(status_code=422, detail={"reason": "INVALID_MISSION_ID", **_NO_AUTHORITY})
+    if not _CHECKPOINT_ID.fullmatch(checkpoint_id):
+        raise HTTPException(status_code=422, detail={"reason": "INVALID_CHECKPOINT_ID", **_NO_AUTHORITY})
+    record, reason = load_supervised_mission_checkpoint(checkpoint_id, checkpoint_store_dir=_DEFAULT_STORE)
+    if record is None:
+        status = 404 if reason == "CHECKPOINT_NOT_FOUND" else 409
+        raise HTTPException(status_code=status, detail={"reason": reason or "CHECKPOINT_LOAD_FAILED", **_NO_AUTHORITY})
+    state = record.get("accepted_state") if isinstance(record.get("accepted_state"), Mapping) else {}
+    if record.get("mission_id") != mission_id and state.get("mission_id") != mission_id:
+        raise HTTPException(status_code=404, detail={"reason": "MISSION_CHECKPOINT_MISMATCH", **_NO_AUTHORITY})
+    projection, projection_reason = _execution_feedback_projection_from_checkpoint(record, ticket_id)
+    verification = _verification_projection(record, ticket_id)
+    status = VERIFICATION_STATUS_PROJECTED if projection is not None else VERIFICATION_STATUS_HELD
+    if projection_reason:
+        verification["hold_reasons"] = [projection_reason]
+        verification["closure_eligibility"] = "CLOSURE_BLOCKED"
+    return api_projection(
+        {
+            "schema_version": VERIFICATION_SCHEMA_VERSION,
+            "status": status,
+            "state": "PROJECTED" if projection is not None else "HOLD",
+            "reason": projection_reason,
+            "mission_id": mission_id,
+            "checkpoint_id": checkpoint_id,
+            "ticket_id": ticket_id,
+            "verification_projection": verification,
+            "execution_feedback_projection_available": projection is not None,
+            "closure_eligibility": verification.get("closure_eligibility"),
+            "no_false_closure": True,
+            **_NO_AUTHORITY,
+            "readonly": True,
+        }
+    )
+
+
+@router.post("/{mission_id}/verify-ticket", response_model=None)
+async def verify_supervised_ticket_operator_projection(
+    mission_id: str,
+    payload: Mapping[str, Any] = Body(...),
+) -> Any:
+    if not _MISSION_ID.fullmatch(mission_id):
+        return _verification_fail("INVALID_MISSION_ID", status=VERIFICATION_STATUS_REJECTED, http_status=422, mission_id=mission_id)
+    if not isinstance(payload, Mapping):
+        return _verification_fail("REQUEST_BODY_REQUIRED", status=VERIFICATION_STATUS_REJECTED, http_status=422, mission_id=mission_id)
+    checkpoint_id = str(payload.get("checkpoint_id") or "").strip()
+    ticket_id = str(payload.get("ticket_id") or "").strip()
+    if not _CHECKPOINT_ID.fullmatch(checkpoint_id):
+        return _verification_fail("INVALID_CHECKPOINT_ID", status=VERIFICATION_STATUS_REJECTED, http_status=422, mission_id=mission_id, ticket_id=ticket_id)
+    if not ticket_id:
+        return _verification_fail("TICKET_ID_REQUIRED", status=VERIFICATION_STATUS_REJECTED, http_status=422, mission_id=mission_id, checkpoint_id=checkpoint_id)
+    evidence = payload.get("verification_evidence")
+    if not isinstance(evidence, Mapping):
+        return _verification_fail("VERIFICATION_EVIDENCE_REQUIRED", status=VERIFICATION_STATUS_REJECTED, http_status=422, mission_id=mission_id, checkpoint_id=checkpoint_id, ticket_id=ticket_id)
+    record, load_reason = load_supervised_mission_checkpoint(checkpoint_id, checkpoint_store_dir=_DEFAULT_STORE)
+    if record is None:
+        status = 404 if load_reason == "CHECKPOINT_NOT_FOUND" else 409
+        return _verification_fail(str(load_reason or "CHECKPOINT_LOAD_FAILED"), status=VERIFICATION_STATUS_REJECTED if status == 404 else VERIFICATION_STATUS_HELD, http_status=status, mission_id=mission_id, checkpoint_id=checkpoint_id, ticket_id=ticket_id)
+    state = record.get("accepted_state") if isinstance(record.get("accepted_state"), Mapping) else {}
+    if record.get("mission_id") != mission_id and state.get("mission_id") != mission_id:
+        return _verification_fail("MISSION_CHECKPOINT_MISMATCH", status=VERIFICATION_STATUS_REJECTED, mission_id=mission_id, checkpoint_id=checkpoint_id, ticket_id=ticket_id)
+    execution_projection, projection_reason = _execution_feedback_projection_from_checkpoint(record, ticket_id)
+    if execution_projection is None:
+        return _verification_fail(projection_reason or "EXECUTION_FEEDBACK_PROJECTION_REQUIRED", mission_id=mission_id, checkpoint_id=checkpoint_id, ticket_id=ticket_id)
+    assessment = verify_supervised_ticket_and_mission_closure(
+        execution_feedback_projection=execution_projection,
+        verification_evidence=dict(evidence),
+        prior_verification_evidence=payload.get("prior_verification_evidence") if isinstance(payload.get("prior_verification_evidence"), Mapping) else None,
+        checkpoint_store_dir=None,
+        observed_project_head=str(payload.get("observed_project_head") or "") or None,
+    )
+    verification = _verification_projection(record, ticket_id, {**assessment, "verification_evidence": dict(evidence)})
+    status = VERIFICATION_STATUS_ASSESSED if assessment.get("status") == F5C2_STATUS_VERIFIED else VERIFICATION_STATUS_HELD
+    if assessment.get("status") == F5C2_STATUS_REJECTED:
+        status = VERIFICATION_STATUS_REJECTED
+    return _json_response(
+        {
+            "schema_version": VERIFICATION_SCHEMA_VERSION,
+            "status": status,
+            "state": verification.get("closure_eligibility"),
+            "reason": assessment.get("reason"),
+            "mission_id": mission_id,
+            "checkpoint_id": checkpoint_id,
+            "ticket_id": ticket_id,
+            "verification_projection": verification,
+            "verification_assessment": assessment,
+            "receipt_integrity": verification.get("receipt_integrity"),
+            "r8_replay": verification.get("r8_replay"),
+            "binder_independence": verification.get("binder_independence"),
+            "closure_eligibility": verification.get("closure_eligibility"),
+            "persisted": False,
+            "no_false_closure": True,
+            **_NO_AUTHORITY,
+            "readonly": True,
         }
     )
 
