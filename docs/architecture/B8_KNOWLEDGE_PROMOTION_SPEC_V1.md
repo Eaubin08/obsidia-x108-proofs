@@ -417,6 +417,28 @@ reason, and refs.
 - Idempotency: An identical request (including permutation / duplicates of the same canonical ref set) already applied → NO_OP_DUPLICATE with the original immutable receipt / bundle; an old receipt never re-applies.
 - Record Identity: `KnowledgeRecord.refs` receives the exact canonical refs. Its identity is therefore invariant to request ref order.
 - Multi-reason Semantics: Reasons remain complete, deduplicated, and canonically ordered regardless of ref input order.
+- Canonicalization Boundary: `TransitionRequest.refs` must be canonicalized before request identity is derived. Conceptually: `canonical_refs = tuple(sorted(set(input_refs)))`, then `TransitionRequest.refs = canonical_refs`, then `request_id = hash(canonical TransitionRequest)`. This must occur before duplicate lookup, receipt creation, and successor `KnowledgeRecord` refs assignment.
+- Empty Set: `refs=()` is already canonical. Canonicalization does not require refs to be non-empty unless a specific transition contract separately requires refs.
+- Type/Value Validity: `CANONICALIZATION != VALIDATION`. Canonicalization does NOT legitimize malformed ref identities; it only defines ordering, deduplication, and identity equivalence.
+
+**Request Refs Canonicalization Compatibility Decision (D-B8-C1-2).** `C1_COMPATIBILITY_DECISION=SAFE_IN_PLACE_CANONICALIZATION`.
+- `REQUEST_ID_VERSIONING_REQUIRED=NO`
+- `SEMANTIC_REQUEST_KEY_REQUIRED=NO`
+- `HISTORY_MIGRATION_REQUIRED=NO`
+- `LEGACY_SEMANTIC_DEDUP_REQUIRED=NOT_APPLICABLE`
+Rationale: Current B8 has no durable request history. B10 durable memory is not implemented. `request_id` has no external consumer and is not an external stable foreign key. No external API contract depends on legacy `request_id` values. Therefore, identity can safely be aligned with semantic ref-set behavior now in place. Existing already-created immutable objects are not retroactively rewritten; only new canonical requests and new successor records use canonical refs. There is no durable runtime B8 history requiring migration.
+
+**Future RED Contract for C1 (D-B8-C1-3).**
+Future C1 RED tests must fail only because current runtime does not yet canonicalize `TransitionRequest.refs`. They must NOT introduce new semantics in Class D, T9, T11, reason partition, authority, or temporal ordering.
+- **C1-R1**: permutation identity. `refs=(A,B)` vs `refs=(B,A)` → canonical refs equal, `request_id` equal.
+- **C1-R2**: duplicate collapse. `refs=(A,A,B)` vs `refs=(A,B)` → canonical refs equal, `request_id` equal.
+- **C1-R3**: permuted duplicate replay. First apply `refs=(A,B)`. Then replay `refs=(B,A)` → NO_OP_DUPLICATE, same original immutable APPLIED receipt, no new KnowledgeRecord, no revision increment.
+- **C1-R4**: duplicate-containing replay. First apply `refs=(A,B)`. Then replay `refs=(A,A,B)` → NO_OP_DUPLICATE, same original immutable APPLIED receipt, no new KnowledgeRecord, no revision increment.
+- **C1-R5**: genuinely different set. `refs=(A,B)` vs `refs=(A,C)` → different canonical refs, different `request_id` (assuming B != C and no hash collision).
+- **C1-R6**: semantic reason invariance. `refs=(valid, wrong_bound)` vs `refs=(wrong_bound, valid)` → same verdict, same complete reason set.
+- **C1-R7**: T11 invariance. Permuting or duplicating request refs must not alter qualifying trigger identities, T11 verdict, or canonical `staleness_trigger_refs`.
+- **C1-R8**: T9 invariance. Permuting/duplicating refs must not change predecessor semantics, candidate-domain semantics, T9 verdict, or T9 compound supersession behavior.
+- **C1-R9**: Class D invariance. Permuting/duplicating request refs must not change T8 freshness semantics, T12 structural novelty, T12 basis binding, or T12 trigger coverage.
 
 An applied transition
 produces exactly one new immutable `KnowledgeRecord` (`record_version + 1`) and one
