@@ -12,6 +12,7 @@ import re
 import subprocess
 import sys
 import json
+import hashlib
 from copy import deepcopy
 from pathlib import Path
 from types import MappingProxyType
@@ -47,6 +48,23 @@ from obsidure_supervised_prepare_handoff_v1 import (  # noqa: E402
     STATUS_PREPARED as F3B_STATUS_PREPARED,
     prepare_supervised_mission_handoff,
 )
+from obsidure_supervised_execution_outcome_bridge_v1 import (  # noqa: E402
+    HOLD_AWAITING_VALID_AUTHORIZATION,
+    STATUS_EXECUTION_OUTCOME as F5B_STATUS_EXECUTION_OUTCOME,
+    STATUS_HELD as F5B_STATUS_HELD,
+    execute_supervised_governed_ticket,
+)
+from obsidure_supervised_execution_feedback_projection_v1 import (  # noqa: E402
+    STATUS_PROJECTED as F5C1_STATUS_PROJECTED,
+    project_supervised_execution_feedback,
+)
+from obsidia_pc_capabilities_v2 import (  # noqa: E402
+    OP_APPLY_PATCH,
+    PREPARED_AWAITING_HUMAN_APPROVAL,
+    _descriptor_record_hash,
+    _sha16,
+    _v2id,
+)
 
 router = APIRouter(prefix="/api/supervised-missions", tags=["supervised-missions"])
 
@@ -55,11 +73,16 @@ PREPARE_INGRESS_SCHEMA_VERSION = "OBSIDURE_SUPERVISED_MISSION_PREPARE_INGRESS_AP
 PREPARE_STATUS_ACCEPTED = "R12_F6_C1_PREPARE_ONLY_ACCEPTED"
 PREPARE_STATUS_HELD = "R12_F6_C1_PREPARE_ONLY_HELD"
 PREPARE_STATUS_REJECTED = "R12_F6_C1_PREPARE_ONLY_REJECTED"
+AUTH_HANDOFF_SCHEMA_VERSION = "OBSIDURE_SUPERVISED_MISSION_AUTHORIZATION_HANDOFF_API_V1"
+AUTH_STATUS_ACCEPTED = "R12_F6_D1_EXECUTION_OUTCOME_ACCEPTED"
+AUTH_STATUS_HELD = "R12_F6_D1_EXECUTION_HELD"
+AUTH_STATUS_REJECTED = "R12_F6_D1_EXECUTION_REJECTED"
 _DEFAULT_STORE = Path(os.getenv("OBSIDIA_SUPERVISED_MISSION_CHECKPOINT_DIR", "runtime_data/supervised_mission_checkpoints"))
 _DEFAULT_PREPARE_STORE = Path(os.getenv("OBSIDIA_SUPERVISED_MISSION_PREPARE_STORE_DIR", "runtime_data/supervised_mission_prepare"))
 _CHECKPOINT_ID = re.compile(r"^smc-[A-Za-z0-9_.:-]{1,80}$")
 _MISSION_ID = re.compile(r"^[A-Za-z0-9_.:-]{1,128}$")
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
+_HEX64 = re.compile(r"^[0-9a-f]{64}$")
 
 _NO_AUTHORITY = {
     "readonly": True,
@@ -108,11 +131,11 @@ def api_projection(value: Any, active: set[int] = None) -> Any:
         if not math.isfinite(value):
             raise ValueError(f"non-finite float")
         return value
-    
+
     vid = id(value)
     if vid in active:
         raise ValueError(f"recursive container")
-    
+
     active.add(vid)
     try:
         if isinstance(value, dict):
@@ -135,7 +158,7 @@ def api_projection(value: Any, active: set[int] = None) -> Any:
             return {k: api_projection(v, active) for k, v in value.model_dump().items()}
         elif hasattr(value, "to_dict"):
             return {k: api_projection(v, active) for k, v in value.to_dict().items()}
-        
+
         return str(value)
     finally:
         active.discard(vid)
@@ -195,6 +218,33 @@ def _api_fail(status: str, reason: str, *, http_status: int = 200, **extra: Any)
         **_NO_AUTHORITY,
         "readonly": False,
         "network_or_model_call": bool(extra.pop("network_or_model_call", False)),
+        **extra,
+    }
+    if http_status >= 400:
+        raise HTTPException(status_code=http_status, detail=api_projection(body))
+    return api_projection(body)
+
+
+def _auth_fail(reason: str, *, status: str = AUTH_STATUS_HELD, http_status: int = 200, **extra: Any) -> dict[str, Any]:
+    body = {
+        "schema_version": AUTH_HANDOFF_SCHEMA_VERSION,
+        "status": status,
+        "state": "HOLD" if status == AUTH_STATUS_HELD else "REJECTED",
+        "reason": reason,
+        "mission_id": extra.pop("mission_id", None),
+        "checkpoint_id": extra.pop("checkpoint_id", None),
+        "ticket_id": extra.pop("ticket_id", None),
+        "checkpoint_projection_available": False,
+        "hold_reasons": [reason],
+        "execution_phase": "HOLD",
+        "execution_outcome": None,
+        "execution_authority_hash": extra.pop("execution_authority_hash", None),
+        "human_authorization_reference_hash": extra.pop("human_authorization_reference_hash", None),
+        "supervisor_approval_created": False,
+        "no_false_verification": True,
+        "no_automatic_retry": True,
+        **_NO_AUTHORITY,
+        "readonly": False,
         **extra,
     }
     if http_status >= 400:
@@ -520,6 +570,173 @@ def _projection(record: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _auth_ref_hash(reference: str | None) -> str | None:
+    if not reference:
+        return None
+    return hashlib.sha256(reference.encode("utf-8")).hexdigest()
+
+
+def _find_ticket(state: Mapping[str, Any], ticket_id: str) -> Mapping[str, Any] | None:
+    for ticket in state.get("tickets") or ():
+        if isinstance(ticket, Mapping) and ticket.get("ticket_id") == ticket_id:
+            return ticket
+    return None
+
+
+def _mission_update_from_checkpoint(record: Mapping[str, Any]) -> dict[str, Any]:
+    dep = record.get("dependency_projection") if isinstance(record.get("dependency_projection"), Mapping) else {}
+    return {
+        "status": F4B_STATUS_UPDATED,
+        "mission_update_accepted": True,
+        "mission_id": record.get("mission_id"),
+        "accepted_state": deepcopy(dict(record.get("accepted_state") or {})),
+        "dependency_projection": deepcopy(dict(dep)),
+        "next_step": deepcopy(dict(record.get("next_step") or {})),
+        "transitive_dependency_blocks": deepcopy(list(dep.get("transitive_dependency_blocks") or [])),
+        "root_dependency_blocks": deepcopy(list(dep.get("root_dependency_blocks") or [])),
+        "evidence_refs": _as_list(record.get("evidence_references")),
+    }
+
+
+def _load_descriptor_by_eah(execution_authority_hash: str) -> tuple[dict[str, Any] | None, str | None]:
+    v2exec = _DEFAULT_PREPARE_STORE / "v2exec"
+    if not v2exec.is_dir():
+        return None, "PREPARE_DESCRIPTOR_STORE_NOT_FOUND"
+    for path in sorted(v2exec.glob("v2x-*.json")):
+        try:
+            record = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if isinstance(record, Mapping) and record.get("eah") == execution_authority_hash:
+            result = dict(record)
+            result["_descriptor_path"] = str(path)
+            return result, None
+    return None, "PREPARED_DESCRIPTOR_NOT_FOUND"
+
+
+def _project_from_state(state: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "repository_identity": state.get("repository_identity"),
+        "local_root": state.get("local_root"),
+        "worktree": state.get("worktree"),
+        "branch": state.get("branch"),
+        "base_sha": state.get("base_sha"),
+    }
+
+
+def _validate_descriptor_binding(
+    *,
+    descriptor_record: Mapping[str, Any],
+    state: Mapping[str, Any],
+    ticket: Mapping[str, Any],
+) -> str | None:
+    descriptor = descriptor_record.get("descriptor")
+    if not isinstance(descriptor, Mapping):
+        return "PREPARE_DESCRIPTOR_PAYLOAD_REQUIRED"
+    if descriptor_record.get("operation_type") != OP_APPLY_PATCH:
+        return "PREPARE_DESCRIPTOR_OPERATION_UNSUPPORTED"
+    expected_project = _project_from_state(state)
+    for descriptor_key, expected in (
+        ("execution_worktree", expected_project.get("worktree")),
+        ("main_worktree", expected_project.get("local_root")),
+        ("branch_name", expected_project.get("branch")),
+        ("base_sha", expected_project.get("base_sha")),
+    ):
+        if str(descriptor.get(descriptor_key) or "") != str(expected or ""):
+            return "PREPARE_DESCRIPTOR_PROJECT_MISMATCH:" + descriptor_key.upper()
+    targets = {_norm_rel(item) for item in _as_list(descriptor.get("target_paths"))}
+    allowed_targets = {_norm_rel(item) for item in _as_list(ticket.get("authorized_paths") or ticket.get("target_paths"))}
+    if not targets:
+        return "PREPARED_DESCRIPTOR_TARGETS_REQUIRED"
+    if not allowed_targets or not targets.issubset(allowed_targets):
+        return "TICKET_TARGET_SCOPE_EXCEEDED"
+    operations = {str(item).upper() for item in _as_list(ticket.get("authorized_operations") or ticket.get("operations"))}
+    if operations and OP_APPLY_PATCH.upper() not in operations and "UPDATE_TARGET_FROM_SOURCE" not in operations:
+        return "TICKET_OPERATION_SCOPE_EXCEEDED"
+    v2id = str(descriptor_record.get("v2_exec_id") or "")
+    patch_path = _DEFAULT_PREPARE_STORE / "v2exec" / f"{v2id}.patch"
+    if not patch_path.is_file():
+        return "PREPARED_PATCH_ARTIFACT_MISSING"
+    patch_hash = hashlib.sha256(patch_path.read_bytes()).hexdigest()
+    if patch_hash != str(descriptor.get("patch_sha256") or ""):
+        return "PREPARED_PATCH_ARTIFACT_HASH_MISMATCH"
+    evidence_refs = set(_as_list(ticket.get("evidence_refs")) + _as_list(state.get("evidence_refs")))
+    patch_sha = str(descriptor.get("patch_sha256") or "")
+    if patch_sha and patch_sha not in evidence_refs:
+        return "PREPARED_PATCH_HASH_NOT_IN_TICKET_EVIDENCE"
+    return None
+
+
+def _handoff_from_checkpoint(
+    *,
+    record: Mapping[str, Any],
+    ticket_id: str,
+    execution_authority_hash: str,
+) -> tuple[dict[str, Any] | None, str | None]:
+    state = record.get("accepted_state") if isinstance(record.get("accepted_state"), Mapping) else {}
+    ticket = _find_ticket(state, ticket_id)
+    if ticket is None:
+        return None, "PREPARED_TICKET_NOT_FOUND"
+    descriptor_record, reason = _load_descriptor_by_eah(execution_authority_hash)
+    if descriptor_record is None:
+        return None, reason
+    bind_reason = _validate_descriptor_binding(descriptor_record=descriptor_record, state=state, ticket=ticket)
+    if bind_reason:
+        return None, bind_reason
+    descriptor = descriptor_record["descriptor"]
+    descriptor_hash_record = {key: value for key, value in descriptor_record.items() if not str(key).startswith("_")}
+    v2id = str(descriptor_record.get("v2_exec_id"))
+    patch_sha = str(descriptor.get("patch_sha256"))
+    child = _v2id("chd", execution_authority_hash + patch_sha)
+    proposal_id = next((ref for ref in _as_list(ticket.get("evidence_refs")) if ref.startswith("step-")), None)
+    if not proposal_id:
+        proposal_id = "recovered-proposal-" + _sha16(str(record.get("checkpoint_id")) + ticket_id + execution_authority_hash)
+    prepared_action = {
+        "status": PREPARED_AWAITING_HUMAN_APPROVAL,
+        "j5_phase": "PREPARE",
+        "operation_type": OP_APPLY_PATCH,
+        "execution_authority_hash": execution_authority_hash,
+        "patch_sha256": patch_sha,
+        "target_paths": _as_list(descriptor.get("target_paths")),
+        "before_digests": dict(descriptor.get("before_digests") or {}),
+        "v2_exec_id": v2id,
+        "child_id": child,
+        "manifest_hash": _sha16(json.dumps(descriptor, sort_keys=True)),
+        "desc_hash": _descriptor_record_hash(descriptor_hash_record),
+        "_stores_base_dir": str(_DEFAULT_PREPARE_STORE),
+    }
+    feedback = {
+        "mission_id": state.get("mission_id") or record.get("mission_id"),
+        "selected_ticket_id": ticket_id,
+        "proposal_id": proposal_id,
+        "proposal_hash": _sha16(proposal_id + execution_authority_hash + patch_sha),
+        "mandate_reference": state.get("human_mandate_reference") or record.get("human_mandate_reference"),
+        "project": _project_from_state(state),
+        "r9_candidate_reference": {
+            "candidate_patch_hash": patch_sha,
+            "r9_proposal_id": next((ref for ref in _as_list(ticket.get("evidence_refs")) if ref.startswith("obp-")), None),
+            "manifest_id": next((ref for ref in _as_list(ticket.get("evidence_refs")) if ref.startswith("obm-")), None),
+            "validation_id": next((ref for ref in _as_list(ticket.get("evidence_refs")) if ref.startswith("obv-")), None),
+            "handoff_id": next((ref for ref in _as_list(ticket.get("evidence_refs")) if ref.startswith("obh-")), None),
+        },
+        "prepared_action_reference": prepared_action,
+        "evidence_refs": _as_list(ticket.get("evidence_refs")),
+    }
+    return {
+        "status": F3B_STATUS_PREPARED,
+        "prepare_handoff": True,
+        "mission_id": feedback["mission_id"],
+        "selected_ticket_id": ticket_id,
+        "handoff_feedback": feedback,
+        "r9_prepare_result": {
+            "status": "RECONSTRUCTED_FROM_CANONICAL_DESCRIPTOR",
+            "descriptor_path": descriptor_record.get("_descriptor_path"),
+            "v2_exec_id": v2id,
+            "prepared_action": prepared_action,
+        },
+    }, None
+
+
 def _load_projection(checkpoint_id: str) -> dict[str, Any]:
     if not _CHECKPOINT_ID.fullmatch(checkpoint_id):
         raise HTTPException(status_code=422, detail={"reason": "INVALID_CHECKPOINT_ID", **_NO_AUTHORITY})
@@ -643,6 +860,166 @@ async def prepare_supervised_mission_ingress(payload: Mapping[str, Any] = Body(.
             candidate=mission_candidate,
             handoff=handoff,
         )
+    )
+
+
+@router.post("/{mission_id}/authorize-execution", response_model=None)
+async def authorize_supervised_ticket_execution(
+    mission_id: str,
+    payload: Mapping[str, Any] = Body(...),
+) -> Any:
+    if not _MISSION_ID.fullmatch(mission_id):
+        return _auth_fail("INVALID_MISSION_ID", status=AUTH_STATUS_REJECTED, http_status=422, mission_id=mission_id)
+    if not isinstance(payload, Mapping):
+        return _auth_fail("REQUEST_BODY_REQUIRED", status=AUTH_STATUS_REJECTED, http_status=422, mission_id=mission_id)
+    checkpoint_id = str(payload.get("checkpoint_id") or "").strip()
+    ticket_id = str(payload.get("ticket_id") or payload.get("selected_ticket_id") or "").strip()
+    execution_authority_hash = str(payload.get("execution_authority_hash") or "").lower().strip()
+    human_authorization_reference = str(payload.get("human_authorization_reference") or "").strip()
+    auth_hash = _auth_ref_hash(human_authorization_reference)
+    if not _CHECKPOINT_ID.fullmatch(checkpoint_id):
+        return _auth_fail("INVALID_CHECKPOINT_ID", status=AUTH_STATUS_REJECTED, http_status=422, mission_id=mission_id, ticket_id=ticket_id)
+    if not ticket_id:
+        return _auth_fail("TICKET_ID_REQUIRED", status=AUTH_STATUS_REJECTED, http_status=422, mission_id=mission_id, checkpoint_id=checkpoint_id)
+    if not _HEX64.fullmatch(execution_authority_hash) or not human_authorization_reference:
+        return _auth_fail(
+            HOLD_AWAITING_VALID_AUTHORIZATION,
+            mission_id=mission_id,
+            checkpoint_id=checkpoint_id,
+            ticket_id=ticket_id,
+            execution_authority_hash=execution_authority_hash or None,
+            human_authorization_reference_hash=auth_hash,
+        )
+    record, load_reason = load_supervised_mission_checkpoint(checkpoint_id, checkpoint_store_dir=_DEFAULT_STORE)
+    if record is None:
+        status = 404 if load_reason == "CHECKPOINT_NOT_FOUND" else 409
+        return _auth_fail(
+            str(load_reason or "CHECKPOINT_LOAD_FAILED"),
+            status=AUTH_STATUS_REJECTED if status == 404 else AUTH_STATUS_HELD,
+            http_status=status,
+            mission_id=mission_id,
+            checkpoint_id=checkpoint_id,
+            ticket_id=ticket_id,
+            execution_authority_hash=execution_authority_hash,
+            human_authorization_reference_hash=auth_hash,
+        )
+    state = record.get("accepted_state") if isinstance(record.get("accepted_state"), Mapping) else {}
+    if record.get("mission_id") != mission_id and state.get("mission_id") != mission_id:
+        return _auth_fail("MISSION_CHECKPOINT_MISMATCH", status=AUTH_STATUS_REJECTED, mission_id=mission_id, checkpoint_id=checkpoint_id, ticket_id=ticket_id)
+    ticket = _find_ticket(state, ticket_id)
+    if ticket is None:
+        return _auth_fail("PREPARED_TICKET_NOT_FOUND", status=AUTH_STATUS_REJECTED, mission_id=mission_id, checkpoint_id=checkpoint_id, ticket_id=ticket_id)
+    if ticket.get("action_evidence_id"):
+        return _auth_fail(
+            "DUPLICATE_EXECUTION_REQUIRES_RECONCILIATION",
+            mission_id=mission_id,
+            checkpoint_id=checkpoint_id,
+            ticket_id=ticket_id,
+            execution_authority_hash=execution_authority_hash,
+            human_authorization_reference_hash=auth_hash,
+            prior_action_evidence_id=ticket.get("action_evidence_id"),
+        )
+    project, project_reason = _observed_worktree_identity(_project_from_state(state))
+    if project_reason:
+        return _auth_fail(project_reason, mission_id=mission_id, checkpoint_id=checkpoint_id, ticket_id=ticket_id, execution_authority_hash=execution_authority_hash, human_authorization_reference_hash=auth_hash)
+    assert project is not None
+    mission_update = _mission_update_from_checkpoint(record)
+    handoff, handoff_reason = _handoff_from_checkpoint(record=record, ticket_id=ticket_id, execution_authority_hash=execution_authority_hash)
+    if handoff is None:
+        return _auth_fail(str(handoff_reason or "PREPARE_HANDOFF_RECONSTRUCTION_FAILED"), mission_id=mission_id, checkpoint_id=checkpoint_id, ticket_id=ticket_id, execution_authority_hash=execution_authority_hash, human_authorization_reference_hash=auth_hash)
+    outcome = execute_supervised_governed_ticket(
+        mission_update=mission_update,
+        prepare_handoff_result=handoff,
+        human_authorized_execution_authority_hash=execution_authority_hash,
+        human_authorization_reference=human_authorization_reference,
+        stores_base_dir=_DEFAULT_PREPARE_STORE,
+        repo_root=project["worktree"],
+        observed_project_head=project["head"],
+        session_id=str(payload.get("session_id") or "r12-f6-d1"),
+    )
+    if outcome.get("status") == F5B_STATUS_HELD and outcome.get("execution_phase") != "OUTCOME_UNCERTAIN":
+        body = _auth_fail(
+            str(outcome.get("reason") or "GOVERNED_EXECUTION_HELD"),
+            mission_id=mission_id,
+            checkpoint_id=checkpoint_id,
+            ticket_id=ticket_id,
+            execution_authority_hash=execution_authority_hash,
+            human_authorization_reference_hash=auth_hash,
+            execution_outcome=outcome,
+            executor_invoked=bool(outcome.get("executor_invoked")),
+        )
+        body["execution_phase"] = str(outcome.get("execution_phase") or "HOLD")
+        return _json_response(body)
+    post_code, post_head, _ = _git(Path(project["worktree"]), "rev-parse", "HEAD")
+    observed_post_action_head = post_head.lower() if post_code == 0 and _HEX40.fullmatch(post_head.lower()) else project["head"]
+    projected = project_supervised_execution_feedback(
+        mission_update=mission_update,
+        prepare_handoff_result=handoff,
+        execution_outcome=outcome,
+        checkpoint_store_dir=_DEFAULT_STORE,
+        observed_post_action_head=observed_post_action_head,
+    )
+    if projected.get("status") != F5C1_STATUS_PROJECTED:
+        body = _auth_fail(
+            str(projected.get("reason") or "EXECUTION_FEEDBACK_PROJECTION_HELD"),
+            mission_id=mission_id,
+            checkpoint_id=checkpoint_id,
+            ticket_id=ticket_id,
+            execution_authority_hash=execution_authority_hash,
+            human_authorization_reference_hash=auth_hash,
+            execution_outcome=outcome,
+            feedback_projection=projected,
+            executor_invoked=bool(outcome.get("executor_invoked")),
+        )
+        body["execution_phase"] = str(outcome.get("execution_phase") or "HOLD")
+        return _json_response(body)
+    saved = projected.get("checkpoint") if isinstance(projected.get("checkpoint"), Mapping) else {}
+    saved_record = saved.get("checkpoint") if isinstance(saved.get("checkpoint"), Mapping) else None
+    checkpoint_projection = _projection(saved_record) if isinstance(saved_record, Mapping) else None
+    return _json_response(
+        {
+            "schema_version": AUTH_HANDOFF_SCHEMA_VERSION,
+            "status": AUTH_STATUS_ACCEPTED,
+            "state": str(outcome.get("execution_phase") or "EXECUTION_ATTEMPTED"),
+            "reason": None,
+            "mission_id": mission_id,
+            "ticket_id": ticket_id,
+            "checkpoint_id": saved_record.get("checkpoint_id") if isinstance(saved_record, Mapping) else checkpoint_id,
+            "input_checkpoint_id": checkpoint_id,
+            "checkpoint_projection_available": checkpoint_projection is not None,
+            "checkpoint_projection": checkpoint_projection,
+            "execution_phase": outcome.get("execution_phase"),
+            "execution_outcome": outcome,
+            "action_evidence_id": outcome.get("action_evidence_id"),
+            "r8_receipt": outcome.get("r8_receipt_ref"),
+            "r8_replay": outcome.get("r8_replay"),
+            "realized_state_reconciliation": outcome.get("realized_state_reconciliation"),
+            "r10_repair_classification": outcome.get("r10_repair_advice")
+            or {"classification": "NOT_APPLICABLE", "repair_launch_allowed": False, "automatic_retry": False},
+            "execution_authority_hash": execution_authority_hash,
+            "human_authorization_reference_hash": auth_hash,
+            "supervisor_approval_created": False,
+            "no_false_verification": True,
+            "no_automatic_retry": True,
+            "readonly": False,
+            "authority": "NONE",
+            "decision_authority": DECISION_AUTHORITY,
+            "supervisor_authority": "NONE",
+            "emits_act": False,
+            "approval_created": False,
+            "automatic_approval": False,
+            "kx108_called": bool(outcome.get("kx108_called")),
+            "binder_mutation": False,
+            "executor_invoked": bool(outcome.get("executor_invoked")),
+            "repair_loop_invoked": False,
+            "filesystem_execution": bool(outcome.get("executor_invoked")),
+            "network_or_model_call": False,
+            "memory_write": False,
+            "native_memory_write": False,
+            "commit_created": False,
+            "push_performed": False,
+            "merge_performed": False,
+        }
     )
 
 
