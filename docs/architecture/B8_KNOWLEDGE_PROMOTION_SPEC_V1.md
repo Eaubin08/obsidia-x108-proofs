@@ -409,7 +409,16 @@ Every request binds claim_id, expected_claim_version, expected_state, expected_r
 slot_id, expected_slot_revision and target_state (compare-and-set against one canonical snapshot,
 §5.2; mismatch → REJECTED `stale_request`; same-clock-domain monotonic violation → REJECTED
 `backdated_record`, §5.3), a
-reason, and refs re-hashed and bound to `(claim_id, claim_version)`. An applied transition
+reason, and refs.
+
+**Request Refs Canonicalization (D-B8-C1-1).** `TransitionRequest.refs` is semantically an **unordered unique set** of artifact identities. Order, provider priority, and duplicate entries carry no authority or semantic weight (`REF_ORDER_AUTHORITY=NONE`, `DUPLICATE_REF_AUTHORITY=NONE`).
+- Canonical representation: refs are canonicalized at initialization as a `tuple(sorted(set(refs)))` by identity code point.
+- Request Identity: `request_id` is computed over this canonical form. Therefore, requests differing only by ref permutation or duplication produce the exact same `request_id`.
+- Idempotency: An identical request (including permutation / duplicates of the same canonical ref set) already applied → NO_OP_DUPLICATE with the original immutable receipt / bundle; an old receipt never re-applies.
+- Record Identity: `KnowledgeRecord.refs` receives the exact canonical refs. Its identity is therefore invariant to request ref order.
+- Multi-reason Semantics: Reasons remain complete, deduplicated, and canonically ordered regardless of ref input order.
+
+An applied transition
 produces exactly one new immutable `KnowledgeRecord` (`record_version + 1`) and one
 `TransitionReceipt` (T9: one bundle, §9.3). An identical request already applied →
 NO_OP_DUPLICATE with the original receipt / bundle; an old receipt never re-applies.
