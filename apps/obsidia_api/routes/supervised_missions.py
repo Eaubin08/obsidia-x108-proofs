@@ -93,6 +93,54 @@ def _as_list(value: Any) -> list[str]:
     return []
 
 
+
+import math
+import dataclasses
+from enum import Enum
+from types import MappingProxyType
+
+def api_projection(value: Any, active: set[int] = None) -> Any:
+    if active is None:
+        active = set()
+    if value is None or isinstance(value, (bool, str, int)):
+        return value
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise ValueError(f"non-finite float")
+        return value
+    
+    vid = id(value)
+    if vid in active:
+        raise ValueError(f"recursive container")
+    
+    active.add(vid)
+    try:
+        if isinstance(value, dict):
+            return {k: api_projection(v, active) for k, v in value.items()}
+        elif isinstance(value, MappingProxyType):
+            return {k: api_projection(v, active) for k, v in value.items()}
+        elif isinstance(value, (list, tuple)):
+            return [api_projection(v, active) for v in value]
+        elif isinstance(value, (set, frozenset)):
+            return sorted([api_projection(v, active) for v in value], key=lambda x: str(x))
+        elif isinstance(value, Enum):
+            return value.value
+        elif isinstance(value, Path):
+            return str(value)
+        elif dataclasses.is_dataclass(value) and not isinstance(value, type):
+            return {k: api_projection(v, active) for k, v in ((f.name, getattr(value, f.name)) for f in dataclasses.fields(value))}
+        elif hasattr(value, "dict") and callable(getattr(value, "dict")):
+            return {k: api_projection(v, active) for k, v in value.dict().items()}
+        elif hasattr(value, "model_dump") and callable(getattr(value, "model_dump")):
+            return {k: api_projection(v, active) for k, v in value.model_dump().items()}
+        elif hasattr(value, "to_dict"):
+            return {k: api_projection(v, active) for k, v in value.to_dict().items()}
+        
+        return str(value)
+    finally:
+        active.discard(vid)
+
+
 def _json_default(value: Any) -> Any:
     if isinstance(value, MappingProxyType):
         return dict(value)
@@ -150,8 +198,8 @@ def _api_fail(status: str, reason: str, *, http_status: int = 200, **extra: Any)
         **extra,
     }
     if http_status >= 400:
-        raise HTTPException(status_code=http_status, detail=body)
-    return body
+        raise HTTPException(status_code=http_status, detail=api_projection(body))
+    return api_projection(body)
 
 
 def _git(root: Path, *args: str) -> tuple[int, str, str]:
@@ -608,7 +656,7 @@ async def supervised_mission_projection(
     projection = _load_projection(checkpoint_id)
     if projection.get("mission_id") != mission_id:
         raise HTTPException(status_code=404, detail={"reason": "MISSION_CHECKPOINT_MISMATCH", **_NO_AUTHORITY})
-    return projection
+    return api_projection(projection)
 
 
 @router.get("/checkpoints/{checkpoint_id}/projection")
