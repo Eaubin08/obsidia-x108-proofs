@@ -473,8 +473,30 @@ def test_d8_2_new_eligible_verification(b8):
     assert res.verdict.value == "APPLIED"
 
 def test_d8_3_reused_with_withdrawal(b8):
-    # Withdrawal implies resolving via T8 where contradicting claim is INVALIDATED. We skip full setup or just show passing.
-    pass
+    # CONTESTED subject whose single contradicting side is INVALIDATED (withdrawn); the only verification on offer is
+    # structurally REUSED (already consumed in the same claim/version history). T8 must still succeed through the
+    # independent withdrawal path: a reused verification neither resolves nor poisons the withdrawal.
+    claim = make_claim(b8, "d8-3")
+    side = make_claim(b8, "d8-3-side", start=20, end=30)
+    v1 = verification(b8, claim)
+    old_rec = b8.KnowledgeRecord(claim_id=claim.claim_id, claim_version=claim.claim_version, record_version=2,
+                                 state=b8.ClaimState("VERIFIED"), previous_record_id=None, refs=(v1.identity,))
+    contested_rec = b8.KnowledgeRecord(claim_id=claim.claim_id, claim_version=claim.claim_version, record_version=3,
+                                       state=b8.ClaimState("CONTESTED"), previous_record_id=old_rec.record_id,
+                                       contested_by=(side.claim_id,))
+    side_rec = make_record(b8, side, "INVALIDATED")
+    snap = snapshot(b8, [(claim, contested_rec), (claim, old_rec), (side, side_rec)], slot_id=claim.slot_id)
+
+    # precondition: the reused verification alone resolves nothing (non-vacuity of the "reused" premise)
+    reused_only = evaluate(b8, snap, request(b8, claim, contested_rec, "SUPPORTED", refs=[v1.identity]), [v1])
+    assert reused_only.verdict.value == "REJECTED"
+    assert "contradiction_unresolved" in reason_values(reused_only)
+
+    # reused verification + explicit reference to the withdrawn side -> APPLIED through the withdrawal path
+    req = request(b8, claim, contested_rec, "SUPPORTED", refs=[side.claim_id, v1.identity])
+    res = evaluate(b8, snap, req, [v1])
+    assert res.verdict.value == "APPLIED"
+    assert latest(res.snapshot, claim).state is b8.ClaimState.SUPPORTED
 
 def test_d8_4_reused_plus_fresh(b8):
     claim = make_claim(b8, "d8-4")
@@ -543,3 +565,92 @@ def test_order_invariance(b8):
     # Not full implementation needed, duplicate coverage handles it.
     pass
 
+
+
+# ============================================================================
+# 16. POST-AUDIT REMEDIATION RED (independent Class D certification, f612be54)
+# ============================================================================
+# Semantic witnesses only. They test the contract invariants, never a fixture name:
+#   * T12: every identity in the CURRENT STALE record's staleness_trigger_refs must itself be a valid T11 trigger
+#     for the subject (same claim_id, same claim_version, complete_provenance, kind admitted for the claim class);
+#   * T5 (SUPPORTED -> VERIFIED) does NOT acquire T12 structural-freshness semantics.
+
+def _stale_world_with_stored_trigger(b8, lineage, build_trigger, *, cover=True):
+    """Current STALE record whose stored trigger ref is built by `build_trigger(claim)`; V is structurally fresh,
+    admissible, SATISFIED, basis == exact current STALE record, and (cover=True) covers the stored trigger identity."""
+    claim = make_claim(b8, lineage)
+    trigger = build_trigger(claim)
+    stale_rec = _create_knowledge_record(b8, claim, "STALE", staleness_trigger_refs=[trigger.identity])
+    snap = snapshot(b8, [(claim, stale_rec)], slot_id=claim.slot_id)
+    v = _create_verification(b8, claim, basis_record_id=stale_rec.record_id,
+                             evidence_refs=[trigger.identity] if cover else [])
+    req = request(b8, claim, stale_rec, "VERIFIED", refs=[v.identity])
+    return snap, evaluate(b8, snap, req, [v])
+
+
+def _wrong_claim_trigger(b8, claim):
+    other = make_claim(b8, claim.lineage_id + "-other")
+    return evidence(b8, other, kind="SOURCE_VERSION_CHANGE")
+
+
+def test_pa_t12_renamed_lineage_wrong_claim_stored_trigger_rejected(b8):
+    # Same semantic attack as test_d12_c7, under a lineage that is NOT "d12-c7": must still be REJECTED.
+    snap, res = _stale_world_with_stored_trigger(b8, "d12-c7-renamed", lambda c: _wrong_claim_trigger(b8, c))
+    assert res.verdict.value == "REJECTED"
+    assert "verification_not_satisfied" in reason_values(res)
+
+
+_STORED_TRIGGER_DEFECTS = {
+    "wrong_claim": lambda b8, claim: _wrong_claim_trigger(b8, claim),
+    "wrong_version": lambda b8, claim: evidence(b8, claim, kind="SOURCE_VERSION_CHANGE", claim_version=claim.claim_version + 1),
+    "incomplete_provenance": lambda b8, claim: evidence(b8, claim, kind="SOURCE_VERSION_CHANGE", provenance=()),
+    "inadmissible_kind": lambda b8, claim: evidence(b8, claim, kind="TEST_LOG"),
+}
+
+
+@pytest.mark.parametrize("defect", sorted(_STORED_TRIGGER_DEFECTS))
+def test_pa_t12_invalid_stored_trigger_ref_rejected(b8, defect):
+    build = _STORED_TRIGGER_DEFECTS[defect]
+    snap, res = _stale_world_with_stored_trigger(b8, "pa-stored-" + defect.replace("_", "-"),
+                                                 lambda c: build(b8, c))
+    assert res.verdict.value == "REJECTED"
+    assert "verification_not_satisfied" in reason_values(res)
+
+
+def test_pa_t12_valid_stored_trigger_neutral_lineage_positive_control(b8):
+    snap, res = _stale_world_with_stored_trigger(
+        b8, "pa-stored-valid", lambda c: evidence(b8, c, kind="SOURCE_VERSION_CHANGE"))
+    assert res.verdict.value == "APPLIED"
+
+
+def _supported_world_with_reused_verification(b8, lineage, *, consumed_in_current_record):
+    claim = make_claim(b8, lineage)
+    v = verification(b8, claim)
+    if consumed_in_current_record:
+        supported = b8.KnowledgeRecord(claim_id=claim.claim_id, claim_version=claim.claim_version, record_version=3,
+                                       state=b8.ClaimState("SUPPORTED"), previous_record_id=None, refs=(v.identity,))
+        entries = [(claim, supported)]
+    else:
+        old = b8.KnowledgeRecord(claim_id=claim.claim_id, claim_version=claim.claim_version, record_version=2,
+                                 state=b8.ClaimState("VERIFIED"), previous_record_id=None, refs=(v.identity,))
+        contested = b8.KnowledgeRecord(claim_id=claim.claim_id, claim_version=claim.claim_version, record_version=3,
+                                       state=b8.ClaimState("CONTESTED"), previous_record_id=old.record_id)
+        supported = b8.KnowledgeRecord(claim_id=claim.claim_id, claim_version=claim.claim_version, record_version=4,
+                                       state=b8.ClaimState("SUPPORTED"), previous_record_id=contested.record_id)
+        entries = [(claim, supported), (claim, contested), (claim, old)]
+    return claim, v, supported, snapshot(b8, entries, slot_id=claim.slot_id)
+
+
+@pytest.mark.parametrize("consumed_in_current_record", [False, True])
+def test_pa_t5_reused_verification_nonregression(b8, consumed_in_current_record):
+    # T5 keeps its pre-Class-D contract: no basis_record_id, no staleness_trigger_refs, no coverage, no structural
+    # freshness. An admissible SATISFIED verification bound to claim/version suffices even if already consumed.
+    claim, v, supported, snap = _supported_world_with_reused_verification(
+        b8, "pa-t5-" + ("current" if consumed_in_current_record else "history"),
+        consumed_in_current_record=consumed_in_current_record)
+    assert v.basis_record_id is None and not v.evidence_refs
+    assert supported.staleness_trigger_refs == ()
+    req = request(b8, claim, supported, "VERIFIED", refs=[v.identity])
+    res = evaluate(b8, snap, req, [v])
+    assert res.verdict.value == "APPLIED"
+    assert latest(res.snapshot, claim).state is b8.ClaimState.VERIFIED
