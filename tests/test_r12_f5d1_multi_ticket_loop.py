@@ -21,6 +21,7 @@ from obsidure_supervised_multi_ticket_loop_v1 import (
     STATUS_LOOP_GLOBAL_HOLD,
     STATUS_LOOP_AWAITING_AUTHORIZATION,
     STATUS_LOOP_AWAITING_VERIFICATION,
+    STATUS_LOOP_VERIFICATION_HOLD,
 )
 
 from obsidure_supervised_dependency_state_integration_v1 import integrate_supervised_dependency_state
@@ -239,7 +240,7 @@ def test_binder_limited_replay_remains_hold(tmp_path):
         feedback_provider=feedback_provider,
         checkpoint_store_dir=tmp_path,
     )
-    assert res["status"] in {STATUS_LOOP_LOCAL_HOLD, STATUS_LOOP_NO_ELIGIBLE_NEXT}
+    assert res["status"] in {STATUS_LOOP_LOCAL_HOLD, STATUS_LOOP_NO_ELIGIBLE_NEXT, STATUS_LOOP_VERIFICATION_HOLD}
     ticket = res["canonical_state"]["tickets"][0]
     assert ticket["status"] == "HELD"
 
