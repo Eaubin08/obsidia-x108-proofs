@@ -101,9 +101,9 @@ append-only log size, a B10 persistence concern.
 | `KnowledgeClaim` | `lineage_id`, `claim_version`, `previous_claim_id` (null for version 1), `claim_class`, `slot_id` (§5), `valid_time`, structured `content`, `source_refs`, `origin_refs` (e.g. B7 derived state id) |
 | `ClaimClass` (closed enum, O-2) | FORMAL_CLAIM, CODE_BUILD_CLAIM, PHYSICAL_CLAIM, DOCUMENTARY_CLAIM, DOMAIN_CLAIM, HUMAN_DECLARATION, ORGANIZATIONAL_POLICY |
 | `EvidenceRef` | kind, source ref, content digest, captured_at, provenance refs, optional descriptive confidence |
-| `VerificationRecord` | verifier_family, claim_id, claim_version, verdict SATISFIED / NOT_SATISFIED / INCONCLUSIVE, evidence_refs, method ref, produced_at |
+| `VerificationRecord` | verifier_family, claim_id, claim_version, verdict SATISFIED / NOT_SATISFIED / INCONCLUSIVE, evidence_refs, method ref, produced_at, basis_record_id |
 | `HumanAttestation` (O-5) | attestation_id, actor_id, identity_source, auth_context_ref, issued_at, claim_id, claim_version, attestation_kind (ATTESTATION / REVIEW_AUTHORIZATION / PRIMARY_DECLARATION), scope, optional proof/signature ref |
-| `KnowledgeRecord` | claim_id, claim_version, record_version, state, evidence / verification / attestation refs, supersedes / superseded_by, contested_by, recorded_at, previous_record_id |
+| `KnowledgeRecord` | claim_id, claim_version, record_version, state, evidence / verification / attestation refs, supersedes / superseded_by, contested_by, recorded_at, previous_record_id, staleness_trigger_refs |
 | `TransitionRequest` | claim_id, expected_claim_version, expected_state, expected_record_version, slot_id, expected_slot_revision, target_state, refs, (T9 only) supersedes_claim_id + supersedes_record_id, requester ref, reason |
 | `TransitionReceipt` | request id, verdict APPLIED / REJECTED / NO_OP_DUPLICATE, claim_id, claim_version, from / to state, from / to record_version, from / to record id, reasons, gate contract version, recorded_at |
 | `SupersessionTransitionBundle` | §9.3 |
@@ -125,7 +125,7 @@ append-only log size, a B10 persistence concern.
 - **Verification binding**: a `VerificationRecord` / `HumanAttestation` binds to
   `(claim_id, claim_version)`; it never carries over to another claim version.
 - **Record identity**: `b8rec_` over claim_id, claim_version, record_version, state, refs,
-  links, recorded_at, previous_record_id — unique per immutable record.
+  links, recorded_at, previous_record_id, staleness_trigger_refs — unique per immutable record.
 
 Temporal fields are separate and never conflated: `valid_time` (when the claim applies in the
 modeled world / domain), `source_time` / `observed_time` (time reported by the source or observer,
@@ -428,8 +428,8 @@ NO_OP_DUPLICATE with the original receipt / bundle; an old receipt never re-appl
 | T8 | CONTESTED → SUPPORTED | contradiction explicitly resolved (contradicting side INVALIDATED / REJECTED or new verification refs); never by confidence or recency; T5 and T6 required again |
 | T9 | compound: new VERIFIED → PROMOTED **and** predecessor PROMOTED → SUPERSEDED | request carries `supersedes_claim_id` + `supersedes_record_id` + expected_slot_revision identifying exactly the predecessor whose latest state is PROMOTED on the same slot; it is the **only** PROMOTED claim on the slot overlapping the new valid_time (else REJECTED `multiple_predecessors_unsupported`: no winner, no repeated T9); the new valid_time **contains** the predecessor's (partial overlap → REJECTED `containment_not_satisfied`; no implicit claim split in V1); the new claim meets every T6 condition except the free-slot one; atomic bundle (§9.3), slot_revision +1 once; every temporal relation used here requires `TEMPORALLY_COMPARABLE` (§5.1), else REJECTED `temporal_relation_indeterminate` (state unchanged) |
 | T10 | CANDIDATE / HELD / SUPPORTED / VERIFIED / PROMOTED / CONTESTED / STALE → INVALIDATED | explicit reason + evidence ref |
-| T11 | PROMOTED → STALE | staleness trigger evidence per class mechanism (§6) |
-| T12 | STALE → VERIFIED | fresh SATISFIED VerificationRecord for the same (claim_id, claim_version) — fresh = structurally new: its verification identity is not referenced by any existing KnowledgeRecord of that same (claim_id, claim_version), current record included (`FRESHNESS_MODEL=STRUCTURAL_NOVELTY_NOT_CLOCK_TIME`, `FRESH != RECENT`, `TIMESTAMP != FRESHNESS_AUTHORITY`: no recorded_at / valid_time / wall-clock / recency / provider-order comparison); T6 / T9 again to PROMOTED |
+| T11 | PROMOTED → STALE | staleness trigger evidence per class mechanism (§6). The successful successor KnowledgeRecord must store the complete canonical set of qualifying EvidenceRef identities in `staleness_trigger_refs` (immutable, included in canonical identity). |
+| T12 | STALE → VERIFIED | fresh SATISFIED VerificationRecord for the same (claim_id, claim_version) — fresh = structurally new: its verification identity is not referenced by any existing KnowledgeRecord of that same (claim_id, claim_version), current record included; AND its `basis_record_id` explicitly matches the current STALE `record_id`; AND its `evidence_refs` contains every identity in the current STALE record's `staleness_trigger_refs` (`FRESHNESS_MODEL=STRUCTURAL_NOVELTY_NOT_CLOCK_TIME`, `FRESH != RECENT`, `TIMESTAMP != FRESHNESS_AUTHORITY`: no recorded_at / valid_time / wall-clock / recency / provider-order comparison); T6 / T9 again to PROMOTED |
 
 `LEGAL_TRANSITION_COUNT=12` claim rules (T9 compound) + 4 gap rules (G1–G3, G4 compound).
 Claim (from, to) pairs: 22 (T9 contributes VERIFIED → PROMOTED on the new claim and PROMOTED →
