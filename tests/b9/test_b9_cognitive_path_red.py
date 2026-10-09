@@ -1,18 +1,7 @@
 import pytest
 
-try:
-    from app.cognition.b9.contracts import (
-        CognitivePath,
-        FailedPath,
-        PathHistory,
-        PathStatus,
-        Retryability
-    )
-    B9_IMPORT_OK = True
-except ImportError:
-    B9_IMPORT_OK = False
+from app.cognition.b9.contracts import CognitivePath, FailedPath, PathHistory, PathStatus, Retryability
 
-pytestmark = pytest.mark.skipif(not B9_IMPORT_OK, reason="B9 runtime not implemented yet")
 
 def test_b9_r1_deterministic_identity():
     # B9-R1: same ordered canonical path -> same identity
