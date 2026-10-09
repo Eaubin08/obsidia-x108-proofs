@@ -11,6 +11,11 @@ This manifest establishes a strict, canonical non-regression boundary around the
 ## 2. Closure Status
 **Status:** SEALED
 **Checkpoint HEAD:** 5d35cdd361c8bb27f1bf2193309e4b84d7017ba4
+**SEALED_LAYERS=SENS,B6,B7,B8,B9** (not all repository security/tooling/runtime)
+
+Future M32+ work must report:
+`FOUNDATION_SENTINEL=PASS`
+before closure.
 
 ## 3. Core Invariants
 The following principles are absolute and frozen:
