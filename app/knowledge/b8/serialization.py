@@ -13,6 +13,51 @@ from typing import Any, Iterable
 
 from app.knowledge.b8.contracts import ClaimClass, MalformedSlot
 
+from enum import Enum
+from pathlib import Path
+from types import MappingProxyType
+import dataclasses
+
+def api_projection(value: Any, active: set[int] = None) -> Any:
+    if active is None:
+        active = set()
+    if value is None or isinstance(value, (bool, str, int)):
+        return value
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise ValueError(f"non-finite float")
+        return value
+    
+    vid = id(value)
+    if vid in active:
+        raise ValueError(f"recursive container")
+    
+    active.add(vid)
+    try:
+        if isinstance(value, dict):
+            return {k: api_projection(v, active) for k, v in value.items()}
+        elif isinstance(value, MappingProxyType):
+            return {k: api_projection(v, active) for k, v in value.items()}
+        elif isinstance(value, (list, tuple)):
+            return [api_projection(v, active) for v in value]
+        elif isinstance(value, (set, frozenset)):
+            return sorted([api_projection(v, active) for v in value], key=lambda x: str(x))
+        elif isinstance(value, Enum):
+            return value.value
+        elif isinstance(value, Path):
+            return str(value)
+        elif dataclasses.is_dataclass(value) and not isinstance(value, type):
+            return {k: api_projection(v, active) for k, v in dataclasses.asdict(value).items()}
+        elif hasattr(value, "dict") and callable(getattr(value, "dict")):
+            return {k: api_projection(v, active) for k, v in value.dict().items()}
+        elif hasattr(value, "model_dump") and callable(getattr(value, "model_dump")):
+            return {k: api_projection(v, active) for k, v in value.model_dump().items()}
+        
+        raise ValueError(f"unknown unsupported object type {type(value).__name__}")
+    finally:
+        active.discard(vid)
+
+
 
 def _check_json(value: Any, path: str, active: set[int]) -> None:
     if value is None or isinstance(value, (bool, str, int)):
