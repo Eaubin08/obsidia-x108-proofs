@@ -96,7 +96,7 @@ class TransitionRequest:
     supersedes_record_id: Optional[str] = None     # T9 only
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "refs", tuple(self.refs))
+        object.__setattr__(self, "refs", tuple(sorted(set(self.refs))))
 
     @property
     def is_supersession(self) -> bool:
