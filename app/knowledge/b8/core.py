@@ -432,9 +432,12 @@ def _contest_guard(ctx, reasons):
                 indeterminate = True
             elif rel:
                 contradicting.append(other.claim_id)
+    if indeterminate:
+        reasons.add(_R.temporal_relation_indeterminate)
+        return ()
     if admissible or contradicting:
         return tuple(sorted(contradicting))
-    reasons.add(_R.temporal_relation_indeterminate if indeterminate else _R.contradiction_inadmissible)
+    reasons.add(_R.contradiction_inadmissible)
     return ()
 
 
