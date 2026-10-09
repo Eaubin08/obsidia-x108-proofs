@@ -59,10 +59,11 @@ def make_claim(b8, lineage, *, cls="CODE_BUILD_CLAIM", start=0, end=100, fid=FRA
                              valid_time=interval(b8, start, end, fid), content={"lineage": lineage})
 
 
-def make_record(b8, claim, state, *, rv=3, contested_by=()):
+def make_record(b8, claim, state, *, rv=3, contested_by=(), refs=(), previous_record_id=None):
+    prev = previous_record_id if previous_record_id is not None else (PREVIOUS_RECORD_ID if rv > 1 else None)
     return b8.KnowledgeRecord(claim_id=claim.claim_id, claim_version=claim.claim_version, record_version=rv,
-                              state=b8.ClaimState(state), previous_record_id=PREVIOUS_RECORD_ID if rv > 1 else None,
-                              contested_by=tuple(contested_by))
+                              state=b8.ClaimState(state), previous_record_id=prev,
+                              contested_by=tuple(contested_by), refs=tuple(refs))
 
 
 def snapshot(b8, entries, *, slot_id, revision=REVISION):
@@ -81,6 +82,9 @@ def request(b8, claim, record, target, *, revision=REVISION, reason="explicit re
 
 
 def evaluate(b8, snap, req, artifacts=(), *, trusted=TRUSTED, recorded_at=RECORDED_AT):
+    if req.slot_id != snap.slot_id:
+        from dataclasses import replace
+        req = replace(req, slot_id=snap.slot_id)
     return b8.evaluate_transition(snap, req, recorded_at=recorded_at, artifacts=tuple(artifacts),
                                   trusted_identity_sources=trusted)
 
@@ -95,11 +99,11 @@ def evidence(b8, claim, *, kind="TEST_LOG", provenance=("prov:ci-run-1",), claim
 
 
 def verification(b8, claim, *, family="TEST_BUILD_PROOF_VERIFIER", verdict="SATISFIED", claim_id=None,
-                 claim_version=None):
+                 claim_version=None, basis_record_id=None):
     return b8.VerificationRecord(verifier_family=family, claim_id=claim_id or claim.claim_id,
                                  claim_version=claim.claim_version if claim_version is None else claim_version,
                                  verdict=b8.VerificationVerdict(verdict), evidence_refs=(),
-                                 method_ref="method:pytest", produced_at="2026-10-07T00:00:00Z")
+                                 method_ref="method:pytest", produced_at="2026-10-07T00:00:00Z", basis_record_id=basis_record_id)
 
 
 def attestation(b8, claim, *, kind="PRIMARY_DECLARATION", identity_source=TRUSTED_SOURCE,

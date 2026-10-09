@@ -81,7 +81,7 @@ def _legal_witness(b8, frm, to):
     if to in ("SUPPORTED",) and frm in ("CANDIDATE", "HELD"):                     # T4
         artifacts = [evidence(b8, claim)]
     elif (frm, to) in (("SUPPORTED", "VERIFIED"), ("STALE", "VERIFIED")):          # T5 / T12
-        artifacts = [verification(b8, claim)]
+        artifacts = [verification(b8, claim, basis_record_id=record.record_id if frm == "STALE" else None)]
     elif to == "CONTESTED":                                                         # T7
         artifacts = [evidence(b8, claim, kind="CONTRADICTING_TEST_LOG")]
     elif (frm, to) == ("CONTESTED", "SUPPORTED"):                                   # T8

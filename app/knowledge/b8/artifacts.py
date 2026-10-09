@@ -89,9 +89,10 @@ class VerificationRecord(_Canonical):
     evidence_refs: tuple
     method_ref: str
     produced_at: Any
+    basis_record_id: Optional[str] = None
 
     _prefix = "b8ver_"
-    _fields = ("verifier_family", "claim_id", "claim_version", "verdict", "evidence_refs", "method_ref", "produced_at")
+    _fields = ("verifier_family", "claim_id", "claim_version", "verdict", "evidence_refs", "method_ref", "produced_at", "basis_record_id")
 
 
 @dataclass(frozen=True)

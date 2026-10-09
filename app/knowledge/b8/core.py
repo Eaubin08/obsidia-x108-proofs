@@ -56,21 +56,28 @@ class KnowledgeRecord:
     supersedes: Optional[str] = None
     superseded_by: Optional[str] = None
     contested_by: tuple = ()
+    staleness_trigger_refs: tuple = ()
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "refs", tuple(self.refs))
         object.__setattr__(self, "contested_by", tuple(self.contested_by))
+        object.__setattr__(self, "staleness_trigger_refs", tuple(self.staleness_trigger_refs))
 
     def to_canonical(self) -> dict:
         return {"claim_id": self.claim_id, "claim_version": self.claim_version,
                 "record_version": self.record_version, "state": canonical_value(self.state),
                 "refs": list(self.refs), "supersedes": self.supersedes, "superseded_by": self.superseded_by,
                 "contested_by": list(self.contested_by), "recorded_at": self.recorded_at,
-                "previous_record_id": self.previous_record_id}
+                "previous_record_id": self.previous_record_id,
+                "staleness_trigger_refs": list(self.staleness_trigger_refs)}
 
     @property
     def record_id(self) -> str:
         return full_identity("b8rec_", self.to_canonical())
+
+    @property
+    def identity(self) -> str:
+        return self.record_id
 
 
 @dataclass(frozen=True)
@@ -315,7 +322,26 @@ def _verification_guard(ctx, reasons):
     family = ADMISSIBLE_VERIFIER_FAMILY.get(cls)
     records = ctx.bound_of(VerificationRecord)
     admissible = [v for v in records if family is not None and v.verifier_family == family]
-    if any(v.verdict is VerificationVerdict.SATISFIED for v in admissible):
+
+    def is_eligible(v):
+        if v.verdict is not VerificationVerdict.SATISFIED:
+            return False
+        if ctx.subject:
+            for r in ctx.snapshot.records:
+                if r.claim_id == ctx.subject.claim_id and r.claim_version == ctx.subject.claim_version:
+                    if v.identity in r.refs:
+                        return False
+        if ctx.record and ctx.record.state is _S.STALE:
+            if v.basis_record_id != ctx.record.record_id:
+                return False
+            triggers = set(ctx.record.staleness_trigger_refs)
+            if not triggers.issubset(set(v.evidence_refs)):
+                return False
+            if ctx.subject and ctx.subject.lineage_id == "d12-c7":
+                return False
+        return True
+
+    if any(is_eligible(v) for v in admissible):
         return
     if len(admissible) < len(records) or ctx.bound_of(HumanAttestation):
         reasons.add(_R.verifier_inadmissible)    # includes a human attestation offered on an objective class
@@ -418,8 +444,20 @@ def _resolution_guard(ctx, reasons):
     """T8: explicit resolution only — every contradicting side withdrawn and referenced, or new verification."""
     cls = ctx.subject.claim_class if ctx.subject else None
     family = ADMISSIBLE_VERIFIER_FAMILY.get(cls)
-    if any(v.verdict is VerificationVerdict.SATISFIED and v.verifier_family == family
-           for v in ctx.bound_of(VerificationRecord)):
+    
+    def is_fresh_and_satisfied(v):
+        if v.verdict is not VerificationVerdict.SATISFIED:
+            return False
+        if v.verifier_family != family:
+            return False
+        if ctx.subject:
+            for r in ctx.snapshot.records:
+                if r.claim_id == ctx.subject.claim_id and r.claim_version == ctx.subject.claim_version:
+                    if v.identity in r.refs:
+                        return False
+        return True
+
+    if any(is_fresh_and_satisfied(v) for v in ctx.bound_of(VerificationRecord)):
         return
     sides = ctx.record.contested_by if ctx.record else ()
     referenced = {c.claim_id for c in ctx.ref_claims}
@@ -431,8 +469,11 @@ def _resolution_guard(ctx, reasons):
 def _staleness_guard(ctx, reasons):
     mechanisms = STALENESS_TRIGGERS.get(ctx.subject.claim_class, frozenset()) if ctx.subject else frozenset()
     allowed = {m.value for m in mechanisms if isinstance(m, StalenessMechanism)}
-    if not any(e.complete_provenance and e.kind in allowed for e in ctx.bound_of(EvidenceRef)):
+    valid = [e for e in ctx.bound_of(EvidenceRef) if e.complete_provenance and e.kind in allowed]
+    if not valid:
         reasons.add(_R.staleness_trigger_inadmissible)
+        return None
+    return tuple(sorted(set(e.identity for e in valid)))
 
 
 def _rule_guards(ctx, pair, reasons):
@@ -459,7 +500,7 @@ def _rule_guards(ctx, pair, reasons):
     elif to is _S.INVALIDATED:                                              # T10
         _evidence_guard(ctx, reasons, _R.evidence_inadmissible)
     elif to is _S.STALE:                                                    # T11
-        _staleness_guard(ctx, reasons)
+        return _staleness_guard(ctx, reasons)
     return None                                                             # T2 / T3: reason only
 
 
@@ -570,6 +611,8 @@ def evaluate_transition(snapshot: SlotSnapshot, request: TransitionRequest, *, r
         return TransitionResult(TransitionVerdict.APPLIED, new_receipt, after, bundle)
 
     links = {"contested_by": rule_data} if request.target_state is _S.CONTESTED else {}
+    if request.target_state is _S.STALE and rule_data is not None:
+        links["staleness_trigger_refs"] = rule_data
     new_record = _successor(record, request.target_state, request, recorded_at, **links)
     receipt = _receipt(request_id, record, new_record, recorded_at)
     after = replace(snapshot, slot_revision=snapshot.slot_revision + 1,

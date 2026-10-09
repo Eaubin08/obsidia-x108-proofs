@@ -207,8 +207,11 @@ def test_t5_human_wrongly_bound_declaration_is_binding_mismatch_and_missing(b8):
 # ---------------------------------------------------------------- T12 re-verification
 
 def test_t12_fresh_satisfied_record_reverifies_stale_claim(b8):
-    claim, _ = _world(b8, "STALE")
-    claim, snap, result = _run(b8, "STALE", "VERIFIED", [verification(b8, claim)])
+    claim, snap = _world(b8, "STALE")
+    rec = latest(snap, claim)
+    verif = verification(b8, claim, basis_record_id=rec.record_id)
+    req = request(b8, claim, rec, "VERIFIED", refs=[verif.identity])
+    result = evaluate(b8, snap, req, [verif])
     after = assert_applied(b8, snap, result, claim, "VERIFIED")
     assert after.claim_version == claim.claim_version  # re-verification never changes the claim version
 
@@ -229,8 +232,12 @@ def test_t12_requires_satisfied_record_bound_to_same_claim_version(b8, case, exp
 
 
 def test_t12_then_promotion_still_requires_t6(b8):
-    claim, _ = _world(b8, "STALE")
-    claim, snap, result = _run(b8, "STALE", "VERIFIED", [verification(b8, claim)])
-    assert latest(result.snapshot, claim).state is b8.ClaimState.VERIFIED  # not PROMOTED
-    direct = _run(b8, "STALE", "PROMOTED", [verification(b8, claim)])
-    assert reason_values(direct[2]) == ["forbidden_transition"]
+    claim, snap = _world(b8, "STALE")
+    rec = latest(snap, claim)
+    verif = verification(b8, claim, basis_record_id=rec.record_id)
+    req1 = request(b8, claim, rec, "VERIFIED", refs=[verif.identity])
+    result1 = evaluate(b8, snap, req1, [verif])
+    assert latest(result1.snapshot, claim).state is b8.ClaimState.VERIFIED  # not PROMOTED
+    req2 = request(b8, claim, rec, "PROMOTED", refs=[verif.identity])
+    direct = evaluate(b8, snap, req2, [verif])
+    assert reason_values(direct) == ["forbidden_transition"]
