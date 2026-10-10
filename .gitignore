@@ -303,3 +303,4 @@ _MEMORY_INTAKE_OUTBOX/
 _PATCH_PROPOSALS/
 .claude/settings.local.json
 _local_archives/patch_alphabet.py.applied_20260625
+runtime_data/
