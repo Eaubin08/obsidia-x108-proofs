@@ -4364,7 +4364,9 @@ class AgentObsidure:
             return _done(
                 "EXECUTED_VERIFIED",
                 "STOP_SUCCESS",
-                limited_verdict=(replay_verdict == "VERIFIED_WITH_LIMITS"),
+                limited_verdict=(
+                    replay_verdict == "VERIFIED_WITH_LIMITS" or bool(evidence_limits)
+                ),
                 **advisory,
             )
 

@@ -156,6 +156,18 @@ def build_parser() -> argparse.ArgumentParser:
                    help="Applique un proposal existant (HUMAN_APPROVED_WRITE)")
     p.add_argument("--dry-run", action="store_true", help="Audit seul — aucun patch généré")
     p.add_argument("--quiet", "-q", action="store_true", help="Sortie minimale")
+    sup = p.add_argument_group("mode supervise R12 (distinct du CLI AVDR historique)")
+    sup.add_argument("--supervised", choices=["status", "prepare", "inspect", "holds", "evidence", "verification", "authorize"],
+                     default=None, help="Mode supervise : client du backend R12 (aucune autorite d'action)")
+    sup.add_argument("--mission-id", default=None)
+    sup.add_argument("--checkpoint-id", default=None)
+    sup.add_argument("--ticket-id", default=None)
+    sup.add_argument("--payload-file", default=None, help="JSON de preparation (prepare)")
+    sup.add_argument("--execution-authority-hash", default=None, help="Autorisation HUMAINE explicite (authorize)")
+    sup.add_argument("--human-authorization-reference", default=None, help="Reference d'autorisation humaine (authorize)")
+    sup.add_argument("--confirm-human-authorization", action="store_true",
+                     help="Atteste que l'humain autorise explicitement ce hash (requis pour authorize)")
+    sup.add_argument("--json", action="store_true", help="Sortie JSON (mode supervise)")
     p.add_argument("--version", action="version", version="obsidure 2.0.0")
     return p
 
@@ -163,6 +175,27 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     parser = build_parser()
     args   = parser.parse_args()
+
+    # R12 supervised mode is a thin client for canonical backend APIs. It does
+    # not instantiate AgentObsidure, invoke KX108/Binder, or create authority.
+    if args.supervised:
+        if str(_SCRIPT_DIR) not in sys.path:
+            sys.path.insert(0, str(_SCRIPT_DIR))
+        import obsidure_cli_supervised_r12 as _sup
+        return _sup.run_supervised(
+            args.supervised,
+            api=args.api,
+            args={
+                "mission_id": args.mission_id,
+                "checkpoint_id": args.checkpoint_id,
+                "ticket_id": args.ticket_id,
+                "payload_file": args.payload_file,
+                "execution_authority_hash": args.execution_authority_hash,
+                "human_authorization_reference": args.human_authorization_reference,
+                "confirm_human_authorization": args.confirm_human_authorization,
+                "json": args.json,
+            },
+        )
 
     if not _IMPORT_OK:
         print(C_ERR(f"Erreur d'import : {_IMPORT_ERR}"))
