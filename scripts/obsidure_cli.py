@@ -24,9 +24,11 @@ Standalone — NE PAS brancher à l'UI Cockpit ou au moteur Brody pour l'instant
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 from pathlib import Path
+from typing import Any, Mapping
 
 # Ajout du repo root au path pour imports
 _SCRIPT_DIR = Path(__file__).resolve().parent
@@ -97,15 +99,138 @@ def print_menu() -> None:
     srl      → résumé mémoire SRL
     domains  → audit des gates P3
     boundary → afficher les frontières de sécurité
+    r12 inspect <checkpoint_id>  → lire la projection supervisée R12
+    r12 holds <checkpoint_id>    → afficher HOLD/BLOCK R12
+    r12 evidence <checkpoint_id> → afficher preuves/limites R12
     quit     → quitter
   """))
 
 
 # ── Commandes spéciales ───────────────────────────────────────────────────
 
-def handle_special_command(cmd: str, agent: "AgentObsidure") -> bool:
+def _load_supervised_client():
+    if str(_SCRIPT_DIR) not in sys.path:
+        sys.path.insert(0, str(_SCRIPT_DIR))
+    import obsidure_cli_supervised_r12 as _sup
+    return _sup
+
+
+def _print_json_block(title: str, payload: Mapping[str, Any]) -> None:
+    print(C_TITLE(f"  {title} :"))
+    print(json.dumps(dict(payload), ensure_ascii=False, indent=2, sort_keys=True))
+
+
+def _checkpoint_id_from(payload: Mapping[str, Any]) -> str:
+    checkpoint = payload.get("checkpoint")
+    if isinstance(checkpoint, Mapping):
+        value = checkpoint.get("checkpoint_id")
+        if value:
+            return str(value)
+    value = payload.get("checkpoint_id")
+    return str(value or "")
+
+
+def _mission_id_from(payload: Mapping[str, Any]) -> str:
+    value = payload.get("mission_id")
+    return str(value or "")
+
+
+def _print_supervised_summary(payload: Mapping[str, Any]) -> None:
+    status = payload.get("status") or payload.get("state") or "UNKNOWN"
+    print(C_OK(f"  R12 status : {status}"))
+    mission_id = _mission_id_from(payload)
+    checkpoint_id = _checkpoint_id_from(payload)
+    if mission_id:
+        print(f"  mission_id    : {mission_id}")
+    if checkpoint_id:
+        print(f"  checkpoint_id : {checkpoint_id}")
+    if payload.get("reason"):
+        print(C_WARN(f"  reason        : {payload['reason']}"))
+    if payload.get("hold"):
+        _print_json_block("HOLD", payload["hold"])
+    if payload.get("binder_replay"):
+        _print_json_block("Binder/R8", payload["binder_replay"])
+    if payload.get("verification"):
+        _print_json_block("Vérification", payload["verification"])
+
+
+def _supervised_projection(api_base: str, checkpoint_id: str) -> tuple[int, dict[str, Any]]:
+    _sup = _load_supervised_client()
+    return _sup._api_json(
+        api_base,
+        "GET",
+        f"/api/supervised-missions/checkpoints/{checkpoint_id}/projection",
+    )
+
+
+def _handle_r12_command(cmd: str, api_base: str) -> bool:
+    parts = cmd.strip().split()
+    if len(parts) != 3 or parts[0].lower() != "r12" or parts[1].lower() not in {"inspect", "holds", "evidence"}:
+        return False
+    action = parts[1].lower()
+    checkpoint_id = parts[2].strip()
+    if not checkpoint_id:
+        print(C_WARN("  Usage: r12 inspect|holds|evidence <checkpoint_id>"))
+        return True
+
+    _sup = _load_supervised_client()
+    status, payload = _supervised_projection(api_base, checkpoint_id)
+    if not 200 <= status < 300:
+        payload.setdefault("status", "HOLD")
+        payload.setdefault("reason", "PROJECTION_UNAVAILABLE")
+    elif action == "holds":
+        payload = _sup._holds(payload)
+    elif action == "evidence":
+        payload = _sup._evidence(payload)
+    payload.setdefault("decision_authority", "KX108_ONLY")
+    payload.update({k: payload.get(k, v) for k, v in _sup.NO_AUTHORITY.items()})
+    _print_supervised_summary(payload)
+    return True
+
+
+def _maybe_prepare_r12_after_proposal(api_base: str, proposal: Any) -> None:
+    ans = input(C_TITLE("  Préparer ce proposal via R12 PREPARE_ONLY ? (o/N) > ")).strip().lower()
+    if ans not in {"o", "oui", "y", "yes"}:
+        print(C_DIM("  R12 : aucune préparation demandée."))
+        return
+
+    payload_file = input(C_TITLE("  Payload R12 prepare-only JSON > ")).strip()
+    if not payload_file:
+        print(C_WARN("  R12 HOLD : PAYLOAD_FILE_REQUIRED"))
+        return
+
+    _sup = _load_supervised_client()
+    payload, reason = _sup._load_payload(payload_file)
+    if reason:
+        print(C_WARN(f"  R12 HOLD : {reason}"))
+        return
+
+    status, result = _sup._api_json(api_base, "POST", "/api/supervised-missions/prepare-only", body=payload)
+    result.setdefault("schema_version", _sup.SCHEMA_VERSION)
+    result.setdefault("decision_authority", "KX108_ONLY")
+    result.update({k: result.get(k, v) for k, v in _sup.NO_AUTHORITY.items()})
+    _print_supervised_summary(result)
+
+    checkpoint_id = _checkpoint_id_from(result)
+    if checkpoint_id and 200 <= status < 300:
+        proj_status, projection = _supervised_projection(api_base, checkpoint_id)
+        if 200 <= proj_status < 300:
+            projection.setdefault("decision_authority", "KX108_ONLY")
+            projection.update({k: projection.get(k, v) for k, v in _sup.NO_AUTHORITY.items()})
+            _print_supervised_summary(projection)
+        else:
+            projection.setdefault("status", "HOLD")
+            projection.setdefault("reason", "PROJECTION_UNAVAILABLE")
+            _print_supervised_summary(projection)
+
+
+def handle_special_command(cmd: str, agent: "AgentObsidure", api_base: str) -> bool:
     """Retourne True si la commande a été traitée."""
-    cmd = cmd.strip().lower()
+    raw_cmd = cmd.strip()
+    cmd = raw_cmd.lower()
+
+    if _handle_r12_command(raw_cmd, api_base):
+        return True
 
     if cmd == "status":
         print(f"  Phase courante : {C_OK(agent.phase.value)}")
@@ -310,7 +435,7 @@ def main() -> int:
             if objective.lower() in ("quit", "exit", "q"):
                 print("  Arrêt.")
                 break
-            if handle_special_command(objective, agent):
+            if handle_special_command(objective, agent, args.api):
                 continue
 
             if args.domain:
@@ -328,6 +453,7 @@ def main() -> int:
             try:
                 proposal = agent.run_cycle(objective)
                 print(C_OK(f"\n  Proposal prêt : _PATCH_PROPOSALS/{proposal.proposal_id}/RECEIPT.md"))
+                _maybe_prepare_r12_after_proposal(args.api, proposal)
             except ProtectedPathError as exc:
                 print(C_ERR(f"  BLOC ABSOLU : {exc}"))
                 break

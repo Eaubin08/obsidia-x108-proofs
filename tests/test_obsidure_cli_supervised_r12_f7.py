@@ -12,6 +12,7 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 import obsidure_cli_supervised_r12 as cli
+import obsidure_cli as terminal
 
 
 def _payload(tmp_path: Path) -> Path:
@@ -159,3 +160,107 @@ def test_invalid_checkpoint_selector_and_authorize_fail_closed(monkeypatch, caps
     out = json.loads(capsys.readouterr().out)
     assert out["reason"] == "AUTHORIZATION_HANDOFF_NOT_EXPOSED_IN_F7"
     assert out["approval_created"] is False
+
+
+class _FakeProposal:
+    proposal_id = "proposal-f7"
+    patches = [{"path": "src/demo.py"}]
+
+
+class _FakeAgent:
+    phase = type("Phase", (), {"value": "READY"})()
+
+    def __init__(self, *, api_base, max_cycles, verbose):
+        self._cycle = 0
+        self._max_cycles = max_cycles
+        self.proposals = []
+
+    def run_cycle(self, objective):
+        self._cycle += 1
+        proposal = _FakeProposal()
+        self.proposals.append(proposal)
+        return proposal
+
+
+def test_interactive_avdr_offer_prepares_r12_and_projects_checkpoint(monkeypatch, tmp_path, capsys):
+    payload_file = _payload(tmp_path)
+    calls = []
+
+    class FakeSupervised:
+        SCHEMA_VERSION = cli.SCHEMA_VERSION
+        NO_AUTHORITY = dict(cli.NO_AUTHORITY)
+
+        @staticmethod
+        def _load_payload(path):
+            return cli._load_payload(path)
+
+        @staticmethod
+        def _api_json(api, method, path, *, query=None, body=None):
+            calls.append((method, path, query, body))
+            if method == "POST":
+                return 200, {
+                    "status": "PREPARED_AWAITING_APPROVAL",
+                    "mission_id": "mission-f7",
+                    "checkpoint_id": "Chk-F7",
+                    "hold": {"reason": "PREPARED_AWAITING_APPROVAL"},
+                    "executor_invoked": False,
+                }
+            return 200, {
+                "status": "PROJECTED",
+                "mission_id": "mission-f7",
+                "checkpoint": {"checkpoint_id": "Chk-F7"},
+                "hold": {"reason": "PREPARED_AWAITING_APPROVAL"},
+                "binder_replay": {"limitations": ["BINDER_DECISION_RECONSTRUCTION_REQUIRED"]},
+                "verification": {"ticket_levels": {"ticket-a": "VERIFIED_WITH_LIMITS"}},
+            }
+
+    monkeypatch.setattr(terminal, "AgentObsidure", _FakeAgent)
+    monkeypatch.setattr(terminal, "_load_supervised_client", lambda: FakeSupervised)
+    monkeypatch.setattr(sys, "argv", ["obsidure"])
+    inputs = iter(["build fixture", "o", str(payload_file), "quit"])
+    monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
+
+    rc = terminal.main()
+
+    assert rc == 0
+    assert calls[0][0:2] == ("POST", "/api/supervised-missions/prepare-only")
+    assert calls[1][0:3] == ("GET", "/api/supervised-missions/checkpoints/Chk-F7/projection", None)
+    out = capsys.readouterr().out
+    assert "mission_id    : mission-f7" in out
+    assert "checkpoint_id : Chk-F7" in out
+    assert "PREPARED_AWAITING_APPROVAL" in out
+    assert "BINDER_DECISION_RECONSTRUCTION_REQUIRED" in out
+    assert "VERIFIED_WITH_LIMITS" in out
+
+
+def test_interactive_checkpoint_reopen_preserves_case_and_evidence(monkeypatch, capsys):
+    calls = []
+
+    class FakeSupervised:
+        NO_AUTHORITY = dict(cli.NO_AUTHORITY)
+
+        @staticmethod
+        def _api_json(api, method, path, *, query=None, body=None):
+            calls.append((method, path, query, body))
+            return 200, {
+                "status": "PROJECTED",
+                "mission_id": "mission-f7",
+                "checkpoint": {"checkpoint_id": "Chk-MixedCase"},
+                "evidence": {"action_evidence_refs": ["aev-f7"]},
+                "verification": {"ticket_levels": {"ticket-a": "VERIFIED_WITH_LIMITS"}},
+                "binder_replay": {"limitations": ["BINDER_DECISION_RECONSTRUCTION_REQUIRED"]},
+            }
+
+        _evidence = staticmethod(cli._evidence)
+        _holds = staticmethod(cli._holds)
+
+    monkeypatch.setattr(terminal, "_load_supervised_client", lambda: FakeSupervised)
+
+    handled = terminal.handle_special_command("r12 evidence Chk-MixedCase", _FakeAgent(api_base="", max_cycles=None, verbose=False), "http://obsidia.test")
+
+    assert handled is True
+    assert calls == [("GET", "/api/supervised-missions/checkpoints/Chk-MixedCase/projection", None, None)]
+    out = capsys.readouterr().out
+    assert "Chk-MixedCase" in out
+    assert "VERIFIED_WITH_LIMITS" in out
+    assert "BINDER_DECISION_RECONSTRUCTION_REQUIRED" in out
