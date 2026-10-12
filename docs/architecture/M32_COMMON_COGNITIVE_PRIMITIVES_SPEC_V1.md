@@ -119,7 +119,7 @@ Explicit normative cases for future testing (Not yet implemented):
 
 
 ## 14. Frozen M32 V1 Model and Foundation Values
-This section is normative. Where §§1–13 are less precise, §§14–31 govern.
+Sections 14 onward are NORMATIVE for M32 V1 implementation. Sections 1–13 are retained as historical rationale and are not altered. If any statement in §§1–13 conflicts with a normative clause in §14 or later, the later normative clause controls implementation behavior and tests.
 
 - `M32_V1_MODEL=SUBSTRATE_ONLY`
 - `CORE_PRIMITIVE_COUNT=0`
@@ -139,12 +139,12 @@ Sealed foundation laws are preserved unchanged: ONE OBJECT, MANY PROJECTIONS, MA
 
 M32 V1 does NOT: define truth; define B8 promotion or knowledge promotion; write durable memory; define a World Model; select, authorize or execute actions; replace B7 roles, B8 promotion or B9 cognitive paths; implement ARM, Bio or COMOS; perform calibration; self-modify.
 
-Implementation location (used by oracles in §31): M32 runtime code, when written, lives under `app/cognition/m32/`. Contract tests live under `tests/m32/`.
+Implementation location (used by oracles in §35–§36): M32 runtime code, when written, lives under `app/cognition/m32/`. Contract tests live under `tests/m32/`.
 
 ## 15. Canonical Value and Canonical JSON
 `CanonicalValue` is exactly one of: `null`, `true`/`false`, a string, a finite JSON number, an array of `CanonicalValue`, or an object with string keys and `CanonicalValue` values (`CanonicalObject`).
 
-The following MUST NOT appear inside a `CanonicalValue`: `set`, `frozenset`, any map type whose iteration order is not semantically fixed, bytes, enum objects, paths, dataclasses, or objects relying on a custom `repr`. Producers (normally domain adapters) MUST convert unordered collections, before `TypedCognitiveDatum` construction, into either an array whose semantic order is explicitly defined by the producer, or a `CanonicalObject`. A value violating this rule causes `NON_CANONICAL_VALUE` (§21). Tuples serialize as arrays.
+The following MUST NOT appear inside a `CanonicalValue`: `set`, `frozenset`, any map type whose iteration order is not semantically fixed, bytes, enum objects, paths, dataclasses, or objects relying on a custom `repr`. Producers (normally domain adapters) MUST convert unordered collections, before `TypedCognitiveDatum` construction, into either an array whose semantic order is explicitly defined by the producer, or a `CanonicalObject`. A datum value violating these rules causes `NON_CANONICAL_VALUE` at datum construction; an `immutable_config` violating them causes `INVALID_IMMUTABLE_CONFIG` (§33). Tuples serialize as arrays.
 
 Canonical JSON (`CANONICAL_JSON`) MUST be produced as follows:
 1. Every string (values and object keys) is normalized to Unicode NFC.
@@ -156,6 +156,8 @@ Canonical JSON (`CANONICAL_JSON`) MUST be produced as follows:
 7. `NaN`, `+Infinity` and `-Infinity` are forbidden: `NON_CANONICAL_VALUE`.
 8. Integers with |n| > 2^53 − 1 are forbidden: `NON_CANONICAL_VALUE`.
 9. The resulting text is encoded as UTF-8 bytes without BOM.
+
+The `NON_CANONICAL_VALUE` codes in this list apply to datum values (Phase B); the same violations inside `immutable_config` raise `INVALID_IMMUTABLE_CONFIG` (§33).
 
 No implementation-specific `repr()` output may enter canonical JSON. If an implementation cannot produce the required canonical form, it MUST fail closed before identity calculation.
 
@@ -237,35 +239,38 @@ Excluded from identity unless a primitive's `ConfigSchema` explicitly places the
 Freeze: `INVOCATION_IDENTITY != EXECUTION_PROVENANCE`; `SAME_INVOCATION_IDENTITY != SAME_TRUTH`.
 
 ## 20. Validation Order
-Validation runs in exactly this order; the first failing step determines the outcome:
+Validation runs in exactly this order; the first failing step determines the outcome. Steps 1–13 constitute Phases E–G of §32; no step before 12 reads or relies on `invocation_id`.
 
-1. Resolve the registry key (`primitive_type`, `primitive_spec_version`): unknown type → `UNKNOWN_PRIMITIVE_TYPE`; known type, unknown version → `UNKNOWN_PRIMITIVE_VERSION`.
-2. Validate invocation `schema_version == "m32.invocation.v1"`, else `INVALID_SCHEMA_VERSION`.
-3. Validate `primitive_spec_version` is the exact registered string (no ranges, no "latest"), else `UNKNOWN_PRIMITIVE_VERSION`.
-4. Validate binding structure (each binding has a str `slot_name` and a well-formed `TypedCognitiveDatum`), else `INVALID_BINDING`.
+1. Syntax: `primitive_type` not a non-empty string → `UNKNOWN_PRIMITIVE_TYPE`; `primitive_spec_version` not a non-empty string → `UNKNOWN_PRIMITIVE_VERSION`.
+2. Resolve the registry key (`primitive_type`, `primitive_spec_version`) by exact string equality: unknown type → `UNKNOWN_PRIMITIVE_TYPE`; known type with unregistered version → `UNKNOWN_PRIMITIVE_VERSION`. No ranges, no "latest".
+3. Validate invocation `schema_version == "m32.invocation.v1"`, else `INVALID_SCHEMA_VERSION`.
+4. Supplied bindings are structurally valid by construction (Phases B–D guarantee each element is a constructed `PrimitiveInputBinding` holding a constructed `TypedCognitiveDatum`). This step raises no code.
 5. Detect duplicate `slot_name` → `DUPLICATE_INPUT_SLOT`.
 6. Reject slots not declared in `input_slots` → `UNKNOWN_INPUT_SLOT`.
-7. For each supplied slot: `datum_type` mismatch → `DATUM_TYPE_MISMATCH`; then datum `schema_version` ≠ slot `datum_schema_version` → `DATUM_SCHEMA_MISMATCH`.
+7. For each supplied slot, in ascending `slot_name` order: `datum_type` mismatch → `DATUM_TYPE_MISMATCH`; then datum `schema_version` ≠ slot `datum_schema_version` → `DATUM_SCHEMA_MISMATCH`.
 8. Validate `immutable_config` against `ConfigSchema`, else `INVALID_IMMUTABLE_CONFIG`.
-9. Validate all values are canonically serializable (§15), else `NON_CANONICAL_VALUE`.
-10. Classify missing required slots (not an error).
-11. Construct the canonical invocation representation.
-12. Compute `invocation_id`.
-13. If any required slot is missing: return `PrimitiveResult(status=INSUFFICIENT_INPUT, output=null)` without calling the implementation.
-14. Otherwise the implementation may execute.
+9. Validate `immutable_config` values are canonical values (§15), else `INVALID_IMMUTABLE_CONFIG`. (Datum values were already proven canonical at Phase B.)
+10. Determine missing required slots (not an error).
+11. Canonicalize the validated invocation (Phase F).
+12. Compute `invocation_id` (Phase G, §19).
+13. Freeze the `FinalizedPrimitiveInvocation`.
+14. If any required slot is missing: produce `PrimitiveResult(status=INSUFFICIENT_INPUT, output=null)` without calling the implementation (Phase H).
+15. Otherwise the selected implementation executes (Phase I).
+16. Validate and freeze the `PrimitiveResult` (Phase J).
 
-No implementation code may execute before steps 1–12 succeed. A failure in steps 1–9 raises `InvocationValidationError`; no `PrimitiveResult` and no `invocation_id` are produced.
+No implementation code executes before step 13 succeeds. A failure in steps 1–9 raises `InvocationValidationError`; no `FinalizedPrimitiveInvocation`, no `invocation_id` and no `PrimitiveResult` are produced.
 
 ## 21. Two Outcomes: Invalid vs. Incomplete
-A. INVALID INVOCATION → `InvocationValidationError` (immutable): `code: str`, `message: str`, `field_path: str | absent`. Invocation codes (closed V1 set): `UNKNOWN_PRIMITIVE_TYPE`, `UNKNOWN_PRIMITIVE_VERSION`, `INVALID_SCHEMA_VERSION`, `INVALID_BINDING`, `DUPLICATE_INPUT_SLOT`, `UNKNOWN_INPUT_SLOT`, `DATUM_TYPE_MISMATCH`, `DATUM_SCHEMA_MISMATCH`, `INVALID_IMMUTABLE_CONFIG`, `NON_CANONICAL_VALUE`. Registry/adapter/result codes use the same error shape: `REGISTRY_CONFLICT`, `INVALID_TYPE_SPEC`, `TEST_PRIMITIVE_IN_PRODUCTION`, `ADAPTER_INPUT_INVALID`, `ADAPTER_REVERSE_UNSUPPORTED`, `INVALID_RESULT`.
+A. INVALID MATERIAL → `InvocationValidationError` (immutable): `code: str`, `message: str`, `field_path: str | absent`. The closed V1 code set and the single lifecycle phase at which each code may be raised are fixed in §33. `message` and `field_path` are non-normative for equality; tests assert `code` only.
 
-B. VALID BUT INCOMPLETE INVOCATION → `PrimitiveResult.status=INSUFFICIENT_INPUT`, `output=null`, implementation not called, `invocation_id` computed over the supplied bindings.
+B. VALID BUT INCOMPLETE INVOCATION: a finalized invocation lacking a declared required slot → `PrimitiveResult.status=INSUFFICIENT_INPUT`, `output=null`, implementation not called, `invocation_id` = the finalized invocation's id (computed over the supplied bindings).
 
 Freeze:
+- `MISSING_REQUIRED_SLOT != MALFORMED_INVOCATION`
 - `MISSING_REQUIRED_SLOT → INSUFFICIENT_INPUT`
-- `DUPLICATE_SLOT → INVALID_INVOCATION`
-- `WRONG_TYPE → INVALID_INVOCATION`
-- `UNKNOWN_EXTRA_SLOT → INVALID_INVOCATION`
+- `DUPLICATE_SLOT → InvocationValidationError(DUPLICATE_INPUT_SLOT)`
+- `WRONG_TYPE → InvocationValidationError(DATUM_TYPE_MISMATCH)`
+- `UNKNOWN_EXTRA_SLOT → InvocationValidationError(UNKNOWN_INPUT_SLOT)`
 - `VALIDATION_ERROR != SEMANTIC_FALSE`
 
 ## 22. PrimitiveProvenance
@@ -310,6 +315,10 @@ Semantics:
 
 Freeze: `PRODUCED != TRUE`; `UNKNOWN != FALSE`; `FAILED_RUNTIME != FALSE`; `NOT_APPLICABLE != FAILED_RUNTIME`; `INSUFFICIENT_INPUT != UNKNOWN`; `PRIMITIVE_OUTPUT != VERIFIED_TRUTH`; `PRIMITIVE_OUTPUT != PROMOTED_KNOWLEDGE`.
 
+Diagnostics: `diagnostics` is non-semantic metadata. It never participates in `invocation_id`, never changes the meaning of `status`, preserves production order, and MUST NOT be parsed to determine truth, verification or authority. Its content is normative only where §34 fixes it (FAILED_RUNTIME exception class name).
+
+Boolean status: `PrimitiveResultStatus` has no normative boolean coercion. `bool(status)` MUST NOT be used as semantic truth; if the implementation language exposes truthiness, it has no contract meaning. Consumers MUST branch on explicit enum values.
+
 The substrate exposes no field through which a result becomes VERIFIED or PROMOTED. Content inside an output datum's `value` is data, never a status label.
 
 ## 24. Pure Execution Contract
@@ -344,6 +353,8 @@ Freeze: `DIRECT_COMPOSITION_COMPATIBILITY=EXACT_TYPE_AND_SCHEMA_MATCH`; `PRODUCE
 ## 27. Registry
 Key: (`primitive_type`, `spec_version`). Registration is deterministic and grants no authority. No dynamic plugin loading.
 
+Canonical form of a `PrimitiveTypeSpec`: a `CanonicalObject` whose keys are its nine §17 field names; nested parts serialize as objects with their §17 field names (`InputSlotSpec`, `DatumTypeRef`, `ConfigFieldSpec`, `CompositionContract`, `DomainAdapterPolicy`, `EffectsContract`); tuples serialize as arrays in their canonical order; the whole is serialized with §15 rules. "Identical spec" means identical canonical UTF-8 bytes (equivalently identical SHA-256 of them); object identity or language-level equality is never used.
+
 - same key + canonical-JSON-identical `PrimitiveTypeSpec` → IDEMPOTENT SUCCESS (registry unchanged).
 - same key + differing `PrimitiveTypeSpec` → `REGISTRY_CONFLICT`, fail closed, existing entry unchanged.
 - `EffectsContract` containing any `true` → `INVALID_TYPE_SPEC`.
@@ -367,31 +378,146 @@ Two registry scopes exist: `PRODUCTION_REGISTRY` (the default) and `TEST_REGISTR
 - `TEST_PRIMITIVE_REGISTRY=TEST_ONLY`; `TEST_PRIMITIVE_IN_PRODUCTION_DEFAULT=FORBIDDEN`.
 - `SYNTHETIC_TEST_PRIMITIVE_IS_CANONICAL=NO`. Test primitives never count toward `CORE_PRIMITIVE_COUNT` and carry no domain authority.
 
-## 31. R1–R20 Executable Matrix
-The wording of M32-R1..R20 is that of §13; this matrix gives each a direct oracle. Fixtures use `TEST_REGISTRY` with:
-- `test.echo` v1: one required slot `x` (`test.text`/`v1`), one optional config field `tag` (string), output `test.text`/`v1`, returns PRODUCED echoing `x`;
-- `test.na` v1, `test.unknown` v1, `test.failure` v1: same slot; return NOT_APPLICABLE, return UNKNOWN, raise an exception, respectively;
-- `test.adapter` v1: `DomainAdapterSpec` with `reverse_supported=false`, target `test.text`/`v1`.
+## 31. R1–R20 Executable Matrix (superseded)
+The matrix formerly in this section is superseded by §36. §36 is the only normative R1–R20 oracle matrix.
 
-| ID | Requirement (§13) | Runtime object / field | Precondition | Test operation | Expected observable | Failure oracle |
-|---|---|---|---|---|---|---|
-| R1 | same type + canonical inputs/config → same identity | `PrimitiveInvocation.invocation_id` (§19) | `test.echo` v1 registered | build two invocations with equal type, version, bindings (supplied in different order) and config | ids equal; each is 64 lowercase hex | ids differ, or wrong format |
-| R2 | different type → different identity | `primitive_type` in preimage | `test.echo`, `test.na` registered | same inputs/config, different type | ids differ | ids equal |
-| R3 | different relevant input → different identity | `inputs`, `immutable_config` | `test.echo` | vary `x.value`; separately vary `tag` | each variation changes the id | any id unchanged |
-| R4 | wall-clock does not alter identity | §19 exclusions | `test.echo` | build the same invocation under two patched clocks and two host/environment values | ids equal; preimage keys are exactly the five §19 keys | ids differ, or preimage holds time/host data |
-| R5 | primitive cannot ACT | `PrimitiveTypeSpec.effects_contract.emits_act`; §24 | registry | register a spec with `emits_act=true`; execute `test.echo`; scan `app/cognition/m32/` imports | `INVALID_TYPE_SPEC`; no ACT emitter imported or invoked | registration succeeds, or an ACT emitter is imported/invoked |
-| R6 | cannot write durable memory | `effects_contract.memory_write`; §24 | registry | register with `memory_write=true`; execute; scan imports | `INVALID_TYPE_SPEC`; no memory-store import or write | registration succeeds, or a write/import is observed |
-| R7 | cannot mutate B8 | `effects_contract.b8_mutation`; §24 | registry; B8 state snapshot | register with `b8_mutation=true`; execute and compare snapshot; scan imports | `INVALID_TYPE_SPEC`; snapshot unchanged; no B8 promotion write-path import | registration succeeds, snapshot changes, or import found |
-| R8 | UNKNOWN does not become FALSE | `PrimitiveResult.status`, `output` | `test.unknown` | execute | `status == UNKNOWN`; `output is None`; status enum has exactly the five §23 members | other status, non-null output, or extra/FALSE member |
-| R9 | NOT_APPLICABLE distinct from FAILED_RUNTIME | `status` | `test.na`, `test.failure` | execute both | `NOT_APPLICABLE` and `FAILED_RUNTIME` respectively; members distinct | equal statuses, or exception escapes |
-| R10 | FAILED_RUNTIME is not semantic FALSE | `status`, `output` | `test.failure` | execute | `status == FAILED_RUNTIME`; `output is None` | other status, or any output datum |
-| R11 | invalid/untyped input fails closed | §20, §21-A | `test.echo`; implementation spy | duplicate slot; unknown slot; wrong `datum_type`; wrong datum schema; NaN value; raw dict instead of datum | `InvocationValidationError` with `DUPLICATE_INPUT_SLOT`, `UNKNOWN_INPUT_SLOT`, `DATUM_TYPE_MISMATCH`, `DATUM_SCHEMA_MISMATCH`, `NON_CANONICAL_VALUE`, `INVALID_BINDING` respectively; spy call count 0 | different code, no error, or implementation called |
-| R12 | output retains required provenance | `PrimitiveResult.provenance` (§22) | `test.echo` | execute | provenance is a `PrimitiveProvenance` with non-empty `implementation_id`, and tuple-typed `source_refs` and `derived_from_invocation_ids` | provenance missing or a required field absent |
-| R13 | compatible composition works | §26 | `test.echo` output `test.text`/`v1`; second test spec `test.echo2` v1 with slot `x` of `test.text`/`v2` | feed the PRODUCED output into `test.echo` slot `x`; then into `test.echo2` slot `x` | first is a valid invocation whose provenance lists the upstream id in `derived_from_invocation_ids`; second raises `DATUM_SCHEMA_MISMATCH` | first rejected, or second accepted |
-| R14 | domain adapter cannot grant authority | §25 `DomainAdapterSpec`, `to_core`, `from_core` | `test.adapter` v1 | `to_core` a valid domain value, then execute `test.unknown` with it; call `from_core`; call `to_core` on invalid input | datum has exactly the §16 fields; result status stays `UNKNOWN`; `from_core` → `ADAPTER_REVERSE_UNSUPPORTED`; invalid input → `ADAPTER_INPUT_INVALID` | extra authority/verification field, status changed, reverse succeeds, or invalid input yields a datum |
-| R15 | B7 role semantics unchanged | sealed B7 suite; M32 import graph | M32 change applied | run `python -m pytest tests/b7 -q`; statically scan `app/cognition/m32/` | B7 suite passes with no fewer tests than at foundation seal `dc548725`; M32 performs no attribute assignment into `app.cognition.b7` and does not subclass or redefine B7 contracts | any B7 failure, test-count drop, or M32 override of B7 |
-| R16 | B9 path semantics unchanged | sealed B9 suite; M32 import graph | M32 change applied | run `python -m pytest tests/b9 -q`; statically scan `app/cognition/m32/` | B9 suite passes with no fewer tests than at `dc548725`; no M32 assignment into `app.cognition.b9`; no redefinition of B9 path contracts | any B9 failure, test-count drop, or override |
-| R17 | foundation sentinel remains PASS | `scripts/foundation_sentinel.py` | M32 change applied | run `python scripts/foundation_sentinel.py` | exit code 0 and "All canonical foundation suites passed." | non-zero exit |
-| R18 | different implementation/provider does not masquerade | `PrimitiveProvenance` | the same invocation executed by two implementations differing in `implementation_id` (and separately `provider_id`) | execute both | equal `invocation_id`; provenance records differ in exactly the differing field | provenance equal, or field dropped |
-| R19 | output cannot self-label VERIFIED/PROMOTED | §23 `PrimitiveResult` schema | `test.echo` | execute; attempt to construct a result with an extra field `verified` or `promoted`, or with status `VERIFIED` | executed result has exactly the six §23 fields; each attempt raises `INVALID_RESULT` | extra label or unknown status accepted |
-| R20 | cannot silently consume UNKNOWN as FALSE | §26 (only PRODUCED supplies a datum); §21-B | `test.unknown` upstream; `test.echo` downstream | take the UNKNOWN result's `output` and build the downstream invocation from available data | upstream `output is None`; downstream invocation has no `x` binding and returns `INSUFFICIENT_INPUT` without calling the implementation | any FALSE datum is produced, or downstream returns `PRODUCED` |
+## 32. Lifecycle and Construction Contract
+Every M32 object passes through the following phases. Phase names are normative.
+
+| Phase | Name | Object produced | Validates | May raise |
+|---|---|---|---|---|
+| A | RAW INPUT MATERIAL | none (caller-owned values) | nothing | nothing |
+| B | DATUM CONSTRUCTION | `TypedCognitiveDatum` (frozen, deep-copied) | `schema_version` and `datum_type` are non-empty strings; `value` is a `CanonicalValue` (§15: NFC-normalizable strings, no NFC key collision, RFC 8785-representable finite numbers within ±(2^53−1) for integers, no NaN/±Infinity, no unordered or non-JSON containers); `semantic_refs`, if present, is a sequence of non-empty strings | `INVALID_DATUM_SCHEMA`, `INVALID_DATUM_TYPE`, `NON_CANONICAL_VALUE` |
+| C | INPUT BINDING CONSTRUCTION | `PrimitiveInputBinding` (frozen) | `slot_name` is a non-empty string; `datum` is a `TypedCognitiveDatum` instance | `INVALID_BINDING` |
+| D | INVOCATION DRAFT | `PrimitiveInvocationDraft` (frozen, deep-copied) | `inputs` is a sequence whose every element is a `PrimitiveInputBinding` instance (else `INVALID_BINDING`); `immutable_config` is a mapping (else `INVALID_IMMUTABLE_CONFIG`) | `INVALID_BINDING`, `INVALID_IMMUTABLE_CONFIG` |
+| E | INVOCATION VALIDATION | none | §20 steps 1–10, against an explicitly supplied registry | §33 invocation-validation codes |
+| F | CANONICALIZATION | canonical preimage (§19) | §20 step 11 | nothing (all failures already raised) |
+| G | IDENTITY FINALIZATION | `FinalizedPrimitiveInvocation` (frozen) with `invocation_id` | §20 steps 12–13 | nothing |
+| H | PRE-EXECUTION CLASSIFICATION | `PrimitiveExecutionRecord` with `INSUFFICIENT_INPUT` result, or proceed | §20 step 14 | nothing |
+| I | IMPLEMENTATION EXECUTION | `PrimitiveImplementationOutcome` | §34 | implementation exceptions are captured as `FAILED_RUNTIME`, never raised |
+| J | RESULT CONSTRUCTION | `PrimitiveResult` and `PrimitiveExecutionRecord` (frozen) | §23 output rules | `INVALID_RESULT` |
+
+API shape (conceptual, normative names):
+- `TypedCognitiveDatum(schema_version, datum_type, value, semantic_refs=ABSENT)` — Phase B.
+- `PrimitiveInputBinding(slot_name, datum)` — Phase C.
+- `PrimitiveInvocationDraft(schema_version, primitive_type, primitive_spec_version, inputs, immutable_config)` — Phase D; needs no registry.
+- `finalize(draft, registry) -> FinalizedPrimitiveInvocation` — Phases E–G; the registry is an explicit argument, never a global default.
+- `execute(finalized, registry, implementation_id, derived_from_invocation_ids=()) -> PrimitiveExecutionRecord` — Phases H–J (§34).
+
+`PrimitiveInvocation` in §§15–19 denotes `FinalizedPrimitiveInvocation`. Freeze:
+- `PrimitiveInvocationDraft != FinalizedPrimitiveInvocation`
+- Draft: `invocation_id=ABSENT` (the attribute does not exist on the draft).
+- Finalized: `invocation_id=<64 lowercase hex SHA-256>`, computed once at Phase G and never recomputed.
+- No requirement, oracle or consumer may read `invocation_id` before Phase G.
+
+A finalized invocation may lack a required slot (§21-B). Missing required input is classified at Phase H, never at Phases B–E.
+
+## 33. Error Origin Contract
+Each code below may be raised at exactly one lifecycle phase. Any other code, or a listed code at another phase, is non-conformant.
+
+| Code | Sole origin |
+|---|---|
+| `INVALID_DATUM_SCHEMA` | Phase B (`schema_version` not a non-empty string) |
+| `INVALID_DATUM_TYPE` | Phase B (`datum_type` not a non-empty string) |
+| `NON_CANONICAL_VALUE` | Phase B (datum `value` or `semantic_refs` violates §15) |
+| `INVALID_BINDING` | Phases C–D (bad `slot_name`; non-datum in a binding; non-binding in a draft's `inputs`) |
+| `UNKNOWN_PRIMITIVE_TYPE` | Phase E (§20 steps 1–2) |
+| `UNKNOWN_PRIMITIVE_VERSION` | Phase E (§20 steps 1–2) |
+| `INVALID_SCHEMA_VERSION` | Phase E (§20 step 3) |
+| `DUPLICATE_INPUT_SLOT` | Phase E (§20 step 5) |
+| `UNKNOWN_INPUT_SLOT` | Phase E (§20 step 6) |
+| `DATUM_TYPE_MISMATCH` | Phase E (§20 step 7) |
+| `DATUM_SCHEMA_MISMATCH` | Phase E (§20 step 7) |
+| `INVALID_IMMUTABLE_CONFIG` | Phase D (non-mapping) or Phase E (§20 steps 8–9) — the only dual-phase code; the phase is determined by whether the config is a mapping |
+| `INVALID_TYPE_SPEC` | type-spec registration (§27) |
+| `REGISTRY_CONFLICT` | type-spec or implementation registration (§27, §34) |
+| `TEST_PRIMITIVE_IN_PRODUCTION` | type-spec or implementation registration into `PRODUCTION_REGISTRY` (§30) |
+| `UNKNOWN_IMPLEMENTATION` | `execute` (§34) — before Phase H |
+| `INVALID_RESULT` | Phase J |
+| `ADAPTER_INPUT_INVALID` | `DomainAdapter.to_core` / `from_core` |
+| `ADAPTER_REVERSE_UNSUPPORTED` | `DomainAdapter.from_core` |
+
+All are raised as `InvocationValidationError(code, message, field_path)`. No code means semantic FALSE.
+
+## 34. Implementation, Execution and Provenance Contract
+Two identities are distinct:
+- SEMANTIC INVOCATION IDENTITY: `invocation_id`, from `schema_version`, `primitive_type`, `primitive_spec_version`, canonical inputs, `immutable_config` only (§19).
+- EXECUTION / IMPLEMENTATION IDENTITY: recorded in `PrimitiveProvenance`; never part of `invocation_id`.
+
+`PrimitiveImplementationSpec` (immutable): `primitive_type: str`, `spec_version: str`, `implementation_id: str` (non-empty), `implementation_version: str | absent`, `provider_id: str | absent`, `model_id: str | absent`, `execution_environment_ref: str | absent`, and a callable `run`.
+
+Implementation registry: key (`primitive_type`, `spec_version`, `implementation_id`), held in the same registry scope as the type spec. Rules: the referenced type spec must already be registered (else `UNKNOWN_PRIMITIVE_TYPE`/`UNKNOWN_PRIMITIVE_VERSION`); same key + canonical-identical metadata (all fields except `run`) and same callable → idempotent; same key + different metadata or callable → `REGISTRY_CONFLICT`; `test.*` types in `PRODUCTION_REGISTRY` → `TEST_PRIMITIVE_IN_PRODUCTION`. Several implementations per type spec are allowed. There is no default implementation: `execute` requires `implementation_id`; unknown id → `UNKNOWN_IMPLEMENTATION`.
+
+`run(finalized: FinalizedPrimitiveInvocation, immutable_config) -> PrimitiveImplementationOutcome`, where `PrimitiveImplementationOutcome` is exactly `status: PrimitiveResultStatus`, `output: TypedCognitiveDatum | null`, `diagnostics: tuple[str, ...]`. `run` receives no registry, no memory store, no ACT emitter, no B8/Binder/KX108/kernel handle. An implementation cannot set provenance or `invocation_id`.
+
+`execute(finalized, registry, implementation_id, derived_from_invocation_ids=())`:
+1. Resolve the implementation (`UNKNOWN_IMPLEMENTATION` if absent). Validate `derived_from_invocation_ids` are 64-hex strings (else `INVALID_RESULT`); they are kept in the caller's order with duplicates removed.
+2. Build `PrimitiveProvenance` from the `PrimitiveImplementationSpec` (`implementation_id`, `implementation_version`, `provider_id`, `model_id`, `execution_environment_ref`), with `source_refs` = the concatenation, in sorted binding order, of each bound datum's `semantic_refs` (duplicates removed, first occurrence kept), and the supplied `derived_from_invocation_ids`.
+3. Phase H: if a required slot is missing → result `INSUFFICIENT_INPUT`, `run` not called.
+4. Phase I: else call `run`. If `run` raises, the outcome is `status=FAILED_RUNTIME`, `output=null`, `diagnostics=(<exception class name>,)`. Any outcome violating §23 → `INVALID_RESULT`.
+5. Phase J: construct `PrimitiveResult(schema_version="m32.result.v1", invocation_id, status, output, provenance, diagnostics)` and return it wrapped in `PrimitiveExecutionRecord`.
+
+`PrimitiveExecutionRecord` (immutable execution/provenance envelope, not a primitive): `invocation_id`, `implementation_id`, `implementation_version | absent`, `provider_id | absent`, `model_id | absent`, `execution_environment_ref | absent`, `result: PrimitiveResult`, `provenance: PrimitiveProvenance`. Its identity is not the semantic invocation identity; M32 V1 defines no record id.
+
+Multiple executions of one finalized invocation (R18): same `invocation_id`; each implementation yields its own record with its own provenance. Differing outputs are never merged, reconciled or fused; each record stands alone. Freeze:
+- `SAME_INVOCATION_ID != SAME_EXECUTION`
+- `SAME_INVOCATION_ID != SAME_RESULT`
+- `PROVENANCE_DIFFERENCE != SEMANTIC_IDENTITY_DIFFERENCE`
+- `NO_AUTOMATIC_RESULT_FUSION=YES`
+
+Provider semantic exception: if a provider/model choice is semantically relevant, it MUST be a declared `ConfigSchema` field supplied in `immutable_config`; it then legitimately changes `invocation_id`. A provider/model appearing only in provenance MUST NOT alter `invocation_id`.
+
+Composition linkage (R13): a caller feeding a PRODUCED upstream output into a downstream binding passes the upstream `invocation_id` in `derived_from_invocation_ids`; this is the only mechanism, and it affects provenance only.
+
+EffectsContract enforcement scope: `EffectsContract` is a declared substrate invariant. It does not by itself prove arbitrary code has no side effect. What M32 V1 guarantees and tests is: (a) every registered type spec declares all effects `false` (`INVALID_TYPE_SPEC` otherwise); (b) the execution contract gives `run` no effect-capable handle; (c) the only channel from `run` back to the substrate is `PrimitiveImplementationOutcome`, whose closed shape carries no effect request (any extra field → `INVALID_RESULT`).
+
+## 35. Sealed-Layer Regression Oracles and Redefinition
+Protected surfaces are those of `docs/architecture/COGNITIVE_FOUNDATION_V1_SEAL.md` §4. The seal reference commit is `dc548725c201612183871841d5734be3bbd6c36e`. The canonical regression command is `python scripts/foundation_sentinel.py` (runs `tests/b7`, `tests/b8`, `tests/b9`, security and B6/SENS suites).
+
+Protected surfaces used by M32 oracles:
+- B7: `app/cognition/b7/` and `tests/b7/`.
+- B9: `app/cognition/b9/` and `tests/b9/`.
+- B8: `app/knowledge/b8/` and `tests/b8/`.
+
+Redefinition: M32 redefines a sealed layer if it (1) changes any file of that layer's protected surface; (2) changes the meaning of a public sealed contract/type; (3) replaces authoritative call semantics (assigns, wraps or monkeypatches any attribute of a sealed module); (4) changes a frozen invariant; or (5) introduces a competing canonical implementation, i.e. a module under `app/cognition/m32/` that defines a public (non-underscore) top-level name identical to a public top-level name of the sealed layer's modules. Importing, reading, referencing or consuming a sealed contract is not redefinition.
+
+Sealed-layer oracle for a layer L = all of:
+1. `python scripts/foundation_sentinel.py` exits 0;
+2. `python -m pytest <tests/L> -q` exits 0;
+3. `git diff --quiet dc548725c201612183871841d5734be3bbd6c36e HEAD -- <L protected surface>` exits 0 (no M32-caused drift; pre-existing documented post-seal changes outside M32, e.g. R12 `api_projection` in `app/knowledge/b8/serialization.py`, are compared against the commit immediately preceding the M32 change instead);
+4. no module under `app/cognition/m32/` assigns to an attribute of a module in L (AST scan for `Assign`/`AugAssign`/`setattr` targeting an imported L module or its members);
+5. no public top-level name in `app/cognition/m32/` equals a public top-level name of L's modules.
+
+Test counts are not an oracle: pytest collection counts and function counts are not frozen in the seal and MUST NOT be used.
+
+## 36. R1–R20 Executable Matrix
+Wording of M32-R1..R20 is that of §13. Fixtures: `TEST_REGISTRY` with
+- `test.echo` / `v1`: one required slot `x` (`test.text`/`v1`), optional config field `tag` (string), output `test.text`/`v1`; implementations `impl.a` (returns PRODUCED echo of `x`) and `impl.b` (`provider_id="prov.b"`, returns PRODUCED with value `x.value + "!"`);
+- `test.na`, `test.unknown`, `test.failure` / `v1`: same slot; implementation `impl.a` returns NOT_APPLICABLE / returns UNKNOWN / raises;
+- `test.echo2` / `v1`: slot `x` of `test.text`/`v2`;
+- `test.adapter` / `v1`: `DomainAdapterSpec` with `reverse_supported=false`, target `test.text`/`v1`.
+
+"Finalize" = `finalize(draft, TEST_REGISTRY)`; "execute" = `execute(finalized, TEST_REGISTRY, implementation_id)`.
+
+| ID | Requirement (§13) | Phase | Object / field | Precondition | Test operation | Expected observable | Failure oracle |
+|---|---|---|---|---|---|---|---|
+| R1 | same type + canonical inputs/config → same identity | G | `FinalizedPrimitiveInvocation.invocation_id` | `test.echo` registered | finalize two drafts with equal type, version, bindings (supplied in different order) and config | ids equal; each matches `^[0-9a-f]{64}$`; drafts have no `invocation_id` attribute | ids differ, wrong format, or draft exposes an id |
+| R2 | different type → different identity | G | `primitive_type` | `test.echo`, `test.na` registered | finalize same inputs/config with each type | ids differ | ids equal |
+| R3 | different relevant input → different identity | G | `inputs`, `immutable_config` | `test.echo` | finalize varying `x.value`; separately varying `tag` | each variation changes the id | any id unchanged |
+| R4 | wall-clock does not alter identity | G | §19 | `test.echo`; two `execution_environment_ref` values on two implementation specs | finalize the same draft under two patched clocks; recompute `SHA256(CANONICAL_JSON(preimage))` from the five §19 keys | ids equal and equal to the recomputed digest | ids differ, or differ from the recomputed five-key digest |
+| R5 | primitive cannot ACT | registration, I | `PrimitiveTypeSpec.effects_contract.emits_act`; §34 `run` contract | `TEST_REGISTRY` | (a) register `test.echo` variant with `emits_act=true`; (b) execute `test.echo` with an implementation whose `run` returns an outcome carrying an extra field `act` | (a) `INVALID_TYPE_SPEC`; (b) `INVALID_RESULT`; registered specs all have `emits_act=false` | (a) registers, or (b) record produced |
+| R6 | primitive cannot write durable memory | registration, I | `effects_contract.memory_write`; §34 | `TEST_REGISTRY` | (a) register with `memory_write=true`; (b) outcome with extra field `memory_write` | (a) `INVALID_TYPE_SPEC`; (b) `INVALID_RESULT` | (a) registers, or (b) record produced |
+| R7 | primitive cannot mutate B8 | registration, I, sealed | `effects_contract.b8_mutation`; §34; §35 for B8 | `TEST_REGISTRY` | (a) register with `b8_mutation=true`; (b) outcome with extra field `b8_mutation`; (c) §35 sealed-layer oracle for B8 | (a) `INVALID_TYPE_SPEC`; (b) `INVALID_RESULT`; (c) all five §35 checks pass | any of (a)–(c) fails |
+| R8 | UNKNOWN does not become FALSE | H–J | `PrimitiveResult.status`, `output` | `test.unknown` / `impl.a` | execute | `status is UNKNOWN`; `output is None`; `PrimitiveResultStatus` has exactly the five §23 members | other status, non-null output, or extra member |
+| R9 | NOT_APPLICABLE distinct from FAILED_RUNTIME | I–J | `status` | `test.na`, `test.failure` | execute both | `NOT_APPLICABLE` and `FAILED_RUNTIME` respectively; members unequal; no exception escapes `execute` | equal statuses, or exception escapes |
+| R10 | FAILED_RUNTIME is not semantic FALSE | I–J | `status`, `output`, `diagnostics` | `test.failure` | execute | `status is FAILED_RUNTIME`; `output is None`; `diagnostics[0]` is the raised exception class name | other status, any output, or wrong diagnostics |
+| R11 | invalid/untyped input fails closed | B–E | §33 | `test.echo`; `run` spy | NaN datum value; `slot_name=""`; raw dict in draft `inputs`; duplicate slot; unknown slot; wrong `datum_type`; wrong datum schema | `NON_CANONICAL_VALUE` (B), `INVALID_BINDING` (C), `INVALID_BINDING` (D), `DUPLICATE_INPUT_SLOT`, `UNKNOWN_INPUT_SLOT`, `DATUM_TYPE_MISMATCH`, `DATUM_SCHEMA_MISMATCH` (E); spy call count 0 | other code, other phase, no error, or `run` called |
+| R12 | output retains required provenance | J | `PrimitiveResult.provenance` (§22, §34) | `test.echo` / `impl.a` | execute | provenance `implementation_id == "impl.a"`; `source_refs` and `derived_from_invocation_ids` are tuples; record `provenance == result.provenance` | missing or mismatched provenance |
+| R13 | compatible composition works | E, J | §26, §34 composition linkage | upstream `test.echo` record `U` (PRODUCED) | bind `U.result.output` to `test.echo` slot `x`, finalize, execute with `derived_from_invocation_ids=(U.invocation_id,)`; separately bind it to `test.echo2` slot `x` and finalize | first: record whose provenance `derived_from_invocation_ids == (U.invocation_id,)`; second: `DATUM_SCHEMA_MISMATCH` | first fails or lacks linkage; second finalizes |
+| R14 | domain adapter cannot grant authority | adapter, J | §25 | `test.adapter` | `to_core` a valid domain value, execute `test.unknown`; `from_core` any datum; `to_core` an invalid value | datum has exactly the §16 fields; result `status is UNKNOWN`; `ADAPTER_REVERSE_UNSUPPORTED`; `ADAPTER_INPUT_INVALID` | extra field, status changed, reverse succeeds, or invalid input yields a datum |
+| R15 | B7 role semantics unchanged | sealed | §35 oracle, L=B7 (`app/cognition/b7/`, `tests/b7/`) | M32 change applied | run the five §35 checks for B7 | all five pass | sentinel failure, B7 suite failure, B7 surface drift, attribute assignment into B7, or competing public name |
+| R16 | B9 path semantics unchanged | sealed | §35 oracle, L=B9 (`app/cognition/b9/`, `tests/b9/`) | M32 change applied | run the five §35 checks for B9 | all five pass | sentinel failure, B9 suite failure, B9 surface drift, attribute assignment into B9, or competing public name (e.g. `CognitivePath`) |
+| R17 | foundation sentinel remains PASS | sealed | `scripts/foundation_sentinel.py` | M32 change applied | run it | exit 0 and "All canonical foundation suites passed." | non-zero exit |
+| R18 | different implementation/provider does not masquerade | G, J | §34 `PrimitiveExecutionRecord`, `PrimitiveProvenance` | `test.echo` with `impl.a`, `impl.b` | finalize one draft; execute with `impl.a` and with `impl.b` | equal `invocation_id`; provenance differ in `implementation_id` and `provider_id`; outputs differ and are returned as two separate records (no merged record) | ids differ, provenance equal, field dropped, or one fused record |
+| R19 | output cannot self-label VERIFIED/PROMOTED | J | §23 schema | `test.echo` | execute; construct a result with extra field `verified`; with extra field `promoted`; with status `VERIFIED` | executed result has exactly the six §23 fields; each construction → `INVALID_RESULT` | label or status accepted |
+| R20 | cannot silently consume UNKNOWN as FALSE | H | §26, §21-B | `test.unknown` upstream; `test.echo` downstream | take upstream `result.output`; finalize downstream draft without an `x` binding (no datum exists); execute | upstream `output is None`; downstream `status is INSUFFICIENT_INPUT`; `run` not called | any FALSE datum produced, `run` called, or PRODUCED |
