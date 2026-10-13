@@ -218,6 +218,20 @@ def test_receipt_refs_binder_limits_and_completion_reference_are_visible(tmp_pat
     assert "INLINE_STATUS_ONLY" in data["binder_replay"]["limitations"]
 
 
+def test_reconstructed_binder_status_is_visible_without_erasing_other_limits(tmp_path):
+    saved = _save_checkpoint(tmp_path)
+    record = deepcopy(saved["checkpoint"])
+    record["accepted_state"]["binder_replay_status"] = "RECONSTRUCTED_MATCH"
+    record["accepted_state"]["binder_replay_limitations"] = ["KX108_POLICY_VERSION_NOT_SEPARATELY_BOUND"]
+    _republish_checkpoint(record, tmp_path / "checkpoints")
+
+    data = client.get(f"/api/supervised-missions/checkpoints/{saved['checkpoint_id']}/projection").json()
+
+    assert data["binder_replay"]["independent_replay_available"] is True
+    assert data["binder_replay"]["status"] == "RECONSTRUCTED_MATCH"
+    assert data["binder_replay"]["limitations"] == ["KX108_POLICY_VERSION_NOT_SEPARATELY_BOUND"]
+
+
 def test_missing_corrupt_or_mismatched_checkpoint_fails_closed(tmp_path):
     S._DEFAULT_STORE = tmp_path / "checkpoints"
     missing = client.get("/api/supervised-missions/checkpoints/smc-missing/projection")

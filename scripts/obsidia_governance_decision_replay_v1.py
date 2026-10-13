@@ -37,6 +37,7 @@ PARTIAL = "PARTIAL"
 UNAVAILABLE = "UNAVAILABLE"
 NOT_REACHED = _CRE.STATUS_NOT_REACHED
 INLINE_STATUS_ONLY = "INLINE_STATUS_ONLY"
+RECONSTRUCTED_MATCH = "RECONSTRUCTED_MATCH"
 
 _ACTION_ID_RE = re.compile(r"^aev-[0-9a-f]{32}$")
 
@@ -95,6 +96,8 @@ def _base_result(action_evidence_id: str, stores_base_dir) -> dict:
         "historical_binder_status": "UNKNOWN",
         "replayed_binder_status": "UNKNOWN",
         "binder_match": UNAVAILABLE,
+        "binder_reconstruction_source": "UNAVAILABLE",
+        "binder_reconstruction_status": "UNAVAILABLE",
         "EAH_valid": UNAVAILABLE,
         "approval_valid": UNAVAILABLE,
         "decision_inputs_complete": False,
@@ -215,19 +218,38 @@ def _replay_kx108_from_frozen_record(envelope: dict, approval: Optional[dict], s
     return record
 
 
-def _replay_binder(envelope: dict, result: dict) -> None:
+def _replay_binder(envelope: dict, result: dict, integrity: dict) -> None:
     status = (envelope.get("authorization") or {}).get("binder_verdict_status")
     result["historical_binder_status"] = status or "UNKNOWN"
     if status in {"OBSERVED_INLINE", "OBSERVED_INLINE_NOT_SEPARATELY_PERSISTED", "REJECTED_INLINE"}:
-        result["replayed_binder_status"] = status
-        result["binder_match"] = PARTIAL
-        result["evidence_limits"].append("BINDER_INLINE_STATUS_ONLY_NOT_SEPARATELY_PERSISTED")
+        result["binder_reconstruction_status"] = str(integrity.get("binder_replay_status") or "UNKNOWN")
+        same_action = integrity.get("action_evidence_id") == envelope.get("action_evidence_id")
+        if (
+            same_action
+            and envelope.get("operation_type") == "V2_APPLY_PATCH"
+            and integrity.get("replay_verdict") == _R3.VERDICT_VERIFIED
+            and integrity.get("binder_replay_status") == RECONSTRUCTED_MATCH
+            and not integrity.get("evidence_missing")
+            and not integrity.get("evidence_conflicts")
+        ):
+            result["replayed_binder_status"] = RECONSTRUCTED_MATCH
+            result["binder_match"] = YES
+            result["binder_reconstruction_source"] = "R8_D3_CANONICAL_RECEIPT_REPLAY"
+        else:
+            result["replayed_binder_status"] = status
+            result["binder_match"] = PARTIAL
+            result["binder_reconstruction_source"] = "INLINE_STATUS_ONLY"
+            result["evidence_limits"].append("BINDER_INLINE_STATUS_ONLY_NOT_SEPARATELY_PERSISTED")
     elif status == NOT_REACHED:
         result["replayed_binder_status"] = NOT_REACHED
         result["binder_match"] = YES
+        result["binder_reconstruction_source"] = NOT_REACHED
+        result["binder_reconstruction_status"] = NOT_REACHED
     else:
         result["replayed_binder_status"] = "UNKNOWN"
         result["binder_match"] = NO
+        result["binder_reconstruction_source"] = "UNREPLAYABLE"
+        result["binder_reconstruction_status"] = "UNKNOWN"
         result["conflicts"].append("BINDER_STATUS_UNREPLAYABLE")
 
 
@@ -276,6 +298,6 @@ def replay_governance_decision(action_evidence_id: str, *, stores_base_dir) -> d
     descriptor = _load_descriptor(envelope, stores, result)
     approval = _load_approval(envelope, stores, result)
     kx = _replay_kx108_from_frozen_record(envelope, approval, stores, result)
-    _replay_binder(envelope, result)
+    _replay_binder(envelope, result, integrity)
     result["deterministic_inputs_hash"] = _decision_inputs_hash(envelope, descriptor, approval, kx)
     return _finish(result)

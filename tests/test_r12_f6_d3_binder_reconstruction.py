@@ -10,6 +10,7 @@ for _p in (_ROOT / "scripts", _ROOT / "tests"):
         sys.path.insert(0, str(_p))
 
 import obsidia_canonical_receipt_replay_v1 as R3
+import obsidia_governance_decision_replay_v1 as GDR
 
 from test_r9_b6_apply_patch_r8_adaptation import _execute, _prepared, v2_world  # noqa: F401
 
@@ -23,6 +24,14 @@ def test_real_apply_patch_binder_decision_is_independently_reconstructed(v2_worl
     assert replay["KX108_ref_valid"] == R3.YES
     assert replay["binder_replay_status"] == "RECONSTRUCTED_MATCH"
     assert replay["replay_verdict"] == R3.VERDICT_VERIFIED
+
+    governance = GDR.replay_governance_decision(result["action_evidence_id"], stores_base_dir=v2_world["stores"])
+    assert governance["replay_verdict"] == GDR.VERDICT_MATCH
+    assert governance["replayed_binder_status"] == "RECONSTRUCTED_MATCH"
+    assert governance["binder_match"] == GDR.YES
+    assert governance["binder_reconstruction_source"] == "R8_D3_CANONICAL_RECEIPT_REPLAY"
+    assert "BINDER_INLINE_STATUS_ONLY_NOT_SEPARATELY_PERSISTED" not in governance["evidence_limits"]
+    assert "KX108_POLICY_VERSION_NOT_SEPARATELY_BOUND" in governance["evidence_limits"]
 
 
 def test_reconstruction_mismatch_is_not_verified(v2_world, monkeypatch):

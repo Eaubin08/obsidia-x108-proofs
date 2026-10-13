@@ -39,7 +39,7 @@ def _verification(world: dict[str, object], executed: dict[str, object], *, full
     replay = dict(outcome["r8_replay"])
     if full_binder:
         replay["replay_verdict"] = "VERIFIED"
-        replay["binder_replay_status"] = "BINDER_DECISION_RECONSTRUCTED"
+        replay["binder_replay_status"] = "RECONSTRUCTED_MATCH"
     return {
         "verification_id": "ver-r12-f6-d2-" + TICKET_ID,
         "mission_id": executed["mission_id"],

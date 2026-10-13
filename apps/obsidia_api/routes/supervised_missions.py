@@ -512,14 +512,30 @@ def _completion_reference(record: Mapping[str, Any], state: Mapping[str, Any]) -
 
 def _binder_limitation(record: Mapping[str, Any], state: Mapping[str, Any]) -> dict[str, Any]:
     limitations = []
+    replay_status = ""
     for source in (record, state):
         for item in _as_list(source.get("binder_replay_limitations") or source.get("binder_limitations")):
             if item not in limitations:
                 limitations.append(item)
+        if not replay_status:
+            replay_status = str(source.get("binder_replay_status") or "")
+        replay = source.get("r8_replay")
+        if not replay_status and isinstance(replay, Mapping):
+            replay_status = str(replay.get("binder_replay_status") or "")
+        binder = source.get("binder_replay")
+        if not replay_status and isinstance(binder, Mapping):
+            replay_status = str(binder.get("status") or binder.get("binder_replay_status") or "")
+    if replay_status in {"RECONSTRUCTED_MATCH", "BINDER_DECISION_RECONSTRUCTED"}:
+        return {
+            "independent_replay_available": True,
+            "status": replay_status,
+            "limitations": limitations,
+        }
     if not limitations:
         limitations.append("BINDER_INDEPENDENT_REPLAY_NOT_PROVEN")
     return {
         "independent_replay_available": False,
+        "status": replay_status or "UNKNOWN",
         "limitations": limitations,
     }
 
