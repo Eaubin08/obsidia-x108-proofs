@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Any, Mapping
+from dataclasses import fields
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -181,6 +182,157 @@ def _projection_patch_hash(projection: Mapping[str, Any], ticket: Mapping[str, A
     return ""
 
 
+def _projection_action_evidence_refs(projection: Mapping[str, Any], ticket: Mapping[str, Any]) -> list[str]:
+    refs: list[str] = []
+    for value in (ticket.get("action_evidence_id"), ticket.get("action_evidence_ref")):
+        if isinstance(value, str) and value.strip():
+            refs.append(value.strip())
+    for value in _as_list(ticket.get("action_evidence_refs")) + _as_list(ticket.get("evidence_refs")):
+        if isinstance(value, str) and value.startswith("aev-"):
+            refs.append(value)
+    evidence = projection.get("evidence") if isinstance(projection.get("evidence"), Mapping) else {}
+    for key in ("action_evidence_id", "action_evidence_ref"):
+        value = evidence.get(key)
+        if isinstance(value, str) and value.strip():
+            refs.append(value.strip())
+    for key in ("action_evidence_refs", "evidence_refs"):
+        for value in _as_list(evidence.get(key)):
+            if isinstance(value, str) and value.startswith("aev-"):
+                refs.append(value)
+    return list(dict.fromkeys(refs))
+
+
+def _dict_for_dataclass(cls: Any, data: Mapping[str, Any]) -> dict[str, Any]:
+    allowed = {field.name for field in fields(cls)}
+    return {key: value for key, value in data.items() if key in allowed}
+
+
+def _load_repair_outcome_context(path_raw: str | None) -> tuple[dict[str, Any] | None, str | None]:
+    if not path_raw:
+        return None, "REPAIR_CONTEXT_FILE_REQUIRED"
+    path = Path(path_raw)
+    if not path.exists() or not path.is_file():
+        return None, "REPAIR_CONTEXT_FILE_NOT_FOUND"
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return None, f"REPAIR_CONTEXT_FILE_UNREADABLE:{type(exc).__name__}"
+    if not isinstance(raw, Mapping):
+        return None, "REPAIR_CONTEXT_MUST_BE_JSON_OBJECT"
+    required = ("repair_request", "repair_proposal", "repair_verdict", "prepared_repair")
+    missing = [key for key in required if not isinstance(raw.get(key), Mapping)]
+    if missing:
+        return None, "REPAIR_CONTEXT_INCOMPLETE:" + ",".join(missing)
+
+    try:
+        from periphery.agents.agent_obsidure import AgentObsidure
+        from periphery.agents.obsidure_repair_contract import (
+            ErrorContextRecord,
+            RepairRequest,
+            RepairVerdict,
+            repair_proposal_from_dict,
+        )
+
+        request_data = dict(raw["repair_request"])
+        request_data["error_contexts"] = [
+            ErrorContextRecord(**_dict_for_dataclass(ErrorContextRecord, item))
+            for item in request_data.get("error_contexts", []) or []
+            if isinstance(item, Mapping)
+        ]
+        request = RepairRequest(**_dict_for_dataclass(RepairRequest, request_data))
+        proposal = repair_proposal_from_dict(dict(raw["repair_proposal"]))
+        verdict = RepairVerdict(**_dict_for_dataclass(RepairVerdict, dict(raw["repair_verdict"])))
+        agent = AgentObsidure(api_base="http://127.0.0.1:1", verbose=False)
+        agent._last_repair_request = request
+        agent._last_repair_proposal = proposal
+        agent._last_repair_verdict = verdict
+    except Exception as exc:
+        return None, f"REPAIR_CONTEXT_INVALID:{type(exc).__name__}:{exc}"
+
+    return {
+        "agent": agent,
+        "prepared_repair": dict(raw["prepared_repair"]),
+        "mission_context": dict(raw.get("mission_context") or {}) if isinstance(raw.get("mission_context"), Mapping) else None,
+        "repair_budget": raw.get("repair_budget") if isinstance(raw.get("repair_budget"), int) else None,
+        "attempt_history": tuple(item for item in (raw.get("attempt_history") or ()) if isinstance(item, Mapping)),
+    }, None
+
+
+def _inspect_outcome_projection(
+    *,
+    api: str,
+    mission_id: str,
+    checkpoint_id: str,
+    ticket_id: str,
+    action_evidence_id: str,
+) -> tuple[dict[str, Any] | None, str | None]:
+    status, projection = _api_json(
+        api,
+        "GET",
+        f"/api/supervised-missions/{mission_id}/projection",
+        query={"checkpoint_id": checkpoint_id},
+    )
+    if not 200 <= status < 300:
+        return None, str(projection.get("reason") or projection.get("detail") or "OUTCOME_PROJECTION_UNAVAILABLE")
+    if str(projection.get("mission_id") or "") != mission_id:
+        return None, "MISSION_PROJECTION_MISMATCH"
+    checkpoint = projection.get("checkpoint") if isinstance(projection.get("checkpoint"), Mapping) else {}
+    if str(checkpoint.get("checkpoint_id") or "") != checkpoint_id:
+        return None, "CHECKPOINT_PROJECTION_MISMATCH"
+    ticket = _ticket(projection, ticket_id)
+    if ticket is None:
+        return None, "TICKET_PROJECTION_NOT_FOUND"
+    refs = _projection_action_evidence_refs(projection, ticket)
+    if not refs:
+        return None, "ACTION_EVIDENCE_REFERENCE_NOT_VISIBLE"
+    if action_evidence_id not in refs:
+        return None, "ACTION_EVIDENCE_ID_PROJECTION_MISMATCH"
+    return {
+        "projection": projection,
+        "ticket": dict(ticket),
+        "visible_action_evidence_refs": refs,
+    }, None
+
+
+def _r10_outcome_payload(
+    *,
+    mission_id: str,
+    checkpoint_id: str,
+    ticket_id: str,
+    projection_context: Mapping[str, Any],
+    r10_feedback: Mapping[str, Any],
+) -> dict[str, Any]:
+    classification = str(r10_feedback.get("derived_outcome_classification") or "EVIDENCE_INCOMPLETE")
+    recommendation = str(r10_feedback.get("recommendation") or "ESCALATE")
+    limited = bool(r10_feedback.get("limited_verdict"))
+    status = "R10_OUTCOME_INGESTED" if str(r10_feedback.get("status") or "").endswith("INGESTED") else "HOLD"
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "status": status,
+        "mission_id": mission_id,
+        "checkpoint_id": checkpoint_id,
+        "ticket_id": ticket_id,
+        "decision_authority": DECISION_AUTHORITY,
+        "r10_outcome_feedback": dict(r10_feedback),
+        "derived_outcome_classification": classification,
+        "recommendation": recommendation,
+        "limited_verdict": limited,
+        "binder_limitations_preserved": limited or bool(r10_feedback.get("r8_evidence_limits")),
+        "executed_verified": classification == "EXECUTED_VERIFIED",
+        "stop_success": classification == "EXECUTED_VERIFIED" and recommendation == "STOP_SUCCESS",
+        "evidence_incomplete": classification == "EVIDENCE_INCOMPLETE",
+        "outcome_uncertain": classification == "DISPATCHED_OUTCOME_UNCERTAIN",
+        "pre_dispatch_retry_candidate": classification == "PRE_DISPATCH_FAILURE" and recommendation == "RETRY_CANDIDATE",
+        "execution_observed_is_verified": False,
+        "http_success_is_closure": False,
+        "verified": False,
+        "closed": False,
+        "mission_done_verified": False,
+        "projection_context": dict(projection_context),
+        **NO_AUTHORITY,
+    }
+
+
 def _pre_authorize_inspection(
     *,
     api: str,
@@ -292,6 +444,52 @@ def run_supervised(action: str, api: str, args: dict[str, Any]) -> int:
         payload.update({k: payload.get(k, v) for k, v in NO_AUTHORITY.items()})
         _emit(payload, as_json=as_json)
         return 0 if 200 <= status < 300 else 1
+
+    if action == "outcome":
+        mission_id = str(args.get("mission_id") or "").strip()
+        checkpoint_id = str(args.get("checkpoint_id") or "").strip()
+        ticket_id = str(args.get("ticket_id") or "").strip()
+        action_evidence_id = str(args.get("action_evidence_id") or "").strip()
+        stores_base_dir = str(args.get("stores_base_dir") or "").strip()
+        if not (mission_id and checkpoint_id and ticket_id):
+            return _fail("MISSION_CHECKPOINT_AND_TICKET_REQUIRED", as_json=as_json, status="REJECTED")
+        if not action_evidence_id:
+            return _fail("ACTION_EVIDENCE_ID_REQUIRED", as_json=as_json, status="REJECTED")
+        if not stores_base_dir:
+            return _fail("STORES_BASE_DIR_REQUIRED", as_json=as_json, status="REJECTED")
+
+        projection_context, reason = _inspect_outcome_projection(
+            api=api,
+            mission_id=mission_id,
+            checkpoint_id=checkpoint_id,
+            ticket_id=ticket_id,
+            action_evidence_id=action_evidence_id,
+        )
+        if projection_context is None:
+            return _fail(reason or "OUTCOME_PROJECTION_INSPECTION_FAILED", as_json=as_json)
+
+        context, reason = _load_repair_outcome_context(args.get("repair_context_file"))
+        if context is None:
+            return _fail(reason or "REPAIR_CONTEXT_INVALID", as_json=as_json, status="REJECTED")
+
+        agent = context["agent"]
+        r10_feedback = agent.ingest_repair_execution_outcome(
+            action_evidence_id=action_evidence_id,
+            stores_base_dir=stores_base_dir,
+            prepared_repair=context["prepared_repair"],
+            mission_context=context.get("mission_context"),
+            repair_budget=context.get("repair_budget"),
+            attempt_history=context.get("attempt_history") or (),
+        )
+        payload = _r10_outcome_payload(
+            mission_id=mission_id,
+            checkpoint_id=checkpoint_id,
+            ticket_id=ticket_id,
+            projection_context=projection_context,
+            r10_feedback=r10_feedback,
+        )
+        _emit(payload, as_json=as_json)
+        return 0 if payload["stop_success"] else 1
 
     if action == "authorize":
         mission_id = str(args.get("mission_id") or "").strip()

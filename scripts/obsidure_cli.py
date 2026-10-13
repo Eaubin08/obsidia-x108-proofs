@@ -497,7 +497,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--dry-run", action="store_true", help="Audit seul — aucun patch généré")
     p.add_argument("--quiet", "-q", action="store_true", help="Sortie minimale")
     sup = p.add_argument_group("mode supervise R12 (distinct du CLI AVDR historique)")
-    sup.add_argument("--supervised", choices=["status", "prepare", "inspect", "holds", "evidence", "verification", "authorize"],
+    sup.add_argument("--supervised", choices=["status", "prepare", "inspect", "holds", "evidence", "verification", "authorize", "outcome"],
                      default=None, help="Mode supervise : client du backend R12 (aucune autorite d'action)")
     sup.add_argument("--mission-id", default=None)
     sup.add_argument("--checkpoint-id", default=None)
@@ -505,6 +505,9 @@ def build_parser() -> argparse.ArgumentParser:
     sup.add_argument("--payload-file", default=None, help="JSON de preparation (prepare)")
     sup.add_argument("--execution-authority-hash", default=None, help="Autorisation HUMAINE explicite (authorize)")
     sup.add_argument("--human-authorization-reference", default=None, help="Reference d'autorisation humaine (authorize)")
+    sup.add_argument("--action-evidence-id", default=None, help="Evidence R8 canonique a ingerer (outcome)")
+    sup.add_argument("--stores-base-dir", default=None, help="Store canonique contenant les receipts R8 (outcome)")
+    sup.add_argument("--repair-context-file", default=None, help="Contexte R10 authentique request/proposal/verdict/prepared (outcome)")
     sup.add_argument("--confirm-human-authorization", action="store_true",
                      help="Atteste que l'humain autorise explicitement ce hash (requis pour authorize)")
     sup.add_argument("--json", action="store_true", help="Sortie JSON (mode supervise)")
@@ -532,6 +535,9 @@ def main() -> int:
                 "payload_file": args.payload_file,
                 "execution_authority_hash": args.execution_authority_hash,
                 "human_authorization_reference": args.human_authorization_reference,
+                "action_evidence_id": args.action_evidence_id,
+                "stores_base_dir": args.stores_base_dir,
+                "repair_context_file": args.repair_context_file,
                 "confirm_human_authorization": args.confirm_human_authorization,
                 "json": args.json,
             },
