@@ -117,7 +117,7 @@ def test_outcome_ingests_real_r8_r10_evidence_without_claiming_closure(tmp_path,
     assert out["stop_success"] is True
     assert out["limited_verdict"] is True
     assert out["binder_limitations_preserved"] is True
-    assert "KX108_POLICY_VERSION_NOT_SEPARATELY_BOUND" in out["r10_outcome_feedback"]["r8_evidence_limits"]
+    assert "KX108_POLICY_FINGERPRINT_BOUNDED_COVERAGE" in out["r10_outcome_feedback"]["r8_evidence_limits"]
     assert out["execution_observed_is_verified"] is False
     assert out["verified"] is False
     assert out["closed"] is False

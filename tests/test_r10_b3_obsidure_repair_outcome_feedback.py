@@ -476,7 +476,7 @@ def test_incomplete_policy_limit_is_preserved_without_promotion(tmp_path, monkey
     out = _ingest(agent, world, prepared, action_id)
 
     assert out["limited_verdict"] is True
-    assert "KX108_POLICY_VERSION_NOT_SEPARATELY_BOUND" in out["r8_evidence_limits"]
+    assert "KX108_POLICY_FINGERPRINT_BOUNDED_COVERAGE" in out["r8_evidence_limits"]
     assert out["recommendation"] == "STOP_SUCCESS"
 
     (world["stores"] / "v2exec" / f"{prepared['prepared_action']['v2_exec_id']}.json").unlink()

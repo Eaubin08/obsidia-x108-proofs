@@ -21,6 +21,7 @@ import obsidia_batch_execution as _E
 import obsidia_canonical_receipt_envelope_v1 as _CRE
 import obsidia_canonical_receipt_replay_v1 as _R3
 import obsidia_kx108_decision_store as _DS
+import obsidia_kx108_policy_identity_v1 as _KX_POLICY
 
 RESULT_SCHEMA_VERSION = "GOVERNANCE_DECISION_REPLAY_RESULT_V1"
 
@@ -110,6 +111,12 @@ def _base_result(action_evidence_id: str, stores_base_dir) -> dict:
         "config_version_bound": NO,
         "config_drift_handling": "CURRENT_RUNTIME_POLICY_NOT_USED",
         "current_runtime_policy_dependence": NO,
+        "policy_identity_status": "UNAVAILABLE",
+        "policy_identity_reason": "",
+        "policy_version": "",
+        "policy_content_hash": "",
+        "policy_coverage": "",
+        "policy_coverage_complete": False,
     }
 
 
@@ -209,12 +216,33 @@ def _replay_kx108_from_frozen_record(envelope: dict, approval: Optional[dict], s
     result["kx108_match"] = YES if all(checks) else NO
     if not all(checks):
         result["conflicts"].append("KX108_REPLAY_MISMATCH")
-    # Current records bind the schema/phase and canonical decision envelope, but not a separate policy version.
-    if "policy_version" not in canonical and "policy_version" not in record:
-        result["evidence_limits"].append("KX108_POLICY_VERSION_NOT_SEPARATELY_BOUND")
+    # Current records bind the schema/phase and canonical decision envelope.
+    # New PRE records additionally carry a bounded policy identity inside that
+    # envelope; historical records without it remain explicitly limited.
+    policy_identity = canonical.get("policy_identity")
+    policy_check = _KX_POLICY.verify_policy_identity(policy_identity)
+    result["policy_identity_status"] = policy_check["status"]
+    result["policy_identity_reason"] = policy_check["reason"]
+    policy_identity_dict = policy_identity if isinstance(policy_identity, dict) else {}
+    result["policy_version"] = str(policy_check.get("policy_version") or canonical.get("policy_version") or record.get("policy_version") or "")
+    result["policy_content_hash"] = str(policy_check.get("policy_content_hash") or canonical.get("policy_content_hash") or "")
+    result["policy_coverage"] = str(policy_check.get("coverage") or policy_identity_dict.get("coverage") or "")
+    result["policy_coverage_complete"] = bool(policy_check.get("coverage_complete") is True)
+    if policy_check["status"] == _KX_POLICY.STATUS_MATCH:
+        result["config_version_bound"] = YES
+        if not result["policy_coverage_complete"]:
+            result["evidence_limits"].append("KX108_POLICY_FINGERPRINT_BOUNDED_COVERAGE")
+    elif policy_check["status"] == _KX_POLICY.STATUS_UNAVAILABLE:
+        if "policy_version" not in canonical and "policy_version" not in record:
+            result["evidence_limits"].append("KX108_POLICY_VERSION_NOT_SEPARATELY_BOUND")
+        elif policy_check["reason"] == "KX108_POLICY_IDENTITY_MISSING":
+            result["evidence_limits"].append("KX108_POLICY_CONTENT_HASH_NOT_BOUND")
+        else:
+            result["evidence_limits"].append(policy_check["reason"])
         result["config_version_bound"] = NO
     else:
-        result["config_version_bound"] = YES
+        result["conflicts"].append(policy_check["reason"])
+        result["config_version_bound"] = NO
     return record
 
 

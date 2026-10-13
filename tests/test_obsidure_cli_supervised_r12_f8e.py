@@ -141,7 +141,7 @@ def test_operator_outcome_displays_r10_advisory_and_limited_evidence(tmp_path, m
     assert "r10.classification=EXECUTED_VERIFIED" in out
     assert "r10.recommendation=STOP_SUCCESS" in out
     assert "r10.limited_verdict=True" in out
-    assert "KX108_POLICY_VERSION_NOT_SEPARATELY_BOUND" in out
+    assert "KX108_POLICY_FINGERPRINT_BOUNDED_COVERAGE" in out
     assert "r10.r8_reconciliation_status=MATCH" in out
     assert "verified=False" in out
     assert "closed=False" in out

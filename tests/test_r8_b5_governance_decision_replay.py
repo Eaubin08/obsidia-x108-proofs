@@ -14,6 +14,7 @@ for p in (SCRIPTS, TESTS):
 import obsidia_canonical_receipt_envelope_v1 as CRE
 import obsidia_governance_decision_replay_v1 as GDR
 import obsidia_kx108_decision_store as DS
+import obsidia_kx108_policy_identity_v1 as KPI
 import test_r8_b3_evidence_only_replay as F
 
 
@@ -27,6 +28,22 @@ def _replay(tmp_path, name, env):
 
 def _receipt_path(stores, env):
     return stores["receipts"] / f"{env['action_evidence_id']}.json"
+
+
+def _rewrite_kx_and_receipt(stores, env, kx):
+    kx["decision_record_hash"] = DS.compute_kx108_decision_record_hash(kx)
+    kpath = stores["kxpre"] / f"{env['authorization']['kx108_pre_decision_record_id']}.json"
+    kpath.write_text(json.dumps(kx, indent=2, sort_keys=True), encoding="utf-8")
+    rpath = _receipt_path(stores, env)
+    rec = json.loads(rpath.read_text(encoding="utf-8"))
+    rec["authorization"]["kx108_pre_decision_record_hash"] = kx["decision_record_hash"]
+    rec["envelope_hash"] = CRE.compute_envelope_hash(rec)
+    rpath.write_text(json.dumps(rec, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def _kx_record(stores, env):
+    kpath = stores["kxpre"] / f"{env['authorization']['kx108_pre_decision_record_id']}.json"
+    return json.loads(kpath.read_text(encoding="utf-8"))
 
 
 def test_allow_hold_and_block_decision_replay_match(tmp_path):
@@ -113,22 +130,84 @@ def test_current_runtime_policy_drift_is_not_used_when_version_unavailable(tmp_p
     assert "KX108_POLICY_VERSION_NOT_SEPARATELY_BOUND" in result["evidence_limits"]
 
 
-def test_historical_policy_version_when_present_is_bound_in_replay_inputs(tmp_path):
+def test_historical_policy_version_without_fingerprint_remains_limited(tmp_path):
     env, stores = _make(tmp_path, "versioned")
-    kpath = stores["kxpre"] / f"{env['authorization']['kx108_pre_decision_record_id']}.json"
-    kx = json.loads(kpath.read_text(encoding="utf-8"))
+    kx = _kx_record(stores, env)
     kx["canonical_envelope"]["policy_version"] = "kx-policy-r8b5"
-    kx["decision_record_hash"] = DS.compute_kx108_decision_record_hash(kx)
-    kpath.write_text(json.dumps(kx, indent=2, sort_keys=True), encoding="utf-8")
-    rpath = _receipt_path(stores, env)
-    rec = json.loads(rpath.read_text(encoding="utf-8"))
-    rec["authorization"]["kx108_pre_decision_record_hash"] = kx["decision_record_hash"]
-    rec["envelope_hash"] = CRE.compute_envelope_hash(rec)
-    rpath.write_text(json.dumps(rec, indent=2, sort_keys=True), encoding="utf-8")
+    _rewrite_kx_and_receipt(stores, env, kx)
     result = _replay(tmp_path, "versioned", env)
     assert result["replay_verdict"] == GDR.VERDICT_MATCH
-    assert result["config_version_bound"] == GDR.YES
+    assert result["config_version_bound"] == GDR.NO
     assert "KX108_POLICY_VERSION_NOT_SEPARATELY_BOUND" not in result["evidence_limits"]
+    assert "KX108_POLICY_CONTENT_HASH_NOT_BOUND" in result["evidence_limits"]
+
+
+def test_new_policy_identity_is_verified_and_bounded(tmp_path):
+    env, stores = _make(tmp_path, "policy-bound")
+    kx = _kx_record(stores, env)
+    identity = KPI.build_tooling_build_policy_identity()
+    kx["canonical_envelope"]["policy_version"] = identity["policy_version"]
+    kx["canonical_envelope"]["policy_content_hash"] = identity["policy_content_hash"]
+    kx["canonical_envelope"]["policy_identity"] = identity
+    _rewrite_kx_and_receipt(stores, env, kx)
+    result = _replay(tmp_path, "policy-bound", env)
+    assert result["replay_verdict"] == GDR.VERDICT_MATCH
+    assert result["config_version_bound"] == GDR.YES
+    assert result["policy_identity_status"] == KPI.STATUS_MATCH
+    assert result["policy_version"] == KPI.POLICY_VERSION
+    assert result["policy_content_hash"] == identity["policy_content_hash"]
+    assert "KX108_POLICY_VERSION_NOT_SEPARATELY_BOUND" not in result["evidence_limits"]
+    assert "KX108_POLICY_FINGERPRINT_BOUNDED_COVERAGE" in result["evidence_limits"]
+
+
+def test_policy_identity_content_hash_mismatch_fails_closed(tmp_path):
+    env, stores = _make(tmp_path, "policy-hash")
+    kx = _kx_record(stores, env)
+    identity = KPI.build_tooling_build_policy_identity()
+    identity["components"][0]["source_sha256"] = "0" * 64
+    kx["canonical_envelope"]["policy_version"] = identity["policy_version"]
+    kx["canonical_envelope"]["policy_content_hash"] = identity["policy_content_hash"]
+    kx["canonical_envelope"]["policy_identity"] = identity
+    _rewrite_kx_and_receipt(stores, env, kx)
+    result = _replay(tmp_path, "policy-hash", env)
+    assert result["replay_verdict"] == GDR.VERDICT_TAMPERED
+    assert result["config_version_bound"] == GDR.NO
+    assert "KX108_POLICY_CONTENT_HASH_MISMATCH" in result["conflicts"]
+
+
+def test_same_policy_version_with_divergent_content_fails_closed(tmp_path):
+    env, stores = _make(tmp_path, "policy-drift")
+    kx = _kx_record(stores, env)
+    identity = KPI.build_tooling_build_policy_identity()
+    identity["components"][0]["source_sha256"] = "1" * 64
+    identity["policy_content_hash"] = KPI.compute_policy_content_hash(
+        components=identity["components"],
+        coverage=identity["coverage"],
+        uncovered_surface=identity["uncovered_surface"],
+    )
+    kx["canonical_envelope"]["policy_version"] = identity["policy_version"]
+    kx["canonical_envelope"]["policy_content_hash"] = identity["policy_content_hash"]
+    kx["canonical_envelope"]["policy_identity"] = identity
+    _rewrite_kx_and_receipt(stores, env, kx)
+    result = _replay(tmp_path, "policy-drift", env)
+    assert result["replay_verdict"] == GDR.VERDICT_TAMPERED
+    assert result["config_version_bound"] == GDR.NO
+    assert "KX108_POLICY_CURRENT_VERSION_CONTENT_MISMATCH" in result["conflicts"]
+
+
+def test_historical_policy_identity_without_registry_remains_unavailable(tmp_path):
+    env, stores = _make(tmp_path, "policy-old")
+    kx = _kx_record(stores, env)
+    identity = KPI.build_tooling_build_policy_identity()
+    identity["policy_version"] = "KX108_TOOLING_BUILD_POLICY_IDENTITY_V0"
+    kx["canonical_envelope"]["policy_version"] = identity["policy_version"]
+    kx["canonical_envelope"]["policy_content_hash"] = identity["policy_content_hash"]
+    kx["canonical_envelope"]["policy_identity"] = identity
+    _rewrite_kx_and_receipt(stores, env, kx)
+    result = _replay(tmp_path, "policy-old", env)
+    assert result["replay_verdict"] == GDR.VERDICT_MATCH
+    assert result["config_version_bound"] == GDR.NO
+    assert "KX108_POLICY_HISTORICAL_VERSION_UNAVAILABLE" in result["evidence_limits"]
 
 
 def test_static_decision_replay_has_no_executor_network_world_or_write_surface():

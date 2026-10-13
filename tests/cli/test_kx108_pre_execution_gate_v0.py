@@ -45,6 +45,7 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 import obsidia_batch_execution as E          # noqa: E402
+import obsidia_kx108_policy_identity_v1 as KPI  # noqa: E402
 import obsidia_pre_execution_context as PEC  # noqa: E402
 import obsidia_test_contract as TC           # noqa: E402
 import obsidia_kx108_decision_store as DS    # noqa: E402
@@ -481,6 +482,36 @@ def test_22_no_test_result_fields_in_pre_record(canon):
     assert "approval_id" not in DS._PRE_BINDING_CONTEXT_FIELDS or True  # approval_id IS present
     assert "approval_id" in DS._PRE_BINDING_CONTEXT_FIELDS
     assert "test_result_id" not in DS._PRE_BINDING_CONTEXT_FIELDS
+
+
+def test_22b_pre_decision_binds_bounded_policy_identity(canon):
+    r = _translate(canon)
+    out = DS.run_and_persist_kx108_pre_execution_decision(
+        r["pre_tooling_build_state_kwargs"], r["pre_binding_context"],
+        store_dir=canon["dec_dir"],
+    )
+    rec = out["record"]
+    identity = rec["canonical_envelope"]["policy_identity"]
+    assert rec["canonical_envelope"]["policy_version"] == KPI.POLICY_VERSION
+    assert rec["canonical_envelope"]["policy_content_hash"] == identity["policy_content_hash"]
+    assert identity["coverage"] == KPI.POLICY_COVERAGE
+    assert identity["coverage_complete"] is False
+    assert identity["uncovered_surface"]
+    assert KPI.verify_policy_identity(identity)["status"] == KPI.STATUS_MATCH
+    assert rec["x108_gate"] == "ALLOW"
+
+
+def test_22c_policy_identity_is_covered_by_decision_record_hash(canon):
+    r = _translate(canon)
+    out = DS.run_and_persist_kx108_pre_execution_decision(
+        r["pre_tooling_build_state_kwargs"], r["pre_binding_context"],
+        store_dir=canon["dec_dir"],
+    )
+    rec = json.loads(json.dumps(out["record"]))
+    rec["canonical_envelope"]["policy_identity"]["policy_content_hash"] = "0" * 64
+    ok, reason = DS.verify_kx108_decision_record(rec)
+    assert ok is False
+    assert reason == "DECISION_RECORD_HASH_MISMATCH"
 
 
 # ─── 23-24 : compatibilité POST / legacy ─────────────────────────────────
