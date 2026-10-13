@@ -75,14 +75,39 @@ def _freeze(value, code: str, path: str = "$"):
     _fail(code, f"non-canonical value of type {type(value).__name__}", path)
 
 
+def _shortest_digits(x: float):
+    """Shortest round-trip decimal digits of finite x > 0 as (digits, n) with x = 0.digits × 10^n.
+    repr() is used only as the source of the shortest digits, never as output."""
+    text = repr(x)
+    mantissa, _, exp = text.partition("e")
+    whole, _, frac = mantissa.partition(".")
+    digits = whole + frac
+    point = len(whole) + (int(exp) if exp else 0)
+    stripped = digits.lstrip("0")
+    point -= len(digits) - len(stripped)
+    return stripped.rstrip("0"), point
+
+
 def _number_text(n) -> str:
+    """RFC 8785 number serialization (ECMAScript Number::toString)."""
     if isinstance(n, int):
         return str(n)
     if n == 0:
         return "0"
-    if n.is_integer() and abs(n) < 1e21:
-        return str(int(n))
-    return repr(n)
+    sign = "-" if n < 0 else ""
+    digits, point = _shortest_digits(abs(n))
+    k = len(digits)
+    if k <= point <= 21:
+        body = digits + "0" * (point - k)
+    elif 0 < point <= 21:
+        body = digits[:point] + "." + digits[point:]
+    elif -6 < point <= 0:
+        body = "0." + "0" * (-point) + digits
+    else:
+        e = point - 1
+        mant = digits if k == 1 else digits[0] + "." + digits[1:]
+        body = mant + "e" + ("+" if e >= 0 else "-") + str(abs(e))
+    return sign + body
 
 
 def _jsonable(value):
