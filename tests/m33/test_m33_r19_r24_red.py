@@ -141,6 +141,22 @@ def test_r22_insufficient_material_never_raises(m):
     assert res.status.name == "INSUFFICIENT_MATERIAL"
 
 
+# A24 — historical report labels are projections, never canonical runtime states/fields/types (§32).
+def test_a24_report_labels_not_canonical_runtime_vocabulary(m):
+    import enum as enum_mod
+    mod = H.rt()
+    public = [n for n in dir(mod) if not n.startswith("_")]
+    assert H.report_label_violations(public) == set()
+    for n in public:
+        obj = getattr(mod, n)
+        if isinstance(obj, type) and issubclass(obj, enum_mod.Enum):
+            assert H.report_label_violations([mem.name for mem in obj]) == set(), n
+    it = H.item(m)
+    res = m.reconstruct(request=_req(m), contributions=(H.contribution(m, items=[it]),))
+    for obj in (it, res, res.provenance, res.items[0].supports[0]):
+        assert H.report_label_violations([a for a in dir(obj) if not a.startswith("_")]) == set(), type(obj).__name__
+
+
 # R24 — public surface present and isolated (static part in r13_r18 file).
 def test_r24_certified_public_surface_present(m):
     for n in H.PUBLIC_SURFACE:

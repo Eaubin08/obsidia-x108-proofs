@@ -59,8 +59,8 @@ Harness conventions (`_harness.py`): constructors called with keyword arguments 
 | A20 | R20 | `test_r20_no_confidence_or_utility_fields` | no field |
 | A21 | R23 | `test_r23_reconstruct_takes_no_handles` | signature |
 | A22 | R23 | `test_r19_r23_effects_all_false`, `test_r15_r17_no_forbidden_imports` | effects + imports |
-| A23 | R20, R24 | `test_r16_r18_r24_no_competing_public_names` | no `Flux*` defined (collision scan) |
-| A24 | R3, R20 | `test_r3_item_has_no_truth_or_promotion_fields`, `test_r20_no_confidence_or_utility_fields` | no report-label fields |
+| A23 | R20, R24 | `test_r16_r18_r24_no_competing_public_names` (defined names), `test_r3_no_candidate_names_in_public_surface` (public surface); detector control `test_pc7_flux_and_report_label_guards` | explicit `Flux*` name check on defined and public names (comments/strings/private names not matched) |
+| A24 | R3, R20 | `test_a24_report_labels_not_canonical_runtime_vocabulary`, `test_r3_item_has_no_truth_or_promotion_fields`; detector control `test_pc7_flux_and_report_label_guards` | historical report labels (SOLID, EVOKED, FORGOTTEN, LATENT, OPEN_QUESTIONS, REPORT_LABEL) are not public names, enum members or fields — exact standalone match, so `EVOKED_NOT_LOCKED` is valid; report projection != runtime truth/status/promotion |
 
 ## X1–X12
 
@@ -89,4 +89,4 @@ Harness conventions (`_harness.py`): constructors called with keyword arguments 
 | M_B2_1 merge ABSENT before validation | `test_r5_b2_invalid_absent_not_sanitized_by_merge` |
 | M_B2_2 sanitize ABSENT into UNDETERMINED | `test_r5_b2_invalid_absent_not_sanitized_by_merge` |
 
-Positive controls PC1–PC6 and self-mutation checks SM1–SM7: `test_m33_harness_selfcheck_red.py`.
+Positive controls PC1–PC7 and self-mutation checks SM1–SM7: `test_m33_harness_selfcheck_red.py`.

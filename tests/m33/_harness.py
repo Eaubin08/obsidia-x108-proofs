@@ -224,6 +224,26 @@ def candidate_names(names) -> set[str]:
     return {n for n in names if "Candidate" in n}
 
 
+def flux_names(names) -> set[str]:
+    """A23 (spec §30): seven-fluxes runtime types are forbidden; applies to defined/public names only."""
+    return {n for n in names if n.startswith("Flux")}
+
+
+REPORT_LABELS = frozenset({"SOLID", "EVOKED", "FORGOTTEN", "LATENT", "OPEN_QUESTIONS", "REPORT_LABEL"})
+
+
+def _label_form(name: str) -> str:
+    """CamelCase / snake_case / UPPER name -> UPPER_SNAKE (e.g. ReportLabel -> REPORT_LABEL)."""
+    import re
+    return re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "_", name).upper()
+
+
+def report_label_violations(names) -> set[str]:
+    """A24 (spec §32): historical report labels must not be canonical runtime states/fields/types.
+    Exact standalone match only: EVOKED_NOT_LOCKED or AMBIGUOUS_RECONSTRUCTION are NOT violations."""
+    return {n for n in names if _label_form(n) in REPORT_LABELS}
+
+
 def imported_modules(root: Path) -> set[str]:
     mods = set()
     for f in sorted(root.rglob("*.py")):

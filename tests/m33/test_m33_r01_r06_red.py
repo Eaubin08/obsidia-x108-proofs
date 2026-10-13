@@ -55,6 +55,7 @@ def test_r3_reconstruction_item_exists_with_hex_id(m):
 def test_r3_no_candidate_names_in_public_surface(m):
     public = [n for n in dir(H.rt()) if not n.startswith("_")]
     assert H.candidate_names(public) == set()
+    assert H.flux_names(public) == set()  # A23: no seven-fluxes public types
     for n in H.PUBLIC_SURFACE:
         assert hasattr(H.rt(), n), f"missing certified public name {n}"
 

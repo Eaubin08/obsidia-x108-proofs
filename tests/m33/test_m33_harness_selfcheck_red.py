@@ -66,6 +66,21 @@ def test_pc6_status_and_merge_oracles():
     assert H.expected_top_status(False, 2, ["CONTRADICTORY_SUPPORT"]) == "RECONSTRUCTED"
 
 
+# PC7 — A23/A24 guards fire on synthetic bad surfaces and spare valid certified names.
+def test_pc7_flux_and_report_label_guards(tmp_path):
+    bad = ["Flux", "FluxSignal", "FluxAnalytique", "FluxVisionnaire", "FluxDirectionnel", "FluxSymbolique",
+           "FluxEmotionnel", "FluxFractal", "FluxReciproque"]
+    assert H.flux_names(bad) == set(bad)
+    assert H.flux_names(["_historical_flux_note", "ReconstructionItem", "reflux_helper"]) == set()
+    (tmp_path / "bad.py").write_text("# Flux Fractal is historical\nNOTE = 'Flux Visionnaire'\nclass FluxSignal:\n    pass\n",
+                                     encoding="utf-8")
+    assert H.flux_names(H.defined_names(tmp_path)) == {"FluxSignal"}
+    assert H.report_label_violations(["LATENT", "REPORT_LABEL", "report_label", "ReportLabel", "Solid", "open_questions"]) == {
+        "LATENT", "REPORT_LABEL", "report_label", "ReportLabel", "Solid", "open_questions"}
+    assert H.report_label_violations(list(H.INTEGRATION_VALUES) + list(H.ISSUE_KINDS) + list(H.STATUS_VALUES)
+                                     + ["latent_note", "item_kind", "evoked_count"]) == set()
+
+
 # Self-mutation checks: each synthetic mistake is detected by the oracle the RED suite uses.
 def test_sm1_evidence_inference_collapse_detected():
     collapsed = lambda kind, refs: H.support_obj("EVIDENCE", refs)  # noqa: E731

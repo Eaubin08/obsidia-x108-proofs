@@ -101,6 +101,7 @@ def test_r16_r18_r24_no_competing_public_names():
         clash = defined & H.M32H.public_names(path)
         assert clash == set(), f"{layer}: {sorted(clash)}"
     assert H.candidate_names(defined) == set()
+    assert not any(n.startswith("Flux") for n in defined)  # A23: no seven-fluxes runtime types defined
     for n in ("CognitivePath", "FailedPath", "PathHistory", "CognitiveRoleSpec", "ContextPacket",
               "PrimitiveResult", "PrimitiveTypeSpec", "TypedCognitiveDatum"):
         assert n not in defined
