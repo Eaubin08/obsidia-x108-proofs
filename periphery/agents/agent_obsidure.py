@@ -4309,6 +4309,7 @@ class AgentObsidure:
             + tuple(decision_replay.get("evidence_limits") or ())
             + tuple(reconciliation.get("evidence_limits") or ())
         )
+        limited_evidence = replay_verdict == "VERIFIED_WITH_LIMITS" or bool(evidence_limits)
 
         advisory = {
             "repair_lineage": repair_lineage,
@@ -4364,7 +4365,7 @@ class AgentObsidure:
             return _done(
                 "EXECUTED_VERIFIED",
                 "STOP_SUCCESS",
-                limited_verdict=(replay_verdict == "VERIFIED_WITH_LIMITS"),
+                limited_verdict=limited_evidence,
                 **advisory,
             )
 

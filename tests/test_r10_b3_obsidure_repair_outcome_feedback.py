@@ -472,6 +472,18 @@ def test_incomplete_policy_limit_is_preserved_without_promotion(tmp_path, monkey
     world, agent, prepared = _prepared_fixture(tmp_path, monkeypatch)
     execution = _store_apply_patch_outcome(world, prepared)
     action_id = execution["action_evidence_id"]
+    env = _receipt(world, action_id)
+    auth = env["authorization"]
+    kx_path = world["stores"] / "kxpre" / f"{auth['kx108_pre_decision_record_id']}.json"
+    kx = json.loads(kx_path.read_text(encoding="utf-8"))
+    kx["canonical_envelope"].pop("policy_identity", None)
+    kx["canonical_envelope"].pop("policy_content_hash", None)
+    kx["canonical_envelope"].pop("policy_version", None)
+    kx["decision_record_hash"] = PC2._DS.compute_kx108_decision_record_hash(kx)
+    kx_path.write_text(json.dumps(kx, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
+    env["authorization"]["kx108_pre_decision_record_hash"] = kx["decision_record_hash"]
+    env["envelope_hash"] = CRE.compute_envelope_hash(env)
+    _write_receipt(world, action_id, env)
 
     out = _ingest(agent, world, prepared, action_id)
 

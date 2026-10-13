@@ -322,6 +322,8 @@ def _binder_status(envelope: dict, stores: dict, result: dict, kxpre_record: Opt
         # operation types stay INLINE_STATUS_ONLY (no false full verification).
         if (
             result.get("KX108_ref_valid") == YES
+            and result.get("descriptor_ref_valid") == YES
+            and result.get("EAH_binding_valid") == YES
             and kxpre_record
             and envelope.get("operation_type") == "V2_APPLY_PATCH"
         ):

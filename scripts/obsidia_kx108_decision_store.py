@@ -32,6 +32,8 @@ import re
 from pathlib import Path
 from typing import Optional
 
+import obsidia_kx108_policy_identity_v1 as _KX_POLICY
+
 SCHEMA_VERSION = 1
 DECISION_AUTHORITY = "KX108_ONLY"
 
@@ -484,6 +486,10 @@ def run_and_persist_kx108_pre_execution_decision(
     state = ToolingBuildState(**pre_tooling_build_state_kwargs)
     decision = run_tooling_build_pipeline(state)  # EXACTEMENT UNE FOIS
     envelope = dataclasses.asdict(decision)
+    policy_identity = _KX_POLICY.build_tooling_build_policy_identity()
+    envelope["policy_version"] = policy_identity["policy_version"]
+    envelope["policy_content_hash"] = policy_identity["policy_content_hash"]
+    envelope["policy_identity"] = policy_identity
 
     record: dict = {
         "decision_record_schema_version": SCHEMA_VERSION,

@@ -76,7 +76,7 @@ def _verification(outcome, projected, *, ticket_id=None, mission_results=True):
         "prepared_proposal_id": outcome["prepared_proposal_id"],
         "prepared_patch_hash": outcome["prepared_patch_hash"],
         "authority_reference": outcome["authority_reference"],
-        "r8_replay": {**outcome["r8_replay"], "replay_verdict": "VERIFIED", "binder_replay_status": None},
+        "r8_replay": {**outcome["r8_replay"], "replay_verdict": "VERIFIED", "binder_replay_status": "RECONSTRUCTED_MATCH"},
         "realized_state_reconciliation": outcome["realized_state_reconciliation"],
         "reviewer_verdict": "PASS",
         "reviewer_independent": True,
