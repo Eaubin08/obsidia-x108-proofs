@@ -16,6 +16,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install Lean toolchain for formal conformance tests
+        uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          lake-package-directory: proofs/lean
+      - name: Verify Lean toolchain
+        run: |
+          command -v lake
+          lake --version
       - name: Install test dependencies
         run: |
           python -m pip install --upgrade pip

@@ -1,3 +1,7 @@
-# CRLF natif Windows — désactive le signalement du \r comme trailing whitespace
+# Preserve historical byte-level line endings across the mixed-format X108 tree.
+# Do not force global eol=lf until tracked blobs and historical SHA proofs are audited.
 *.py whitespace=cr-at-eol
 *.ps1 whitespace=cr-at-eol
+
+# This file has a confirmed canonical LF SHA-256 in the historical proof.
+periphery/os3_ticket.py text eol=lf

@@ -230,13 +230,15 @@ def test_f67_sigma_evaluate_post_contract():
 
 
 def test_f67_no_new_sigma_or_bus_routes_beyond_expected():
+    # Inspect the published OpenAPI surface, rather than the mutable route list:
+    # earlier API tests may replace app.router.routes within the same pytest process.
+    # Both path and HTTP method remain verified against the fixed F67 contract.
     actual = []
-    for route in app.routes:
-        path = getattr(route, "path", "")
-        methods = sorted(getattr(route, "methods", []) or [])
+    schema = app.openapi()
+    for path, operations in schema.get("paths", {}).items():
         if "sigma" in path.lower() or path.startswith("/bus"):
-            for method in methods:
-                if method in {"GET", "POST"}:
-                    actual.append((method, path))
+            for method in operations:
+                if method.upper() in {"GET", "POST"}:
+                    actual.append((method.upper(), path))
     expected = [(method, path) for method, path, _ in ROUTE_SPECS]
     assert sorted(actual) == sorted(expected)
