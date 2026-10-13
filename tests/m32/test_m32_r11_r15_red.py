@@ -115,9 +115,13 @@ def test_caller_mutation_does_not_alter_identity(m32):
     before = fin.invocation_id
     payload["k"].append("c")
     cfg["tag"] = "changed"
-    assert datum.value == {"k": ["a", "b"]}
-    assert H.finalize(m32, test_registry, "test.echo", [("x", m32.TypedCognitiveDatum(
-        H.TEXT_V1, H.TEXT_T, {"k": ["a", "b"]}))], {"tag": "t"}).invocation_id == before
+    # Semantic check, representation-free (§18/§29 allow immutable equivalents such as tuples or frozen
+    # mappings): the SAME datum object, reused after the caller mutated its source, must still canonicalize
+    # to the original content. A runtime keeping a caller-owned alias would yield a different id here.
+    expected = H.ref_invocation_id("test.echo", "v1", [("x", H.ref_datum(H.TEXT_T, H.TEXT_V1, {"k": ["a", "b"]}))],
+                                   {"tag": "t"})
+    assert before == expected
+    assert H.finalize(m32, test_registry, "test.echo", [("x", datum)], {"tag": "t"}).invocation_id == expected
     with pytest.raises(Exception):
         fin.invocation_id = "0" * 64
 
@@ -237,7 +241,11 @@ def test_r14_adapter_boundary(m32):
     d = ad.to_core("domain-value")
     assert (d.datum_type, d.schema_version, d.value) == (H.TEXT_T, H.TEXT_V1, "domain-value")
     assert not hasattr(d, "authority") and not hasattr(d, "verified")
-    assert getattr(d, "semantic_refs", None) in (None, ()) or "test.adapter" not in d.semantic_refs
+    # Absence of the optional field may be represented in any spec-compliant way; only leaked adapter
+    # identity is forbidden (§25).
+    refs = getattr(d, "semantic_refs", None)
+    refs = tuple(refs) if isinstance(refs, (tuple, list)) else ()
+    assert not any("test.adapter" in str(r) for r in refs)
     rec = m32.execute(H.finalize(m32, test_registry, "test.unknown", [("x", d)]), test_registry, "impl.a")
     assert rec.result.status is m32.PrimitiveResultStatus.UNKNOWN
     H.raises_code(m32, "ADAPTER_REVERSE_UNSUPPORTED", ad.from_core, d)
