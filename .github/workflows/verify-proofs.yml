@@ -2,7 +2,7 @@ name: Verify proofs
 
 on:
   push:
-    branches: [main]
+    branches: [main, "reconcile/**"]
   pull_request:
     branches: [main]
 
