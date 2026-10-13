@@ -36,6 +36,9 @@ In current canonical code, "cross-domain" means the opposite of transfer: domain
 | Historical corpus: "a domain is one language of the same invariant", projection formulas | HISTORICAL_DIRECT, speculative | genealogy only; excluded from V1 |
 | Historical link typing: "an analogical link is not a causal link"; analogy as design intuition, not verified scientific basis; superficial analogies flagged as parasitic links | HISTORICAL_DIRECT, repeated in semantic docs | basis of the safety laws |
 
+| "inifgrpahie 81+ et pepite du debut.docx" (external, owner-supplied): sequence analogie interdomaines → candidat de transfert → test / confrontation; "an analogy is never automatic proof"; ants vs software agents coordination example; No-Rebuild distinctions | HISTORICAL_DIRECT, external | genealogy of the bounded transfer hypothesis (§7a) |
+| P2.9c experiment (reported in the same source): cross-regime knowledge transfer 42/180 successful predictions (23.3%), MAE 11 px, 21 severe errors | HISTORICAL_DIRECT, experimental, external | supporting genealogy for "no blind transfer" only; not a threshold |
+
 No source defines a correspondence schema, a preserved invariant, a failed-transfer model or a learning mechanism.
 
 ## 4. Canonical mission
@@ -73,6 +76,41 @@ Correspondence: the forensic found structural correspondence only partially pres
 
 Invariant: the historical "universal structural invariant" is never defined. `M36_TRANSFER_INVARIANT=UNDEFINED`. There is no invariant type, identifier, preservation algorithm or isomorphism requirement; the phrase remains genealogy.
 
+## 7a. Bounded transfer hypothesis (methodological genealogy)
+
+Historical sequence preserved:
+
+```
+ANALOGIE INTERDOMAINES → CANDIDAT DE TRANSFERT → TEST / CONFRONTATION
+```
+
+- analogie interdomaines: a suspected resemblance or shared mechanism;
+- candidat de transfert: an explicit and bounded hypothesis;
+- test / confrontation: validity in the target domain remains to be established.
+
+Historical law: an analogy is never automatic proof.
+
+Modern doctrinal reading: a **bounded transfer hypothesis**. This is a doctrinal notion only. The historical word "candidat" is methodological genealogy; it is not, and must not collide with, a B8 Candidate. `M36_TRANSFER_CANDIDATE_RUNTIME_TYPE=NONE` — there is no transfer-candidate class, schema or enum.
+
+At doctrine level, any transfer hypothesis should make explicit:
+
+- the source domain;
+- the target domain;
+- the suspected structural correspondence;
+- its assumptions;
+- what it claims is preserved;
+- the conditions under which its validity in the target domain would be established.
+
+These are conceptual obligations, not a runtime schema.
+
+The historical guiding question is preserved: what must remain the same when passing from one domain to another? The source example — coordination among ants versus coordination among software agents — shows entities, capabilities and environments differing, so any commonality would be relational or structural. The source does not formalize which relations or invariants are preserved; therefore `M36_CORRESPONDENCE_SCHEMA=NONE` and `M36_TRANSFER_INVARIANT=UNDEFINED` remain unchanged.
+
+Target-domain revalidation: `SOURCE_VALIDITY != TARGET_VALIDITY`. A correspondence that appears useful in domain A must have its validity re-established independently in domain B. Cross-domain reuse cannot bypass that validation. `TRANSFER_REQUIRES_TARGET_DOMAIN_CONFRONTATION_BEFORE_VALIDITY_CLAIM`.
+
+M36 requires confrontation before any validity claim, but does not conduct it: `M36_EXECUTES_TRANSFER_TEST=NO`, `M36_VALIDATES_TARGET_DOMAIN=NO`. Actual evaluation belongs to the appropriate future or domain mechanism; this doctrine assigns no owner.
+
+Supporting genealogy (not normative): the historical P2.9c experiment reported weak cross-regime knowledge transfer (42/180 successful predictions, 23.3%, MAE 11 px, 21 severe errors), attributed to insufficient recognition that previously learned knowledge can become false under another regime. It motivates **no blind transfer** only; its figures are not M36 thresholds. The historical No-Rebuild line likewise distinguished reusing model weights, reusing knowledge and reusing experience, and required testing transfer rather than blindly reusing old knowledge in an incompatible regime. No-Rebuild is not an M36 runtime.
+
 ## 8. Analogy vs causality
 
 `ANALOGY != CAUSALITY`. Historical evidence states directly that an analogical link is not a causal link. M36 never upgrades an analogical relation into a causal one.
@@ -93,6 +131,7 @@ Invariant: the historical "universal structural invariant" is never defined. `M3
 ## 12. Promotion boundary
 
 - `TRANSFERRED != VERIFIED`, `TRANSFERRED != PROMOTED`, `TRANSFERRED != TRUE`
+- `TRANSFER_HYPOTHESIS != VERIFIED`, `TRANSFER_HYPOTHESIS != PROMOTED`, `TRANSFER_HYPOTHESIS != TRUE`
 - `M36_PROMOTION=NONE`
 
 B8 owns knowledge promotion. M36 cannot accept an analogy as knowledge, promote a correspondence, or mark anything verified or true. Any future analogy-derived candidate that enters promotion machinery must cross the B8 boundary. This doctrine defines only that authority boundary, not an M36→B8 interface.
@@ -151,7 +190,11 @@ ANALOGY != TRUTH
 TRANSFERRED != VERIFIED
 TRANSFERRED != PROMOTED
 TRANSFERRED != TRUE
+TRANSFER_HYPOTHESIS != VERIFIED
+TRANSFER_HYPOTHESIS != PROMOTED
+TRANSFER_HYPOTHESIS != TRUE
 SOURCE_VALIDITY != TARGET_VALIDITY
+TRANSFER_REQUIRES_TARGET_DOMAIN_CONFRONTATION_BEFORE_VALIDITY_CLAIM
 M36_CORRESPONDENCE_DOES_NOT_ESTABLISH_IDENTITY=YES
 COGNITION != AUTHORITY
 ```
@@ -194,6 +237,11 @@ COMPETENCE_TRANSFER_OWNER=B11_AND_EDUCATION
 M36_CORRESPONDENCE_SCHEMA=NONE
 M36_TRANSFER_INVARIANT=UNDEFINED
 M36_FAILED_TRANSFER_MODEL=NONE
+M36_TRANSFER_CANDIDATE_RUNTIME_TYPE=NONE
+M36_EXECUTES_TRANSFER_TEST=NO
+M36_VALIDATES_TARGET_DOMAIN=NO
+TRANSFER_REQUIRES_TARGET_DOMAIN_CONFRONTATION_BEFORE_VALIDITY_CLAIM
+SOURCE_VALIDITY != TARGET_VALIDITY
 M36_RUNTIME=NONE
 M36_TESTS=NONE
 M36_STATE=NONE
