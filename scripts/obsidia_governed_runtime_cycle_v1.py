@@ -13,8 +13,10 @@ INVARIANT FONDATEUR :
 
 Ce module :
   * ne DÉCIDE rien — le seul producteur de x108_gate est
-    sigma.guard.GuardX108.decide(), atteint par le pont canonique
-    periphery.sigma_bridge.run_<domaine>_with_periphery() ;
+    sigma.guard.GuardX108.decide(), atteint soit par le pont canonique
+    periphery.sigma_bridge.run_<domaine>_with_periphery(), soit, pour une
+    extension explicitement fournie, APRÈS construction d'un DomainAggregate
+    non souverain par l'extension ; l'extension ne fournit jamais l'enveloppe ;
   * ne synthétise JAMAIS un ALLOW, ni une approbation humaine, ni un
     consentement, ni un SovereignTicket réel ;
   * ne traite JAMAIS ALLOW_CONTEXT_ONLY (stub dry-run) comme une
@@ -29,8 +31,8 @@ Chaîne réellement traversée :
     run_registered_agent()                        -> AgentResult réel
     agent_result_to_context_packet()              -> ContextPacket réel (binder R4)
     validate_context_packet() / check_x108_context_boundary()
-    sigma_bridge.run_<domaine>_with_periphery()   -> GuardX108.decide() réel
-                                                  -> CanonicalDecisionEnvelope
+    pont canonique OU builder extension           -> DomainAggregate
+    GuardX108.decide() réel                        -> CanonicalDecisionEnvelope
     build_os3_ticket()                            -> input/output/trace/merkle
     ticket_is_valid() + run_replay()              -> vérification cryptographique
     [GATE] ALLOW + ticket valide + replay PASS    -> et SEULEMENT alors
@@ -42,19 +44,12 @@ Chaîne réellement traversée :
                                                   -> ProviderRuntimeReceipt terminal
     build_memory_candidate()                      -> feedback READONLY
 
-BLOCKER FACTUEL CONNU — persistance canonique du decision record :
-obsidia_kx108_decision_store.run_and_persist_kx108_pre_execution_decision()
-n'est PAS applicable à un cycle agent. Son contrat de liaison
-(_PRE_BINDING_CONTEXT_FIELDS) exige des artefacts propres au rail de
-remédiation de contenu : batch_execution_id, child_execution_id,
-execution_authority_hash d'un contenu de fichier, approval_id d'une
-HumanApproval liée à cet EAH, pre_execution_context_id d'une isolation
-Git, test_contract_hash. Un cycle agent -> provider n'en possède aucun,
-et les fabriquer reviendrait à détourner une autorisation humaine
-accordée pour autre chose. Ce module NE LES FABRIQUE DONC PAS : il
-expose le blocker nommé et laisse decision_record_persisted=False.
-La vérification cryptographique effectivement réalisée ici est celle du
-rail OS3 (ticket + replay), pas verify_kx108_decision_record().
+PERSISTANCE DÉCISION AGENT :
+le cycle utilise le rail dédié AGENT_PRE_EXECUTION :
+create/store/verify_agent_pre_execution_context puis
+persist_kx108_agent_pre_execution_decision(), reload et vérification du
+decision record avant OS3/replay/exécution. Aucun artefact du rail de
+remédiation HumanApproval n'est fabriqué ni réutilisé.
 
 decision_authority = KX108_ONLY.
 """
@@ -82,6 +77,8 @@ from periphery.feedback_memory_bridge_brody_readonly import build_memory_candida
 from periphery.os3_replay_runner import run_replay
 from periphery.os3_ticket import build_os3_ticket, ticket_is_valid
 from periphery.gencoin import compute_gencoin
+from sigma.contracts import DomainAggregate
+from sigma.guard import GuardX108
 from periphery.sigma_bridge import (
     run_bank_with_periphery,
     run_ecom_with_periphery,
@@ -150,6 +147,88 @@ def is_supported_domain(domain: str) -> bool:
     refused before any decision is requested.
     """
     return domain in _DOMAIN_PIPELINES
+
+
+def _extension_supports_domain(domain: str, domain_extension_resolver: Any = None) -> bool:
+    """Consult an optional non-canonical domain extension after built-ins.
+
+    Canonical built-in domains always win in the coordinator. The extension
+    cannot shadow them because it is consulted only after is_supported_domain()
+    returned False.
+    """
+    if domain_extension_resolver is None:
+        return False
+    fn = getattr(domain_extension_resolver, "is_supported_domain", None)
+    if not callable(fn):
+        raise GovernedRuntimeCycleError("INVALID_DOMAIN_EXTENSION_RESOLVER")
+    try:
+        return bool(fn(domain))
+    except Exception as exc:
+        raise GovernedRuntimeCycleError(
+            f"DOMAIN_EXTENSION_SUPPORT_CHECK_FAILED:{domain}:{exc}"
+        ) from exc
+
+
+def _resolve_domain_pipeline_with_extension(
+    domain: str,
+    domain_extension_resolver: Any = None,
+) -> Callable[[Any, Any], Any]:
+    """Resolve canonical first; extension may only build DomainAggregate.
+
+    SECURITY BOUNDARY:
+    a portable extension is NEVER allowed to return a decision envelope.
+    It may only construct the non-sovereign DomainAggregate input. The
+    coordinator then invokes the real GuardX108 itself, preserving KX108_ONLY.
+    """
+    if is_supported_domain(domain):
+        return resolve_domain_pipeline(domain)
+
+    if not _extension_supports_domain(domain, domain_extension_resolver):
+        raise GovernedRuntimeCycleError(f"NO_CANONICAL_DOMAIN_PIPELINE:{domain}")
+
+    fn = getattr(domain_extension_resolver, "resolve_domain_aggregate_builder", None)
+    if not callable(fn):
+        raise GovernedRuntimeCycleError(
+            "INVALID_DOMAIN_EXTENSION_RESOLVER:"
+            "MISSING_RESOLVE_DOMAIN_AGGREGATE_BUILDER"
+        )
+
+    try:
+        builder = fn(domain)
+    except Exception as exc:
+        raise GovernedRuntimeCycleError(
+            f"DOMAIN_EXTENSION_AGGREGATE_BUILDER_RESOLUTION_FAILED:{domain}:{exc}"
+        ) from exc
+
+    if not callable(builder):
+        raise GovernedRuntimeCycleError(
+            f"DOMAIN_EXTENSION_AGGREGATE_BUILDER_NOT_CALLABLE:{domain}"
+        )
+
+    def _guarded_extension_pipeline(domain_state: Any, packet: Any):
+        try:
+            aggregate = builder(domain_state, packet)
+        except Exception as exc:
+            raise GovernedRuntimeCycleError(
+                f"DOMAIN_EXTENSION_AGGREGATE_BUILD_FAILED:{domain}:{exc}"
+            ) from exc
+
+        if not isinstance(aggregate, DomainAggregate):
+            raise GovernedRuntimeCycleError(
+                f"DOMAIN_EXTENSION_MUST_RETURN_DOMAIN_AGGREGATE:{domain}"
+            )
+
+        aggregate_domain = getattr(getattr(aggregate, "domain", None), "value", None)
+        if aggregate_domain != domain:
+            raise GovernedRuntimeCycleError(
+                f"DOMAIN_EXTENSION_AGGREGATE_DOMAIN_MISMATCH:{domain}:{aggregate_domain}"
+            )
+
+        # Sovereign decision is rendered here, by the real kernel Guard only.
+        return GuardX108().decide(aggregate)
+
+    _guarded_extension_pipeline.__name__ = f"run_{domain}_extension_guarded"
+    return _guarded_extension_pipeline
 
 
 class GovernedRuntimeCycleError(Exception):
@@ -385,6 +464,7 @@ def run_governed_runtime_cycle(
     source_context: Any = None,
     source_agent_id: str = "",
     source_agent_layer: str = "",
+    domain_extension_resolver: Any = None,
 ) -> GovernedRuntimeCycleResult:
     """
     Exécute un cycle gouverné interne complet.
@@ -440,7 +520,15 @@ def run_governed_runtime_cycle(
     # Le refus n'est PAS une décision : aucun verdict n'est rendu, aucun
     # record n'est produit, x108_gate garde sa valeur de refus par défaut
     # et decision_rendered reste False.
-    if not is_supported_domain(packet.domain):
+    canonical_domain = is_supported_domain(packet.domain)
+    extension_domain = False
+    if not canonical_domain:
+        extension_domain = _extension_supports_domain(
+            packet.domain,
+            domain_extension_resolver,
+        )
+
+    if not canonical_domain and not extension_domain:
         result.execution_authorization_reason = (
             f"{REFUSED_UNSUPPORTED_DOMAIN}:{packet.domain}"
         )
@@ -448,7 +536,15 @@ def run_governed_runtime_cycle(
         return result
 
     # ── 3. Décision KX108 SOUVERAINE réelle (GuardX108) ──────────────────
-    pipeline = resolve_domain_pipeline(packet.domain)
+    #
+    # Canonical bridge always has strict precedence. The optional extension
+    # resolver is consulted only for a domain absent from _DOMAIN_PIPELINES.
+    # Extension code may build DomainAggregate only; GuardX108 is invoked by
+    # this coordinator wrapper, never by an extension-supplied decision path.
+    pipeline = _resolve_domain_pipeline_with_extension(
+        packet.domain,
+        domain_extension_resolver,
+    )
     envelope = pipeline(domain_state, packet)
 
     result.decision_rendered = True
@@ -676,6 +772,7 @@ def run_governed_feedback_cycle(
     execution_payload: Optional[dict[str, Any]] = None,
     agent_context_store_dir: Optional[Path] = None,
     decision_store_dir: Optional[Path] = None,
+    domain_extension_resolver: Any = None,
 ) -> GovernedRuntimeCycleResult:
     """
     Re-enter the loop from a finished cycle (t1 after t0).
@@ -703,4 +800,5 @@ def run_governed_feedback_cycle(
         source_context=next_context,
         source_agent_id="FEEDBACK_REENTRY",
         source_agent_layer="FEEDBACK_MEMORY",
+        domain_extension_resolver=domain_extension_resolver,
     )
