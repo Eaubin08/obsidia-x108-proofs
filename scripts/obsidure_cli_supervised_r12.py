@@ -8,6 +8,7 @@ from typing import Any, Mapping
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
+import re
 
 SCHEMA_VERSION = "OBSIDURE_CLI_SUPERVISED_R12_CLIENT_V1"
 DECISION_AUTHORITY = "KX108_ONLY"
@@ -25,6 +26,18 @@ NO_AUTHORITY = {
     "push_performed": False,
     "merge_performed": False,
 }
+
+_HEX64 = re.compile(r"^[0-9a-f]{64}$")
+
+
+def _as_list(value: Any) -> list[Any]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    if isinstance(value, tuple):
+        return list(value)
+    return [value]
 
 
 def _emit(payload: Mapping[str, Any], *, as_json: bool) -> None:
@@ -151,6 +164,81 @@ def _evidence(projection: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _ticket(projection: Mapping[str, Any], ticket_id: str) -> Mapping[str, Any] | None:
+    for item in projection.get("tickets") or ():
+        if isinstance(item, Mapping) and str(item.get("ticket_id") or "") == ticket_id:
+            return item
+    return None
+
+
+def _projection_patch_hash(projection: Mapping[str, Any], ticket: Mapping[str, Any]) -> str:
+    evidence_refs = [str(item) for item in _as_list(ticket.get("evidence_refs"))]
+    evidence = projection.get("evidence") if isinstance(projection.get("evidence"), Mapping) else {}
+    evidence_refs.extend(str(item) for item in _as_list(evidence.get("evidence_refs")))
+    for ref in evidence_refs:
+        if _HEX64.fullmatch(ref.lower()):
+            return ref.lower()
+    return ""
+
+
+def _pre_authorize_inspection(
+    *,
+    api: str,
+    mission_id: str,
+    checkpoint_id: str,
+    ticket_id: str,
+    execution_authority_hash: str,
+) -> tuple[dict[str, Any] | None, str | None]:
+    status, projection = _api_json(
+        api,
+        "GET",
+        f"/api/supervised-missions/{mission_id}/projection",
+        query={"checkpoint_id": checkpoint_id},
+    )
+    if not 200 <= status < 300:
+        reason = str(projection.get("reason") or projection.get("detail") or "PRE_AUTH_INSPECTION_UNAVAILABLE")
+        return None, reason
+    if str(projection.get("mission_id") or "") != mission_id:
+        return None, "MISSION_PROJECTION_MISMATCH"
+    checkpoint = projection.get("checkpoint") if isinstance(projection.get("checkpoint"), Mapping) else {}
+    if str(checkpoint.get("checkpoint_id") or "") != checkpoint_id:
+        return None, "CHECKPOINT_PROJECTION_MISMATCH"
+    mandate = projection.get("mandate") if isinstance(projection.get("mandate"), Mapping) else {}
+    if mandate.get("revoked") is True or str(mandate.get("status") or "").upper() == "REVOKED":
+        return None, "HUMAN_MANDATE_REVOKED"
+    ticket = _ticket(projection, ticket_id)
+    if ticket is None:
+        return None, "PREPARED_TICKET_NOT_FOUND"
+    if str(ticket.get("phase") or "").upper() not in {"PREPARED", "PREPARED_AWAITING_APPROVAL"}:
+        return None, "TICKET_NOT_PREPARED_AWAITING_APPROVAL"
+    if ticket.get("action_evidence_id"):
+        return None, "DUPLICATE_EXECUTION_REQUIRES_RECONCILIATION"
+    patch_hash = _projection_patch_hash(projection, ticket)
+    if not patch_hash:
+        return None, "PREPARED_PATCH_HASH_NOT_VISIBLE"
+    if not _HEX64.fullmatch(execution_authority_hash):
+        return None, "EXECUTION_AUTHORITY_HASH_INVALID"
+    return {
+        "projection": projection,
+        "ticket": dict(ticket),
+        "mission_id": mission_id,
+        "checkpoint_id": checkpoint_id,
+        "ticket_id": ticket_id,
+        "project": projection.get("project") if isinstance(projection.get("project"), Mapping) else {},
+        "patch_hash": patch_hash,
+        "execution_authority_hash": execution_authority_hash,
+        "hold": projection.get("hold") if isinstance(projection.get("hold"), Mapping) else {},
+        "binder_replay": projection.get("binder_replay") if isinstance(projection.get("binder_replay"), Mapping) else {},
+        "verification": projection.get("verification") if isinstance(projection.get("verification"), Mapping) else {},
+    }, None
+
+
+def _safe_status(payload: Mapping[str, Any]) -> bool:
+    state = str(payload.get("state") or "").upper()
+    status = str(payload.get("status") or "").upper()
+    return state not in {"HOLD", "REJECTED", "UNKNOWN", "UNAVAILABLE"} and "REJECTED" not in status and "HELD" not in status
+
+
 def run_supervised(action: str, api: str, args: dict[str, Any]) -> int:
     as_json = bool(args.get("json"))
     action = str(action or "").strip().lower()
@@ -206,6 +294,62 @@ def run_supervised(action: str, api: str, args: dict[str, Any]) -> int:
         return 0 if 200 <= status < 300 else 1
 
     if action == "authorize":
-        return _fail("AUTHORIZATION_HANDOFF_NOT_EXPOSED_IN_F7", as_json=as_json)
+        mission_id = str(args.get("mission_id") or "").strip()
+        checkpoint_id = str(args.get("checkpoint_id") or "").strip()
+        ticket_id = str(args.get("ticket_id") or "").strip()
+        execution_authority_hash = str(args.get("execution_authority_hash") or "").lower().strip()
+        human_authorization_reference = str(args.get("human_authorization_reference") or "").strip()
+        if not bool(args.get("confirm_human_authorization")):
+            return _fail("EXPLICIT_HUMAN_AUTHORIZATION_CONFIRMATION_REQUIRED", as_json=as_json, status="REJECTED")
+        if not (mission_id and checkpoint_id and ticket_id):
+            return _fail("MISSION_CHECKPOINT_AND_TICKET_REQUIRED", as_json=as_json, status="REJECTED")
+        if not execution_authority_hash or not human_authorization_reference:
+            return _fail("EXECUTION_AUTHORITY_HASH_AND_HUMAN_REFERENCE_REQUIRED", as_json=as_json, status="REJECTED")
+
+        inspection, reason = _pre_authorize_inspection(
+            api=api,
+            mission_id=mission_id,
+            checkpoint_id=checkpoint_id,
+            ticket_id=ticket_id,
+            execution_authority_hash=execution_authority_hash,
+        )
+        if inspection is None:
+            return _fail(reason or "PRE_AUTH_INSPECTION_FAILED", as_json=as_json)
+
+        body = {
+            "checkpoint_id": checkpoint_id,
+            "ticket_id": ticket_id,
+            "execution_authority_hash": execution_authority_hash,
+            "human_authorization_reference": human_authorization_reference,
+            "session_id": str(args.get("session_id") or "obsidure-cli-f8b"),
+        }
+        status, payload = _api_json(api, "POST", f"/api/supervised-missions/{mission_id}/authorize-execution", body=body)
+        payload.setdefault("schema_version", SCHEMA_VERSION)
+        payload.setdefault("decision_authority", DECISION_AUTHORITY)
+        payload.setdefault("pre_authorization_inspection", inspection)
+        payload.update({k: payload.get(k, v) for k, v in NO_AUTHORITY.items()})
+
+        followup_status, followup = _api_json(
+            api,
+            "GET",
+            f"/api/supervised-missions/{mission_id}/projection",
+            query={"checkpoint_id": str(payload.get("checkpoint_id") or checkpoint_id)},
+        )
+        if 200 <= followup_status < 300:
+            payload["post_authorization_projection"] = followup
+        else:
+            payload["post_authorization_projection"] = {
+                "status": "UNKNOWN",
+                "reason": str(followup.get("reason") or "POST_AUTH_PROJECTION_UNAVAILABLE"),
+            }
+            payload["state"] = "UNKNOWN"
+            payload["reason"] = payload.get("reason") or "POST_AUTH_PROJECTION_UNAVAILABLE"
+        payload["execution_observed_is_verified"] = False
+        payload["http_success_is_closure"] = False
+        payload["verified"] = False
+        payload["closed"] = False
+        payload["mission_done_verified"] = False
+        _emit(payload, as_json=as_json)
+        return 0 if 200 <= status < 300 and _safe_status(payload) else 1
 
     return _fail("UNKNOWN_SUPERVISED_ACTION:" + action, as_json=as_json, status="REJECTED")

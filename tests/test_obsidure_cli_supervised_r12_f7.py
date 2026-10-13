@@ -159,8 +159,167 @@ def test_invalid_checkpoint_selector_and_authorize_fail_closed(monkeypatch, caps
     )
     assert rc == 1
     out = json.loads(capsys.readouterr().out)
-    assert out["reason"] == "AUTHORIZATION_HANDOFF_NOT_EXPOSED_IN_F7"
+    assert out["reason"] == "EXPLICIT_HUMAN_AUTHORIZATION_CONFIRMATION_REQUIRED"
     assert out["approval_created"] is False
+
+
+def _auth_projection(*, ticket_id="ticket-a", phase="PREPARED", revoked=False, patch_hash=None):
+    patch_hash = patch_hash or "b" * 64
+    return {
+        "status": "PROJECTED",
+        "mission_id": "mission-f8",
+        "checkpoint": {"checkpoint_id": "chk-f8"},
+        "mandate": {"status": "ACTIVE", "revoked": revoked},
+        "project": {
+            "repository_identity": "repo://f8",
+            "worktree": "C:/tmp/f8",
+            "branch": "f8",
+            "base_sha": "a" * 40,
+        },
+        "tickets": [
+            {
+                "ticket_id": ticket_id,
+                "phase": phase,
+                "status": "HELD",
+                "hold_reason": "PREPARED_AWAITING_APPROVAL",
+                "evidence_refs": ["step-f8", patch_hash],
+                "verification_level": "UNKNOWN",
+            }
+        ],
+        "hold": {"reason": "PREPARED_AWAITING_APPROVAL"},
+        "binder_replay": {"limitations": ["BINDER_DECISION_RECONSTRUCTION_REQUIRED"]},
+        "verification": {"ticket_levels": {ticket_id: "UNKNOWN"}},
+    }
+
+
+def _auth_args(**overrides):
+    args = {
+        "mission_id": "mission-f8",
+        "checkpoint_id": "chk-f8",
+        "ticket_id": "ticket-a",
+        "execution_authority_hash": "e" * 64,
+        "human_authorization_reference": "human-auth:f8b:test",
+        "confirm_human_authorization": True,
+        "json": True,
+    }
+    args.update(overrides)
+    return args
+
+
+def test_authorize_requires_all_human_fields_before_api(monkeypatch, capsys):
+    monkeypatch.setattr(cli, "_api_json", lambda *a, **k: pytest.fail("api must not be called"))
+
+    rc = cli.run_supervised("authorize", "http://obsidia.test", _auth_args(confirm_human_authorization=False))
+    assert rc == 1
+    assert json.loads(capsys.readouterr().out)["reason"] == "EXPLICIT_HUMAN_AUTHORIZATION_CONFIRMATION_REQUIRED"
+
+    rc = cli.run_supervised("authorize", "http://obsidia.test", _auth_args(ticket_id=""))
+    assert rc == 1
+    assert json.loads(capsys.readouterr().out)["reason"] == "MISSION_CHECKPOINT_AND_TICKET_REQUIRED"
+
+    rc = cli.run_supervised("authorize", "http://obsidia.test", _auth_args(human_authorization_reference=""))
+    assert rc == 1
+    assert json.loads(capsys.readouterr().out)["reason"] == "EXECUTION_AUTHORITY_HASH_AND_HUMAN_REFERENCE_REQUIRED"
+
+
+def test_authorize_preinspection_rejects_revoked_wrong_ticket_and_bad_eah(monkeypatch, capsys):
+    calls = []
+
+    def fake_api(api, method, path, *, query=None, body=None):
+        calls.append((method, path, query, body))
+        return 200, _auth_projection(revoked=True)
+
+    monkeypatch.setattr(cli, "_api_json", fake_api)
+
+    rc = cli.run_supervised("authorize", "http://obsidia.test", _auth_args())
+    assert rc == 1
+    assert json.loads(capsys.readouterr().out)["reason"] == "HUMAN_MANDATE_REVOKED"
+    assert [c[0] for c in calls] == ["GET"]
+
+    monkeypatch.setattr(cli, "_api_json", lambda *a, **k: (200, _auth_projection(ticket_id="other-ticket")))
+    rc = cli.run_supervised("authorize", "http://obsidia.test", _auth_args())
+    assert rc == 1
+    assert json.loads(capsys.readouterr().out)["reason"] == "PREPARED_TICKET_NOT_FOUND"
+
+    monkeypatch.setattr(cli, "_api_json", lambda *a, **k: (200, _auth_projection()))
+    rc = cli.run_supervised("authorize", "http://obsidia.test", _auth_args(execution_authority_hash="not-a-hash"))
+    assert rc == 1
+    assert json.loads(capsys.readouterr().out)["reason"] == "EXECUTION_AUTHORITY_HASH_INVALID"
+
+
+def test_authorize_posts_only_after_inspection_and_reloads_projection(monkeypatch, capsys):
+    calls = []
+
+    def fake_api(api, method, path, *, query=None, body=None):
+        calls.append((method, path, query, body))
+        if method == "GET":
+            return 200, _auth_projection()
+        assert path == "/api/supervised-missions/mission-f8/authorize-execution"
+        assert body["execution_authority_hash"] == "e" * 64
+        assert body["human_authorization_reference"] == "human-auth:f8b:test"
+        return 200, {
+            "status": "R12_F6_D1_EXECUTION_OUTCOME_ACCEPTED",
+            "state": "EXECUTED_OBSERVED",
+            "mission_id": "mission-f8",
+            "ticket_id": "ticket-a",
+            "checkpoint_id": "chk-f8b-after",
+            "execution_phase": "EXECUTED_OBSERVED",
+            "action_evidence_id": "aev-f8b",
+            "r8_replay": {"replay_verdict": "VERIFIED_WITH_LIMITS", "binder_replay_status": "INLINE_STATUS_ONLY"},
+            "executor_invoked": True,
+            "approval_created": False,
+            "memory_write": False,
+        }
+
+    monkeypatch.setattr(cli, "_api_json", fake_api)
+
+    rc = cli.run_supervised("authorize", "http://obsidia.test", _auth_args())
+
+    assert rc == 0
+    assert [c[0] for c in calls] == ["GET", "POST", "GET"]
+    assert calls[1][1] == "/api/supervised-missions/mission-f8/authorize-execution"
+    out = json.loads(capsys.readouterr().out)
+    assert out["execution_observed_is_verified"] is False
+    assert out["verified"] is False
+    assert out["closed"] is False
+    assert out["http_success_is_closure"] is False
+    assert out["pre_authorization_inspection"]["patch_hash"] == "b" * 64
+    assert out["post_authorization_projection"]["binder_replay"]["limitations"] == ["BINDER_DECISION_RECONSTRUCTION_REQUIRED"]
+
+
+def test_authorize_backend_hold_and_post_timeout_do_not_claim_success(monkeypatch, capsys):
+    calls = []
+
+    def hold_api(api, method, path, *, query=None, body=None):
+        calls.append((method, path))
+        if method == "GET":
+            return 200, _auth_projection()
+        return 200, {
+            "status": "R12_F6_D1_EXECUTION_HELD",
+            "state": "HOLD",
+            "reason": "HOLD_AWAITING_VALID_AUTHORIZATION",
+            "executor_invoked": False,
+        }
+
+    monkeypatch.setattr(cli, "_api_json", hold_api)
+    rc = cli.run_supervised("authorize", "http://obsidia.test", _auth_args())
+    assert rc == 1
+    out = json.loads(capsys.readouterr().out)
+    assert out["reason"] == "HOLD_AWAITING_VALID_AUTHORIZATION"
+    assert out["executor_invoked"] is False
+
+    def timeout_api(api, method, path, *, query=None, body=None):
+        if method == "GET":
+            return 200, _auth_projection()
+        return 0, {"status": "UNAVAILABLE", "reason": "API_UNAVAILABLE:TimeoutError:timed out"}
+
+    monkeypatch.setattr(cli, "_api_json", timeout_api)
+    rc = cli.run_supervised("authorize", "http://obsidia.test", _auth_args())
+    assert rc == 1
+    out = json.loads(capsys.readouterr().out)
+    assert out["status"] == "UNAVAILABLE"
+    assert out["verified"] is False
+    assert out["closed"] is False
 
 
 class _FakeProposal:
