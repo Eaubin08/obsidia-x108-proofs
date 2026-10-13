@@ -163,7 +163,7 @@ def test_invalid_checkpoint_selector_and_authorize_fail_closed(monkeypatch, caps
     assert out["approval_created"] is False
 
 
-def _auth_projection(*, ticket_id="ticket-a", phase="PREPARED", revoked=False, patch_hash=None):
+def _auth_projection(*, ticket_id="ticket-a", phase="PREPARED", revoked=False, patch_hash=None, action_evidence_id=None):
     patch_hash = patch_hash or "b" * 64
     return {
         "status": "PROJECTED",
@@ -184,6 +184,7 @@ def _auth_projection(*, ticket_id="ticket-a", phase="PREPARED", revoked=False, p
                 "hold_reason": "PREPARED_AWAITING_APPROVAL",
                 "evidence_refs": ["step-f8", patch_hash],
                 "verification_level": "UNKNOWN",
+                "action_evidence_id": action_evidence_id,
             }
         ],
         "hold": {"reason": "PREPARED_AWAITING_APPROVAL"},
@@ -245,6 +246,11 @@ def test_authorize_preinspection_rejects_revoked_wrong_ticket_and_bad_eah(monkey
     rc = cli.run_supervised("authorize", "http://obsidia.test", _auth_args(execution_authority_hash="not-a-hash"))
     assert rc == 1
     assert json.loads(capsys.readouterr().out)["reason"] == "EXECUTION_AUTHORITY_HASH_INVALID"
+
+    monkeypatch.setattr(cli, "_api_json", lambda *a, **k: (200, _auth_projection(phase="AWAITING_INDEPENDENT_VERIFICATION", action_evidence_id="aev-f8b")))
+    rc = cli.run_supervised("authorize", "http://obsidia.test", _auth_args())
+    assert rc == 1
+    assert json.loads(capsys.readouterr().out)["reason"] == "DUPLICATE_EXECUTION_REQUIRES_RECONCILIATION"
 
 
 def test_authorize_posts_only_after_inspection_and_reloads_projection(monkeypatch, capsys):
@@ -317,7 +323,9 @@ def test_authorize_backend_hold_and_post_timeout_do_not_claim_success(monkeypatc
     rc = cli.run_supervised("authorize", "http://obsidia.test", _auth_args())
     assert rc == 1
     out = json.loads(capsys.readouterr().out)
-    assert out["status"] == "UNAVAILABLE"
+    assert out["status"] == "UNKNOWN"
+    assert out["state"] == "UNKNOWN"
+    assert out["post_authorization_response_lost"] is True
     assert out["verified"] is False
     assert out["closed"] is False
 

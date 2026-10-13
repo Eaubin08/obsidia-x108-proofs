@@ -209,10 +209,10 @@ def _pre_authorize_inspection(
     ticket = _ticket(projection, ticket_id)
     if ticket is None:
         return None, "PREPARED_TICKET_NOT_FOUND"
-    if str(ticket.get("phase") or "").upper() not in {"PREPARED", "PREPARED_AWAITING_APPROVAL"}:
-        return None, "TICKET_NOT_PREPARED_AWAITING_APPROVAL"
     if ticket.get("action_evidence_id"):
         return None, "DUPLICATE_EXECUTION_REQUIRES_RECONCILIATION"
+    if str(ticket.get("phase") or "").upper() not in {"PREPARED", "PREPARED_AWAITING_APPROVAL"}:
+        return None, "TICKET_NOT_PREPARED_AWAITING_APPROVAL"
     patch_hash = _projection_patch_hash(projection, ticket)
     if not patch_hash:
         return None, "PREPARED_PATCH_HASH_NOT_VISIBLE"
@@ -324,6 +324,11 @@ def run_supervised(action: str, api: str, args: dict[str, Any]) -> int:
             "session_id": str(args.get("session_id") or "obsidure-cli-f8b"),
         }
         status, payload = _api_json(api, "POST", f"/api/supervised-missions/{mission_id}/authorize-execution", body=body)
+        if not 200 <= status < 300:
+            payload["status"] = "UNKNOWN"
+            payload["state"] = "UNKNOWN"
+            payload.setdefault("reason", "POST_AUTHORIZATION_RESPONSE_UNAVAILABLE")
+            payload["post_authorization_response_lost"] = True
         payload.setdefault("schema_version", SCHEMA_VERSION)
         payload.setdefault("decision_authority", DECISION_AUTHORITY)
         payload.setdefault("pre_authorization_inspection", inspection)
