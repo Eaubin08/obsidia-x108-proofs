@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -237,6 +238,7 @@ def test_interactive_checkpoint_reopen_preserves_case_and_evidence(monkeypatch, 
     calls = []
 
     class FakeSupervised:
+        SCHEMA_VERSION = cli.SCHEMA_VERSION
         NO_AUTHORITY = dict(cli.NO_AUTHORITY)
 
         @staticmethod
@@ -264,3 +266,204 @@ def test_interactive_checkpoint_reopen_preserves_case_and_evidence(monkeypatch, 
     assert "Chk-MixedCase" in out
     assert "VERIFIED_WITH_LIMITS" in out
     assert "BINDER_DECISION_RECONSTRUCTION_REQUIRED" in out
+
+
+def _git(repo: Path, *args: str) -> str:
+    proc = subprocess.run(["git", *args], cwd=repo, capture_output=True, text=True, timeout=20)
+    assert proc.returncode == 0, proc.stderr or proc.stdout
+    return proc.stdout.strip()
+
+
+def _native_avdr_repo(tmp_path: Path) -> tuple[Path, Path, object]:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git(repo, "init", "-q")
+    _git(repo, "config", "user.email", "f7d2@test.invalid")
+    _git(repo, "config", "user.name", "f7d2")
+    _git(repo, "config", "commit.gpgsign", "false")
+    (repo / ".gitignore").write_text("_PATCH_PROPOSALS/\n", encoding="utf-8")
+    (repo / "periphery").mkdir()
+    (repo / "periphery" / "demo.py").write_text('VALUE = "old"\n', encoding="utf-8", newline="\n")
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-q", "-m", "seed")
+
+    proposal_dir = repo / "_PATCH_PROPOSALS" / "proposal-native"
+    sandbox_dir = proposal_dir / "sandbox"
+    sandbox_dir.mkdir(parents=True)
+    (sandbox_dir / "demo.py").write_text('VALUE = "new"\n', encoding="utf-8", newline="\n")
+    proposal_json = proposal_dir / "proposal.json"
+    proposal_json.write_text(
+        json.dumps(
+            {
+                "proposal_id": "proposal-native",
+                "objective": "Prepare periphery demo change",
+                "human_approved": False,
+                "patches": [{"path": "periphery/demo.py", "sandbox_path": "sandbox/demo.py"}],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    class Proposal:
+        proposal_id = "proposal-native"
+        objective = "Prepare periphery demo change"
+
+    return repo, proposal_json, Proposal()
+
+
+def _native_evidence_files(tmp_path: Path, patch_hash: str) -> tuple[Path, Path]:
+    provider = tmp_path / "provider.json"
+    provider.write_text(
+        json.dumps(
+            {
+                "provider_id": "OBSIDURE_PERIPHERY_PROPOSAL_EXPORT_V1",
+                "status": "VERIFIED",
+                "availability_evidence_id": "provider-f7d2",
+                "decision_authority": "KX108_ONLY",
+            }
+        ),
+        encoding="utf-8",
+    )
+    evidence = tmp_path / "evidence.json"
+    evidence.write_text(
+        json.dumps(
+            {
+                "inventory_snapshot": {
+                    "inventory_snapshot_id": "inv-f7d2",
+                    "status": "VERIFIED",
+                    "capabilities": ["OBSIDURE_PERIPHERY_PROPOSAL_EXPORT_V1"],
+                },
+                "deficiency_evidence": {
+                    "deficiency_evidence_id": "def-f7d2",
+                    "status": "VERIFIED",
+                    "summary": "operator-selected AVDR proposal",
+                },
+                "validation_evidence": {
+                    "validation_evidence_id": "val-f7d2",
+                    "status": "PASS",
+                    "candidate_patch_hash": patch_hash,
+                    "tests": ["python -m pytest tests/test_obsidure_cli_supervised_r12_f7.py"],
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    return provider, evidence
+
+
+def test_native_avdr_handoff_exports_candidate_requires_explicit_mandate_and_calls_prepare_only(monkeypatch, tmp_path, capsys):
+    repo, proposal_json, proposal = _native_avdr_repo(tmp_path)
+    import obsidure_candidate_export_v1 as export_mod
+
+    artifact = export_mod.export_proposal_candidate(repo, proposal_json, tmp_path / "precomputed")
+    provider, evidence = _native_evidence_files(tmp_path, artifact.patch_sha256)
+    calls = []
+
+    class FakeSupervised:
+        SCHEMA_VERSION = cli.SCHEMA_VERSION
+        NO_AUTHORITY = dict(cli.NO_AUTHORITY)
+
+        @staticmethod
+        def _load_payload(path):
+            return cli._load_payload(path)
+
+        @staticmethod
+        def _api_json(api, method, path, *, query=None, body=None):
+            calls.append((method, path, query, body))
+            if method == "POST":
+                return 200, {
+                    "status": "PREPARED_AWAITING_APPROVAL",
+                    "mission_id": "mission-native",
+                    "checkpoint_id": "chk-native",
+                    "executor_invoked": False,
+                    "approval_created": False,
+                }
+            return 200, {
+                "status": "PROJECTED",
+                "mission_id": "mission-native",
+                "checkpoint": {"checkpoint_id": "chk-native"},
+                "hold": {"reason": "PREPARED_AWAITING_APPROVAL"},
+                "binder_replay": {"limitations": ["BINDER_DECISION_RECONSTRUCTION_REQUIRED"]},
+            }
+
+    monkeypatch.setattr(terminal, "_REPO_ROOT", repo)
+    monkeypatch.setattr(terminal, "_load_supervised_client", lambda: FakeSupervised)
+    inputs = iter(
+        [
+            "o",
+            "",
+            "mission-native",
+            "mandate-native",
+            "",
+            "",
+            "python -m pytest tests/test_obsidure_cli_supervised_r12_f7.py",
+            "demo value changed",
+            str(provider),
+            str(evidence),
+            "o",
+        ]
+    )
+    monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
+
+    terminal._maybe_prepare_r12_after_proposal("http://obsidia.test", proposal)
+
+    assert calls[0][0:2] == ("POST", "/api/supervised-missions/prepare-only")
+    body = calls[0][3]
+    assert body["human_mandate"]["human_mandate_reference"] == "mandate-native"
+    assert body["phase1_candidate"]["candidate_patch_hash"] == artifact.patch_sha256
+    assert body["validation_evidence"]["candidate_patch_hash"] == artifact.patch_sha256
+    assert body["phase1_candidate"]["phase2_executed"] is False
+    assert body["phase1_candidate"]["human_approval_synthesized"] is False
+    assert calls[1][0:3] == ("GET", "/api/supervised-missions/checkpoints/chk-native/projection", None)
+    out = capsys.readouterr().out
+    assert "mission_id    : mission-native" in out
+    assert "checkpoint_id : chk-native" in out
+
+
+def test_native_avdr_handoff_refuses_missing_evidence_bundle(monkeypatch, tmp_path, capsys):
+    repo, _, proposal = _native_avdr_repo(tmp_path)
+    provider = tmp_path / "provider.json"
+    provider.write_text(json.dumps({"provider_id": "p", "status": "VERIFIED"}), encoding="utf-8")
+    evidence = tmp_path / "evidence.json"
+    evidence.write_text(json.dumps({"inventory_snapshot": {"status": "VERIFIED"}}), encoding="utf-8")
+
+    class FakeSupervised:
+        SCHEMA_VERSION = cli.SCHEMA_VERSION
+        NO_AUTHORITY = dict(cli.NO_AUTHORITY)
+
+        @staticmethod
+        def _api_json(*args, **kwargs):
+            pytest.fail("api must not be called")
+
+    monkeypatch.setattr(terminal, "_REPO_ROOT", repo)
+    monkeypatch.setattr(terminal, "_load_supervised_client", lambda: FakeSupervised)
+    inputs = iter(["o", "", "mission-native", "mandate-native", "", "", "", "", str(provider), str(evidence)])
+    monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
+
+    terminal._maybe_prepare_r12_after_proposal("http://obsidia.test", proposal)
+
+    assert "EVIDENCE_BUNDLE_INCOMPLETE" in capsys.readouterr().out
+
+
+def test_native_avdr_handoff_refuses_scope_violation_before_api(monkeypatch, tmp_path, capsys):
+    repo, proposal_json, proposal = _native_avdr_repo(tmp_path)
+    import obsidure_candidate_export_v1 as export_mod
+
+    artifact = export_mod.export_proposal_candidate(repo, proposal_json, tmp_path / "precomputed")
+    provider, evidence = _native_evidence_files(tmp_path, artifact.patch_sha256)
+
+    class FakeSupervised:
+        NO_AUTHORITY = dict(cli.NO_AUTHORITY)
+
+        @staticmethod
+        def _api_json(*args, **kwargs):
+            pytest.fail("api must not be called")
+
+    monkeypatch.setattr(terminal, "_REPO_ROOT", repo)
+    monkeypatch.setattr(terminal, "_load_supervised_client", lambda: FakeSupervised)
+    inputs = iter(["o", "", "mission-native", "mandate-native", "periphery/other.py", "", "", "", str(provider), str(evidence)])
+    monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
+
+    terminal._maybe_prepare_r12_after_proposal("http://obsidia.test", proposal)
+
+    assert "SCOPE_VIOLATION" in capsys.readouterr().out

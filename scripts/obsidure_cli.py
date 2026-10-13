@@ -26,7 +26,9 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -120,6 +122,218 @@ def _print_json_block(title: str, payload: Mapping[str, Any]) -> None:
     print(json.dumps(dict(payload), ensure_ascii=False, indent=2, sort_keys=True))
 
 
+def _git_text(root: Path, *args: str) -> str:
+    proc = subprocess.run(
+        ["git", "-c", f"safe.directory={root.as_posix()}", "-C", str(root), *args],
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+    if proc.returncode != 0:
+        detail = (proc.stderr or proc.stdout or "").strip()[-240:]
+        raise RuntimeError(detail or "GIT_READ_FAILED")
+    return proc.stdout.strip()
+
+
+def _proposal_json_path(proposal: Any) -> Path:
+    proposal_id = str(getattr(proposal, "proposal_id", "") or "").strip()
+    if not proposal_id:
+        raise RuntimeError("PROPOSAL_ID_MISSING")
+    path = _REPO_ROOT / "_PATCH_PROPOSALS" / proposal_id / "proposal.json"
+    if not path.is_file():
+        raise RuntimeError("PROPOSAL_JSON_MISSING")
+    return path
+
+
+def _csv_values(raw: str) -> list[str]:
+    return [item.strip().replace("\\", "/").lstrip("./") for item in raw.split(",") if item.strip()]
+
+
+def _load_json_object(path_raw: str, *, label: str) -> dict[str, Any] | None:
+    path = Path(path_raw).expanduser()
+    try:
+        data = json.loads(path.read_text(encoding="utf-8-sig"))
+    except Exception as exc:
+        print(C_WARN(f"  R12 HOLD : {label}_UNREADABLE:{type(exc).__name__}"))
+        return None
+    if not isinstance(data, dict):
+        print(C_WARN(f"  R12 HOLD : {label}_NOT_OBJECT"))
+        return None
+    return data
+
+
+def _read_operator_native_inputs(*, proposal: Any, exported: Any, phase1_plan: Mapping[str, Any]) -> dict[str, Any] | None:
+    print(C_TITLE("  Mandat explicite requis (aucune autorisation d'exécution)."))
+    mission_id = input(C_TITLE("  mission_id mandat > ")).strip()
+    mandate_ref = input(C_TITLE("  référence mandat humain > ")).strip()
+    target_default = ",".join(getattr(exported, "files", ()) or phase1_plan.get("candidate_patch_files") or ())
+    targets_raw = input(C_TITLE(f"  chemins autorisés [{target_default}] > ")).strip() or target_default
+    operations_raw = input(C_TITLE("  opérations autorisées [UPDATE_TARGET_FROM_SOURCE] > ")).strip() or "UPDATE_TARGET_FROM_SOURCE"
+    tests_raw = input(C_TITLE("  commandes de test (séparées par ;) > ")).strip()
+    criteria_raw = input(C_TITLE("  critères d'acceptation (séparés par ;) > ")).strip()
+    provider_path = input(C_TITLE("  provider_config JSON existant > ")).strip()
+    evidence_path = input(C_TITLE("  evidence bundle JSON existant > ")).strip()
+
+    targets = _csv_values(targets_raw)
+    operations = [item.upper() for item in _csv_values(operations_raw)]
+    if not mission_id or not mandate_ref or not targets or not operations:
+        print(C_WARN("  R12 HOLD : EXPLICIT_MANDATE_SCOPE_REQUIRED"))
+        return None
+    if not provider_path or not evidence_path:
+        print(C_WARN("  R12 HOLD : PROVIDER_AND_EVIDENCE_BUNDLE_REQUIRED"))
+        return None
+    provider_config = _load_json_object(provider_path, label="PROVIDER_CONFIG")
+    evidence_bundle = _load_json_object(evidence_path, label="EVIDENCE_BUNDLE")
+    if provider_config is None or evidence_bundle is None:
+        return None
+    required = ("inventory_snapshot", "deficiency_evidence", "validation_evidence")
+    missing = [name for name in required if not isinstance(evidence_bundle.get(name), Mapping)]
+    if missing:
+        print(C_WARN(f"  R12 HOLD : EVIDENCE_BUNDLE_INCOMPLETE:{','.join(missing)}"))
+        return None
+    validation = evidence_bundle["validation_evidence"]
+    patch_hash = str(phase1_plan.get("candidate_patch_hash") or getattr(exported, "patch_sha256", ""))
+    if str(validation.get("candidate_patch_hash") or "") != patch_hash:
+        print(C_WARN("  R12 HOLD : VALIDATION_EVIDENCE_PATCH_HASH_MISMATCH"))
+        return None
+    return {
+        "mission_id": mission_id,
+        "mandate_reference": mandate_ref,
+        "target_paths": targets,
+        "operations": operations,
+        "test_commands": [item.strip() for item in tests_raw.split(";") if item.strip()],
+        "acceptance_criteria": [item.strip() for item in criteria_raw.split(";") if item.strip()] or [str(getattr(proposal, "objective", "") or "AVDR proposal prepared")],
+        "provider_config": provider_config,
+        "inventory_snapshot": dict(evidence_bundle["inventory_snapshot"]),
+        "deficiency_evidence": dict(evidence_bundle["deficiency_evidence"]),
+        "validation_evidence": dict(validation),
+    }
+
+
+def _build_native_r12_payload(proposal: Any) -> dict[str, Any] | None:
+    try:
+        from obsidure_candidate_export_v1 import (
+            CandidateExportError,
+            build_phase1_plan,
+            export_proposal_candidate,
+        )
+    except Exception as exc:
+        print(C_WARN(f"  R12 HOLD : CANDIDATE_EXPORT_UNAVAILABLE ({type(exc).__name__})"))
+        return None
+
+    try:
+        proposal_json = _proposal_json_path(proposal)
+        artifact_root = Path(tempfile.mkdtemp(prefix="obsidure_r12_candidate_"))
+        exported = export_proposal_candidate(_REPO_ROOT, proposal_json, artifact_root)
+        objective = str(getattr(proposal, "objective", "") or "")
+        phase1_plan = build_phase1_plan(_REPO_ROOT, objective, exported)
+    except CandidateExportError as exc:
+        print(C_WARN(f"  R12 HOLD : AVDR_CANDIDATE_EXPORT_FAILED:{exc}"))
+        return None
+    except Exception as exc:
+        print(C_WARN(f"  R12 HOLD : AVDR_CANDIDATE_EXPORT_ERROR:{type(exc).__name__}:{exc}"))
+        return None
+
+    try:
+        head = _git_text(_REPO_ROOT, "rev-parse", "HEAD")
+        branch = _git_text(_REPO_ROOT, "branch", "--show-current")
+        status = _git_text(_REPO_ROOT, "status", "--short")
+    except Exception as exc:
+        print(C_WARN(f"  R12 HOLD : REPOSITORY_IDENTITY_UNAVAILABLE:{exc}"))
+        return None
+    if status.strip():
+        print(C_WARN("  R12 HOLD : WORKTREE_DIRTY"))
+        return None
+
+    operator = _read_operator_native_inputs(proposal=proposal, exported=exported, phase1_plan=phase1_plan)
+    if operator is None:
+        return None
+
+    candidate_files = list(getattr(exported, "files", ()) or phase1_plan.get("candidate_patch_files") or ())
+    if not set(candidate_files).issubset(set(operator["target_paths"])):
+        print(C_WARN("  R12 HOLD : SCOPE_VIOLATION"))
+        return None
+
+    payload = {
+        "human_request": str(getattr(proposal, "objective", "") or "Prepare AVDR proposal with R12"),
+        "repository_context": {
+            "repository_identity": f"repo://{_REPO_ROOT.name}",
+            "local_root": str(_REPO_ROOT),
+            "main_worktree": str(_REPO_ROOT),
+            "worktree": str(_REPO_ROOT),
+            "branch": branch,
+            "base_sha": head,
+        },
+        "proposed_scope": {
+            "objective": str(getattr(proposal, "objective", "") or "Prepare AVDR proposal with R12"),
+            "target_paths": candidate_files,
+            "operations": ["UPDATE_TARGET_FROM_SOURCE"],
+            "tools": ["OBSIDURE_PERIPHERY_PROPOSAL_EXPORT_V1", "GIT_APPLY_CHECK"],
+            "test_commands": operator["test_commands"],
+            "acceptance_criteria": operator["acceptance_criteria"],
+        },
+        "human_mandate": {
+            "mission_id": operator["mission_id"],
+            "status": "ACTIVE",
+            "mission_authority": "KX108_ONLY",
+            "human_mandate_reference": operator["mandate_reference"],
+            "authorized_target_paths": operator["target_paths"],
+            "authorized_operations": operator["operations"],
+            "approved_tools": ["OBSIDURE_PERIPHERY_PROPOSAL_EXPORT_V1", "GIT_APPLY_CHECK"],
+            "mission_budget": 1,
+            "attempt_limit": 1,
+        },
+        "provider_config": operator["provider_config"],
+        "explicit_references": {
+            "proposal": {
+                "kind": "patch",
+                "patch_id": str(getattr(proposal, "proposal_id", "") or exported.proposal_id),
+                "proposal_sha256": exported.proposal_sha256,
+                "candidate_patch_hash": exported.patch_sha256,
+                "candidate_patch_source": str(exported.patch_path),
+                "manifest_path": str(exported.manifest_path),
+                "producer": "OBSIDURE_PERIPHERY_PROPOSAL_EXPORT_V1",
+            }
+        },
+        "phase1_candidate": {
+            "session_id": f"avdr-{exported.proposal_id}",
+            "session_contract": "OBSIDURE_PERIPHERY_PROPOSAL_EXPORT_V1",
+            "status": phase1_plan.get("status") or "PLAN_PROPOSED",
+            "targets": candidate_files,
+            "candidate_patch_hash": exported.patch_sha256,
+            "candidate_files": candidate_files,
+            "plan": phase1_plan,
+            "producer_authority": "NONE",
+            "backend_authority": "NONE",
+            "decision_authority": "KX108_ONLY",
+            "phase2_executed": False,
+            "human_approval_synthesized": False,
+            "approval_token_exposed": False,
+            "repo_mutation": False,
+            "mutated_repo": False,
+            "world_action": False,
+        },
+        "inventory_snapshot": operator["inventory_snapshot"],
+        "deficiency_evidence": operator["deficiency_evidence"],
+        "validation_evidence": operator["validation_evidence"],
+        "session_id": operator["mission_id"],
+        "require_local_model_evidence": False,
+    }
+
+    print(C_TITLE("  Récapitulatif R12 PREPARE_ONLY :"))
+    print(f"    proposal_id   : {getattr(proposal, 'proposal_id', exported.proposal_id)}")
+    print(f"    base_sha      : {head}")
+    print(f"    branch        : {branch}")
+    print(f"    targets       : {', '.join(candidate_files)}")
+    print(f"    mandate_ref   : {operator['mandate_reference']}")
+    print(f"    patch_hash    : {exported.patch_sha256}")
+    confirm = input(C_TITLE("  Confirmer PREPARE_ONLY sans ACT ? (o/N) > ")).strip().lower()
+    if confirm not in {"o", "oui", "y", "yes"}:
+        print(C_DIM("  R12 : préparation native annulée."))
+        return None
+    return payload
+
+
 def _checkpoint_id_from(payload: Mapping[str, Any]) -> str:
     checkpoint = payload.get("checkpoint")
     if isinstance(checkpoint, Mapping):
@@ -194,16 +408,17 @@ def _maybe_prepare_r12_after_proposal(api_base: str, proposal: Any) -> None:
         print(C_DIM("  R12 : aucune préparation demandée."))
         return
 
-    payload_file = input(C_TITLE("  Payload R12 prepare-only JSON > ")).strip()
-    if not payload_file:
-        print(C_WARN("  R12 HOLD : PAYLOAD_FILE_REQUIRED"))
-        return
-
     _sup = _load_supervised_client()
-    payload, reason = _sup._load_payload(payload_file)
-    if reason:
-        print(C_WARN(f"  R12 HOLD : {reason}"))
-        return
+    payload_file = input(C_TITLE("  Payload R12 prepare-only JSON (vide = handoff natif AVDR) > ")).strip()
+    if payload_file:
+        payload, reason = _sup._load_payload(payload_file)
+        if reason:
+            print(C_WARN(f"  R12 HOLD : {reason}"))
+            return
+    else:
+        payload = _build_native_r12_payload(proposal)
+        if payload is None:
+            return
 
     status, result = _sup._api_json(api_base, "POST", "/api/supervised-missions/prepare-only", body=payload)
     result.setdefault("schema_version", _sup.SCHEMA_VERSION)
