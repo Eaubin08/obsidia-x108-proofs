@@ -1,0 +1,22 @@
+{
+  "schema": "GOOGLE_CALENDAR_REAL_PROVIDER_RECEIPT_V0",
+  "receipt_id": "gcalreceipt-efe12a8ebab5edbec0b4ca831205277b",
+  "invocation_id": "gcal-dd9e904db69fd7f9175a722ec46235e8",
+  "invocation_hash": "ce6f3654729cbfce79600b90e96e6001fc6b3e1915934599a24e3079d111c86c",
+  "action_id": "world-calendar-real-adapter-pilot-v0",
+  "sovereign_ticket_hash": "0b5ccbb5db7eb6e600924a35f1bb8bd1e84e11f10308354fa2515ef88155effc",
+  "world_action_request_hash": "acc2e98f744fa96656cbdf2923687075d0f689ccc6cc042af7abcf189dc4d6a7",
+  "connector_call_hash": "946cf9f289c9e12b5a7a534ca1cdf3d892edd4467e23f51ba132e9559805d1a4",
+  "idempotency_key": "cee6e59d6835a23243756cdb942d64adf436c99a3fc580fb8c24b26fcfaad760",
+  "provider": "GOOGLE_CALENDAR",
+  "provider_event_id_sha256": "b6fc86d89efc2ac9f4d3238cb8168cc3e1fb3674ec698be954273891f901a267",
+  "provider_status": "confirmed",
+  "readback_verified": true,
+  "cleanup_status": "cancelled",
+  "active_event_left": false,
+  "observed_at": "2026-10-07T10:16:57.848487+00:00",
+  "real_external_effect": true,
+  "obsidia_governed_invocation": true,
+  "decision_authority": "KX108_ONLY",
+  "receipt_hash": "76449aaaf81f2e02c6b7c438206174aac2fe86cd2e024524cba4f0c21874cb6b"
+}

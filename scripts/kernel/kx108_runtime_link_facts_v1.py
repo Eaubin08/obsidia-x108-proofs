@@ -82,6 +82,34 @@ WORLD_ACTION_LIVE_GATEWAY_PATH = (
 WORLD_ACTION_BOUNDED_EXECUTOR_PATH = (
     "periphery/world_calls/bounded_connector_executor_v0.py"
 )
+NATIVE_TASKS_PATH = "periphery/native_ops/tasks_native_v0.py"
+NATIVE_CRM_PATH = "periphery/native_ops/crm_native_v0.py"
+NATIVE_OPS_WORLD_ACTION_BRIDGE_PATH = (
+    "periphery/native_ops/world_action_bridge_v0.py"
+)
+NATIVE_OPS_SYNC_PROJECTION_PATH = (
+    "periphery/native_ops/sync_projection_v0.py"
+)
+NATIVE_SOURCE_COMMON_PATH = "periphery/native_sources/common_v0.py"
+NATIVE_SOURCE_REGISTRY_PATH = "periphery/native_sources/source_registry_v0.py"
+NATIVE_SOURCE_ONBOARDING_PATH = "periphery/native_sources/source_onboarding_v0.py"
+NATIVE_SOURCE_RUNTIME_PATH = "periphery/native_sources/source_runtime_v0.py"
+NATIVE_MAIL_CONNECTOR_PATH = "periphery/native_sources/mail_connector_v0.py"
+NATIVE_DOCUMENT_CONNECTOR_PATH = "periphery/native_sources/document_connector_v0.py"
+NATIVE_CALENDAR_CONNECTOR_PATH = "periphery/native_sources/calendar_connector_v0.py"
+ENTERPRISE_SOURCE_SANDBOX_PATH = (
+    "periphery/native_sources/enterprise_source_sandbox_v0.py"
+)
+AUTONOMOUS_OFFICE_E2E_PATH = (
+    "periphery/native_sources/enterprise_office_e2e_v0.py"
+)
+NATIVE_SOURCE_INTERPRETATION_PATH = (
+    "periphery/native_sources/source_interpretation_v0.py"
+)
+INTERPRETED_AUTONOMOUS_OFFICE_E2E_PATH = (
+    "periphery/native_sources/enterprise_office_interpreted_e2e_v0.py"
+)
+NATIVE_INTAKE_BUNDLE_PATH = "periphery/native_ops/intake_bundle_v0.py"
 
 # Multi-domain proof surfaces.
 MULTIDOMAIN_PROOF_PATH = (
@@ -237,6 +265,82 @@ def world_action_bounded_executor_contract_present() -> bool:
     )
 
 
+def native_tasks_crm_domains_present() -> bool:
+    """True when Obsidia-owned TASKS/CRM domains and their KX108 bridge exist.
+
+    Presence means the canonical local models are available. It does not
+    imply any external SaaS synchronization or external world activation.
+    """
+    return (
+        _exists(NATIVE_TASKS_PATH)
+        and _exists(NATIVE_CRM_PATH)
+        and _exists(NATIVE_OPS_WORLD_ACTION_BRIDGE_PATH)
+        and _exists(NATIVE_OPS_SYNC_PROJECTION_PATH)
+        and world_action_pre_execution_rail_present()
+    )
+
+
+def native_source_runtime_present() -> bool:
+    """True when the provider-neutral READONLY source runtime is present.
+
+    Presence means source identity/onboarding/registry/observations are
+    available. It does not imply any live provider connection or external
+    mutation capability.
+    """
+    return (
+        _exists(NATIVE_SOURCE_COMMON_PATH)
+        and _exists(NATIVE_SOURCE_REGISTRY_PATH)
+        and _exists(NATIVE_SOURCE_ONBOARDING_PATH)
+        and _exists(NATIVE_SOURCE_RUNTIME_PATH)
+    )
+
+
+def native_source_connectors_present() -> bool:
+    """True when the three provider-neutral READONLY V0 connectors exist."""
+    return (
+        native_source_runtime_present()
+        and _exists(NATIVE_MAIL_CONNECTOR_PATH)
+        and _exists(NATIVE_DOCUMENT_CONNECTOR_PATH)
+        and _exists(NATIVE_CALENDAR_CONNECTOR_PATH)
+    )
+
+
+def enterprise_source_sandbox_present() -> bool:
+    """True when the deterministic synthetic multi-source office exists."""
+    return (
+        native_source_connectors_present()
+        and _exists(ENTERPRISE_SOURCE_SANDBOX_PATH)
+    )
+
+
+def autonomous_office_e2e_contract_present() -> bool:
+    """True when the sandbox office-to-native-ops governed E2E exists.
+
+    This remains a synthetic proof contract, not a production interpreter.
+    """
+    return (
+        enterprise_source_sandbox_present()
+        and _exists(NATIVE_INTAKE_BUNDLE_PATH)
+        and _exists(AUTONOMOUS_OFFICE_E2E_PATH)
+        and native_tasks_crm_domains_present()
+        and world_action_pre_execution_rail_present()
+    )
+
+
+def native_source_interpretation_present() -> bool:
+    """True when bounded source interpretation and interpreted office E2E exist.
+
+    Presence means provenance-bound source packets can produce deterministic,
+    non-sovereign interpretation candidates. It does not activate providers,
+    decide KX108 gates, or grant action authority.
+    """
+    return (
+        autonomous_office_e2e_contract_present()
+        and _exists(NATIVE_SOURCE_INTERPRETATION_PATH)
+        and _exists(INTERPRETED_AUTONOMOUS_OFFICE_E2E_PATH)
+    )
+
+
 def runtime_internal_end_to_end_validated() -> bool:
     """
     Internal governed runtime, end to end — agent through verified KX108
@@ -362,6 +466,66 @@ def runtime_link_facts() -> dict:
 
         "world_action_bounded_executor_path":
             WORLD_ACTION_BOUNDED_EXECUTOR_PATH,
+
+        "native_tasks_crm_domains_present":
+            native_tasks_crm_domains_present(),
+
+        "native_tasks_path":
+            NATIVE_TASKS_PATH,
+
+        "native_crm_path":
+            NATIVE_CRM_PATH,
+
+        "native_ops_world_action_bridge_path":
+            NATIVE_OPS_WORLD_ACTION_BRIDGE_PATH,
+
+        "native_ops_sync_projection_path":
+            NATIVE_OPS_SYNC_PROJECTION_PATH,
+
+        "native_source_runtime_present":
+            native_source_runtime_present(),
+
+        "native_source_registry_path":
+            NATIVE_SOURCE_REGISTRY_PATH,
+
+        "native_source_onboarding_path":
+            NATIVE_SOURCE_ONBOARDING_PATH,
+
+        "native_source_runtime_path":
+            NATIVE_SOURCE_RUNTIME_PATH,
+
+        "native_source_connectors_present":
+            native_source_connectors_present(),
+
+        "native_mail_connector_path":
+            NATIVE_MAIL_CONNECTOR_PATH,
+
+        "native_document_connector_path":
+            NATIVE_DOCUMENT_CONNECTOR_PATH,
+
+        "native_calendar_connector_path":
+            NATIVE_CALENDAR_CONNECTOR_PATH,
+
+        "enterprise_source_sandbox_present":
+            enterprise_source_sandbox_present(),
+
+        "autonomous_office_e2e_contract_present":
+            autonomous_office_e2e_contract_present(),
+
+        "autonomous_office_e2e_status":
+            "SANDBOX_ONLY_NOT_PRODUCTION_INTERPRETER",
+
+        "native_source_interpretation_present":
+            native_source_interpretation_present(),
+
+        "native_source_interpretation_path":
+            NATIVE_SOURCE_INTERPRETATION_PATH,
+
+        "interpreted_autonomous_office_e2e_path":
+            INTERPRETED_AUTONOMOUS_OFFICE_E2E_PATH,
+
+        "source_interpretation_authority":
+            "NON_SOVEREIGN_CANDIDATE_ONLY",
 
         "runtime_internal_end_to_end_validated":
             runtime_internal_end_to_end_validated(),

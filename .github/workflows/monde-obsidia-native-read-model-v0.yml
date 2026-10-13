@@ -1,0 +1,29 @@
+name: monde-obsidia-native-read-model-v0
+
+on:
+  push:
+    branches:
+      - feat/monde-obsidia-native-read-model-v0
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-read-proof:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip pytest
+      - name: Verify read-only persisted canonical projections
+        run: >-
+          python -m pytest
+          tests/integration/test_monde_native_read_model_v0.py
+          tests/integration/test_enterprise_office_full_loop_e2e_v0.py
+          tests/integration/test_native_work_to_action_projection_v0.py
+          tests/integration/test_universal_enterprise_stack_adapter_v0.py
+          -q

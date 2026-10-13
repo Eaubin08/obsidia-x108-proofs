@@ -1,0 +1,72 @@
+{
+  "schema": "OBSIDIA_ENTERPRISE_INTERREPO_GLOBAL_FREEZE_V0",
+  "freeze_date": "2026-10-08",
+  "status": "FUNCTIONAL_FROZEN_GLOBAL_CI_RED_KNOWN_BASELINE",
+  "no_main_merge": true,
+  "kernel_mutation": false,
+  "decision_authority": "KX108_ONLY",
+  "source": {
+    "repository": "Eaubin08/obsidia-x108-proofs",
+    "branch": "feat/monde-obsidia-native-read-model-v0",
+    "head_sha": "3f3ecac29e33c52988faf4f021bc11c4580b0edc",
+    "parent_branch": "feat/universal-enterprise-stack-adapter-v0",
+    "pr": 82,
+    "focussed_read_model_run": 37702222183,
+    "focussed_read_model_pass": 26,
+    "specialised_workflows_success": 19,
+    "full_ci_runs": [
+      37701939170,
+      37702206061,
+      37702222036
+    ],
+    "full_ci": {
+      "status": "failure",
+      "passed": 12653,
+      "failed": 11,
+      "skipped": 46,
+      "deselected": 207,
+      "regressions_compared_to_earlier_head": 0
+    }
+  },
+  "monde": {
+    "repository": "Eaubin08/monde-obsidia",
+    "branch": "feat/native-enterprise-interrepo-freeze-v0",
+    "head_sha": "d1b78d4de11ca2da4d31f88799ebb75fd3aa1698",
+    "parent_branch": "feat/native-enterprise-read-model-v0",
+    "prs": [
+      11,
+      12
+    ],
+    "ci_run": 37702934534,
+    "ci": {
+      "passed": 28,
+      "failed": 0,
+      "skipped": 1,
+      "build": "SUCCESS"
+    },
+    "integrity_hardening": true
+  },
+  "known_failed_tests": [
+    "tests/api/test_brody_routes_registered.py::test_brody_routes_registered",
+    "tests/api/test_f67_sigma_live_smoke_api_audit.py::test_f67_no_new_sigma_or_bus_routes_beyond_expected",
+    "tests/cli/test_mission_authority_conformance_v0.py::test_lean_runtime_canonical_conformance",
+    "tests/cli/test_mission_authority_conformance_v0.py::test_scope_le_conformance",
+    "tests/test_batch_execution_v0.py::TestCLIBatchExecution::test_cli_execution_prepare_real_batch",
+    "tests/test_batch_execution_v0.py::TestCLIBatchExecution::test_cli_execution_status_and_inspect",
+    "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_batch_not_ready",
+    "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_bridge_plans_explicit_scope_exactly",
+    "tests/test_batch_execution_v0.py::TestRealPilotBatchRefusal::test_real_bridge_never_writes_anything",
+    "tests/test_branching_ledger_v0.py::TestPrebuildHardening::test_identity_cross_cwd_real_cli",
+    "tests/test_git_worktree_repository_identity_v0.py::TestIndependentCloneNegativeResolution::test_clone_with_same_content_imported_as_new_commit_still_rejected"
+  ],
+  "exclusions_and_blockers": [
+    "Global CI is not green; 11 expected prior failures persist",
+    "No live CSSA business records or permissions calibrated",
+    "No deployment of draft feature branches to operator PC",
+    "Unpersisted interpretations/action candidates/provider bindings must remain UNAVAILABLE",
+    "Real external actions remain out of this freeze scope"
+  ],
+  "next_phase": "CSSA_REAL_READONLY_PILOT_PREPARATION_AFTER_REVIEW",
+  "release_readiness": "NOT_READY_FOR_AUTONOMOUS_PRODUCTION",
+  "global_ci_green": false
+}

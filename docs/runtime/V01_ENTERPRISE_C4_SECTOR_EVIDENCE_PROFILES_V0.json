@@ -1,0 +1,211 @@
+{
+  "schema": "OBSIDIA_V01_C4_SECTOR_EVIDENCE_REGISTRY_V0",
+  "as_of": "2026-10-08",
+  "authority": "KX108_ONLY",
+  "registry_role": "READONLY_CLAIM_CONFORMANCE_NOT_A_DOMAIN_ADAPTER",
+  "verified_production_integration": false,
+  "source_contracts": [
+    {
+      "sector_id": "TRADING_REFERENCE",
+      "domain_id": "trading",
+      "repo": "Eaubin08/OBSIDIA_TRADING",
+      "ref": "master",
+      "commit": "6dfee86778810829a2e9d89d3cc6caaaaa0996e9",
+      "status": "PARTIAL_REFERENCE_VALIDATED",
+      "source_paths": [
+        "domain/contracts/canonical.py",
+        "external/adapters/base_adapter.py",
+        "docs/F12_REAL_KERNEL_ROUND_TRIP.md",
+        "docs/FREEZE_MANIFEST.md",
+        "README.md"
+      ],
+      "claims": [
+        {
+          "claim_id": "CANONICAL_NATIVE_EXTERNAL_CONVERGENCE",
+          "evidence_grade": "REFERENCE_IMPLEMENTATION",
+          "source_paths": [
+            "domain/contracts/canonical.py",
+            "external/adapters/base_adapter.py"
+          ],
+          "allowed_mode": "DESCRIPTIVE_REFERENCE_ONLY"
+        },
+        {
+          "claim_id": "REAL_KERNEL_HTTP_ROUNDTRIP_HISTORICAL",
+          "evidence_grade": "DOCUMENTED_HISTORICAL_TEST",
+          "source_paths": [
+            "docs/F12_REAL_KERNEL_ROUND_TRIP.md"
+          ],
+          "allowed_mode": "HISTORICAL_EVIDENCE_ONLY"
+        },
+        {
+          "claim_id": "PAPER_ONLY_GOVERNED_CYCLE",
+          "evidence_grade": "REFERENCE_PAPER_ONLY",
+          "source_paths": [
+            "docs/FREEZE_MANIFEST.md"
+          ],
+          "allowed_mode": "PAPER_ONLY"
+        }
+      ],
+      "forbidden_claims": [
+        "LIVE_TRADING_READY",
+        "DEFAULT_RUNTIME_REAL_KERNEL_CONNECTED",
+        "REAL_BROKER_ORDER_CONFIRMED",
+        "PRODUCTION_ECONOMIC_RETURN_PROVEN"
+      ],
+      "known_drift": [
+        "README_TEST_COUNT_DIFFERS_ACTIVE_MANIFEST",
+        "REAL_KERNEL_HTTP_VERDICT_FIELD_X108_GATE_VS_LEGACY_VERDICT"
+      ],
+      "unresolved": [
+        "REAL_KERNEL_DEFAULT_UNAVAILABLE_FAIL_CLOSED",
+        "LIVE_TRADING_STRUCTURALLY_FORBIDDEN",
+        "INDEPENDENT_PRODUCTION_INTEGRATION_NOT_PROVEN"
+      ],
+      "observed_reference_assertions": {
+        "default_real_kernel_attached": false,
+        "historical_roundtrip_real_kernel_documented": true,
+        "live_trading_forbidden": true,
+        "active_freeze_manifest_declares_passed": 284
+      }
+    },
+    {
+      "sector_id": "GPS_DEFENSE_PUBLIC_EXPORT",
+      "domain_id": "gps_defense_aviation",
+      "repo": "Eaubin08/obsidia-gps-defense-",
+      "ref": "main",
+      "commit": "db1b1777faaa598f08e314c915b274520e5f601b",
+      "status": "PARTIAL_RECORDED_PHYSICAL_EVIDENCE",
+      "source_paths": [
+        "docs/CLAIM_MATRIX.md",
+        "docs/GPS_DEFENSE_V1_FINAL_REPORT.md",
+        "schemas/gps_physical_observation.schema.json",
+        "evidence/hostile-rf-partial/window_C_observation_envelope.json",
+        "evidence-pipeline/public_domain_bridge/gps_x108_gate.py"
+      ],
+      "claims": [
+        {
+          "claim_id": "RECORDED_REAL_GNSS_OBSERVATION",
+          "evidence_grade": "DOCUMENTED_RECORDED_REAL",
+          "source_paths": [
+            "docs/CLAIM_MATRIX.md"
+          ],
+          "allowed_mode": "READONLY_EVIDENCE_ONLY"
+        },
+        {
+          "claim_id": "RECORDED_REAL_RF_NOMINAL_OBSERVATION",
+          "evidence_grade": "DOCUMENTED_RECORDED_REAL",
+          "source_paths": [
+            "docs/CLAIM_MATRIX.md"
+          ],
+          "allowed_mode": "READONLY_EVIDENCE_ONLY"
+        },
+        {
+          "claim_id": "FGI_RF_TRAJECTORY_ANOMALY_CANDIDATE",
+          "evidence_grade": "PARTIAL_TEMPORAL_NOT_CAUSAL",
+          "source_paths": [
+            "docs/GPS_DEFENSE_V1_FINAL_REPORT.md"
+          ],
+          "allowed_mode": "READONLY_FORENSIC_ONLY"
+        }
+      ],
+      "forbidden_claims": [
+        "RECORDED_RF_ATTACK_CLOSED",
+        "CONFIRMED_SPOOFING_CAUSALITY",
+        "SPOOF_RESISTANCE_VALIDATED",
+        "LIVE_RECEIVER_ACTUATION",
+        "AVIATION_CERTIFIED",
+        "DEVICE_CONFIGURATION_READY"
+      ],
+      "known_drift": [
+        "PUBLIC_BRIDGE_READS_VERDICT_BUT_REAL_KERNEL_REPORTS_X108_GATE",
+        "GPS_WINDOW_C_PROOF_LEVEL_RECORDED_RF_ATTACK_CONFLICTS_WITH_CLAIM_MATRIX_NOT_PROVEN"
+      ],
+      "unresolved": [
+        "SAME_FAMILY_NOMINAL_CONTROL_ABSENT",
+        "CONFUSION_MATRIX_NOT_COMPUTED",
+        "INDEPENDENT_SENSOR_CORROBORATION_MISSING",
+        "RECEIVER_LIVE_NOT_VALIDATED"
+      ],
+      "quarantined_source_proof_levels": [
+        "RECORDED_RF_ATTACK"
+      ],
+      "observed_claim_conflict": {
+        "path": "evidence/hostile-rf-partial/window_C_observation_envelope.json",
+        "field": "proof_level",
+        "observed_value": "RECORDED_RF_ATTACK",
+        "other_field": "eligible_for_physical_claim",
+        "other_observed_value": true,
+        "reason": "SOURCE_ENVELOPE_LABEL_NOT_SUFFICIENT_TO_CLAIM_RECORDED_RF_ATTACK_CLASSIFICATION_PROVEN"
+      },
+      "observed_reference_assertions": {
+        "recorded_gnss": true,
+        "recorded_rf_nominal": true,
+        "detector_rf_anomaly": true,
+        "attack_causal_attribution_proven": false,
+        "multisource_imu_radar_corrob": false,
+        "window_c_source_proof_level": "RECORDED_RF_ATTACK"
+      }
+    },
+    {
+      "sector_id": "CSSA_ADMIN_SHADOW",
+      "domain_id": "administration",
+      "repo": "Eaubin08/cssa-v01--entreprise-universelle-domaien-obsidia-",
+      "ref": "feat/f3h-h-cssa-real-readonly-pilot-preflight-v0",
+      "commit": "a3125ce211e0c55d6608b39396f1f7633dbab72c",
+      "status": "CONTRACT_SHADOW_REAL_INTERNAL_BLOCKED",
+      "source_paths": [
+        "universal/contracts/domain_v0.py",
+        "docs/architecture/F3H_E_CSSA_REAL_READONLY_INTAKE_ROUTER_V0.md",
+        "docs/architecture/F3H_H_CSSA_REAL_READONLY_PILOT_PREFLIGHT_V0.md",
+        "organizations/cssa/intake/f3h_h_real_readonly_pilot_preflight_progress_v0.json"
+      ],
+      "claims": [
+        {
+          "claim_id": "UNIVERSAL_ADMINISTRATION_DOMAIN_CONTRACT",
+          "evidence_grade": "DOMAIN_CONTRACT_TESTED",
+          "source_paths": [
+            "universal/contracts/domain_v0.py"
+          ],
+          "allowed_mode": "NON_SOVEREIGN_CONTRACT_ONLY"
+        },
+        {
+          "claim_id": "PERSONAL_MAIL_READONLY_SHADOW_ROUTING",
+          "evidence_grade": "DOCUMENTED_PERSONAL_READONLY_SAMPLE",
+          "source_paths": [
+            "docs/architecture/F3H_E_CSSA_REAL_READONLY_INTAKE_ROUTER_V0.md"
+          ],
+          "allowed_mode": "PERSONAL_SHADOW_NO_INTERNAL_PROMOTION"
+        },
+        {
+          "claim_id": "OPERATIONAL_SOURCE_ONBOARDING_PREFLIGHT",
+          "evidence_grade": "PREFLIGHT_CONTRACT_ONLY",
+          "source_paths": [
+            "docs/architecture/F3H_H_CSSA_REAL_READONLY_PILOT_PREFLIGHT_V0.md"
+          ],
+          "allowed_mode": "PREPARATION_ONLY"
+        }
+      ],
+      "forbidden_claims": [
+        "CLUB_INTERNAL_MAILBOX_CONNECTED",
+        "CLUB_INTERNAL_DOCUMENTS_CONNECTED",
+        "REAL_CLUB_OPERATIONAL_PILOT_STARTED",
+        "REAL_CLUB_INTERNAL_CASE_TASK_PROMOTED",
+        "PERSONAL_MAILBOX_IS_CLUB_AUTHORITY",
+        "REAL_CLUB_SEND_ALLOWED"
+      ],
+      "known_drift": [],
+      "unresolved": [
+        "NO_AUTHORIZED_CLUB_INTERNAL_SOURCE",
+        "NO_ATTESTED_CLUB_REPRESENTATIVE",
+        "NO_REAL_OPERATIONAL_TASK_PROMOTION"
+      ],
+      "observed_reference_assertions": {
+        "connected_internal_mailbox": false,
+        "connected_internal_documents": false,
+        "personal_sample_count": 8,
+        "real_native_promotions": 0,
+        "pilot_started": false
+      }
+    }
+  ]
+}

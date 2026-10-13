@@ -1,0 +1,26 @@
+name: v01-company-model-c0-c1-conformance-v0
+on:
+  push:
+    branches:
+      - feat/v01-c0-c1-company-model-contract-v0
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  company-model:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --upgrade pip pytest
+      - name: Verify V0.1 C0 boundaries and C1 multi-org claim model
+        run: >-
+          python -m pytest
+          tests/integration/test_v01_c0_c1_company_model_v0.py
+          tests/integration/test_obsidia_universal_cross_domain_conformance_v0.py
+          tests/integration/test_universal_enterprise_stack_adapter_v0.py
+          tests/integration/test_monde_native_read_model_v0.py
+          -q

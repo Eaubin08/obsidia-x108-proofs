@@ -1,0 +1,39 @@
+{
+  "version": "WORLD_ACTION_GMAIL_DRAFT_GOVERNED_REAL_PILOT_V0",
+  "status": "REAL_PROVIDER_DRAFT_GOVERNED_BY_OBSIDIA_INVOCATION_AND_CLEANED",
+  "date": "2026-10-07",
+  "provider": "GMAIL",
+  "transport_execution": "CHATGPT_GMAIL_CONNECTOR",
+  "obsidia_chain": {
+    "request_hash": "38882b6e931ac8815fc76757bcf96103d4c39692ac69ef8f52f0825049407cc6",
+    "human_approval_hash": "e88df6106507ea03e0b81edf9eaae0d242489f0bf1981522d934bbd405e47aff",
+    "kx108_decision_record_id": "kxworld-44e68223f16ba7bae3a141819c906a5c",
+    "kx108_decision_record_hash": "1a582a9f536996c8baf070c54ab629d08f35c24e1b5d83870f111890058fa442",
+    "kx108_gate": "ALLOW",
+    "activation_policy_hash": "cf91334c80ddd9546260e0f23cd06217e4f1aefe0d692ac6a5e88b3f1efc2072",
+    "sovereign_ticket_id": "svlive-0af15fcac637ce3889ede32dc1dba944",
+    "sovereign_ticket_hash": "5c26a9e74c64edffd6395169c0590a11ba7db5367f369f35993b960b689c9e5f",
+    "invocation_id": "gmaildraft-75cf2f9093f0c0b3bf05c719655af2cf",
+    "invocation_hash": "c9cb880ea8af220e31c777c54c45d9f248b6c0e3a5c43c2ff982d2a17dfa08ee",
+    "connector_call_hash": "df92b7a01e7aaac9284790da47450faa37cae0475d5e627683e86571f261c412",
+    "idempotency_key": "78c98521236ef0b3cc0dbee4e0bdd61f9f5757a542fb8275f708af6268c0b87b"
+  },
+  "provider_observation": {
+    "draft_created": true,
+    "draft_readback_verified": true,
+    "draft_cleanup_verified": true,
+    "sent_message_created": false,
+    "provider_draft_id_sha256": "c15be03d1e7a3dc1edfb5a083769196cd609fdbb5a0fb76b6c201b4c3f829a3d",
+    "provider_message_id_sha256": "e42c5e0705451a2a4cb6f55ccdd53241ab815ea9be3ddbc4aff60d2cb72c1198",
+    "recipient_sha256": "3d2d101e26445848ef9a9a38953eb358cdce8a184aec4b408acfbc9f3722cde5"
+  },
+  "truth_boundary": {
+    "real_external_effect_proven": true,
+    "obsidia_governed_invocation_proven": true,
+    "direct_in_process_obsidia_network_transport_proven": false,
+    "transport_bridge_used": true,
+    "sent_message_created": false,
+    "draft_left_active": false,
+    "main_merge": false
+  }
+}

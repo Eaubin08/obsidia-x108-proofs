@@ -1,0 +1,38 @@
+{
+  "version": "SOURCE_RUNTIME_NATIVE_V0",
+  "status": "PROVEN",
+  "date": "2026-10-07",
+  "source_kinds": [
+    "MAILBOX",
+    "DOCUMENT_REPOSITORY",
+    "CALENDAR",
+    "FORM_INBOX",
+    "API_READONLY"
+  ],
+  "invariants": {
+    "readonly": true,
+    "external_mutation_allowed": false,
+    "is_execution_authority": false,
+    "decision_authority": "KX108_ONLY",
+    "raw_source_identity_persisted": false,
+    "raw_credentials_persisted": false,
+    "raw_content_persisted": false
+  },
+  "capabilities": {
+    "registry": true,
+    "immutable_registration": true,
+    "revocation": true,
+    "two_key_onboarding": true,
+    "identity_drift_invalidates_authorization": true,
+    "capability_escalation_forbidden": true,
+    "privacy_safe_observation": true,
+    "context_packet": true,
+    "packet_replay_verification": true
+  },
+  "proof": {
+    "workflow_run": 37618281703,
+    "result": "103 passed in 0.77s"
+  },
+  "live_provider_connected": false,
+  "main_merge": false
+}

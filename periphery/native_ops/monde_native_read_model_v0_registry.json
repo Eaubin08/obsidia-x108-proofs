@@ -1,0 +1,15 @@
+{
+ "schema":"MONDE_OBSIDIA_NATIVE_READ_MODEL_V0_REGISTRY",
+ "status":"FOCUSED_PROOF_GREEN",
+ "branch":"feat/monde-obsidia-native-read-model-v0",
+ "base":"feat/universal-enterprise-stack-adapter-v0",
+ "focused_workflow_run":37701939187,
+ "focused_result":"26 passed in 2.47s",
+ "observed_only":true,
+ "no_mutations":true,
+ "unavailable_categories_not_fabricated":true,
+ "decision_authority":"KX108_ONLY",
+ "main_merge":false,
+ "counterpart_repo":"Eaubin08/monde-obsidia",
+ "counterpart_branch":"feat/native-enterprise-read-model-v0"
+}

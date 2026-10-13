@@ -1,0 +1,248 @@
+{
+  "schema": "V01_ENTERPRISE_C0_CONTRACT_CONVERGENCE_V0",
+  "as_of": "2026-10-08",
+  "reviewed_base_sha": "3dd04102c76b86b1dab9015bcce962f7290c3baf",
+  "runtime_base_sha": "7a54bb5cb74fd3f88b1fb657db38a012246b2c3a",
+  "global_ci_green": false,
+  "authority": "KX108_ONLY",
+  "kernel_changes": false,
+  "immutable_external_business_source_access": false,
+  "contracts": [
+    {
+      "id": "UDIP_DOMAIN_SPEC",
+      "owner": "DOMAIN_SEMANTICS",
+      "reference": {
+        "repo": "Eaubin08/obsidia-x108-proofs",
+        "branch": "codex/udip-domain-packs-v0",
+        "path": "docs/UNIVERSAL_DOMAIN_INTEGRATION_PROTOCOL_V0.md"
+      },
+      "maturity": "SPEC_ONLY",
+      "inputs": [
+        "DomainSignal",
+        "CanonicalDomainContract"
+      ],
+      "outputs": [
+        "GovernancePayload"
+      ],
+      "invariant": "NO_DECISION_NO_PERMISSION_NO_EXECUTION",
+      "action": "ADAPT"
+    },
+    {
+      "id": "UDIP_PORTABLE_RUNTIME",
+      "owner": "DOMAIN_TRANSLATION",
+      "reference": {
+        "repo": "Eaubin08/obsidia-x108-proofs",
+        "branch": "feat/premiere-mise-au-monde-udip-v0",
+        "path": "periphery/udip/contracts_v0.py"
+      },
+      "maturity": "BRANCH_CANDIDATE",
+      "inputs": [
+        "WorldStateV0"
+      ],
+      "outputs": [
+        "DomainStateRefV0",
+        "GovernancePayloadV0"
+      ],
+      "invariant": "NO_MANDATORY_WORLDSTATE_FOR_ALL_DOMAINS",
+      "action": "ADAPT"
+    },
+    {
+      "id": "F25_DOMAIN_RESOLVER",
+      "owner": "DOMAIN_RUNTIME",
+      "reference": {
+        "repo": "Eaubin08/obsidia-x108-proofs",
+        "branch": "feat/obsidia-universal-cross-domain-conformance-v0",
+        "path": "docs/architecture/F25_FIRST_CLASS_DOMAIN_EXTENSION_RESOLVER_V0.md"
+      },
+      "maturity": "TESTED_BOUNDARY",
+      "inputs": [
+        "TrustedHostResolver",
+        "PeripheralSignalPacket"
+      ],
+      "outputs": [
+        "DomainAggregate"
+      ],
+      "invariant": "NO_CANONICAL_DECISION_ENVELOPE_FROM_EXTENSION",
+      "action": "REUSE"
+    },
+    {
+      "id": "NATIVE_SOURCE_ONBOARDING",
+      "owner": "SOURCE_PROVENANCE",
+      "reference": {
+        "repo": "Eaubin08/obsidia-x108-proofs",
+        "branch": "feat/obsidia-universal-cross-domain-conformance-v0",
+        "path": "periphery/native_sources/source_onboarding_v0.py"
+      },
+      "maturity": "TESTED_SANDBOX",
+      "inputs": [
+        "ObservedSourceCandidate",
+        "HumanAuthorization"
+      ],
+      "outputs": [
+        "NativeSourceRegistration",
+        "ActivationReceipt"
+      ],
+      "invariant": "NO_UNAUTHORIZED_SOURCE_LIVE",
+      "action": "REUSE"
+    },
+    {
+      "id": "SOURCE_REGISTRY",
+      "owner": "SOURCE_IDENTITY",
+      "reference": {
+        "repo": "Eaubin08/obsidia-x108-proofs",
+        "branch": "feat/obsidia-universal-cross-domain-conformance-v0",
+        "path": "periphery/native_sources/source_registry_v0.py"
+      },
+      "maturity": "TESTED_SANDBOX",
+      "inputs": [
+        "NativeSourceRegistration"
+      ],
+      "outputs": [
+        "SourceObservation",
+        "Revocation"
+      ],
+      "invariant": "NO_IMPLIED_ORG_OWNERSHIP",
+      "action": "REUSE"
+    },
+    {
+      "id": "CAPABILITY_GRAPH",
+      "owner": "RUNTIME_ROUTING",
+      "reference": {
+        "repo": "Eaubin08/obsidia-x108-proofs",
+        "branch": "main",
+        "path": "scripts/obsidia_capability_graph_v0.py"
+      },
+      "maturity": "CODE_PRESENT",
+      "inputs": [
+        "MissionRequirement"
+      ],
+      "outputs": [
+        "CapabilityRoute"
+      ],
+      "invariant": "NO_EXECUTION_AUTHORITY",
+      "action": "ADAPT"
+    },
+    {
+      "id": "COGNITIVE_PROVIDER_BINDER",
+      "owner": "COGNITIVE_PROVIDER_ELIGIBILITY",
+      "reference": {
+        "repo": "Eaubin08/obsidia-x108-proofs",
+        "branch": "main",
+        "path": "scripts/obsidia_cognitive_provider_binder_v0.py"
+      },
+      "maturity": "CODE_PRESENT",
+      "inputs": [
+        "ProviderCapabilityRequest"
+      ],
+      "outputs": [
+        "NonSovereignResult"
+      ],
+      "invariant": "NOT_POST_KX_PERMISSION",
+      "action": "REUSE"
+    },
+    {
+      "id": "UNIVERSAL_ENTERPRISE_ADAPTER",
+      "owner": "TOOL_BINDING",
+      "reference": {
+        "repo": "Eaubin08/obsidia-x108-proofs",
+        "branch": "feat/obsidia-universal-cross-domain-conformance-v0",
+        "path": "periphery/universal_enterprise_stack_adapter_v0.py"
+      },
+      "maturity": "FOCUSED_SANDBOX_GREEN",
+      "inputs": [
+        "CanonicalActionCandidate",
+        "CapabilityManifest"
+      ],
+      "outputs": [
+        "ProviderSpecificBinding",
+        "WorldActionRequest"
+      ],
+      "invariant": "NO_PROVIDER_AUTHORITY",
+      "action": "REUSE"
+    },
+    {
+      "id": "KX_POST_ACTIVATION_POLICY",
+      "owner": "EXECUTION_ELIGIBILITY",
+      "reference": {
+        "repo": "Eaubin08/obsidia-x108-proofs",
+        "branch": "feat/obsidia-universal-cross-domain-conformance-v0",
+        "path": "periphery/world_calls/external_runtime_activation_policy_v0.py"
+      },
+      "maturity": "FOCUSED_SANDBOX_GREEN",
+      "inputs": [
+        "VerifiedKXDecision",
+        "ExplicitOperatorPolicy"
+      ],
+      "outputs": [
+        "BoundedExecutionEligibility"
+      ],
+      "invariant": "ALLOW_NOT_EQUAL_PERMISSION",
+      "action": "REUSE"
+    },
+    {
+      "id": "BOUNDED_EXECUTOR",
+      "owner": "EXECUTION_BOUNDARY",
+      "reference": {
+        "repo": "Eaubin08/obsidia-x108-proofs",
+        "branch": "feat/obsidia-universal-cross-domain-conformance-v0",
+        "path": "periphery/world_calls/bounded_connector_executor_v0.py"
+      },
+      "maturity": "FOCUSED_SANDBOX_GREEN",
+      "inputs": [
+        "SovereignTicket",
+        "ExactConnectorBinding"
+      ],
+      "outputs": [
+        "ExecutionReceipt",
+        "Replay"
+      ],
+      "invariant": "NO_REPLAY_REEXECUTION",
+      "action": "REUSE"
+    },
+    {
+      "id": "MONDE_NATIVE_READ_MODEL",
+      "owner": "PRESENTATION",
+      "reference": {
+        "repo": "Eaubin08/obsidia-x108-proofs",
+        "branch": "feat/obsidia-universal-cross-domain-conformance-v0",
+        "path": "periphery/native_ops/monde_native_read_model_v0.py"
+      },
+      "maturity": "FOCUSED_SANDBOX_GREEN",
+      "inputs": [
+        "PersistedCanonicalArtefacts"
+      ],
+      "outputs": [
+        "ReadonlyProjection"
+      ],
+      "invariant": "NO_OWNERSHIP_NO_ACTIONS",
+      "action": "ADAPT"
+    },
+    {
+      "id": "COMPANY_MODEL_C1",
+      "owner": "ORGANIZATION_CLAIMS",
+      "reference": {
+        "repo": "Eaubin08/obsidia-x108-proofs",
+        "branch": "feat/v01-c0-c1-company-model-contract-v0",
+        "path": "periphery/company_model_v0.py"
+      },
+      "maturity": "NEW_TEST_CANDIDATE",
+      "inputs": [
+        "ExplicitOrgBoundClaimGraph"
+      ],
+      "outputs": [
+        "HashedNonSovereignSnapshot"
+      ],
+      "invariant": "NO_TRUTH_NO_PERMISSION_NO_STATE_PERSISTENCE",
+      "action": "NEW"
+    }
+  ],
+  "unresolved": [
+    "Historic UDIP WorldState mandatory vs optional CSSA upstream_state_ref",
+    "Domain Pack 16-branch scaffold maturity is not runtime convergence",
+    "Post-KX permission is distinct from cognitive binder and capabilities",
+    "Company Model C1 remains explicit unverified claims with no real company discovery",
+    "No verified enterprise tenant identity, tenancy lifecycle or delegated access",
+    "No actual source ingestion or external writes in this phase"
+  ],
+  "next": "C2_ORGANIZATION_SOURCE_AND_PROVIDER_LIFECYCLE_AFTER_C1_PROOF"
+}
