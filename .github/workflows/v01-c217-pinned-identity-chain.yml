@@ -1,0 +1,18 @@
+name: v01-c217-pinned-identity-chain
+on:
+  push:
+    branches: [feat/v01-c217-pinned-signature-identity-chain-v0]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-chain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest cryptography
+      - run: python -m pytest -q tests/integration/test_v01_c217_pinned_identity_chain_v0.py tests/integration/test_v01_c216_offline_pinned_key_registry_v0.py tests/integration/test_v01_c215_offline_asymmetric_identity_fixture_v0.py

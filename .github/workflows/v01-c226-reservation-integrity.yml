@@ -1,0 +1,14 @@
+name: c226-reservation-integrity
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pytest cryptography
+      - run: python -m pytest -q tests/integration/test_v01_c226_reservation_integrity_audit_v0.py tests/integration/test_v01_c225_reservation_recovery_audit_v0.py tests/integration/test_v01_c224_reservation_lifecycle_v0.py

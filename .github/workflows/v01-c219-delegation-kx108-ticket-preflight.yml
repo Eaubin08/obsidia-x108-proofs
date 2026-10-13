@@ -1,0 +1,18 @@
+name: v01-c219-delegation-kx108-ticket-preflight
+on:
+  push:
+    branches: [feat/v01-c219-delegation-kx108-ticket-preflight-v0]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest cryptography
+      - run: python -m pytest -q tests/integration/test_v01_c219_delegation_kx108_ticket_preflight_v0.py tests/integration/test_v01_c218_identity_delegation_chain_fixture_v0.py tests/integration/test_v01_c28_approval_ticket_boundary_v0.py tests/integration/test_v01_c29_record_bound_ticket_fixture_v0.py

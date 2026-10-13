@@ -1,0 +1,14 @@
+name: c229-journal-writes
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pytest cryptography
+      - run: python -m pytest -q tests/integration/test_v01_c229_enforced_journal_writes_v0.py tests/integration/test_v01_c228_atomic_reservation_journal_v0.py
