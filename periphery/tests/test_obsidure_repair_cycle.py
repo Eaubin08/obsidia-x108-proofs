@@ -22,6 +22,7 @@ nettoyées en fin de test.
 """
 from __future__ import annotations
 
+import hashlib
 import shutil
 import sys
 import tempfile
@@ -329,6 +330,28 @@ def test_sandbox_rejects_invalid_json():
     try:
         assert v.status == "BLOCKED"
         assert "REPAIR_JSON_PARSE_ERROR" in [e["type"] for e in v.errors]
+    finally:
+        cleanup_repair_sandbox(v)
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        "VALUE = 1\nSECOND = 2\n",
+        "VALUE = 1\r\nSECOND = 2\r\n",
+    ],
+)
+def test_sandbox_materializes_candidate_bytes_without_newline_conversion(content):
+    p = RepairProposal(candidate_files=[_cand("periphery/math_core/zzz_probe.py", content)])
+    v = run_repair_sandbox_test(p, run_tests=False)
+    try:
+        artifact = v.tested_artifacts[0]
+        sandbox_file = Path(v.sandbox_dir) / "periphery/math_core/zzz_probe.py"
+        expected = content.encode("utf-8")
+
+        assert sandbox_file.read_bytes() == expected
+        assert artifact["sha256"] == hashlib.sha256(expected).hexdigest()
+        assert v.status == "PARTIAL"
     finally:
         cleanup_repair_sandbox(v)
 

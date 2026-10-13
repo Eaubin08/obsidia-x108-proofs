@@ -463,7 +463,7 @@ def test_repair_proposal(
         rel = str(cand.path).replace("\\", "/").lstrip("./")
         out = sb / rel
         out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(cand.full_content, encoding="utf-8")
+        out.write_bytes(cand.full_content.encode("utf-8"))
         written.append((rel, out))
         verdict.tested_artifacts.append({"path": rel, "sha256": _sha256_file(out)})
 

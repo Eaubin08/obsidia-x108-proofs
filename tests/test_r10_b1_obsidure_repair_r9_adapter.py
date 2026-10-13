@@ -200,6 +200,19 @@ def test_repair_proposal_and_tested_patch_substitution_rejected(repair_world):
     assert out["reason"] == "TESTED_PATCH_SUBSTITUTION"
 
 
+def test_repair_proposal_rejects_same_text_with_different_encoding(repair_world):
+    after = "value = 'é'\n"
+    request, proposal, c278, verdict = _material(repair_world, after=after)
+    verdict.tested_artifacts[0]["sha256"] = hashlib.sha256(
+        after.encode("utf-16-le")
+    ).hexdigest()
+
+    out = _adapt(repair_world, request, proposal, c278, verdict)
+
+    assert out["status"] == STATUS_HELD
+    assert out["reason"] == "TESTED_PATCH_SUBSTITUTION"
+
+
 def test_out_of_scope_protected_path_and_base_drift_rejected(repair_world):
     request, proposal, c278, verdict = _material(repair_world)
     proposal.candidate_files[0].path = "../escape.py"
