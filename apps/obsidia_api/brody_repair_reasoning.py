@@ -57,6 +57,7 @@ from periphery.agents.obsidure_reasoning_provider import (  # noqa: E402
 )
 from periphery.agents.obsidure_repair_contract import (  # noqa: E402
     ALLOWED_REPAIR_PREFIXES,
+    FailureMode,
     RepairCandidateFile,
     RepairProposal,
     RepairRequest,
@@ -278,7 +279,7 @@ class BrodyReasoningProvider(ReasoningProvider):
         sources = self._collect_sources(request, root)
 
         bounded_implementation_request = (
-            request.failure_mode == "NO_ARTIFACT_PRODUCED"
+            request.failure_mode == FailureMode.NO_ARTIFACT_PRODUCED
             and bool(request.objective.strip())
             and bool(request.repo_targets)
         )
@@ -374,19 +375,64 @@ class BrodyReasoningProvider(ReasoningProvider):
         # ── Aucun défaut fonctionnel défini → on refuse d'inventer ────────
         # Bounded implementation request -> native Obsidure handoff.
         # Brody structures the request but generates no source here.
-        if (
-            request.failure_mode == "NO_ARTIFACT_PRODUCED"
+        native_repair_candidate = (
+            request.failure_mode
+            in {
+                FailureMode.NO_ARTIFACT_PRODUCED,
+                FailureMode.SEMANTIC_REPAIR_REQUIRED,
+            }
             and request.objective.strip()
             and request.repo_targets
-        ):
+        )
+
+        if native_repair_candidate:
             engineering_spec = build_brody_engineering_spec(request, root)
 
             learned_code_state = derive_learned_desired_state(
                 engineering_spec.to_dict()
             )
 
+            explicit_desired_state = "DESIRED_STATE_JSON=" in request.objective
+            desired_state_ready = (
+                learned_code_state.status == "DESIRED_STATE_DERIVED"
+                or explicit_desired_state
+            )
+
+            if (
+                request.failure_mode == FailureMode.SEMANTIC_REPAIR_REQUIRED
+                and not desired_state_ready
+            ):
+                diagnosis.status = DiagnosisStatus.NEEDS_DIAGNOSTIC_CONTEXT
+                diagnosis.defect_class = (
+                    "SEMANTIC_REPAIR_REQUIRES_EXPLICIT_DESIRED_STATE"
+                )
+                diagnosis.confidence = "NONE"
+                diagnosis.findings.append({
+                    "type": "BRODY_ENGINEERING_SPEC",
+                    "spec": learned_code_state.engineering_spec,
+                })
+                diagnosis.missing_information = [
+                    "EXPLICIT_DESIRED_STATE_REQUIRED",
+                ]
+                diagnosis.missing_information.extend(
+                    str(item)
+                    for item in learned_code_state.unknowns
+                    if str(item) != "EXPLICIT_DESIRED_STATE_REQUIRED"
+                )
+                diagnosis.notes = (
+                    "SEMANTIC_REPAIR_REQUIRED reached Brody, but no explicit "
+                    "or learned desired state was available. Native repair "
+                    "handoff remains held; no source, proof, or authority is "
+                    "invented."
+                )
+                return diagnosis
+
             diagnosis.status = DiagnosisStatus.NEEDS_NATIVE_ENGINE
-            diagnosis.defect_class = "IMPLEMENTATION_REQUEST"
+            diagnosis.defect_class = (
+                "IMPLEMENTATION_REQUEST"
+                if request.failure_mode == FailureMode.NO_ARTIFACT_PRODUCED
+                else "SEMANTIC_REPAIR_NATIVE_REQUEST"
+            )
             diagnosis.confidence = engineering_spec.confidence
             diagnosis.findings.append({
                 "type": "BRODY_ENGINEERING_SPEC",

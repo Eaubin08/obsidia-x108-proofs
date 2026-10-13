@@ -96,3 +96,100 @@ def test_reasoning_cycle_hands_brody_spec_to_native_obsidure(tmp_path: Path):
     assert handoffs[0]["result"]["missing_capabilities"] == []
     assert handoffs[0]["result"]["native_plan"] is not None
     assert handoffs[0]["result"]["external_engine_called"] is False
+
+
+def test_semantic_repair_with_explicit_target_state_uses_native_obsidure(
+    tmp_path: Path,
+):
+    target = tmp_path / "apps" / "obsidia_api" / "semantic_probe.py"
+    target.parent.mkdir(parents=True)
+    target.write_text("VALUE = 1\n", encoding="utf-8")
+
+    request = RepairRequest(
+        objective="implement bounded semantic calibration for unknown terms",
+        failure_mode="SEMANTIC_REPAIR_REQUIRED",
+        repo_targets=["apps/obsidia_api/semantic_probe.py"],
+        tests_hint=["semantic calibration test"],
+    )
+
+    outcome = run_reasoning_cycle(
+        request,
+        providers=[BrodyReasoningProvider()],
+        allow_external=False,
+        repo_root=tmp_path,
+    )
+
+    assert outcome.proposal is not None
+    assert outcome.proposal.engine == "OBSIDURE_NATIVE_REPAIR_PROPOSAL_V1"
+    assert outcome.diagnosis is not None
+    assert outcome.diagnosis.status == DiagnosisStatus.NEEDS_NATIVE_ENGINE
+    assert outcome.diagnosis.defect_class == "SEMANTIC_REPAIR_NATIVE_REQUEST"
+
+    candidate = outcome.proposal.candidate_files[0]
+    assert candidate.path == "apps/obsidia_api/semantic_probe.py"
+    assert candidate.change_kind == "MODIFY"
+    assert "calibrate_semantics" in candidate.full_content
+
+    # The native route remains proposal-only.
+    assert target.read_text(encoding="utf-8") == "VALUE = 1\n"
+
+
+def test_semantic_repair_without_target_state_holds_without_proposal(
+    tmp_path: Path,
+):
+    target = tmp_path / "apps" / "obsidia_api" / "semantic_probe.py"
+    target.parent.mkdir(parents=True)
+    target.write_text("VALUE = 1\n", encoding="utf-8")
+
+    request = RepairRequest(
+        objective="replace the old behavior with the new behavior",
+        failure_mode="SEMANTIC_REPAIR_REQUIRED",
+        repo_targets=["apps/obsidia_api/semantic_probe.py"],
+        tests_hint=["semantic test"],
+    )
+
+    outcome = run_reasoning_cycle(
+        request,
+        providers=[BrodyReasoningProvider()],
+        allow_external=False,
+        repo_root=tmp_path,
+    )
+
+    assert outcome.proposal is None
+    assert outcome.diagnosis is not None
+    assert outcome.diagnosis.status == DiagnosisStatus.NEEDS_DIAGNOSTIC_CONTEXT
+    assert (
+        outcome.diagnosis.defect_class
+        == "SEMANTIC_REPAIR_REQUIRES_EXPLICIT_DESIRED_STATE"
+    )
+    assert "EXPLICIT_DESIRED_STATE_REQUIRED" in outcome.diagnosis.missing_information
+
+
+def test_semantic_repair_rejects_out_of_scope_native_candidate(
+    tmp_path: Path,
+):
+    target = tmp_path / "docs" / "semantic_probe.py"
+    target.parent.mkdir(parents=True)
+    target.write_text("VALUE = 1\n", encoding="utf-8")
+
+    request = RepairRequest(
+        objective="implement bounded semantic calibration for unknown terms",
+        failure_mode="SEMANTIC_REPAIR_REQUIRED",
+        repo_targets=["docs/semantic_probe.py"],
+        tests_hint=["semantic calibration test"],
+    )
+
+    outcome = run_reasoning_cycle(
+        request,
+        providers=[BrodyReasoningProvider()],
+        allow_external=False,
+        repo_root=tmp_path,
+    )
+
+    assert outcome.proposal is None
+    assert outcome.diagnosis is not None
+    assert outcome.diagnosis.defect_class == "PROVIDER_PROPOSAL_REJECTED"
+    assert any(
+        finding.get("type") == "PROPOSAL_VALIDATION_FAILED"
+        for finding in outcome.diagnosis.findings
+    )
