@@ -123,7 +123,7 @@ The request carries no provider selector, role policy, clock, memory writer, act
 
 - `ABSENT != GLOBALLY_FALSE`; `ABSENT = NOT_FOUND_WITHIN_DECLARED_INSPECTION_SCOPE`
 - The declared inspection scope of a request is exactly its `materials`; `inspection_scope_ref` names it.
-- If `inspection_scope_ref` is absent, no item may carry `ABSENT_IN_SCOPE` (→ `INVALID_INTEGRATION_STATUS`, §23); `UNDETERMINED` is used instead.
+- If `inspection_scope_ref` is absent, no contributed item may carry `ABSENT_IN_SCOPE` (→ `INVALID_INTEGRATION_STATUS`, checked per contributed item before merge, §22 step 3); `UNDETERMINED` is used instead.
 
 ## 12. IntegrationStatus
 
@@ -154,7 +154,7 @@ Enum, exactly:
 
 Shape rules (construction, `INVALID_DERIVATION`): EVIDENCE refs are only MATERIAL or SOURCE; INFERENCE refs are only MATERIAL or ITEM and at least one ref (derivation basis). Inference with no basis is invalid.
 
-Resolution rules (lifecycle step 5, `INVALID_SUPPORT_REFERENCE`): MATERIAL → a `material_id` of the request; SOURCE → a `source_ref` of some request material; ITEM → the `item_id` of an item present in the contributions. No dangling reference is accepted.
+Resolution rules (lifecycle step 6, `INVALID_SUPPORT_REFERENCE`): MATERIAL → a `material_id` of the request; SOURCE → a `source_ref` of some request material; ITEM → the `item_id` of an item present in the contributions. No dangling reference is accepted.
 
 - `EVIDENCE != INFERENCE`; `INFERENCE != VERIFIED`; `EVIDENCE != VERIFIED`
 
@@ -166,7 +166,7 @@ Resolution rules (lifecycle step 5, `INVALID_SUPPORT_REFERENCE`): MATERIAL → a
 |---|---|---|---|
 | `item_kind` | NAMESPACED_KIND | required | yes |
 | `content` | M32 `TypedCognitiveDatum` | required | yes |
-| `supports` | tuple[ReconstructionSupport, ...] | 1..`max_supports_per_unit` (bound checked at lifecycle step 4); stored sorted by canonical JSON | no (aggregated, §21) |
+| `supports` | tuple[ReconstructionSupport, ...] | 1..`max_supports_per_unit` (bound checked at lifecycle step 5); stored sorted by canonical JSON | no (aggregated, §21) |
 | `integration_status` | IntegrationStatus | required | no |
 | `item_id` | HEX64 | derived at construction (§19) | — |
 
@@ -184,7 +184,7 @@ Shape violations → `INVALID_RECONSTRUCTION_ITEM` at construction. No field nam
 | `supports` | tuple[ReconstructionSupport, ...] | 1..`max_supports_per_unit` | no (aggregated) |
 | `relation_id` | HEX64 | derived (§19) | — |
 
-Shape violations (kind, self-relation, missing supports) → `INVALID_RECONSTRUCTION_RELATION` at construction; unknown endpoints → `INVALID_RELATION_REFERENCE` at step 7.
+Shape violations (kind, self-relation, missing supports) → `INVALID_RECONSTRUCTION_RELATION` at construction; unknown endpoints → `INVALID_RELATION_REFERENCE` at lifecycle step 8.
 
 Relations carry no transitive closure, truth, authority or memory propagation. `RELATION_SET != ARM_GRAPH`; `GRAPH_REQUIRED=NO`; a relation set may be projected as a graph downstream; M33 V1 defines no graph execution. `ReconstructionRelation != CognitivePath`.
 
@@ -227,7 +227,7 @@ Construction violations → `INVALID_CONTRIBUTION`. M33 does not choose contribu
 
 `ReconstructionIssue` (immutable): `issue_kind`, `subject_ids` (tuple of HEX64 item/relation ids or material ids; may be empty; stored sorted, duplicates removed), `detail` (NAMESPACED_KIND or absent; descriptive). Construction violations → `INVALID_RECONSTRUCTION_ISSUE`.
 
-Issues come from: (a) contributors (`contribution.issues`); (b) the engine, deterministically: every relation of kind `arm.contradicts` yields `CONTRADICTORY_SUPPORT` with `subject_ids` = its two endpoint ids; an item proposed by several contributions with different `integration_status` yields `AMBIGUOUS_RECONSTRUCTION` with `subject_ids=(item_id,)` and the item's status becomes `UNDETERMINED`.
+Issues come from: (a) contributors (`contribution.issues`); (b) the engine, deterministically: every relation of kind `arm.contradicts` yields `CONTRADICTORY_SUPPORT` with `subject_ids` = its two endpoint ids; two or more contributed items with the same `item_id` (in the same or in different contributions, §21) with different `integration_status` yield `AMBIGUOUS_RECONSTRUCTION` with `subject_ids=(item_id,)` and the item's status becomes `UNDETERMINED`.
 
 Issues coexist with RECONSTRUCTED or PARTIAL results (§24). Contradictory items are both preserved; M33 never chooses a branch. `CONTRADICTION != AUTO_RESOLUTION`; `CONTRADICTION != FALSE`; `CONTRADICTION_DOES_NOT_GRANT_AUTHORITY=YES`. `UNKNOWN != FALSE`; `UNRESOLVED != ABSENT_IN_SCOPE`; `UNRESOLVED != FAILED_RUNTIME`.
 
@@ -281,20 +281,29 @@ Materials by `material_id`; support refs by (`ref_kind`, `ref_id`); supports, is
 
 Single public V1 surface: `reconstruct(request: ReconstructionRequest, contributions: tuple[ReconstructionContribution, ...]) -> ReconstructionResult`. Synchronous, no background work, no recursion beyond the finite derivation check.
 
-Order (first failure determines the outcome; steps 1–7 raise `ReconstructionValidationError`, nothing is produced, no side effect occurs):
+Order. Steps 1–8 are structural validation: they only raise `ReconstructionValidationError`, the first failure determines the error, nothing is produced and no side effect occurs. They apply to ALL supplied contributions, whatever their `ContributionStatus`.
 
 1. `request` is a `ReconstructionRequest` and every contribution a `ReconstructionContribution` (else `INVALID_RECONSTRUCTION_REQUEST` / `INVALID_CONTRIBUTION`).
 2. Contribution ids unique (`INVALID_CONTRIBUTION`).
-3. Collect items/relations/issues of `COMPLETED` contributions; deduplicate per §21.
-4. Bounds: distinct items ≤ `max_items`, distinct relations ≤ `max_relations`, supports per merged unit ≤ `max_supports_per_unit` (`RECONSTRUCTION_BOUND_EXCEEDED`).
-5. Resolve every support ref (§13) (`INVALID_SUPPORT_REFERENCE`).
-6. Derivation graph: item → items referenced by its INFERENCE supports; any cycle → `DERIVATION_CYCLE`; longest chain > `max_derivation_depth` → `RECONSTRUCTION_BOUND_EXCEEDED`. Descriptive relation cycles are allowed.
-7. Resolve relation endpoints (`INVALID_RELATION_REFERENCE`); `ABSENT_IN_SCOPE` without `inspection_scope_ref` → `INVALID_INTEGRATION_STATUS`.
-8. Derive engine issues (§17) and status (§24).
-9. Compute identities (§19) and provenance.
-10. Return the immutable result.
+3. Pre-merge integration-status check: every contributed `ReconstructionItem` carrying `ABSENT_IN_SCOPE`, in every contribution, is checked individually against §11; if the request has no `inspection_scope_ref` → `INVALID_INTEGRATION_STATUS`. This happens before any merge, so a later merge into `UNDETERMINED` can never hide an invalid `ABSENT_IN_SCOPE`.
+4. Collect items/relations/issues of `COMPLETED` contributions; merge per §21. (`FAILED_RUNTIME` contributions carry no items or relations — enforced at their construction, §15.)
+5. Bounds: distinct items ≤ `max_items`, distinct relations ≤ `max_relations`, supports per merged unit ≤ `max_supports_per_unit` (`RECONSTRUCTION_BOUND_EXCEEDED`).
+6. Resolve every support ref (§13) (`INVALID_SUPPORT_REFERENCE`).
+7. Derivation graph: item → items referenced by its INFERENCE supports; any cycle → `DERIVATION_CYCLE`; longest chain > `max_derivation_depth` → `RECONSTRUCTION_BOUND_EXCEEDED`. Descriptive relation cycles are allowed.
+8. Resolve relation endpoints (`INVALID_RELATION_REFERENCE`).
+9. Only now, after steps 1–8 succeeded: evaluate contribution statuses; if any contribution is `FAILED_RUNTIME`, status is `FAILED_RUNTIME` (§24 rule 1).
+10. Derive engine issues (§17) and status (§24).
+11. Compute identities (§19) and provenance.
+12. Return the immutable result.
 
-If any contribution is `FAILED_RUNTIME`, or an unexpected internal exception occurs after step 1, the result is returned with `status=FAILED_RUNTIME` (§24); exceptions are not propagated.
+Precedence (frozen): a validation defect anywhere in the request or in any contribution always raises its `ReconstructionValidationError`, even if some other contribution is `FAILED_RUNTIME`; `FAILED_RUNTIME` is reachable only after structural validation has succeeded.
+
+- `VALIDATION_ERROR_PRECEDES_FAILED_RUNTIME=YES`
+- `FAILED_RUNTIME_SUPPRESSES_VALIDATION_ERRORS=NO`
+- `FAILED_CONTRIBUTION_SKIPS_OTHER_VALIDATION=NO`
+- `ABSENT_IN_SCOPE_VALIDATED_PRE_MERGE=YES`; `MERGE_CAN_HIDE_INVALID_ABSENT_IN_SCOPE=NO`
+
+An unexpected internal exception during steps 9–11 yields a result with `status=FAILED_RUNTIME` (§24); it is not propagated.
 
 ## 23. Error taxonomy (sole origins)
 
@@ -306,13 +315,13 @@ If any contribution is `FAILED_RUNTIME`, or an unexpected internal exception occ
 | `INVALID_RECONSTRUCTION_ITEM` | ReconstructionItem construction |
 | `INVALID_RECONSTRUCTION_RELATION` | ReconstructionRelation / Endpoint construction |
 | `INVALID_RECONSTRUCTION_ISSUE` | ReconstructionIssue construction |
-| `INVALID_CONTRIBUTION` | ReconstructionContribution / Contributor construction; lifecycle steps 1–2 |
+| `INVALID_CONTRIBUTION` | ReconstructionContribution / Contributor construction (including any item or relation inside a `FAILED_RUNTIME` contribution); lifecycle steps 1–2 |
 | `INVALID_EFFECTS_CONTRACT` | ReconstructionEffectsContract construction |
-| `RECONSTRUCTION_BOUND_EXCEEDED` | lifecycle steps 4 and 6 (depth) |
-| `INVALID_SUPPORT_REFERENCE` | lifecycle step 5 |
-| `DERIVATION_CYCLE` | lifecycle step 6 |
-| `INVALID_RELATION_REFERENCE` | lifecycle step 7 |
-| `INVALID_INTEGRATION_STATUS` | lifecycle step 7 |
+| `RECONSTRUCTION_BOUND_EXCEEDED` | lifecycle steps 5 and 7 (depth) |
+| `INVALID_SUPPORT_REFERENCE` | lifecycle step 6 |
+| `DERIVATION_CYCLE` | lifecycle step 7 |
+| `INVALID_RELATION_REFERENCE` | lifecycle step 8 |
+| `INVALID_INTEGRATION_STATUS` | lifecycle step 3, per contributed item, before merge |
 | `INVALID_RECONSTRUCTION_RESULT` | direct ReconstructionResult construction |
 
 Validation errors ≠ statuses ≠ FAILED_RUNTIME. M32 errors raised while building M32 datums keep their M32 codes.
@@ -321,7 +330,7 @@ Validation errors ≠ statuses ≠ FAILED_RUNTIME. M32 errors raised while build
 
 Evaluated in order:
 
-1. `FAILED_RUNTIME` if any contribution is `FAILED_RUNTIME` or an unexpected internal failure occurred after validation began. Then `items=()`, `relations=()`, `issues=()`; diagnostics in provenance only.
+1. `FAILED_RUNTIME` if, after lifecycle steps 1–8 succeeded, any contribution is `FAILED_RUNTIME` or an unexpected internal failure occurred in steps 9–11. This applies even if other contributions are `COMPLETED` (fail-closed: their items are discarded). Then `items=()`, `relations=()`, `issues=()`; diagnostics in provenance only.
 2. `INSUFFICIENT_MATERIAL` if zero items result (e.g. empty materials, or contributions produced no item). Issues are kept.
 3. `PARTIAL` if at least one issue of kind `UNRESOLVED_REFERENCE`, `AMBIGUOUS_RECONSTRUCTION` or `INSUFFICIENT_MATERIAL` exists.
 4. `RECONSTRUCTED` otherwise (`CONTRADICTORY_SUPPORT` issues may be present).
@@ -391,7 +400,7 @@ M34 Biology Patterns; seven-fluxes runtime; COMOS; cross-domain transfer; long-l
 | R2 | M32-typed bounded input | material with M32 datum constructs; request with materials constructs | non-datum payload → `INVALID_MATERIAL`; duplicate material ids → `INVALID_RECONSTRUCTION_REQUEST` | wrong/no error | 9, 10 |
 | R3 | ReconstructionItem / N2 | item constructs, `item_id` HEX64 | module public names contain no `Candidate`; no B8 import in `app/reconstruction/m33` (AST) | name or import found | 14, 27 |
 | R4 | Evidence vs inference | EVIDENCE→MATERIAL and INFERENCE→ITEM supports construct | EVIDENCE→ITEM and INFERENCE with no refs → `INVALID_DERIVATION`; kind preserved after aggregation | wrong code / kind changed | 13, 21 |
-| R5 | Scope-bounded integration status | `ABSENT_IN_SCOPE` accepted when request has `inspection_scope_ref` | same without scope → `INVALID_INTEGRATION_STATUS`; enum has exactly 4 values | accepted | 11, 12 |
+| R5 | Scope-bounded integration status | `ABSENT_IN_SCOPE` accepted when request has `inspection_scope_ref` | same without scope → `INVALID_INTEGRATION_STATUS`; enum has exactly 4 values; B2 oracle: request without `inspection_scope_ref`, contribution A has item X `ABSENT_IN_SCOPE`, contribution B has the same item X `EVOKED_NOT_LOCKED` → `INVALID_INTEGRATION_STATUS` raised (no result, no `UNDETERMINED` merge) | accepted, or merged into UNDETERMINED | 11, 12, 22 |
 | R6 | Relations without mandatory graph | relation constructs; relation cycle A→B→A accepted | self-relation → `INVALID_RECONSTRUCTION_RELATION`; unknown endpoint → `INVALID_RELATION_REFERENCE`; no graph type exported | accepted / graph present | 14, 22 |
 | R7 | Contradiction preserved | `arm.contradicts` relation → both items kept + `CONTRADICTORY_SUPPORT` issue, status `RECONSTRUCTED` | item count reduced or one item dropped | merge observed | 17, 24 |
 | R8 | Unknown/unresolved preserved | contributor `UNRESOLVED_REFERENCE` issue → status `PARTIAL`, issue kept | issue dropped or status RECONSTRUCTED | wrong status | 17, 24 |
@@ -408,7 +417,7 @@ M34 Biology Patterns; seven-fluxes runtime; COMOS; cross-domain transfer; long-l
 | R19 | No durable memory / Graphiti | effects all False | AST: no file/DB/network/Graphiti imports (`open` for write, `sqlite3`, `socket`, `requests`, graphiti) | found | 16, 29 |
 | R20 | No world model / calibration / selection | — | no confidence/utility/score fields in any public type | found | 15, 30 |
 | R21 | Validation/error taxonomy | each §23 code raised at its origin by a targeted bad input | wrong code or wrong phase | mismatch | 23 |
-| R22 | Partial / insufficient / runtime failure | empty materials → `INSUFFICIENT_MATERIAL`; `FAILED_RUNTIME` contribution → `FAILED_RUNTIME` with empty items | malformed request never yields a status; insufficient never raises | mismatch | 22, 24 |
+| R22 | Partial / insufficient / runtime failure | empty materials → `INSUFFICIENT_MATERIAL`; `FAILED_RUNTIME` contribution → `FAILED_RUNTIME` with empty items | malformed request never yields a status; insufficient never raises; B1 oracle: contribution A valid `FAILED_RUNTIME`, contribution B `COMPLETED` with an INFERENCE support referencing an unknown item id → `INVALID_SUPPORT_REFERENCE` raised, not a `FAILED_RUNTIME` result (same with a derivation cycle → `DERIVATION_CYCLE`) | mismatch, or FAILED_RUNTIME returned | 22, 24 |
 | R23 | Effects/authority | `RECONSTRUCTION_EFFECTS` all False | constructing effects with True → `INVALID_EFFECTS_CONTRACT`; no ACT/KX108/Binder imports | accepted / found | 16, 31 |
 | R24 | Public surface isolation | sentinel PASS; protected diff 0 | §34 collision check fires on a synthetic `class CognitivePath` | collision / diff | 33, 34 |
 
