@@ -41,16 +41,87 @@ def _as_list(value: Any) -> list[Any]:
     return [value]
 
 
+def _mapping(value: Any) -> Mapping[str, Any]:
+    return value if isinstance(value, Mapping) else {}
+
+
+def _print_scalar(key: str, value: Any) -> None:
+    if value not in (None, "", [], {}):
+        print(f"{key}={value}")
+
+
+def _print_refs(label: str, values: Any) -> None:
+    refs = [str(item) for item in _as_list(values) if str(item)]
+    if refs:
+        print(f"{label}={','.join(dict.fromkeys(refs))}")
+
+
+def _emit_operator_projection(payload: Mapping[str, Any]) -> None:
+    print(f"status={payload.get('status') or payload.get('state') or 'UNKNOWN'}")
+    for key in ("state", "reason", "mission_id", "checkpoint_id", "ticket_id", "unique_next_ticket_id"):
+        _print_scalar(key, payload.get(key))
+
+    hold = _mapping(payload.get("hold"))
+    _print_scalar("hold_reason", hold.get("reason") or hold.get("hold_reason"))
+
+    project = _mapping(payload.get("project")) or _mapping(_mapping(payload.get("pre_authorization_inspection")).get("project"))
+    for key in ("repository_identity", "worktree", "branch", "base_sha"):
+        _print_scalar(key, project.get(key))
+
+    for ticket in payload.get("tickets") or ():
+        if not isinstance(ticket, Mapping):
+            continue
+        prefix = f"ticket[{ticket.get('ticket_id') or 'UNKNOWN'}]"
+        _print_scalar(prefix + ".phase", ticket.get("phase"))
+        _print_scalar(prefix + ".status", ticket.get("status"))
+        _print_scalar(prefix + ".hold_reason", ticket.get("hold_reason"))
+        _print_scalar(prefix + ".action_evidence_id", ticket.get("action_evidence_id"))
+        _print_refs(prefix + ".evidence_refs", ticket.get("evidence_refs"))
+
+    inspection = _mapping(payload.get("pre_authorization_inspection"))
+    _print_scalar("patch_hash", inspection.get("patch_hash") or payload.get("prepared_patch_hash"))
+    _print_scalar("execution_authority_hash", inspection.get("execution_authority_hash") or payload.get("execution_authority_hash"))
+
+    for key in ("execution_phase", "action_evidence_id", "execution_attempt_id", "authority_reference"):
+        _print_scalar(key, payload.get(key))
+
+    r10 = _mapping(payload.get("r10_outcome_feedback"))
+    if r10:
+        _print_scalar("r10.classification", payload.get("derived_outcome_classification") or r10.get("derived_outcome_classification"))
+        _print_scalar("r10.recommendation", payload.get("recommendation") or r10.get("recommendation"))
+        _print_scalar("r10.limited_verdict", payload.get("limited_verdict"))
+        _print_refs("r10.evidence_limits", r10.get("r8_evidence_limits"))
+        _print_scalar("r10.r8_replay_verdict", r10.get("r8_replay_verdict"))
+        _print_scalar("r10.r8_decision_verdict", r10.get("r8_decision_verdict"))
+        _print_scalar("r10.r8_reconciliation_status", r10.get("r8_reconciliation_status"))
+
+    evidence = _mapping(payload.get("evidence"))
+    _print_refs("receipt_refs", evidence.get("receipt_refs") or evidence.get("action_evidence_refs"))
+    _print_refs("replay_refs", evidence.get("replay_refs"))
+
+    binder = _mapping(payload.get("binder_replay")) or _mapping(inspection.get("binder_replay"))
+    _print_scalar("binder.status", binder.get("status") or binder.get("replay_status") or binder.get("binder_replay_status"))
+    _print_refs("binder.limitations", binder.get("limitations") or binder.get("evidence_limits"))
+
+    verification = _mapping(payload.get("verification")) or _mapping(inspection.get("verification"))
+    _print_scalar("verification.level", verification.get("level") or verification.get("verification_level"))
+    if verification.get("ticket_levels"):
+        print("verification.ticket_levels=" + json.dumps(verification["ticket_levels"], ensure_ascii=False, sort_keys=True))
+
+    completion = _mapping(payload.get("completion"))
+    _print_scalar("completion.status", completion.get("status"))
+    _print_scalar("completion.proof_ref", completion.get("proof_ref") or completion.get("completion_proof_ref"))
+
+    for key in ("execution_observed_is_verified", "http_success_is_closure", "verified", "closed", "mission_done_verified"):
+        if key in payload:
+            print(f"{key}={payload.get(key)}")
+
+
 def _emit(payload: Mapping[str, Any], *, as_json: bool) -> None:
     if as_json:
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
         return
-    print(f"status={payload.get('status') or payload.get('state') or 'UNKNOWN'}")
-    if payload.get("reason"):
-        print(f"reason={payload['reason']}")
-    for key in ("mission_id", "checkpoint_id", "ticket_id", "unique_next_ticket_id"):
-        if payload.get(key):
-            print(f"{key}={payload[key]}")
+    _emit_operator_projection(payload)
 
 
 def _fail(reason: str, *, as_json: bool, status: str = "HOLD", **extra: Any) -> int:
