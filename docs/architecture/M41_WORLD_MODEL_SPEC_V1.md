@@ -44,7 +44,7 @@ Out of scope for V1: resolving references, importing or wrapping MMonde, F12, F1
 ## 5. Common validation rules
 
 - `NAMESPACED_TOKEN`: a string matching `^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+$` (at least one dot; lowercase ASCII letters, digits, underscores).
-- `OPAQUE_STRING`: a `str` (never `bytes` or another type) that is non-empty after NFC normalization, contains no NUL character, and is stored NFC-normalized.
+- `OPAQUE_STRING`: a `str` (never `bytes` or another type) that, after NFC normalization, is non-empty and contains at least one non-whitespace character, contains no NUL character, and is stored NFC-normalized. Validity condition: `isinstance(value, str) and unicodedata.normalize("NFC", value).strip() != ""` (plus the NUL rule). `strip()` is used only to test validity: the stored value is the NFC-normalized string with its whitespace unchanged.
 - Booleans are never accepted where an integer or number is required (`type(v) is bool` is rejected).
 - Every sequence field is stored as a `tuple`; any input list or tuple is copied; mutable elements are rejected.
 - Mapping inputs are never accepted for sequence fields.
@@ -250,7 +250,7 @@ Negative matrix:
 
 | Case | Expected |
 |---|---|
-| empty or whitespace-only `ref_id`; `ref_kind` without a dot; uppercase `ref_kind`; `bytes` values | `M41_INVALID_REF` |
+| empty or whitespace-only `ref_id` (`""`, `"   "`, `"\t\n"`); `ref_kind` without a dot; uppercase `ref_kind`; `bytes` values | `M41_INVALID_REF` (a `ref_id` such as `"valid"` is accepted) |
 | unknown `hypothesis_kind` | `M41_INVALID_KIND` |
 | empty `material_refs` | `M41_MISSING_MATERIAL` |
 | `modality_label` not namespaced | `M41_INVALID_MODALITY` |
