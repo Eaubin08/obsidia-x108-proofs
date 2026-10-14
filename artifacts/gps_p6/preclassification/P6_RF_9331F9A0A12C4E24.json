@@ -1,0 +1,21 @@
+﻿{
+    "artifact":  "gps_p6_preclassification_audit_v0",
+    "status":  "OPAQUE_CANDIDATE_PREPARED_NOT_ADMITTED",
+    "opaque_case_id":  "P6_RF_9331F9A0A12C4E24",
+    "rf_artifact_sha256":  "9331f9a0a12c4e241bfceda2fdde3d57c72528b4111a59bf526682473907b002",
+    "rf_size_bytes":  29999832000,
+    "dataset_split":  "HELD_OUT_CANDIDATE",
+    "truth_or_reference_present":  false,
+    "truth_or_reference_visible_to_classifier":  false,
+    "source_filename_exposed_to_classifier":  false,
+    "preclassification_only":  true,
+    "link_mode":  "HARDLINK",
+    "decision_authority":  "KX108_ONLY",
+    "allowed_to_decide":  false,
+    "allowed_to_act":  false,
+    "emits_act":  false,
+    "emits_verdict":  false,
+    "memory_write":  false,
+    "kernel_mutation":  false,
+    "x108_mutation":  false
+}
