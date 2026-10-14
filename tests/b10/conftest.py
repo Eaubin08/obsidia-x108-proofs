@@ -1,4 +1,3 @@
-"""B10 RED test fixtures."""
 from __future__ import annotations
 import pytest
 from app.knowledge.b8.core import (
@@ -18,19 +17,15 @@ from tests.b10._harness import (
     B10DurableCommit,
     SpecFixtureGapRecord,
     SpecFixtureGapPartitionBundle,
-    _LazyB10Adapter,
 )
 
 _FRAME = TemporalFrameRef(FRAME_ID)
 
 
 @pytest.fixture
-def b10_adapter():
-    """Lazy B10 adapter: fixture setup always succeeds.
-    First attribute access in test body triggers get_adapter().
-    AssertionError from test body = FAILED (M33 pattern, not ERROR).
-    """
-    return _LazyB10Adapter()
+def b10_adapter(tmp_path):
+    from app.knowledge.b10.persistence import B10PersistenceAdapter
+    return B10PersistenceAdapter(str(tmp_path / "b10_test.db"))
 
 
 @pytest.fixture
@@ -81,7 +76,6 @@ def b10_single_record_commit(b10_claim_a, b10_record_candidate, b10_auth_ref):
 
 @pytest.fixture
 def b10_supersession_commit(b10_claim_a, b10_auth_ref):
-    """Synthetic T9 bundle commit -- structurally valid for B10 atomicity testing."""
     old_claim = b10_claim_a
     new_claim = KnowledgeClaim(
         lineage_id="b10_test_lineage_superseding",
@@ -163,7 +157,6 @@ def b10_supersession_commit(b10_claim_a, b10_auth_ref):
 
 @pytest.fixture
 def gap_bundle_spec_fixture():
-    """Normative spec fixture for GapPartitionBundle (SPEC_FIXTURE_NOT_RUNTIME_PRODUCED)."""
     original = SpecFixtureGapRecord(
         gap_id="b8gap_test_original_001",
         slot_id=SLOT_A,
