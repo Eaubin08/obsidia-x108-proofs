@@ -768,3 +768,67 @@ def test_ids_are_unprefixed_lowercase_hex64():
     a, b = two_members()
     s = hset((a, b))
     assert is_hex64(a.hypothesis_id) and is_hex64(s.set_id)
+
+
+# ---------------------------------------------------------------------------
+# NB1 hardening — float payloads inside `content` must use M32 canonical JSON (RFC 8785 numbers),
+# not Python json.dumps formatting. Expected vectors are built from literal RFC 8785 number tokens
+# written by hand ("1" for 1.0, "1e-7" for 1e-7, "0.5"), substituted into the independent oracle's
+# canonical preimage; neither the runtime nor M32 nor json number formatting produces the expected value.
+# ---------------------------------------------------------------------------
+
+RFC8785_LITERALS = {"__F_ONE__": "1", "__F_TINY__": "1e-7", "__F_HALF__": "0.5"}
+
+
+def oracle_float_hypothesis_id(placeholder_value, materials, modality="mmonde.observed"):
+    """Hypothesis id whose content value contains placeholders replaced by literal RFC 8785 tokens."""
+    pre = {
+        "schema_version": "m41.world_state_hypothesis.v1",
+        "hypothesis_kind": STATE,
+        "presumed_referent": REF("sens.entity_ref", "ball-1"),
+        "content": DATUM(placeholder_value, dtype="arm.measurement"),
+        "material_refs": ref_sorted(list(materials)),
+        "modality_label": modality,
+        "contradiction_refs": [],
+        "unknowns": [],
+    }
+    text = canon(pre)
+    for placeholder, literal in RFC8785_LITERALS.items():
+        text = text.replace('"' + placeholder + '"', literal)
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def test_float_oracle_literals_differ_from_json_dumps():
+    # Oracle self-check (passes at RED): the RFC 8785 literals are not what json.dumps would emit.
+    assert json.dumps(1.0) == "1.0" and RFC8785_LITERALS["__F_ONE__"] == "1"
+    assert json.dumps(1e-7) == "1e-07" and RFC8785_LITERALS["__F_TINY__"] == "1e-7"
+
+
+def test_float_content_one_point_zero_uses_canonical_number():
+    h = hyp(content=datum({"x": 1.0}, dtype="arm.measurement"), materials=(ref("k.a", "f1"),))
+    assert h.hypothesis_id == oracle_float_hypothesis_id({"x": "__F_ONE__"}, [REF("k.a", "f1")])
+
+
+def test_float_content_1e_minus_7_uses_canonical_number():
+    h = hyp(content=datum({"y": 1e-7}, dtype="arm.measurement"), materials=(ref("k.a", "f2"),))
+    assert h.hypothesis_id == oracle_float_hypothesis_id({"y": "__F_TINY__"}, [REF("k.a", "f2")])
+
+
+def test_float_content_nested_list_uses_canonical_numbers():
+    h = hyp(content=datum({"z": [1.0, 1e-7, 0.5]}, dtype="arm.measurement"), materials=(ref("k.a", "f3"),))
+    exp = oracle_float_hypothesis_id({"z": ["__F_ONE__", "__F_TINY__", "__F_HALF__"]}, [REF("k.a", "f3")])
+    assert h.hypothesis_id == exp
+
+
+def test_float_content_one_point_zero_and_int_one_share_canonical_identity():
+    # RFC 8785 serializes 1.0 and 1 identically; the content identity therefore coincides.
+    a = hyp(content=datum({"x": 1.0}, dtype="arm.measurement"), materials=(ref("k.a", "f4"),))
+    b = hyp(content=datum({"x": 1}, dtype="arm.measurement"), materials=(ref("k.a", "f4"),))
+    assert a.hypothesis_id == b.hypothesis_id
+
+
+def test_float_rank_confidence_still_excluded_with_float_content():
+    base = hyp(content=datum({"y": 1e-7}, dtype="arm.measurement"), materials=(ref("k.a", "f5"),))
+    other = hyp(content=datum({"y": 1e-7}, dtype="arm.measurement"), materials=(ref("k.a", "f5"),),
+                rank=3, confidence=0.75)
+    assert base.hypothesis_id == other.hypothesis_id
