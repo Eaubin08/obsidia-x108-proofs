@@ -2,7 +2,7 @@
 
 Branch: `reconcile/obsidia-x108-proofs-v1`
 Dates: 2026-10-13 (phase 0, stack A), 2026-10-14 (phases 2 and 3)
-Status: **IN PROGRESS — stack A, phase 2 (repair, ontology) and stack B trunk (3a) integrated and kept; lot 3b on HOLD by owner decision (2026-10-14), awaiting arbitration.** No closure tag yet (owner instruction).
+Status: **IN PROGRESS — stack A, phase 2 (repair, ontology), stack B trunk (3a) and GPS capture line (3b) integrated.** No closure tag yet (owner instruction).
 
 This branch is an organizational reconciliation. **It is not a runtime freeze, not a seal and not a certified state.** Nothing was merged into `main`. No source branch, tag or PR was modified. Nothing was deleted, rebased, squashed or force-pushed. No other repository and no local clone was touched. No physical or live test was run.
 
@@ -63,11 +63,30 @@ Verified through the compare API (behind = 0) for every source SHA and every pre
 
 Tree at `b7049b59`: 7 843 files (7 281 on `main`): 562 added, 26 modified, 0 deleted.
 
-## 4. Stopped — lot 3b (not integrated)
+### 3.5 Phase 3b — GPS P2 capture line (integrated 2026-10-14, owner GO)
+
+| Lot | Source | Source SHA | Merge base | Commits | Merge commit |
+|---|---|---|---|---|---|
+| 3b | `feat/gps-p2-rtltcp-live-path-v0` | `1a930c5c5ab002a0cd18786999c3f43e2c0bb11a` | `2a6766ee76780d9c311b866cc895848ff7cab3aa` | 86 | `a2cdb8bcd8a52e0a5b8913ed6cd72aff22088613` |
+
+Parents: `8571a8fb2c1f338fa23a3dd3685ceac9b4f57f77` (this branch) and `1a930c5c` (source). Tree `8a6d6bd1c686898de6503aaa76a21721624abd3b`, 7 888 files.
+
+49 files brought: 45 added, 4 modified, 0 deleted. The modified files (`OBSIDIA_PREMIERE_MISE_AU_MONDE_MASTER_V2.md`, `physical_signal_periphery.py`, `test_gps_physical_signal_periphery.py`, `test_gps_x108_reality_authenticity_gate.py`) were changed only by the source since the merge base.
+
+Conflict resolution (owner decision): `domains/gps/gps_x108_gate.py` keeps the trunk blob `59118a48015b98436a09c5e2c7861c941107aae6` unchanged (§4: identical AST, presentation-only conflict). The capture-line history, including `b089b0ca`, enters through the second parent.
+
+Authority review of the added code: the new GPS modules declare `decision_authority: KX108_ONLY`, `emits_verdict: False` and `allowed_to_decide/act: False` (with a constructor check). The live capture paths (`rtl_tcp`, Docker, GNSS-SDR, passive reception only) stay blocked until a capture is actually observed and bound to a receiver identity. The tests replace `subprocess`, `shutil.which` and the kernel HTTP post with stubs; hardware detection reads only `PATH` and environment variables.
+
+Pre-publication checks, in an isolated temporary tree built from the same SHAs (tree identical to the merge tree, register excepted):
+- 13 targeted 3b test files: 48 passed.
+- All GPS tests (`tests/test_gps_*`, integration, periphery, R6, spoofing stress): 105 passed.
+- Full suite on Windows: 2 failed, 13 545 passed, 1 collection error. All three are reproduced identically on the trunk `e5d36111`: `test_wb_060_all_sha256_valid` (§8.3), the Windows-only import error of `tests/integration/test_interpretation_to_intake_policy_native_v0.py`, and `tests/api/test_f22b_readonly_intent_guard.py::test_8000_8012_parity_runtime_state_intent` (§8.5).
+
+## 4. Lot 3b — conflict analysis (resolved in §3.5)
 
 `feat/gps-p2-rtltcp-live-path-v0` @ `1a930c5c5ab002a0cd18786999c3f43e2c0bb11a` — 86 commits beyond the merge base `2a6766ee76780d9c311b866cc895848ff7cab3aa`, 53 files (48 added, 5 modified).
 
-**Not merged: the merge is not clean.** `domains/gps/gps_x108_gate.py` was changed on both sides; a three-way merge of the file (`git merge-file` on the three blobs) gives **2 conflict hunks**. Nothing was written.
+**Initially not merged (state before the owner's GO): the merge is not clean.** `domains/gps/gps_x108_gate.py` was changed on both sides; a three-way merge of the file (`git merge-file` on the three blobs) gives **2 conflict hunks**. Nothing was written.
 
 Diagnosis: both sides add the same P4 temporal-integrity delta (`temporal_integrity_ok`, reason `TEMPORAL_INTEGRITY_ANOMALY`, four `temporal_integrity_*` payload fields). The trunk version (commit `2e7565e3`, "port frozen P4 temporal integrity gate delta") wraps the expressions over several lines; the capture-line version keeps them on one line. Token for token the logic is the same; only line wrapping differs. Three other files changed on both sides are byte-identical on both sides.
 
@@ -137,6 +156,7 @@ Protected scope of `PROTECTED_SCOPE.md` (`proofs/V18_*`, `proofs/lean/**`, `proo
 | 1e+1f (end of stack A) | `714e711c` | success | success | attempt 1: 9 failed, 13 274 passed; attempt 2: 8 failed, 13 275 passed | 28 success |
 | Phase 2 | `e366d499` | success | success | 9 failed, 13 282 passed, 77 skipped | 28 success |
 | Phase 3a | `b7049b59` | success | success | 9 failed, 13 488 passed, 77 skipped | 28 success |
+| Phase 3b | `a2cdb8bc` | success | success | 9 failed (same 9 as 3a), 13 525 passed, 77 skipped | 28 success |
 
 Full test suite = `x108-periphery-ci.yml` up to lot 1b, `reconcile-v1-full-suite.yml` afterwards (see §8.1).
 
@@ -181,16 +201,20 @@ The index declares `authority: NON_SOVEREIGN`, `can_decide: false`, `runtime_con
 
 Owner qualification (2026-10-14): **DOCUMENTARY_INDEX_STALE — NON_BLOCKING_FOR_ORGANIZATIONAL_RECONCILIATION.** Checked: `brody.py` here is the repair branch blob; the index is consumed only by its own tests; it is absent from `merkle_seal.json` and `proofs/verify_all.py`; repair and ontology bypass neither `KX108_ONLY`, HOLD/BLOCK/ACT, fail-closed nor receipts/replay.
 
+### 8.5 Live smoke test against local services (observed during the 3b pre-check)
+
+`tests/api/test_f22b_readonly_intent_guard.py::test_8000_8012_parity_runtime_state_intent` sends `POST /api/brody/chat` to `127.0.0.1:8000` and `127.0.0.1:8012` and skips if they are unreachable (always the case in CI). During the local full-suite run it reached the Obsidia services running on the owner's PC; their response lacks the `graphiti_write` field, so the test failed. The route is read-only by contract (`readonly`, `emits_act: False`, `memory_write: False`). It fails the same way on the trunk; not caused by 3b. Recorded so that the owner knows these local services were contacted.
+
 ### 8.4 Verification limits
 
 - Lean conformance tests never executed (§8.1); Lean proofs built only in `verify*.yml`.
 - Consumers of the Brody index in unchanged `main` code were checked with GitHub code search, not an exhaustive read.
 - No physical, live or hardware test was run; GPS capture paths are not exercised.
-- Behavior equivalence of the 3b conflict was checked by AST comparison, not by running the 3b tests on a merged tree.
+- The 3b conflict was checked by AST comparison, then by the 3b and GPS tests on the merged tree; GPS capture paths were run only against stubs, never with a receiver.
 
 ## 9. Kept separate
 
-Excluded from V1, kept as they are (functional detail to be completed at closure): Jarvis advanced lineage (`feat/jarvis-advanced-obsidia-integration-v0` `dc548725`, `build/openjarvis-full-install` `57d9bdc1`, `work/jarjar-g7-contract-unification` `f8b4304a`), `codex/obsidure-f7-r10-isolated` (active work, tip `59138c89`), UDIP (`c15249aa`) and stack launcher (`13964f05`), GPS passive capture #53 (`b1bbb2d1`), GPS P4/P5 #89 (`cb5ff76f`), router/SENS independent history (`85d55e35`), `archive/2026-09/campaign-4353-v1`, `reorg/docs-v1`, dependabot #30. Lot 3b (`1a930c5c`) is pending arbitration (§4). None is abandoned.
+Excluded from V1, kept as they are (functional detail to be completed at closure): Jarvis advanced lineage (`feat/jarvis-advanced-obsidia-integration-v0` `dc548725`, `build/openjarvis-full-install` `57d9bdc1`, `work/jarjar-g7-contract-unification` `f8b4304a`), `codex/obsidure-f7-r10-isolated` (active work, tip `59138c89`), UDIP (`c15249aa`) and stack launcher (`13964f05`), GPS passive capture #53 (`b1bbb2d1`), GPS P4/P5 #89 (`cb5ff76f`), router/SENS independent history (`85d55e35`), `archive/2026-09/campaign-4353-v1`, `reorg/docs-v1`, dependabot #30. None is abandoned.
 
 ## 10. External references — not part of this mission
 
@@ -217,7 +241,7 @@ Created on purpose by another session dedicated to auditing and backing up the l
 
 Also appeared during phase 3, origin confirmed by the owner on 2026-10-14 (laptop session), out of scope, not modified, not merged: `backup/portable-20261014/codex/r12-f6-d3e-f9-evidence-convergence` @ `0dbf8d73898c2e1a7719bfa5e1e692939afef9a1`, `backup/portable-20261014/feat/jarvis-advanced-obsidia-integration-v0` @ `5a6a2acd5c2eb649a0d966d1689bc9be856f602b`.
 
-`work/portable-openjarvis-r12` @ `740954d8a414cb937cb7078c3b3a77d2fa28d99d` also appeared; its origin was not explicitly confirmed. Left untouched.
+`work/portable-openjarvis-r12` @ `740954d8a414cb937cb7078c3b3a77d2fa28d99d`: origin confirmed by the owner on 2026-10-14 (laptop session); out of scope, not modified, not merged.
 
 ## 11. Integrity of existing references (checked after lot 3a)
 
