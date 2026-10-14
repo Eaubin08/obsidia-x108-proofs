@@ -119,3 +119,27 @@ def test_nominal_kernel_payload_carries_complete_gps_state():
     assert kernel_payload["inertial_available"] is True
     assert kernel_payload["radio_available"] is True
     assert kernel_payload["attestation_ready"] is True
+
+
+def test_temporal_integrity_anomaly_fail_closes_without_claiming_spoofing():
+    payload = nominal_payload()
+    payload.update(
+        {
+            "temporal_integrity_classification": "ANOMALY",
+            "temporal_integrity_evidence_hash": "a" * 64,
+            "temporal_integrity_algorithm_version": "P4_TEMPORAL_DISCONTINUITY_V0",
+            "temporal_integrity_status": "DEVELOPMENT_POST_HOC_NOT_BLIND",
+        }
+    )
+
+    result = GpsX108Gate().evaluate(payload)
+    state = result["ir_payload"]["meta"]["domain_state"]
+    kernel_data = result["ir_payload"]["data"]
+
+    assert result["verdict"] == "HOLD"
+    assert result["source"] == "REALITY_AUTHENTICITY_GATE_FAIL_CLOSED"
+    assert "TEMPORAL_INTEGRITY_ANOMALY" in state["reality_authenticity"]["reasons"]
+    assert "GPS_SPOOFING" not in state["nuisances"]
+    assert kernel_data["temporal_integrity_classification"] == "ANOMALY"
+    assert kernel_data["temporal_integrity_evidence_hash"] == "a" * 64
+    assert result["receipt"]["connector_decides"] is False
