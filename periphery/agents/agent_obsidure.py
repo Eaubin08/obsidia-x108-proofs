@@ -3075,17 +3075,21 @@ def _build_math_memory_context_pack(objective: str) -> Dict[str, Any]:
 
         selected: List[Dict[str, Any]] = []
 
-        # Research excerpts have their own provenance and are not proof axioms.
-        research = provider.research_context(objective)
-        if research is not None:
-            return {
-                "readonly": True, "source": "OBSIDURE_RESEARCH_ROOT",
-                "provider": "ObsidureMathMemoryProvider",
-                "status": research["availability"], "total_ids_seen": len(all_ids),
-                "selected_count": 1 if research["source_evidence"] else 0,
-                "selected_items": [research] if research["source_evidence"] else [],
-                "source_errors": research["source_errors"], "boundary": boundary_info,
-            }
+        # Research excerpts are optional. The canonical provider may not expose
+        # research_context; in that case continue with indexed MathMemory
+        # selection instead of failing the whole readonly context pack.
+        research_fn = getattr(provider, "research_context", None)
+        if callable(research_fn):
+            research = research_fn(objective)
+            if research is not None:
+                return {
+                    "readonly": True, "source": "OBSIDURE_RESEARCH_ROOT",
+                    "provider": "ObsidureMathMemoryProvider",
+                    "status": research["availability"], "total_ids_seen": len(all_ids),
+                    "selected_count": 1 if research["source_evidence"] else 0,
+                    "selected_items": [research] if research["source_evidence"] else [],
+                    "source_errors": research["source_errors"], "boundary": boundary_info,
+                }
 
         # Chercher d'abord des ids exacts mentionnés dans l'objectif
         for pid in all_ids:

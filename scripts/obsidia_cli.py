@@ -192,8 +192,11 @@ def _runtime_local_status(checks: dict) -> dict:
     """Verifie l'existence de chemins locaux. Aucun parsing de contenu. Aucun I/O."""
     result = {}
     for key, spec in checks.items():
-        all_ok = all((REPO_ROOT / p).exists() for p in spec["paths"])
-        result[key] = {"label": spec["label"], "status": "OK" if all_ok else "MISSING"}
+        if "any_paths" in spec:
+            ok = any((REPO_ROOT / p).exists() for p in spec["any_paths"])
+        else:
+            ok = all((REPO_ROOT / p).exists() for p in spec["paths"])
+        result[key] = {"label": spec["label"], "status": "OK" if ok else "MISSING"}
     return result
 
 
@@ -204,6 +207,7 @@ def _compute_terminal_state(network: dict, local: dict) -> str:
         return "BLOCKED"
     corpus_ok = local.get("corpus", {}).get("status") == "OK"
     gates_ok = local.get("gates", {}).get("status") == "OK"
+    native_memory_ok = local.get("native_memory", {}).get("status") == "OK"
     api_up = any(
         network.get(k, {}).get("status") == "UP"
         for k in ("api_health", "api_readiness", "api_status")
@@ -212,7 +216,7 @@ def _compute_terminal_state(network: dict, local: dict) -> str:
         network.get(k, {}).get("status") == "UP"
         for k in ("sigma_domains", "sigma_evaluate")
     )
-    if api_up and (sigma_up or gates_ok) and corpus_ok:
+    if api_up and (sigma_up or gates_ok) and corpus_ok and native_memory_ok:
         return "READY"
     return "DEGRADED"
 
@@ -241,6 +245,12 @@ def build_runtime_service_map_v1() -> dict:
         "panel": "OBSIDIA_RUNTIME_STATUS",
         "network": network,
         "local": local,
+        "legacy": {
+            "graphiti_8011": "HISTORICAL_NOT_ACTIVE",
+            "neo4j_bolt_7688": "HISTORICAL_NOT_ACTIVE",
+            "neo4j_browser_7475": "HISTORICAL_NOT_ACTIVE",
+            "ui_5173": "LEGACY_SURFACE_NOT_CURRENT_MONDE",
+        },
         "terminal_state": terminal_state,
     }
 
@@ -260,6 +270,10 @@ def format_runtime_service_map_v1(result: dict) -> str:
         label = data.get("label", key.upper())
         status = data.get("status", "MISSING")
         lines.append(f"  {label:<26}: {status}")
+    lines.append("")
+    lines.append("  # Legacy / historique (non actif)")
+    for key, status in result.get("legacy", {}).items():
+        lines.append(f"  {key.upper():<26}: {status}")
     lines.append("")
     state = result["terminal_state"]
     notes = {
@@ -792,37 +806,17 @@ RUNTIME_SERVICE_MAP_V1: dict = {
         "required": False, "timeout": 1.0,
     },
     "kernel_3001": {
-        "kind": "socket", "label": "KERNEL_3001",
+        "kind": "socket", "label": "KERNEL_3001_SOCKET_ONLY",
         "host": "127.0.0.1", "port": 3001,
         "required": False, "not_confirmed": True, "timeout": 1.0,
     },
-    "graphiti_8011": {
-        "kind": "http_get", "label": "GRAPHITI_8011",
-        "url": "http://127.0.0.1:8011/graph/v20/frozen/status",
-        "required": False, "timeout": 1.0,
-    },
-    "neo4j_bolt_7688": {
-        "kind": "socket", "label": "NEO4J_BOLT_7688",
-        "host": "127.0.0.1", "port": 7688,
-        "required": False, "timeout": 1.0,
-    },
-    "neo4j_browser_7475": {
-        "kind": "socket", "label": "NEO4J_BROWSER_7475",
-        "host": "127.0.0.1", "port": 7475,
-        "required": False, "timeout": 1.0,
-    },
-    "ui_5173": {
-        "kind": "http_get", "label": "UI_5173",
-        "url": "http://127.0.0.1:5173/",
-        "required": False, "timeout": 1.0,
-    },
     "sigma_domains": {
-        "kind": "http_get", "label": "SIGMA_DOMAINS",
+        "kind": "http_get", "label": "SIGMA_DOMAINS_F63",
         "url": "http://127.0.0.1:8000/api/periphery/monitoring/sigma/domains",
         "required": False, "timeout": 1.0,
     },
     "sigma_evaluate": {
-        "kind": "http_get", "label": "SIGMA_EVALUATE",
+        "kind": "http_get", "label": "SIGMA_EVALUATE_F63",
         "url": "http://127.0.0.1:8000/api/periphery/monitoring/sigma/evaluate",
         "required": False, "timeout": 1.0,
     },
@@ -830,6 +824,13 @@ RUNTIME_SERVICE_MAP_V1: dict = {
 
 # Vérifications locales readonly — existence de chemins uniquement, aucun parsing contenu.
 _RUNTIME_LOCAL_CHECKS: dict = {
+    "native_memory": {
+        "label": "NATIVE_MEMORY",
+        "any_paths": [
+            "_obsidia_native_memory/OBSIDIA_NATIVE_MEMORY_INDEX_V1",
+            "runtime_terrain_bank_trading_gps/_obsidia_native_memory/OBSIDIA_NATIVE_MEMORY_INDEX_V1",
+        ],
+    },
     "gates": {
         "label": "GATES",
         "paths": [

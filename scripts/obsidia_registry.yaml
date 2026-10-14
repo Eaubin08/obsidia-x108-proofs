@@ -18,20 +18,22 @@ receipt_path: .local_obsidia/receipts/obsidia_terminal_receipts.jsonl
 ports:
   api: 8000
   kernel: 3001
-  ui: 5173
-  graphiti: 8011
-  neo4j_browser: 7475
-  neo4j_bolt: 7688
+
+legacy_services:
+  graphiti_8011: HISTORICAL_NOT_ACTIVE
+  neo4j_browser_7475: HISTORICAL_NOT_ACTIVE
+  neo4j_bolt_7688: HISTORICAL_NOT_ACTIVE
+  ui_5173: LEGACY_SURFACE_NOT_CURRENT_MONDE
 
 # Endpoints doctor — GET readonly confirmes par observation locale.
 # live_kernel_adapters (/api/live/kernel/adapters/{bank,trading,gps}) sont
 # POST-only : verifies via OpenAPI/documentation de routes, PAS via doctor GET.
 health_endpoints:
+  api_health: http://127.0.0.1:8000/api/health
+  api_readiness: http://127.0.0.1:8000/api/readiness
+  api_status: http://127.0.0.1:8000/api/status
   sigma_domains: http://127.0.0.1:8000/api/periphery/monitoring/sigma/domains
   sigma_evaluate: http://127.0.0.1:8000/api/periphery/monitoring/sigma/evaluate
-  graphiti_frozen_status: http://127.0.0.1:8011/graph/v20/frozen/status
-  ui: http://127.0.0.1:5173/
-  kernel_unconfirmed: http://127.0.0.1:3001/health
 
 layers:
   brody:
@@ -52,8 +54,8 @@ layers:
   kernel:
     mode: kernel_check
     triggers: [kernel, x108, admissibilite, decision, gate, souverain]
-    commands: ["powershell -File scripts/OBSIDIA_LAUNCHERS/02_START_KERNEL_AND_DOMAINS.ps1", "curl http://127.0.0.1:3001/health  # NOT_CONFIRMED en observation locale"]
-    note: Seule autorite. Le terminal consulte le status, n'emet jamais ALLOW/HOLD/BLOCK. Kernel 3001 /health non confirme lors de l'observation V0.
+    commands: ["powershell -File scripts/OBSIDIA_LAUNCHERS/02_START_KERNEL_AND_DOMAINS.ps1", "Test-NetConnection 127.0.0.1 -Port 3001"]
+    note: Seule autorite. Le terminal n'emet jamais ALLOW/HOLD/BLOCK. Le port 3001 est observable par socket seulement; le endpoint decisionnel canonique POST /kernel/ragnarok n'est pas utilise comme health GET.
   domains:
     mode: bridge_only
     triggers: [bank, banque, trading, gps, aviation, defense, domaine, domains]
@@ -66,9 +68,9 @@ layers:
     note: Verifiers readonly. Ne pas regenerer les seals.
   memory:
     mode: readonly
-    triggers: [memoire, memory, graphiti, session, sources, projection]
-    commands: ["curl http://127.0.0.1:8011/graph/v20/frozen/status"]
-    note: Graphiti frozen readonly status, pas une autorite. live_neo4j_dependency=false peut apparaitre dans la reponse. memory_write=false, toujours.
+    triggers: [memoire, memory, native memory, session, sources, projection, graphiti]
+    commands: []
+    note: Native Memory est la memoire runtime active, en lecture locale bornee. Graphiti/Neo4j sont historiques/legacy et ne sont plus des dependances actives de health. memory_write=false, toujours.
   live:
     mode: status
     triggers: [status, statut, health, sante, port, ports, serveur, serveurs, live, endpoint, doctor, tourne, allume]
