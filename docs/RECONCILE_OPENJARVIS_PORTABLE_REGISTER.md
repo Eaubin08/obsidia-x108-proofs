@@ -117,7 +117,15 @@ None was fixed here.
 
 ### 6.3 GitHub CI on this branch
 
-Not yet run when this commit was made; results are recorded in the next commit of this register.
+Run `38500998521` of "X108 Periphery CI" on `d37ed822b573ff91fc4dc2a9408a9518580d0616` (push). Conclusion: failure.
+
+| Job | Result |
+|---|---|
+| `verify` | FAILURE at step "Run all tests" — `Interrupted: 4 errors during collection`, `208 deselected, 1 warning, 4 errors` |
+
+The four collection errors are exactly those of section 6.2, the same as on backup A, backup B and `codex/obsidure-f7-r10-isolated`. No test executed. The later steps (protected files check, forbidden content check, manifest verification) did not run. The merges add no new CI error and remove none. Nothing was fixed.
+
+This commit of the register changes a Markdown file only; the workflow ignores such pushes, so no further run is expected for it.
 
 ## 7. Limits of validation
 
