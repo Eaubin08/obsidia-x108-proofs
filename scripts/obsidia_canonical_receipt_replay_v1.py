@@ -308,14 +308,90 @@ def _verify_outcome_consistency(envelope: dict, result: dict) -> None:
         result["evidence_conflicts"].append("OUTCOME_CONSISTENCY_MISMATCH")
 
 
-def _binder_status(envelope: dict, result: dict) -> None:
+def _binder_status(envelope: dict, stores: dict, result: dict, kxpre_record: Optional[dict] = None) -> None:
     status = (envelope.get("authorization") or {}).get("binder_verdict_status")
     if not status or status == NOT_REACHED:
         result["binder_status_reconstructable"] = NOT_REACHED
         result["binder_replay_status"] = NOT_REACHED
-    elif status in {"OBSERVED_INLINE", "OBSERVED_INLINE_NOT_SEPARATELY_PERSISTED", "REJECTED_INLINE"}:
-        result["binder_status_reconstructable"] = YES
-        result["binder_replay_status"] = INLINE_STATUS_ONLY
+        return
+
+    if status in {"OBSERVED_INLINE", "OBSERVED_INLINE_NOT_SEPARATELY_PERSISTED", "REJECTED_INLINE"}:
+        # Reconstruction is only defined for the V2_APPLY_PATCH pre-gate, whose
+        # ToolingBuildState is rebuilt from persisted evidence (descriptor, receipt
+        # prepare section) using the same fixed contract as _kx108_pre. Other
+        # operation types stay INLINE_STATUS_ONLY (no false full verification).
+        if (
+            result.get("KX108_ref_valid") == YES
+            and kxpre_record
+            and envelope.get("operation_type") == "V2_APPLY_PATCH"
+        ):
+            try:
+                op = envelope.get("operation_type")
+                child = (envelope.get("session_ref") or {}).get("child_id")
+                base_sha = ""
+                descriptor_ref = (envelope.get("prepare") or {}).get("descriptor_ref")
+                if descriptor_ref:
+                    desc_record, err = _safe_load_json(_descriptor_path(stores, descriptor_ref))
+                    if not err and desc_record and desc_record.get("descriptor"):
+                        base_sha = desc_record["descriptor"].get("base_sha", "")
+                
+                prep = envelope.get("prepare") or {}
+                paths = prep.get("target_paths") or []
+                if not paths and prep.get("target_path"):
+                    paths = [prep.get("target_path")]
+                
+                mhash = prep.get("manifest_hash", "")
+                anchor = prep.get("physical_state_anchor", "")
+                anchor_kind = prep.get("state_anchor_kind", "GIT_HEAD")
+
+                kwargs = {
+                    "session_id": child, "objective": f"V2 governed {op}",
+                    "base_sha": base_sha, "manifest_hash": mhash, "diff_hash": "",
+                    "physical_state_anchor": anchor, "state_anchor_kind": anchor_kind,
+                    "approved_scope": list(paths),
+                    "actual_touched_files": [], "new_files": [], "deleted_files": [],
+                    "protected_scope_status": "CLEAN",
+                    "human_approval_status": "APPROVED",
+                    "obsidure_status": "UNKNOWN",
+                    "worktree_isolated": True, "branch_isolated": True,
+                    "auto_commit_disabled": True, "auto_push_disabled": True, "auto_merge_disabled": True,
+                    "tests_results": "UNKNOWN", "gates_results": "UNKNOWN",
+                    "first_failure": "", "commit_status": "NOT_COMMITTED",
+                    "push_status": "NOT_PUSHED", "merge_status": "NOT_MERGED",
+                    "unknowns": [], "contradictions": [], "risk_flags": [],
+                    "decision_authority": "KX108_ONLY",
+                }
+                
+                from sigma.contracts import ToolingBuildState
+                from sigma.protocols import run_tooling_build_pipeline
+                
+                state = ToolingBuildState(**kwargs)
+                decision = run_tooling_build_pipeline(state)
+                
+                recon_env = {
+                    "x108_gate": decision.x108_gate,
+                    "reason_code": decision.reason_code,
+                    "severity": decision.severity,
+                    "market_verdict": decision.market_verdict,
+                    "contradictions": list(decision.contradictions or []),
+                    "unknowns": list(decision.unknowns or []),
+                    "risk_flags": list(decision.risk_flags or []),
+                }
+                persisted = {k: (kxpre_record.get(k) if not isinstance(recon_env[k], list)
+                                 else list(kxpre_record.get(k) or [])) for k in recon_env}
+                if recon_env == persisted:
+                    result["binder_status_reconstructable"] = YES
+                    result["binder_replay_status"] = "RECONSTRUCTED_MATCH"
+                else:
+                    result["binder_status_reconstructable"] = NO
+                    result["binder_replay_status"] = "RECONSTRUCTION_MISMATCH"
+                    result["evidence_conflicts"].append("BINDER_RECONSTRUCTION_MISMATCH")
+            except Exception:
+                result["binder_status_reconstructable"] = UNAVAILABLE
+                result["binder_replay_status"] = INLINE_STATUS_ONLY
+        else:
+            result["binder_status_reconstructable"] = UNAVAILABLE
+            result["binder_replay_status"] = INLINE_STATUS_ONLY
     else:
         result["binder_status_reconstructable"] = UNAVAILABLE
         result["binder_replay_status"] = INLINE_STATUS_ONLY
@@ -365,8 +441,8 @@ def replay_action_evidence(action_evidence_id: str, *, stores_base_dir) -> dict:
 
     _verify_descriptor(envelope, stores, result)
     _verify_approval(envelope, stores, result)
-    _verify_kx108(envelope, stores, result)
-    _binder_status(envelope, result)
+    kxpre_record = _verify_kx108(envelope, stores, result)
+    _binder_status(envelope, stores, result, kxpre_record)
     _verify_executor_binding(envelope, result)
     _verify_realized_state(envelope, result)
     _verify_outcome_consistency(envelope, result)

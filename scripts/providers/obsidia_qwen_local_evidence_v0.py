@@ -260,7 +260,10 @@ def run_local_qwen_evidence(
         "Do not provide private chain-of-thought. "
         "When no exact output format is requested, provide a concise "
         "conclusion, relevant evidence, uncertainties, or hypotheses "
-        "that the governed Obsidia stack can evaluate."
+        "that the governed Obsidia stack can evaluate. "
+        "Keep the evidence compact: at most 5 short sentences or "
+        "bullet points, under 120 words, with no code blocks unless "
+        "the user explicitly requests code."
     )
 
     body = json.dumps(
