@@ -92,6 +92,63 @@ def build_brody_semantic_focus_projection_v1(
         raw,
     )
 
+    # R6-D3 deterministic GPS/Defense semantic grounding.
+    #
+    # These patterns resolve functional relations already explicit in the
+    # utterance. They do not infer spoofing, hostility, causality or truth.
+    gps_domain = _match(
+        r"\b(?:gps|gnss)\b",
+        raw,
+    )
+
+    gps_integrity = _match(
+        r"\b(?:int\u00e9grit\u00e9|integrite|integrity)\b",
+        raw,
+    )
+
+    gps_anomaly = _match(
+        r"\b(?:anomalie|anomaly)\b",
+        raw,
+    )
+
+    # Ground the compound focus only when all three explicit concepts
+    # co-occur. No inference of spoofing, hostility or causality.
+    gps_integrity_focus = (
+        _match(
+            r"\b(?:anomalie|anomaly)\b[^.!?]{0,80}"
+            r"\b(?:gps|gnss)\b",
+            raw,
+        )
+        if (
+            gps_domain is not None
+            and gps_integrity is not None
+            and gps_anomaly is not None
+        )
+        else None
+    )
+
+    gps_readonly_operation = _match(
+        r"\b(?:explique|explain)\s+en\s+lecture\s+seule\b",
+        raw,
+    )
+
+    gps_observation = _match(
+        r"\b(?:observ\u00e9e|observee|observed|observation)\b",
+        raw,
+    )
+
+    gps_proof_scope = _match(
+        r"\b(?:limites?|limits?)\s+(?:de\s+)?"
+        r"(?:preuve|proof|evidence)\b",
+        raw,
+    )
+
+    gps_noncausal_boundary = _match(
+        r"\b(?:sans\s+conclure\s+[\u00e0a]\s+une\s+cause\s+ni\s+agir"
+        r"|without\s+concluding\s+(?:a\s+)?cause(?:\s+or\s+acting)?)\b",
+        raw,
+    )
+
     # "using memory" is a functional relation, not merely concept presence.
     instrument_memory = _match(
         r"(?:\ben\s+utilisant\s+(?:ta|la|ma|sa|notre|votre|leur)?\s*"
@@ -176,10 +233,83 @@ def build_brody_semantic_focus_projection_v1(
             rationale="direct project/entity request",
         )
 
+    # Case D: explicit GPS/GNSS integrity request.
+    #
+    # This is semantic grounding only. It does not classify the event,
+    # close causal attribution, or create decision/action authority.
+    elif gps_integrity_focus is not None:
+        bindings[SemanticRoleKindV0.FOCUS] = _resolved(
+            SemanticRoleKindV0.FOCUS,
+            _candidate(
+                "GPS_INTEGRITY_ANOMALY",
+                gps_integrity_focus,
+                evidence="brody-sens-v1:gps-integrity-focus",
+            ),
+            rationale=(
+                "explicit GPS/GNSS integrity anomaly establishes domain focus"
+            ),
+        )
+
+        if gps_readonly_operation is not None:
+            bindings[SemanticRoleKindV0.OPERATION] = _resolved(
+                SemanticRoleKindV0.OPERATION,
+                _candidate(
+                    "READONLY_EXPLAIN",
+                    gps_readonly_operation,
+                    evidence="brody-sens-v1:gps-readonly-operation",
+                ),
+                rationale=(
+                    "explicit readonly explanation operation"
+                ),
+            )
+
+        if gps_proof_scope is not None:
+            bindings[SemanticRoleKindV0.SCOPE] = _resolved(
+                SemanticRoleKindV0.SCOPE,
+                _candidate(
+                    "EVIDENCE_LIMITS",
+                    gps_proof_scope,
+                    evidence="brody-sens-v1:gps-evidence-scope",
+                ),
+                rationale=(
+                    "request explicitly scopes interpretation to evidence limits"
+                ),
+            )
+
+        if gps_observation is not None:
+            bindings[SemanticRoleKindV0.SOURCE_OR_INSTRUMENT] = _resolved(
+                SemanticRoleKindV0.SOURCE_OR_INSTRUMENT,
+                _candidate(
+                    "OBSERVED_EVIDENCE",
+                    gps_observation,
+                    evidence="brody-sens-v1:gps-observed-evidence",
+                ),
+                rationale=(
+                    "observation is evidence context, not causal authority"
+                ),
+            )
+
+        if gps_noncausal_boundary is not None:
+            bindings[SemanticRoleKindV0.QUALIFIER] = _resolved(
+                SemanticRoleKindV0.QUALIFIER,
+                _candidate(
+                    "NON_CAUSAL_NO_ACT_BOUNDARY",
+                    gps_noncausal_boundary,
+                    evidence="brody-sens-v1:gps-noncausal-boundary",
+                ),
+                rationale=(
+                    "explicit request forbids causal conclusion and action"
+                ),
+            )
+
     else:
         return None
 
-    if explain is not None:
+    if (
+        bindings[SemanticRoleKindV0.OPERATION].status
+        is SemanticResolutionStatusV0.UNKNOWN
+        and explain is not None
+    ):
         bindings[SemanticRoleKindV0.OPERATION] = _resolved(
             SemanticRoleKindV0.OPERATION,
             _candidate(
@@ -200,7 +330,11 @@ def build_brody_semantic_focus_projection_v1(
             rationale="explicit knowledge interrogation",
         )
 
-    if detail is not None:
+    if (
+        bindings[SemanticRoleKindV0.QUALIFIER].status
+        is SemanticResolutionStatusV0.UNKNOWN
+        and detail is not None
+    ):
         bindings[SemanticRoleKindV0.QUALIFIER] = _resolved(
             SemanticRoleKindV0.QUALIFIER,
             _candidate(

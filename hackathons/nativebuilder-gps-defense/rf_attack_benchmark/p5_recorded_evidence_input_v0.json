@@ -1,0 +1,22 @@
+{
+  "artifact": "gps_p5_recorded_evidence_input_v0",
+  "truth_or_onset_consumed": false,
+  "detector_classification": "ANOMALY",
+  "first_anomaly_transition": {
+    "from_receiver_second": 132,
+    "to_receiver_second": 174
+  },
+  "official_onset_s": 135,
+  "gnss_sdr_ecef_delta_m": 14640.407,
+  "gsrx_ecef_delta_m": 14639.336,
+  "nominal_control_classification": "NOMINAL",
+  "same_recorded_rf_source_across_receivers": true,
+  "independent_physical_source_corroboration": false,
+  "controlled_intervention": false,
+  "heldout_hostile_validation": false,
+  "notes": [
+    "Official onset is post-decision scoring truth, not detector input.",
+    "Cross-receiver values use the same recorded FGI UT_DFMC RF source under different receiver implementations.",
+    "CTTC is a separate recorded real nominal RF negative control."
+  ]
+}

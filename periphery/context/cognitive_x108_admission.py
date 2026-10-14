@@ -45,6 +45,8 @@ def admit_cognitive_context(
     v2: ContextPacketV2,
     signal_id: str,
     critical_action_requested: bool = False,
+    upstream_gate_constraint: str | None = None,
+    upstream_gate_evidence_ref: str | None = None,
 ) -> DecisionTicketDryRun:
     """
     Cognitive context admission pipeline (W2).
@@ -52,6 +54,8 @@ def admit_cognitive_context(
     Fail-closed: if validation or boundary fails, returns a BLOCK ticket
     without calling evaluate_dry_run.
     critical_action_requested is an explicit caller input (not derived from v2).
+    upstream_gate_constraint may only preserve an already-produced X108
+    HOLD/BLOCK/ALLOW observation; it does not grant authority to cognition.
     """
     context = build_cognitive_runtime_packet(v2, signal_id)
     projection = context_packet_validation_projection(context)
@@ -75,4 +79,6 @@ def admit_cognitive_context(
     return evaluate_dry_run(
         [context],
         critical_action_requested=critical_action_requested,
+        upstream_gate_constraint=upstream_gate_constraint,
+        upstream_gate_evidence_ref=upstream_gate_evidence_ref,
     )
