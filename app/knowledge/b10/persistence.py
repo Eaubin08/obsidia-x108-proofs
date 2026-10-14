@@ -12,6 +12,7 @@ Full KX108/Binder sovereign invocation is future E2E ownership.
 from __future__ import annotations
 
 import dataclasses
+import hashlib
 import json
 import sqlite3
 import types as _types
@@ -23,6 +24,23 @@ from app.knowledge.b8.core import SupersessionTransitionBundle as _B8Bundle
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+# ---------------------------------------------------------------------------
+# Internal exceptions
+# ---------------------------------------------------------------------------
+
+
+class _SerializationError(ValueError):
+    pass
+
+
+class _CorruptedReadError(RuntimeError):
+    pass
+
+
+class _BackendUnavailableError(RuntimeError):
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -48,7 +66,7 @@ class B10SlotRevisionEntry:
 class B10DurableWriteReceipt:
     """Normative write receipt. (Spec s12)
 
-    Distinct from B8 TransitionReceipt (no epistemic state) and KX108 action receipt.
+    Distinct from B8 TransitionReceipt and KX108 action receipt.
     """
     b10_commit_id: str
     artifact_ids: tuple
@@ -65,28 +83,20 @@ class B10DurableWriteReceipt:
 
 @dataclasses.dataclass
 class _RecoveredArtifact:
-    """Artifact wrapper returned by get_artifact / get_artifacts_at_or_before.
-    Represents a B10 storage fact, not an epistemic B8 type.
-    """
+    """B10 storage fact wrapper. Not an epistemic B8 type."""
     artifact_id: str
     artifact_type: str
     canonical_json: str
 
     @property
-    def record_id(self) -> str:
-        return self.artifact_id
-
+    def record_id(self) -> str: return self.artifact_id
     @property
-    def claim_id(self) -> str:
-        return self.artifact_id
-
+    def claim_id(self) -> str: return self.artifact_id
     @property
-    def receipt_id(self) -> str:
-        return self.artifact_id
-
+    def receipt_id(self) -> str: return self.artifact_id
     @property
-    def bundle_id(self) -> str:
-        return self.artifact_id
+    def bundle_id(self) -> str: return self.artifact_id
+
 
 
 # ---------------------------------------------------------------------------
@@ -95,7 +105,7 @@ class _RecoveredArtifact:
 
 
 def _canonical_id(artifact: Any) -> Optional[str]:
-    """Return canonical identity of a B10-persistable artifact, or None if unknown."""
+    """Return canonical identity of a B10-persistable artifact."""
     for attr in ("record_id", "claim_id", "receipt_id", "bundle_id", "artifact_id"):
         descriptor = getattr(type(artifact), attr, None)
         if isinstance(descriptor, property):
@@ -104,24 +114,36 @@ def _canonical_id(artifact: Any) -> Optional[str]:
 
 
 def _to_json(artifact: Any) -> str:
-    """Serialize artifact to canonical JSON for durable storage."""
+    """Serialize artifact to canonical JSON.
+
+    Supported domain: objects with to_canonical() or dataclasses.
+    Unsupported types raise _SerializationError (fail closed).
+    """
     if hasattr(artifact, "to_canonical"):
         return json.dumps(artifact.to_canonical(), sort_keys=True)
     if dataclasses.is_dataclass(artifact):
         try:
             return json.dumps(dataclasses.asdict(artifact), sort_keys=True, default=str)
-        except Exception:
-            pass
-    return json.dumps({"type": type(artifact).__name__, "repr": repr(artifact)})
+        except Exception as exc:
+            raise _SerializationError(
+                f"dataclasses.asdict failed for {type(artifact).__name__!r}: {exc}"
+            ) from exc
+    raise _SerializationError(
+        f"Unsupported artifact type {type(artifact).__name__!r}: "" must be a dataclass or implement to_canonical()."
+    )
+
+
+def _payload_hash(canonical_json: str) -> str:
+    return hashlib.sha256(canonical_json.encode()).hexdigest()
 
 
 # ---------------------------------------------------------------------------
-# Bundle completeness validation  (Spec s11 + B10-I11)
+# Bundle completeness (Spec s11 + B10-I11)
 # ---------------------------------------------------------------------------
 
 
 def _check_bundle_completeness(commit: Any) -> Optional[str]:
-    """Return failure reason string if commit contains an incomplete bundle; else None."""
+    """Return failure reason if commit contains incomplete bundle; else None."""
     id_set = set(commit.artifact_ids)
     for artifact in commit.artifacts:
         if isinstance(artifact, _B8Bundle):
@@ -141,14 +163,12 @@ def _check_bundle_completeness(commit: Any) -> Optional[str]:
 
 
 # ---------------------------------------------------------------------------
-# Authorization validation seam  (Spec s10)
+# Authorization seam (Spec s10)
 # ---------------------------------------------------------------------------
 
 
 def _valid_authorization(auth_ref: Any) -> bool:
-    """Structural authorization enforcement seam.
-    Rejects known-invalid references. Full KX108/Binder invocation is future E2E.
-    """
+    """Structural seam. Rejects known-invalid refs. Full KX108 is future E2E."""
     if auth_ref is None:
         return False
     auth_id = getattr(auth_ref, "authorization_id", None)
@@ -159,29 +179,34 @@ def _valid_authorization(auth_ref: Any) -> bool:
         return False
     return True
 
-# ---------------------------------------------------------------------------
-# SQLite schema
-# ---------------------------------------------------------------------------
-
-_SCHEMA = (
-    "CREATE TABLE IF NOT EXISTS b10_artifacts (  artifact_id TEXT PRIMARY KEY,  artifact_type TEXT NOT NULL,  slot_id TEXT NOT NULL,  canonical_json TEXT NOT NULL,  recorded_at TEXT NOT NULL);"
-    "CREATE TABLE IF NOT EXISTS b10_commits (  b10_commit_id TEXT PRIMARY KEY,  slot_id TEXT NOT NULL,  slot_revision INTEGER NOT NULL,  artifact_ids_json TEXT NOT NULL,  authorization_json TEXT NOT NULL,  verdict TEXT NOT NULL,  recorded_at TEXT NOT NULL);"
-    "CREATE TABLE IF NOT EXISTS b10_receipts (  b10_commit_id TEXT PRIMARY KEY,  artifact_ids_json TEXT NOT NULL,  slot_id TEXT NOT NULL,  slot_revision_after INTEGER NOT NULL,  authorization_json TEXT NOT NULL,  verdict TEXT NOT NULL,  failure_reason TEXT,  recorded_at TEXT NOT NULL);"
-    "CREATE TABLE IF NOT EXISTS b10_slot_revisions (  slot_id TEXT NOT NULL,  slot_revision INTEGER NOT NULL,  b10_commit_id TEXT NOT NULL,  committed_artifact_ids_json TEXT NOT NULL,  recorded_at TEXT NOT NULL,  PRIMARY KEY (slot_id, slot_revision));"
-)
-
-
-class _BackendUnavailableError(RuntimeError):
-    pass
-
 
 def _serialize_auth(auth_ref: Any) -> str:
     if dataclasses.is_dataclass(auth_ref):
         return json.dumps(dataclasses.asdict(auth_ref), default=str)
     return json.dumps({"repr": repr(auth_ref)})
 
+
+
+# ---------------------------------------------------------------------------
+# SQLite schema
+# ---------------------------------------------------------------------------
+
+_SCHEMA = (
+    "CREATE TABLE IF NOT EXISTS b10_artifacts (  artifact_id TEXT PRIMARY KEY,  artifact_type TEXT NOT NULL,  slot_id TEXT NOT NULL,  canonical_json TEXT NOT NULL,  payload_hash TEXT,  recorded_at TEXT NOT NULL);"
+    "CREATE TABLE IF NOT EXISTS b10_commits (  b10_commit_id TEXT PRIMARY KEY,  slot_id TEXT NOT NULL,  slot_revision INTEGER NOT NULL,  artifact_ids_json TEXT NOT NULL,  authorization_json TEXT NOT NULL,  verdict TEXT NOT NULL,  recorded_at TEXT NOT NULL);"
+    "CREATE TABLE IF NOT EXISTS b10_receipts (  b10_commit_id TEXT PRIMARY KEY,  artifact_ids_json TEXT NOT NULL,  slot_id TEXT NOT NULL,  slot_revision_after INTEGER NOT NULL,  authorization_json TEXT NOT NULL,  verdict TEXT NOT NULL,  failure_reason TEXT,  recorded_at TEXT NOT NULL);"
+    "CREATE TABLE IF NOT EXISTS b10_slot_revisions (  slot_id TEXT NOT NULL,  slot_revision INTEGER NOT NULL,  b10_commit_id TEXT NOT NULL,  committed_artifact_ids_json TEXT NOT NULL,  recorded_at TEXT NOT NULL,  PRIMARY KEY (slot_id, slot_revision));"
+)
+
+_MIGRATION_ADD_PAYLOAD_HASH = "ALTER TABLE b10_artifacts ADD COLUMN payload_hash TEXT;"
+
+
 class B10PersistenceAdapter:
-    "B10 durable memory persistence adapter. Reference backend: SQLite (stdlib). MEMORY_WRITE=FALSE. Spec: B10_DURABLE_MEMORY_SPEC_V1.md (83620fe8). Authorization seam only at M40 slice."
+    """B10 durable memory persistence adapter.
+    Reference backend: SQLite (stdlib). MEMORY_WRITE=FALSE globally.
+    Spec: docs/architecture/B10_DURABLE_MEMORY_SPEC_V1.md (83620fe8)
+    Authorization: structural seam only at this M40 slice.
+    """
 
     def __init__(self, db_path: Optional[str] = None) -> None:
         if db_path is None:
@@ -197,6 +222,11 @@ class B10PersistenceAdapter:
         self._conn.execute("PRAGMA foreign_keys=ON")
         self._conn.executescript(_SCHEMA)
         self._conn.commit()
+        try:
+            self._conn.execute(_MIGRATION_ADD_PAYLOAD_HASH)
+            self._conn.commit()
+        except sqlite3.OperationalError:
+            pass
 
     def simulate_backend_unavailable(self, flag: bool) -> None:
         self._unavailable = flag
@@ -207,7 +237,8 @@ class B10PersistenceAdapter:
             "B10 adapter: BOUNDARY[memory_write] must remain False (B10-I06)"
         )
 
-    def execute_commit(self, commit: Any) -> "B10DurableWriteReceipt":
+
+    def execute_commit(self, commit: Any) -> B10DurableWriteReceipt:
         now = _now()
         commit_id = commit.b10_commit_id
 
@@ -237,6 +268,18 @@ class B10PersistenceAdapter:
             if actual_id is not None and actual_id != claimed_id:
                 return _fail("integrity_mismatch")
 
+        # Pre-serialize all artifacts before opening transaction
+        # _SerializationError here = fail closed with serialization_failure
+        try:
+            serialized = [
+                (art_id, type(artifact).__name__, _to_json(artifact))
+                for art_id, artifact in zip(commit.artifact_ids, commit.artifacts)
+            ]
+        except _SerializationError:
+            return _fail("serialization_failure")
+
+        hashes = [_payload_hash(cj) for _, _, cj in serialized]
+
         cur = self._conn.execute(
             "SELECT verdict FROM b10_commits WHERE b10_commit_id = ?",
             (commit_id,),
@@ -256,16 +299,25 @@ class B10PersistenceAdapter:
                 recorded_at=now,
             )
 
+        # Revision mismatch: fail closed if (slot_id, slot_revision) exists
+        # with a DIFFERENT b10_commit_id -- history must survive unchanged.
+        rev_cur = self._conn.execute(
+            "SELECT b10_commit_id FROM b10_slot_revisions WHERE slot_id = ? AND slot_revision = ?",
+            (commit.slot_id, commit.slot_revision),
+        )
+        existing_rev = rev_cur.fetchone()
+        if existing_rev is not None and existing_rev[0] != commit_id:
+            return _fail("revision_mismatch")
+
         auth_json = _serialize_auth(commit.authorization_ref)
         artifact_ids_json = json.dumps(list(commit.artifact_ids))
 
         try:
             with self._conn:
-                for art_id, artifact in zip(commit.artifact_ids, commit.artifacts):
+                for (art_id, art_type, cj), ph in zip(serialized, hashes):
                     self._conn.execute(
-                        "INSERT OR IGNORE INTO b10_artifacts (artifact_id, artifact_type, slot_id, canonical_json, recorded_at) VALUES (?, ?, ?, ?, ?)",
-                        (art_id, type(artifact).__name__,
-                         commit.slot_id, _to_json(artifact), now),
+                        "INSERT OR IGNORE INTO b10_artifacts (artifact_id, artifact_type, slot_id, canonical_json, payload_hash, recorded_at) VALUES (?, ?, ?, ?, ?, ?)",
+                        (art_id, art_type, commit.slot_id, cj, ph, now),
                     )
                 self._conn.execute(
                     "INSERT OR REPLACE INTO b10_commits (b10_commit_id, slot_id, slot_revision, artifact_ids_json, authorization_json, verdict, recorded_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -296,6 +348,7 @@ class B10PersistenceAdapter:
             recorded_at=now,
         )
 
+
     def artifact_exists(self, artifact_id: str) -> bool:
         cur = self._conn.execute(
             "SELECT 1 FROM b10_artifacts WHERE artifact_id = ?", (artifact_id,)
@@ -304,18 +357,28 @@ class B10PersistenceAdapter:
 
     def get_artifact(self, artifact_id: str) -> Optional[_RecoveredArtifact]:
         cur = self._conn.execute(
-            "SELECT artifact_id, artifact_type, canonical_json FROM b10_artifacts WHERE artifact_id = ?",
+            "SELECT artifact_id, artifact_type, canonical_json, payload_hash FROM b10_artifacts WHERE artifact_id = ?",
             (artifact_id,),
         )
         row = cur.fetchone()
         if row is None:
             return None
+        stored_hash = row[3]
+        if stored_hash is not None:
+            computed = _payload_hash(row[2])
+            if computed != stored_hash:
+                raise _CorruptedReadError(
+                    f"B10 artifact {artifact_id!r}: payload_hash mismatch (corrupted storage)"
+                )
         return _RecoveredArtifact(
             artifact_id=row[0], artifact_type=row[1], canonical_json=row[2]
         )
 
     def get_slot_history(self, slot_id: str) -> Iterator[B10SlotRevisionEntry]:
-        cur = self._conn.execute("SELECT slot_id, slot_revision, b10_commit_id, committed_artifact_ids_json, recorded_at FROM b10_slot_revisions WHERE slot_id = ? ORDER BY slot_revision ASC", (slot_id,))
+        cur = self._conn.execute(
+            "SELECT slot_id, slot_revision, b10_commit_id, committed_artifact_ids_json, recorded_at FROM b10_slot_revisions WHERE slot_id = ? ORDER BY slot_revision ASC",
+            (slot_id,),
+        )
         for row in cur:
             yield B10SlotRevisionEntry(
                 slot_id=row[0], slot_revision=row[1], b10_commit_id=row[2],
@@ -324,7 +387,10 @@ class B10PersistenceAdapter:
             )
 
     def get_revision_entry(self, slot_id: str, slot_revision: int) -> Optional[B10SlotRevisionEntry]:
-        cur = self._conn.execute("SELECT slot_id, slot_revision, b10_commit_id, committed_artifact_ids_json, recorded_at FROM b10_slot_revisions WHERE slot_id = ? AND slot_revision = ?", (slot_id, slot_revision))
+        cur = self._conn.execute(
+            "SELECT slot_id, slot_revision, b10_commit_id, committed_artifact_ids_json, recorded_at FROM b10_slot_revisions WHERE slot_id = ? AND slot_revision = ?",
+            (slot_id, slot_revision),
+        )
         row = cur.fetchone()
         if row is None:
             return None
@@ -334,7 +400,10 @@ class B10PersistenceAdapter:
         )
 
     def get_artifacts_at_or_before(self, slot_id: str, slot_revision: int) -> Iterator[_RecoveredArtifact]:
-        cur = self._conn.execute("SELECT committed_artifact_ids_json FROM b10_slot_revisions WHERE slot_id = ? AND slot_revision <= ? ORDER BY slot_revision ASC", (slot_id, slot_revision))
+        cur = self._conn.execute(
+            "SELECT committed_artifact_ids_json FROM b10_slot_revisions WHERE slot_id = ? AND slot_revision <= ? ORDER BY slot_revision ASC",
+            (slot_id, slot_revision),
+        )
         seen: set = set()
         for row in cur:
             for art_id in json.loads(row[0]):
@@ -351,10 +420,14 @@ class B10PersistenceAdapter:
         self._connect()
 
     def _load_receipt(self, commit_id: str) -> Optional[B10DurableWriteReceipt]:
-        cur = self._conn.execute("SELECT b10_commit_id, artifact_ids_json, slot_id, slot_revision_after, authorization_json, verdict, failure_reason, recorded_at FROM b10_receipts WHERE b10_commit_id = ?", (commit_id,))
+        cur = self._conn.execute(
+            "SELECT b10_commit_id, artifact_ids_json, slot_id, slot_revision_after, authorization_json, verdict, failure_reason, recorded_at FROM b10_receipts WHERE b10_commit_id = ?",
+            (commit_id,),
+        )
         row = cur.fetchone()
         if row is None:
             return None
+        import types as _types
         auth_raw = json.loads(row[4])
         if isinstance(auth_raw, dict) and "authorization_id" in auth_raw:
             auth_ref = _types.SimpleNamespace(**auth_raw)
