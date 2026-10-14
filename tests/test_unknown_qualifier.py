@@ -176,3 +176,23 @@ def test_qualifier_is_non_sovereign_and_provider_free():
 
     for token in forbidden:
         assert token not in source
+
+
+def test_surface_verbs_sais_and_utilisant_do_not_become_unknown_concepts():
+    result = qualify_unknowns(
+        user_message=(
+            "Explique ce que tu sais en mémoire sur Obsidia "
+            "en utilisant ta mémoire."
+        ),
+        language="fr",
+        lexical_unknowns=[
+            "sais",
+            "utilisant",
+            "florvaxium",
+        ],
+        semantic_query_snapshot={},
+    )
+
+    assert "sais" in result["surface_language_unknowns"]
+    assert "utilisant" in result["surface_language_unknowns"]
+    assert result["unresolved_unknowns"] == ["florvaxium"]

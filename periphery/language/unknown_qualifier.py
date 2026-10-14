@@ -22,6 +22,8 @@ from typing import Any
 
 _FR_SURFACE_WORDS = {
     "retrouve",
+    "sais",
+    "utilisant",
     "dans",
     "precedente",
     "a",
@@ -318,6 +320,7 @@ def qualify_unknowns(
     language: str = "unknown",
     lexical_unknowns: list[str] | None = None,
     semantic_query_snapshot: dict[str, Any] | None = None,
+    resolved_semantic_terms: list[str] | None = None,
 ) -> dict[str, Any]:
     """
     Classify lexical unknowns without resolving new knowledge.
@@ -359,6 +362,14 @@ def qualify_unknowns(
         )
     )
 
+    # Trusted deterministic Brody/SENS role surfaces may resolve lexical
+    # units without creating new knowledge. Model/Qwen evidence is not passed.
+    role_vocabulary: set[str] = set()
+    for value in resolved_semantic_terms or []:
+        role_vocabulary.update(
+            _tokens(value)
+        )
+
     surface_language_unknowns: list[str] = []
     semantically_resolved_unknowns: list[str] = []
     unresolved_unknowns: list[str] = []
@@ -370,9 +381,24 @@ def qualify_unknowns(
             )
             continue
 
-        if _is_semantically_resolved(
-            token,
-            semantic_vocabulary,
+        if (
+
+
+            _is_semantically_resolved(
+
+
+                token,
+
+
+                semantic_vocabulary,
+
+
+            )
+
+
+            or token in role_vocabulary
+
+
         ):
             semantically_resolved_unknowns.append(
                 token
@@ -416,6 +442,10 @@ def qualify_unknowns(
         ),
         "semantic_is_canonical": semantic.get(
             "is_canonical"
+        ),
+
+        "resolved_semantic_role_terms": sorted(
+            role_vocabulary
         ),
 
         "readonly": True,

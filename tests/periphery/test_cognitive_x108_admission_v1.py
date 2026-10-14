@@ -159,3 +159,56 @@ def test_no_agent_symbols_in_module():
     import periphery.context.cognitive_x108_admission as mod
     assert "AgentResult" not in mod.__dict__
     assert "AgentLayer" not in mod.__dict__
+
+
+def test_upstream_hold_is_preserved_as_constraint():
+    result = admit_cognitive_context(
+        _v2(),
+        "sig-w2-upstream-hold",
+        upstream_gate_constraint="HOLD",
+        upstream_gate_evidence_ref="sha256:hold-proof",
+    )
+    assert result.decision == "HOLD"
+    assert result.x108_gate_status == "X108_DRY_RUN_UPSTREAM_HOLD"
+    assert "UPSTREAM_X108_GATE_CONSTRAINT:HOLD" in result.reason_codes
+    assert result.evidence_ticket_refs == ["sha256:hold-proof"]
+    assert result.emits_act is False
+    assert result.decision_authority == "KX108_ONLY"
+
+
+def test_upstream_block_beats_critical_and_hold():
+    result = admit_cognitive_context(
+        _v2(),
+        "sig-w2-upstream-block",
+        critical_action_requested=True,
+        upstream_gate_constraint="BLOCK",
+        upstream_gate_evidence_ref="sha256:block-proof",
+    )
+    assert result.decision == "BLOCK"
+    assert result.x108_gate_status == "X108_DRY_RUN_UPSTREAM_BLOCK"
+    assert "UPSTREAM_X108_GATE_CONSTRAINT:BLOCK" in result.reason_codes
+    assert result.emits_act is False
+
+
+def test_upstream_allow_never_promotes_real_allow():
+    result = admit_cognitive_context(
+        _v2(),
+        "sig-w2-upstream-allow",
+        upstream_gate_constraint="ALLOW",
+    )
+    assert result.decision == "ALLOW_CONTEXT_ONLY"
+    assert "UPSTREAM_X108_ALLOW_NOT_PROMOTED" in result.reason_codes
+    assert result.emits_act is False
+    assert result.dry_run is True
+
+
+def test_invalid_upstream_gate_is_rejected():
+    with pytest.raises(
+        ValueError,
+        match="INVALID_UPSTREAM_X108_GATE_CONSTRAINT",
+    ):
+        admit_cognitive_context(
+            _v2(),
+            "sig-w2-upstream-invalid",
+            upstream_gate_constraint="ACT",
+        )

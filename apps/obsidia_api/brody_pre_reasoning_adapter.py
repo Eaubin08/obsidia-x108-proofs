@@ -19,6 +19,11 @@ from __future__ import annotations
 
 from typing import Any
 
+from periphery.cognition.semantic_roles_v0 import (
+    SemanticResolutionStatusV0,
+    SemanticRoleProjectionV0,
+)
+
 from apps.obsidia_api.brody_semantic_query_router import (
     build_semantic_query,
 )
@@ -48,6 +53,7 @@ def build_brody_pre_reasoning_snapshot(
     authority_snapshot: dict[str, Any] | None = None,
     tree_signal_packet: dict[str, Any] | None = None,
     tree_policy_snapshot: dict[str, Any] | None = None,
+    semantic_role_projection: SemanticRoleProjectionV0 | None = None,
 ) -> dict[str, Any]:
     """
     Build the bounded cognitive state required before Brody reasoning.
@@ -173,13 +179,163 @@ def build_brody_pre_reasoning_snapshot(
             ):
                 raw_unknowns.append(token)
 
+    # R6-D2: trusted Brody/SENS role spans may qualify lexical surface
+
+
+    # units before reasoning. Model/Qwen projections are not supplied here.
+
+
+    resolved_semantic_role_terms: list[str] = []
+
+
+    semantic_role_context: dict[str, Any] | None = None
+
+
+
+    if isinstance(
+
+
+        semantic_role_projection,
+
+
+        SemanticRoleProjectionV0,
+
+
+    ):
+
+
+        semantic_role_context = (
+
+
+            semantic_role_projection.to_brody_context()
+
+
+        )
+
+
+
+        if (
+
+
+            semantic_role_context.get("readonly") is not True
+
+
+            or semantic_role_context.get("non_sovereign") is not True
+
+
+            or semantic_role_context.get("decision_authority")
+
+
+            != "KX108_ONLY"
+
+
+        ):
+
+
+            raise ValueError(
+
+
+                "BRODY_PRE_REASONING_SEMANTIC_ROLE_BOUNDARY_INVALID"
+
+
+            )
+
+
+
+        for binding in semantic_role_projection.bindings:
+
+
+            if (
+
+
+                binding.status
+
+
+                is not SemanticResolutionStatusV0.RESOLVED
+
+
+                or len(binding.candidates) != 1
+
+
+            ):
+
+
+                continue
+
+
+
+            span = binding.candidates[0].source_span
+
+
+            if span is None:
+
+
+                continue
+
+
+
+            start, end = span
+
+
+            if not (
+
+
+                isinstance(start, int)
+
+
+                and isinstance(end, int)
+
+
+                and 0 <= start < end <= len(message)
+
+
+            ):
+
+
+                continue
+
+
+
+            surface = message[start:end].strip()
+
+
+            if surface and surface not in resolved_semantic_role_terms:
+
+
+                resolved_semantic_role_terms.append(surface)
+
+
+
     unknown_qualification = qualify_unknowns(
+
+
         user_message=message,
+
+
         language=lang,
+
+
         lexical_unknowns=raw_unknowns,
+
+
         semantic_query_snapshot=(
+
+
             semantic_query_snapshot
+
+
         ),
+
+
+        resolved_semantic_terms=(
+
+
+            resolved_semantic_role_terms
+
+
+        ),
+
+
     )
 
     unresolved_unknowns = list(
@@ -246,6 +402,14 @@ def build_brody_pre_reasoning_snapshot(
 
         "unknown_qualification": (
             unknown_qualification
+        ),
+
+        "semantic_role_context": (
+            semantic_role_context
+        ),
+
+        "resolved_semantic_role_terms": (
+            resolved_semantic_role_terms
         ),
 
         "pre_reasoning_calibration": (

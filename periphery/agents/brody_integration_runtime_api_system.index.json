@@ -543,7 +543,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_real_response_pipeline.py",
-      "sha256": "44920d64cb10cb88c183ab420139be4e6da8dad29ca44fe38d9fdf221979c4a7",
+      "sha256": "58aa5ad42fe82375bdf451394376fad10a0629c86a563089103f7e82de445d33",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
