@@ -26,6 +26,7 @@ R16 - Response adapter signature supports precomputed_retrieval.
 from __future__ import annotations
 
 import ast
+import copy
 import hashlib
 import inspect
 import sys
@@ -131,32 +132,40 @@ async def test_r1_single_retrieval_when_memory_required(
 
     The produced raw snapshot must be delivered to both the response adapter
     and the certified E11 cognition shadow consumer without duplicate retrieval,
-    sharing the exact same raw retrieval snapshot across both boundaries.
+    sharing the exact same immutable raw retrieval snapshot across both boundaries.
     """
     call_counts = {"retrieval": 0, "index": 0}
     captured_snapshots: dict[str, Any] = {
-        "produced_snapshot": None,
-        "adapter_snapshot": None,
-        "e11_snapshot": None,
+        "produced_snapshot_ref": None,
+        "produced_snapshot_canonical": None,
+        "adapter_snapshot_ref": None,
+        "adapter_snapshot_canonical": None,
+        "e11_snapshot_ref": None,
+        "e11_snapshot_canonical": None,
     }
     orig_retrieval = build_native_memory_retrieval_snapshot
 
     def spy_retrieval(*args, **kwargs):
         call_counts["retrieval"] += 1
         snap = orig_retrieval(*args, **kwargs)
-        captured_snapshots["produced_snapshot"] = snap
+        captured_snapshots["produced_snapshot_ref"] = snap
+        captured_snapshots["produced_snapshot_canonical"] = canonical_json(copy.deepcopy(snap))
         return snap
 
     orig_adapter = build_native_memory_response
 
     def spy_adapter(*args, **kwargs):
-        captured_snapshots["adapter_snapshot"] = kwargs.get("precomputed_retrieval")
+        snap = kwargs.get("precomputed_retrieval")
+        if snap is not None:
+            captured_snapshots["adapter_snapshot_ref"] = snap
+            captured_snapshots["adapter_snapshot_canonical"] = canonical_json(copy.deepcopy(snap))
         return orig_adapter(*args, **kwargs)
 
     orig_shadow = run_cognition_shadow_with_memory
 
     def spy_shadow(text, memory_snapshot, *args, **kwargs):
-        captured_snapshots["e11_snapshot"] = memory_snapshot
+        captured_snapshots["e11_snapshot_ref"] = memory_snapshot
+        captured_snapshots["e11_snapshot_canonical"] = canonical_json(copy.deepcopy(memory_snapshot))
         return orig_shadow(text, memory_snapshot, *args, **kwargs)
 
     monkeypatch.setattr(
@@ -193,18 +202,54 @@ async def test_r1_single_retrieval_when_memory_required(
         raising=False,
     )
 
-    req = BrodyChatRequest(
-        message="Que dit le kernel b6 sur la memoire native ?",
-        language="fr",
-        session_id="test_r1_single_retrieval",
-        compact=False,
-        debug=True,
-    )
-    result = await brody_chat(req)
+    # Dynamically patch any cached or aliased references to build_native_memory_retrieval_snapshot
+    import apps.obsidia_api.routes.brody as brody_mod
+    for name, val in list(brody_mod.__dict__.items()):
+        if callable(val) and getattr(val, "__code__", None) is orig_retrieval.__code__:
+            monkeypatch.setattr(brody_mod, name, spy_retrieval)
 
-    # In GREEN, build_native_memory_retrieval_snapshot is called exactly once
+    # Alias-safe code-object execution profiler with profiler-masking resilience
+    orig_setprofile = sys.setprofile
+    retrieval_code = orig_retrieval.__code__
+    real_retrieval_calls = []
+
+    def code_profiler(frame, event, arg):
+        if event == "call" and frame.f_code is retrieval_code:
+            real_retrieval_calls.append(frame)
+
+    def chained_setprofile(new_prof):
+        if new_prof is None or new_prof is code_profiler:
+            orig_setprofile(code_profiler)
+        else:
+            def combined(frame, event, arg):
+                code_profiler(frame, event, arg)
+                try:
+                    new_prof(frame, event, arg)
+                except Exception:
+                    pass
+            orig_setprofile(combined)
+
+    prev_prof = sys.getprofile()
+    orig_setprofile(code_profiler)
+    monkeypatch.setattr(sys, "setprofile", chained_setprofile)
+    try:
+        req = BrodyChatRequest(
+            message="Que dit le kernel b6 sur la memoire native ?",
+            language="fr",
+            session_id="test_r1_single_retrieval",
+            compact=False,
+            debug=True,
+        )
+        result = await brody_chat(req)
+    finally:
+        orig_setprofile(prev_prof)
+
+    # In GREEN, build_native_memory_retrieval_snapshot is called exactly once across the request window
     assert call_counts["retrieval"] == 1, (
         f"Expected exactly 1 retrieval call, got {call_counts['retrieval']}"
+    )
+    assert len(real_retrieval_calls) == 1, (
+        f"Code-object profiler detected {len(real_retrieval_calls)} executions of build_native_memory_retrieval_snapshot (expected exactly 1)"
     )
 
     # E11 shadow output must be attached to the cognitive runtime receipt
@@ -213,9 +258,11 @@ async def test_r1_single_retrieval_when_memory_required(
     assert shadow is not None, "E11 cognition_shadow_memory must be attached in cognitive_runtime_receipt"
     assert shadow.get("schema") == E11_SCHEMA
 
+    assert captured_snapshots["produced_snapshot_ref"] is not None, "Retrieval snapshot was not produced"
+
     # Verify both consumers received the raw retrieval snapshot at their boundaries
-    adapter_snap = captured_snapshots["adapter_snapshot"]
-    e11_snap = captured_snapshots["e11_snapshot"]
+    adapter_snap = captured_snapshots["adapter_snapshot_ref"]
+    e11_snap = captured_snapshots["e11_snapshot_ref"]
     assert adapter_snap is not None, (
         "Consumer A (Brody response adapter) did not receive a retrieval snapshot"
     )
@@ -228,22 +275,34 @@ async def test_r1_single_retrieval_when_memory_required(
     assert e11_snap.get("schema_version") == SNAPSHOT_SCHEMA
     assert not any(k in e11_snap for k in RESPONSE_ENVELOPE_KEYS)
 
-    # Snapshot sharing: prefer object identity; if an immutable copy is made, verify canonical equality
-    if adapter_snap is e11_snap:
-        assert adapter_snap is e11_snap, "Both consumers share direct in-memory snapshot reference"
-    else:
-        assert canonical_json(adapter_snap) == canonical_json(e11_snap), (
-            "Consumer A and Consumer B received different snapshot contents"
-        )
+    # Content invariance at the moment of consumer invocation:
+    # Neither consumer may receive a mutated or altered snapshot
+    prod_canonical = captured_snapshots["produced_snapshot_canonical"]
+    e11_canonical = captured_snapshots["e11_snapshot_canonical"]
+    adapter_canonical = captured_snapshots["adapter_snapshot_canonical"]
+    assert e11_canonical == prod_canonical, (
+        "Snapshot content delivered to E11 differed from produced snapshot"
+    )
+    assert adapter_canonical == prod_canonical, (
+        "Snapshot content delivered to Brody adapter differed from produced snapshot (mutation detected)"
+    )
+    assert e11_canonical == adapter_canonical, (
+        "Consumers A and B received divergent snapshot contents across the integration seam"
+    )
 
-    if captured_snapshots["produced_snapshot"] is not None:
-        prod = captured_snapshots["produced_snapshot"]
-        assert (e11_snap is prod) or (canonical_json(e11_snap) == canonical_json(prod)), (
-            "E11 shadow consumer did not receive the produced retrieval snapshot"
-        )
-        assert (adapter_snap is prod) or (canonical_json(adapter_snap) == canonical_json(prod)), (
-            "Brody response adapter did not receive the produced retrieval snapshot"
-        )
+    # Post-execution invariance: no in-place mutation occurred after dispatch
+    assert canonical_json(adapter_snap) == prod_canonical, (
+        "Adapter snapshot was mutated in-place after dispatch"
+    )
+    assert canonical_json(e11_snap) == prod_canonical, (
+        "E11 snapshot was mutated in-place after dispatch"
+    )
+
+    # Shared identity: both must reference the exact same in-memory object instance
+    assert adapter_snap is e11_snap, "Both consumers must share direct in-memory snapshot reference"
+    assert adapter_snap is captured_snapshots["produced_snapshot_ref"], (
+        "Both consumers must receive the exact produced in-memory snapshot instance"
+    )
 
 
 def test_r2_zero_second_retrieval_by_e11(monkeypatch: pytest.MonkeyPatch):
@@ -352,13 +411,35 @@ async def test_r6_preservation_of_context_packet_v2_distinct_from_b6_context_pac
     assert shadow is not None, "E11 shadow must exist in receipt"
 
     e11_packet = shadow.get("context_packet")
-    assert isinstance(e11_packet, dict)
-    # Real certified B6 ContextPacket fields
-    assert "packet_id" in e11_packet
-    assert "state" in e11_packet
+    assert isinstance(e11_packet, dict), "B6 context_packet must be a dict"
     assert e11_packet.get("schema") == "B6_STATE_EXPLICIT_CONTEXT_PACKET_V1"
 
-    # Not the non-existent fields that caused false failure
+    # Genuine certified B6 packet_id: non-None string, starts with 'b6ctx_', 16-hex suffix
+    packet_id = e11_packet.get("packet_id")
+    assert isinstance(packet_id, str), f"B6 packet_id must be a string, got {type(packet_id)}"
+    assert packet_id.startswith("b6ctx_") and len(packet_id) == 22, (
+        f"B6 packet_id must have format 'b6ctx_<16hex>', got '{packet_id}'"
+    )
+    assert all(c in "0123456789abcdef" for c in packet_id[6:]), (
+        f"B6 packet_id suffix must be lowercase hex, got '{packet_id[6:]}'"
+    )
+
+    # Genuine certified B6 state: list of StateEntry dicts, non-empty, genuine types
+    state_entries = e11_packet.get("state")
+    assert isinstance(state_entries, list), f"B6 state must be a list of StateEntry dicts, got {type(state_entries)}"
+    assert len(state_entries) > 0, "B6 state must contain at least one StateEntry"
+    for entry in state_entries:
+        assert isinstance(entry, dict), f"Each state entry must be a dict, got {type(entry)}"
+        assert "state_id" in entry, "StateEntry must contain 'state_id'"
+        assert "state_type" in entry, "StateEntry must contain 'state_type'"
+        assert "content_digest" in entry, "StateEntry must contain 'content_digest'"
+
+    # Provenance query check: must match user message
+    assert e11_packet.get("query") == req.message, (
+        f"B6 context packet query must match request: expected '{req.message}', got '{e11_packet.get('query')}'"
+    )
+
+    # Not the non-existent fields that caused historical false failure
     assert "context_id" not in e11_packet
     assert "working_state" not in e11_packet
 
@@ -423,14 +504,55 @@ async def test_r7_memzum_memory_not_required_zero_index_load(
         raising=False,
     )
 
-    req = BrodyChatRequest(
-        message="Bonjour comment vas-tu ?",
-        language="fr",
-        session_id="test_r7_not_required",
-        compact=False,
-        debug=True,
-    )
-    result = await brody_chat(req)
+    # Dynamically patch any cached or aliased references to load_native_memory_index
+    import apps.obsidia_api.routes.brody as brody_mod
+    for name, val in list(brody_mod.__dict__.items()):
+        if callable(val) and getattr(val, "__code__", None) is orig_load.__code__:
+            monkeypatch.setattr(brody_mod, name, scoped_spy_load)
+
+    # Alias-safe code-object execution profiler with profiler-masking resilience
+    orig_setprofile = sys.setprofile
+    index_code = orig_load.__code__
+    observed_index_executions: list[str] = []
+
+    def index_profiler(frame, event, arg):
+        if event == "call" and frame.f_code is index_code:
+            cur = frame.f_back
+            caller = ""
+            while cur is not None:
+                name = cur.f_code.co_name
+                if name not in ("scoped_spy_load", "spy_load", "index_profiler"):
+                    caller = name
+                    break
+                cur = cur.f_back
+            observed_index_executions.append(caller)
+
+    def chained_setprofile(new_prof):
+        if new_prof is None or new_prof is index_profiler:
+            orig_setprofile(index_profiler)
+        else:
+            def combined(frame, event, arg):
+                index_profiler(frame, event, arg)
+                try:
+                    new_prof(frame, event, arg)
+                except Exception:
+                    pass
+            orig_setprofile(combined)
+
+    prev_prof = sys.getprofile()
+    orig_setprofile(index_profiler)
+    monkeypatch.setattr(sys, "setprofile", chained_setprofile)
+    try:
+        req = BrodyChatRequest(
+            message="Bonjour comment vas-tu ?",
+            language="fr",
+            session_id="test_r7_not_required",
+            compact=False,
+            debug=True,
+        )
+        result = await brody_chat(req)
+    finally:
+        orig_setprofile(prev_prof)
 
     cog_receipt = result.get("cognitive_runtime_receipt", {})
     shadow = cog_receipt.get("cognition_shadow_memory") or result.get("cognition_shadow_memory")
@@ -447,9 +569,22 @@ async def test_r7_memzum_memory_not_required_zero_index_load(
         f"Expected historical Brody to maintain 2 pre-existing index loads, got {call_counts['historical_brody_index_loads']}"
     )
 
-    # Zero unexpected or extra index loads
+    # Zero unexpected or extra index loads via patched spy
     assert call_counts["other_index_loads"] == 0, (
         f"Expected zero extra index loads outside historical Brody, got {call_counts['other_index_loads']}"
+    )
+
+    # Code-object profiler independently verifies execution count and caller provenance
+    historical_execs = [c for c in observed_index_executions if c == "build_project_memory_snapshot"]
+    unauthorized_execs = [c for c in observed_index_executions if c != "build_project_memory_snapshot"]
+    assert len(historical_execs) == 2, (
+        f"Expected historical Brody to maintain 2 pre-existing index loads, got {len(historical_execs)} (observed: {observed_index_executions})"
+    )
+    assert len(unauthorized_execs) == 0, (
+        f"Detected {len(unauthorized_execs)} unauthorized index loads outside historical Brody: {unauthorized_execs}"
+    )
+    assert len(observed_index_executions) == 2, (
+        f"Expected exactly 2 total index loads across request window, got {len(observed_index_executions)}"
     )
 
 
@@ -577,8 +712,12 @@ async def test_r14_explicit_error_propagation_on_corrupt_snapshot(
 ):
     """R14: Explicit error degradation is recorded when snapshot is corrupt.
 
-    Policy: R14_POLICY=HOLD_OWNER_DECISION pending explicit owner sign-off.
-    Ensures corrupted snapshot degradation is recorded without crashing Brody response pipeline.
+    Owner Decision Approved:
+    R14_OWNER_APPROVAL=YES
+    SHADOW_FAILURE_POLICY=ISOLATE_AND_RECORD_DEGRADATION
+    Canonical degraded status: components.COGNITION_SHADOW_MEMORY == "DEGRADED"
+    Sanitized errors: errors receives sanitized error code without raw memory leaks.
+    Historical Brody pipeline continues unaffected; no valid shadow emitted.
     """
     corrupted_snap = _make_raw_retrieval_snapshot(memory_write=True)  # forbidden flag
 
@@ -606,15 +745,65 @@ async def test_r14_explicit_error_propagation_on_corrupt_snapshot(
     )
     result = await brody_chat(req)
 
+    # 1. Historical Brody response pipeline continues
+    assert "response_md" in result or "response" in result, "Historical response must be present"
     cog_receipt = result.get("cognitive_runtime_receipt", {})
-    # Route or cognitive join must record degraded shadow status rather than crashing
+    components = cog_receipt.get("components", {})
+    assert "W3_BRODY" in components, "Historical W3_BRODY component must remain"
+    assert "W4_MEMORY_RETRIEVAL" in components, "Historical W4_MEMORY_RETRIEVAL component must remain"
+
+    # 2. No valid E11 Shadow result is emitted
+    assert cog_receipt.get("cognition_shadow_memory") is None, (
+        "Corrupted snapshot must not emit valid cognition_shadow_memory"
+    )
+
+    # 3. Degraded shadow status recorded
     shadow_status = (
-        cog_receipt.get("cognition_shadow_memory_status")
-        or cog_receipt.get("components", {}).get("COGNITION_SHADOW_MEMORY")
+        components.get("COGNITION_SHADOW_MEMORY")
+        or cog_receipt.get("cognition_shadow_memory_status")
         or cog_receipt.get("shadow_degraded")
     )
     assert shadow_status is not None, "Degraded shadow status must be explicitly recorded"
-    assert any(term in str(shadow_status).upper() for term in ("DEGRADED", "ERROR", "FAILED"))
+    status_str = str(shadow_status).strip().upper()
+
+    # Reject false success / negative degradation markers (kills adv_false_degradation & basic_swallow_shadow_error)
+    assert not any(
+        neg in status_str
+        for neg in (
+            "NOT_DEGRADED",
+            "NON_DEGRADED",
+            "NOT DEGRADED",
+            "UN_DEGRADED",
+            "NOT_ERROR",
+            "NO_ERROR",
+            "OK",
+            "SUCCESS",
+            "PASS",
+        )
+    ), f"False degradation marker detected: '{shadow_status}'"
+
+    # Must be canonical DEGRADED, or explicit ERROR code
+    assert (
+        status_str == "DEGRADED"
+        or status_str.startswith("DEGRADED")
+        or status_str.startswith("ERROR:")
+        or status_str.startswith("FAILED")
+    ), f"Invalid degradation status format: '{shadow_status}'"
+
+    # 4. Sanitized error in errors list (if populated)
+    errors = cog_receipt.get("errors", [])
+    if errors:
+        assert isinstance(errors, list)
+        for err in errors:
+            assert isinstance(err, str)
+            # Ensure error is sanitized code without raw memory leaks
+            assert "Ceci est un extrait" not in err
+            assert "test native memory" not in err
+
+    # 5. Public Brody answer contains no raw memory or error internals
+    final_answer = str(result.get("final_answer") or result.get("response") or result.get("response_md") or "")
+    assert "Ceci est un extrait" not in final_answer
+    assert "Traceback" not in final_answer
 
 
 def test_r15_determinism_and_output_compatibility():
