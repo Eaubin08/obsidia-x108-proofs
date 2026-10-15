@@ -276,6 +276,13 @@ REJECTED = {
     "response_envelope_with_schema": lambda: {**_response_envelope(), "schema_version": SCHEMA},
     "missing_status": lambda: {k: v for k, v in USABLE.items() if k != "status"},
     "empty_status": lambda: snapshot(status=""),
+    # BF1: status must be a non-empty str; non-str values are rejected, never coerced
+    "status_int": lambda: snapshot(status=17),
+    "status_true": lambda: snapshot(status=True),
+    "status_false": lambda: snapshot(status=False),
+    "status_none": lambda: snapshot(status=None),
+    "status_list": lambda: snapshot(status=[]),
+    "status_dict": lambda: snapshot(status={}),
     "items_not_list": lambda: snapshot(selected_items="nm-1"),
     "memory_write_true": lambda: snapshot(items=[item("nm-1")], memory_write=True),
     "emits_act_true": lambda: snapshot(items=[item("nm-1")], emits_act=True),
@@ -290,6 +297,79 @@ def test_m10_non_v1_snapshots_rejected_explicitly(key):
     mod = shadow()
     with pytest.raises((TypeError, ValueError)):
         mod.run_cognition_shadow_with_memory(TEXTS["closed_action"], REJECTED[key]())
+
+
+# M3b — BF2: observe REAL detect_unresolved invocations (D2: SENS entries only, even if results discarded) ----
+
+B7_SPY_SNAPSHOTS = {
+    "usable_item": lambda: snapshot(items=[item("nm-1", 1), item("nm-2", 2)]),
+    "unknown_status": lambda: snapshot("MEMORY_REQUIRED_EMPTY"),
+    "error_item": lambda: snapshot(items=[item(None, 1), item("nm-2", 2)]),
+}
+
+
+def _install_b7_spy(monkeypatch, mod):
+    """Instrument every binding the consumer could call: the detector module attribute and any name bound in
+    the consumer namespace. SENS / memory adapters are wrapped (behavior unchanged) to capture the exact
+    objects the consumer received, so identity and order can be checked without imposing an import style."""
+    import app.cognition.b7.detector as detector
+    import app.harness.state_explicit.memory_adapter as memory_adapter
+    import app.harness.state_explicit.sens_adapter as sens_adapter
+
+    real_detect = detector.detect_unresolved
+    real_sens = sens_adapter.sens_state_entries
+    real_mem = memory_adapter.native_memory_state_entries
+    log = {"b7_args": [], "b7_results": [], "sens": [], "mem": []}
+
+    def spy_detect(entry, *args, **kwargs):
+        log["b7_args"].append(entry)
+        result = real_detect(entry, *args, **kwargs)
+        log["b7_results"].append(result)
+        return result
+
+    def spy_sens(*args, **kwargs):
+        result = real_sens(*args, **kwargs)
+        log["sens"].append(result)
+        return result
+
+    def spy_mem(*args, **kwargs):
+        result = real_mem(*args, **kwargs)
+        log["mem"].append(result)
+        return result
+
+    for target, name, spy in ((detector, "detect_unresolved", spy_detect),
+                              (sens_adapter, "sens_state_entries", spy_sens),
+                              (memory_adapter, "native_memory_state_entries", spy_mem)):
+        monkeypatch.setattr(target, name, spy)
+        if hasattr(mod, name):
+            monkeypatch.setattr(mod, name, spy)
+    return log
+
+
+@pytest.mark.parametrize("skey", sorted(B7_SPY_SNAPSHOTS))
+@pytest.mark.parametrize("tkey", ["coreference", "memory_relevant", "closed_action"])
+def test_m3b_b7_invoked_exactly_once_per_sens_entry_never_on_memory(monkeypatch, tkey, skey):
+    mod = shadow()
+    snap = B7_SPY_SNAPSHOTS[skey]()
+    expected_requests = direct(TEXTS[tkey], snap)[3]              # computed before the spy is installed
+    log = _install_b7_spy(monkeypatch, mod)
+    out = mod.run_cognition_shadow_with_memory(TEXTS[tkey], snap)
+
+    assert len(log["sens"]) == 1, "SENS adapter must be called exactly once"
+    assert len(log["mem"]) == 1, "native memory adapter must be called exactly once"
+    sens_entries, mem_entries = log["sens"][0], log["mem"][0]
+    assert mem_entries, "precondition: the snapshot yields at least one memory entry"
+
+    # exactly one invocation per SENS entry, same objects, same order
+    assert len(log["b7_args"]) == len(sens_entries)
+    assert all(a is e for a, e in zip(log["b7_args"], sens_entries))
+    # never on a memory entry (by identity and by type), even if its results would be discarded
+    assert not any(a is m for a in log["b7_args"] for m in mem_entries)
+    assert not any(str(a.state_type).startswith("NATIVE_MEMORY") for a in log["b7_args"])
+    # output requests unchanged: exactly the spied SENS results, in order
+    flat = [r for result in log["b7_results"] for r in result]
+    assert canon(out["resolution_requests"]) == canon([r.to_dict() for r in flat])
+    assert canon(out["resolution_requests"]) == canon([r.to_dict() for r in expected_requests])
 
 
 # M11 — no second retrieval, no response engine ---------------------------------------------------
