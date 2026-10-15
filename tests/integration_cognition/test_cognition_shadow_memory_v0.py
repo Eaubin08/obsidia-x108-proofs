@@ -308,65 +308,65 @@ B7_SPY_SNAPSHOTS = {
 }
 
 
-def _install_b7_spy(monkeypatch, mod):
-    """Instrument every binding the consumer could call: the detector module attribute and any name bound in
-    the consumer namespace. SENS / memory adapters are wrapped (behavior unchanged) to capture the exact
-    objects the consumer received, so identity and order can be checked without imposing an import style."""
+def _observe_by_code_object(fn):
+    """Run ``fn()`` under sys.setprofile and record, by code-object identity (alias-safe: direct import, aliased
+    import or cached reference all execute the same ``__code__``), the StateEntry objects received by B7
+    ``detect_unresolved`` and those returned by the SENS and native memory adapters.
+
+    Limits: the profiler is per-thread; calls in other threads or processes and arbitrary native functions are
+    not observed. It is installed only for the duration of ``fn()`` and the previous profiler is restored."""
     import app.cognition.b7.detector as detector
     import app.harness.state_explicit.memory_adapter as memory_adapter
     import app.harness.state_explicit.sens_adapter as sens_adapter
 
-    real_detect = detector.detect_unresolved
-    real_sens = sens_adapter.sens_state_entries
-    real_mem = memory_adapter.native_memory_state_entries
+    b7_code = detector.detect_unresolved.__code__
+    sens_code = sens_adapter.sens_state_entries.__code__
+    mem_code = memory_adapter.native_memory_state_entries.__code__
+    b7_arg = b7_code.co_varnames[0]
     log = {"b7_args": [], "b7_results": [], "sens": [], "mem": []}
 
-    def spy_detect(entry, *args, **kwargs):
-        log["b7_args"].append(entry)
-        result = real_detect(entry, *args, **kwargs)
-        log["b7_results"].append(result)
-        return result
+    def profiler(frame, event, arg):
+        if event == "call" and frame.f_code is b7_code:
+            log["b7_args"].append(frame.f_locals[b7_arg])
+        elif event == "return":
+            code = frame.f_code
+            if code is b7_code:
+                log["b7_results"].append(arg)
+            elif code is sens_code:
+                log["sens"].append(arg)
+            elif code is mem_code:
+                log["mem"].append(arg)
 
-    def spy_sens(*args, **kwargs):
-        result = real_sens(*args, **kwargs)
-        log["sens"].append(result)
-        return result
-
-    def spy_mem(*args, **kwargs):
-        result = real_mem(*args, **kwargs)
-        log["mem"].append(result)
-        return result
-
-    for target, name, spy in ((detector, "detect_unresolved", spy_detect),
-                              (sens_adapter, "sens_state_entries", spy_sens),
-                              (memory_adapter, "native_memory_state_entries", spy_mem)):
-        monkeypatch.setattr(target, name, spy)
-        if hasattr(mod, name):
-            monkeypatch.setattr(mod, name, spy)
-    return log
+    previous = sys.getprofile()
+    sys.setprofile(profiler)
+    try:
+        out = fn()
+    finally:
+        sys.setprofile(previous)
+    return out, log
 
 
 @pytest.mark.parametrize("skey", sorted(B7_SPY_SNAPSHOTS))
 @pytest.mark.parametrize("tkey", ["coreference", "memory_relevant", "closed_action"])
-def test_m3b_b7_invoked_exactly_once_per_sens_entry_never_on_memory(monkeypatch, tkey, skey):
+def test_m3b_b7_invoked_exactly_once_per_sens_entry_never_on_memory(tkey, skey):
     mod = shadow()
     snap = B7_SPY_SNAPSHOTS[skey]()
-    expected_requests = direct(TEXTS[tkey], snap)[3]              # computed before the spy is installed
-    log = _install_b7_spy(monkeypatch, mod)
-    out = mod.run_cognition_shadow_with_memory(TEXTS[tkey], snap)
+    expected_requests = direct(TEXTS[tkey], snap)[3]              # reference calls stay outside the window
+    out, log = _observe_by_code_object(lambda: mod.run_cognition_shadow_with_memory(TEXTS[tkey], snap))
 
     assert len(log["sens"]) == 1, "SENS adapter must be called exactly once"
     assert len(log["mem"]) == 1, "native memory adapter must be called exactly once"
     sens_entries, mem_entries = log["sens"][0], log["mem"][0]
     assert mem_entries, "precondition: the snapshot yields at least one memory entry"
 
-    # exactly one invocation per SENS entry, same objects, same order
+    # B7_CALLS == SENS_ENTRIES: one invocation per SENS entry, same objects, same order
     assert len(log["b7_args"]) == len(sens_entries)
     assert all(a is e for a, e in zip(log["b7_args"], sens_entries))
-    # never on a memory entry (by identity and by type), even if its results would be discarded
+    # never on a memory entry (identity and type), even when the result would be silently discarded
     assert not any(a is m for a in log["b7_args"] for m in mem_entries)
-    assert not any(str(a.state_type).startswith("NATIVE_MEMORY") for a in log["b7_args"])
-    # output requests unchanged: exactly the spied SENS results, in order
+    assert not any(str(getattr(a, "state_type", "")).startswith("NATIVE_MEMORY") for a in log["b7_args"])
+    # output requests unchanged: exactly the observed SENS results, in order
+    assert len(log["b7_results"]) == len(log["b7_args"])
     flat = [r for result in log["b7_results"] for r in result]
     assert canon(out["resolution_requests"]) == canon([r.to_dict() for r in flat])
     assert canon(out["resolution_requests"]) == canon([r.to_dict() for r in expected_requests])
