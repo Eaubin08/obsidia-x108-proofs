@@ -404,9 +404,12 @@ async def test_r6_preservation_of_context_packet_v2_distinct_from_b6_context_pac
     orig_shadow = run_cognition_shadow_with_memory
     shadow_code = orig_shadow.__code__
     assemble_code = assemble_context.__code__
+    to_dict_code = ContextPacket.to_dict.__code__
 
     observed_shadow_calls: list[Any] = []
     observed_assemble_calls: list[Any] = []
+    genuine_packets: list[dict[str, Any]] = []
+    e11_returns: list[dict[str, Any]] = []
 
     def b6_profiler(frame, event, arg):
         if event == "call":
@@ -414,6 +417,11 @@ async def test_r6_preservation_of_context_packet_v2_distinct_from_b6_context_pac
                 observed_shadow_calls.append(frame)
             elif frame.f_code is assemble_code:
                 observed_assemble_calls.append(frame)
+        elif event == "return":
+            if frame.f_code is to_dict_code and isinstance(arg, dict):
+                genuine_packets.append(copy.deepcopy(arg))
+            elif frame.f_code is shadow_code and isinstance(arg, dict):
+                e11_returns.append(copy.deepcopy(arg))
 
     orig_setprofile = sys.setprofile
 
@@ -524,6 +532,22 @@ async def test_r6_preservation_of_context_packet_v2_distinct_from_b6_context_pac
         "Published B6 context_packet does not match canonical oracle packet"
     )
 
+    # Causal output oracle: genuine packet generated during this request must equal exposed packet
+    assert len(genuine_packets) >= 1, "Genuine ContextPacket.to_dict was not executed during request"
+    genuine_packet = genuine_packets[-1]
+    assert e11_packet == genuine_packet, (
+        f"Exposed context_packet does not match genuine B6 packet produced during request. "
+        f"Differences: {[k for k in set(e11_packet) | set(genuine_packet) if e11_packet.get(k) != genuine_packet.get(k)]}"
+    )
+    for field in (
+        "packet_id", "query", "projection", "state", "instructions",
+        "capabilities", "provenance_refs", "unknowns", "omitted", "boundary"
+    ):
+        assert e11_packet.get(field) == genuine_packet.get(field), (
+            f"Protected B6 field '{field}' modified post-assembly: "
+            f"{e11_packet.get(field)!r} vs {genuine_packet.get(field)!r}"
+        )
+
     # Provenance query check: must match user message
     assert e11_packet.get("query") == req.message, (
         f"B6 context packet query must match request: expected '{req.message}', got '{e11_packet.get('query')}'"
@@ -559,9 +583,12 @@ async def test_r6b_causal_b6_execution_across_query_variations(
     orig_shadow = run_cognition_shadow_with_memory
     shadow_code = orig_shadow.__code__
     assemble_code = assemble_context.__code__
+    to_dict_code = ContextPacket.to_dict.__code__
 
     observed_shadow_calls: list[Any] = []
     observed_assemble_calls: list[Any] = []
+    genuine_packets: list[dict[str, Any]] = []
+    e11_returns: list[dict[str, Any]] = []
 
     def b6_profiler(frame, event, arg):
         if event == "call":
@@ -569,6 +596,11 @@ async def test_r6b_causal_b6_execution_across_query_variations(
                 observed_shadow_calls.append(frame)
             elif frame.f_code is assemble_code:
                 observed_assemble_calls.append(frame)
+        elif event == "return":
+            if frame.f_code is to_dict_code and isinstance(arg, dict):
+                genuine_packets.append(copy.deepcopy(arg))
+            elif frame.f_code is shadow_code and isinstance(arg, dict):
+                e11_returns.append(copy.deepcopy(arg))
 
     orig_setprofile = sys.setprofile
 
@@ -617,14 +649,40 @@ async def test_r6b_causal_b6_execution_across_query_variations(
     assert e11_packet.get("query") == msg
     assert e11_packet.get("packet_id") != "b6ctx_0123456789abcdef"
 
-    # Packet-level provenance and payload integrity across all query variations
-    assert e11_packet.get("provenance_refs") != ["synthetic:WRONG_PACKET_PROVENANCE"], (
-        f"Forged or altered provenance_refs detected in context packet for query '{msg}'"
+    # True Causal Output Oracle: capture genuine packet from ContextPacket.to_dict during this request
+    assert len(genuine_packets) >= 1, (
+        f"Genuine ContextPacket.to_dict was not executed during request for query '{msg}'"
     )
-    for st in e11_packet.get("state", []):
-        assert isinstance(st, dict)
-        assert "synthetic_replacement" not in st.get("payload", {}), (
-            f"Forged payload detected in context packet state for query '{msg}'"
+    genuine_packet = genuine_packets[-1]
+    assert isinstance(genuine_packet, dict)
+
+    # Exposed packet must strictly match genuine B6 assembled packet on ALL fields
+    assert e11_packet == genuine_packet, (
+        f"Exposed context_packet does not match genuine B6 packet produced during request for query '{msg}'. "
+        f"Differences: {[k for k in set(e11_packet) | set(genuine_packet) if e11_packet.get(k) != genuine_packet.get(k)]}"
+    )
+    assert canonical_json(e11_packet) == canonical_json(genuine_packet), (
+        f"Canonical JSON of exposed context_packet differs from genuine B6 packet for query '{msg}'"
+    )
+
+    for field in (
+        "packet_id", "query", "projection", "state", "instructions",
+        "capabilities", "provenance_refs", "unknowns", "omitted", "boundary"
+    ):
+        assert e11_packet.get(field) == genuine_packet.get(field), (
+            f"Protected B6 field '{field}' modified post-assembly for query '{msg}': "
+            f"{e11_packet.get(field)!r} vs {genuine_packet.get(field)!r}"
+        )
+
+    # Validate state entries deeply against genuine B6 state
+    gen_state = genuine_packet.get("state", [])
+    exp_state = e11_packet.get("state", [])
+    assert len(exp_state) == len(gen_state), (
+        f"State entries count mismatch for query '{msg}': {len(exp_state)} vs {len(gen_state)}"
+    )
+    for s_idx, (s_act, s_exp) in enumerate(zip(exp_state, gen_state)):
+        assert s_act == s_exp, (
+            f"State entry [{s_idx}] altered post-assembly for query '{msg}': {s_act!r} vs {s_exp!r}"
         )
 
     if expect_unresolved:
@@ -968,13 +1026,23 @@ async def test_r14_explicit_error_propagation_on_corrupt_snapshot(
             f"E11 error code must be sanitized token format: {err!r}"
         )
 
+    ALLOWED_E11_ERROR_CODES = frozenset({"E11_SHADOW_INVALID_SNAPSHOT"})
+    HISTORICAL_ERROR_RE = re.compile(r"^W[0-9]_[A-Za-z0-9_]+:DEGRADED:[A-Za-z0-9_]+(:[A-Za-z0-9_]+)*$")
+
     for err in errors:
         assert isinstance(err, str), f"Each error must be a string, got {type(err)}"
+        # Authenticated error code validation: must be an authorized E11 code or recognized historical stage degradation format
+        is_known_e11 = err in ALLOWED_E11_ERROR_CODES
+        is_known_historical = bool(HISTORICAL_ERROR_RE.match(err))
+        assert is_known_e11 or is_known_historical, (
+            f"Unauthorized or synthetic error token in receipt errors: {err!r}. "
+            f"Permitted E11 degradation codes: {sorted(ALLOWED_E11_ERROR_CODES)}"
+        )
         # Must be a sanitized token without spaces, path separators, or punctuation across ALL errors
         assert not any(c in err for c in (" ", ";", "/", "\\", "\n", "\t")), (
             f"Error entry contains forbidden characters, paths, or whitespace: {err!r}"
         )
-        assert not any(bad in err for bad in ("SECRET", "CANARY", "private", "unlisted")), (
+        assert not any(bad in err for bad in ("SECRET", "CANARY", "private", "unlisted", "CREDENTIAL", "SYNTHETIC")), (
             f"Error entry contains forbidden or secret tokens: {err!r}"
         )
         assert re.match(r"^[A-Za-z0-9_]+(:[A-Za-z0-9_]+)*$", err), (
@@ -1087,6 +1155,74 @@ async def test_r14c_governance_and_invariant_errors_not_swallowed(
         lambda *a, **kw: (_ for _ in ()).throw(TypeError("UNCERTAIN_ORIGIN_TYPE_ERROR"))
     )
     with pytest.raises(TypeError, match="UNCERTAIN_ORIGIN_TYPE_ERROR"):
+        await brody_chat(req)
+
+    # 4. Certified invariant violation inside B6 (non-finite float score in contracts._check_json)
+    # The snapshot schema itself passes _validate_snapshot, but B6 kernel invariant raises ValueError.
+    # Must propagate as ValueError and not be converted to advisory DEGRADED.
+    bad_score_snap = _make_raw_retrieval_snapshot(
+        items=[{"id": "SYNTHETIC_INVALID_SCORE", "title": "synthetic invariant fault", "score": float("nan"), "tags": ["b6"]}]
+    )
+    patch_shadow_everywhere(run_cognition_shadow_with_memory)
+    monkeypatch.setattr(
+        "apps.obsidia_api.brody_obsidia_native_memory.build_native_memory_retrieval_snapshot",
+        lambda *args, **kwargs: copy.deepcopy(bad_score_snap),
+    )
+    monkeypatch.setattr(
+        "apps.obsidia_api.brody_native_memory_response_adapter.build_native_memory_retrieval_snapshot",
+        lambda *args, **kwargs: copy.deepcopy(bad_score_snap),
+    )
+    monkeypatch.setattr(
+        "apps.obsidia_api.routes.brody.build_native_memory_retrieval_snapshot",
+        lambda *args, **kwargs: copy.deepcopy(bad_score_snap),
+        raising=False,
+    )
+    with pytest.raises(ValueError, match="non-finite float"):
+        await brody_chat(req)
+
+    # 5. Uncertain-origin ValueError from internal dependency (e.g. native_memory_state_entries)
+    # Positive attribution requires that an exception whose traceback does not originate in E11
+    # snapshot validator must propagate and not be converted to DEGRADED.
+    import app.integration.cognition_shadow_memory_v0 as e11_mod
+    orig_adapter = e11_mod.native_memory_state_entries
+    def fail_dependency(*a, **kw):
+        raise ValueError("SYNTHETIC_UNCERTAIN_DEPENDENCY")
+    monkeypatch.setattr(e11_mod, "native_memory_state_entries", fail_dependency)
+    valid_snap = _make_raw_retrieval_snapshot()
+    monkeypatch.setattr(
+        "apps.obsidia_api.brody_obsidia_native_memory.build_native_memory_retrieval_snapshot",
+        lambda *args, **kwargs: copy.deepcopy(valid_snap),
+    )
+    monkeypatch.setattr(
+        "apps.obsidia_api.brody_native_memory_response_adapter.build_native_memory_retrieval_snapshot",
+        lambda *args, **kwargs: copy.deepcopy(valid_snap),
+    )
+    monkeypatch.setattr(
+        "apps.obsidia_api.routes.brody.build_native_memory_retrieval_snapshot",
+        lambda *args, **kwargs: copy.deepcopy(valid_snap),
+        raising=False,
+    )
+    try:
+        with pytest.raises(ValueError, match="SYNTHETIC_UNCERTAIN_DEPENDENCY"):
+            await brody_chat(req)
+    finally:
+        monkeypatch.setattr(e11_mod, "native_memory_state_entries", orig_adapter)
+
+    # 6. Invalid retrieval contract (e.g. non-Mapping snapshot) must propagate TypeError
+    monkeypatch.setattr(
+        "apps.obsidia_api.brody_obsidia_native_memory.build_native_memory_retrieval_snapshot",
+        lambda *args, **kwargs: None,
+    )
+    monkeypatch.setattr(
+        "apps.obsidia_api.brody_native_memory_response_adapter.build_native_memory_retrieval_snapshot",
+        lambda *args, **kwargs: None,
+    )
+    monkeypatch.setattr(
+        "apps.obsidia_api.routes.brody.build_native_memory_retrieval_snapshot",
+        lambda *args, **kwargs: None,
+        raising=False,
+    )
+    with pytest.raises(TypeError):
         await brody_chat(req)
 
 
