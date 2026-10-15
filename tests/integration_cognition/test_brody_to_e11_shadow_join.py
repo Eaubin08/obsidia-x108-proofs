@@ -205,11 +205,13 @@ async def test_r1_single_retrieval_when_memory_required(
         raising=False,
     )
 
-    # Dynamically patch any cached or aliased references to build_native_memory_retrieval_snapshot
+    # Dynamically patch any cached or aliased references to build_native_memory_retrieval_snapshot and run_cognition_shadow_with_memory
     import apps.obsidia_api.routes.brody as brody_mod
     for name, val in list(brody_mod.__dict__.items()):
         if callable(val) and getattr(val, "__code__", None) is orig_retrieval.__code__:
             monkeypatch.setattr(brody_mod, name, spy_retrieval)
+        if callable(val) and getattr(val, "__code__", None) is orig_shadow.__code__:
+            monkeypatch.setattr(brody_mod, name, spy_shadow)
 
     # Alias-safe code-object execution profiler with profiler-masking resilience
     orig_setprofile = sys.setprofile
@@ -510,6 +512,17 @@ async def test_r6_preservation_of_context_packet_v2_distinct_from_b6_context_pac
         assert actual.get("provenance") == expected.get("provenance"), (
             f"provenance mismatch: {actual.get('provenance')} vs {expected.get('provenance')}"
         )
+        assert actual.get("payload") == expected.get("payload"), (
+            f"payload mismatch: {actual.get('payload')} vs {expected.get('payload')}"
+        )
+
+    # Packet-level provenance and deep canonical equality against oracle
+    assert e11_packet.get("provenance_refs") == oracle_packet.get("provenance_refs"), (
+        f"provenance_refs mismatch: {e11_packet.get('provenance_refs')} vs {oracle_packet.get('provenance_refs')}"
+    )
+    assert canonical_json(e11_packet) == canonical_json(oracle_packet), (
+        "Published B6 context_packet does not match canonical oracle packet"
+    )
 
     # Provenance query check: must match user message
     assert e11_packet.get("query") == req.message, (
@@ -603,6 +616,16 @@ async def test_r6b_causal_b6_execution_across_query_variations(
     assert e11_packet.get("schema") == "B6_STATE_EXPLICIT_CONTEXT_PACKET_V1"
     assert e11_packet.get("query") == msg
     assert e11_packet.get("packet_id") != "b6ctx_0123456789abcdef"
+
+    # Packet-level provenance and payload integrity across all query variations
+    assert e11_packet.get("provenance_refs") != ["synthetic:WRONG_PACKET_PROVENANCE"], (
+        f"Forged or altered provenance_refs detected in context packet for query '{msg}'"
+    )
+    for st in e11_packet.get("state", []):
+        assert isinstance(st, dict)
+        assert "synthetic_replacement" not in st.get("payload", {}), (
+            f"Forged payload detected in context packet state for query '{msg}'"
+        )
 
     if expect_unresolved:
         resolution_requests = shadow.get("resolution_requests", [])
@@ -947,6 +970,16 @@ async def test_r14_explicit_error_propagation_on_corrupt_snapshot(
 
     for err in errors:
         assert isinstance(err, str), f"Each error must be a string, got {type(err)}"
+        # Must be a sanitized token without spaces, path separators, or punctuation across ALL errors
+        assert not any(c in err for c in (" ", ";", "/", "\\", "\n", "\t")), (
+            f"Error entry contains forbidden characters, paths, or whitespace: {err!r}"
+        )
+        assert not any(bad in err for bad in ("SECRET", "CANARY", "private", "unlisted")), (
+            f"Error entry contains forbidden or secret tokens: {err!r}"
+        )
+        assert re.match(r"^[A-Za-z0-9_]+(:[A-Za-z0-9_]+)*$", err), (
+            f"Receipt error code must be sanitized token format: {err!r}"
+        )
         assert not any(
             phrase in err
             for phrase in (
@@ -966,15 +999,20 @@ async def test_r14_explicit_error_propagation_on_corrupt_snapshot(
     assert "Traceback" not in final_answer
 
 
+@pytest.mark.parametrize(
+    "exc_type, exc_msg",
+    [
+        (RuntimeError, "HISTORICAL_BACKEND_CRASH_RUNTIME"),
+        (ValueError, "HISTORICAL_BACKEND_CRASH_VALUE"),
+    ],
+)
 @pytest.mark.asyncio
 async def test_r14b_historical_pipeline_errors_not_swallowed(
-    fast_brody_chat, monkeypatch: pytest.MonkeyPatch
+    fast_brody_chat, monkeypatch: pytest.MonkeyPatch, exc_type: type, exc_msg: str
 ):
     """R14b: Failures in the historical response pipeline must NOT be swallowed or converted to E11 degradation."""
-    sentinel_err = "HISTORICAL_BACKEND_CRASH_SENTINEL"
-
     def fail_historical(**kwargs):
-        raise RuntimeError(sentinel_err)
+        raise exc_type(exc_msg)
 
     monkeypatch.setattr(
         "apps.obsidia_api.routes.brody.run_brody_real_response_pipeline",
@@ -989,7 +1027,7 @@ async def test_r14b_historical_pipeline_errors_not_swallowed(
         debug=True,
     )
 
-    with pytest.raises(RuntimeError, match=sentinel_err):
+    with pytest.raises(exc_type, match=exc_msg):
         await brody_chat(req)
 
 
@@ -1009,41 +1047,44 @@ async def test_r14c_governance_and_invariant_errors_not_swallowed(
         debug=True,
     )
 
+    import apps.obsidia_api.routes.brody as brody_mod
+    orig_shadow_code = run_cognition_shadow_with_memory.__code__
+    alias_names = {
+        name
+        for name, val in list(brody_mod.__dict__.items())
+        if callable(val) and getattr(val, "__code__", None) is orig_shadow_code
+    }
+
+    def patch_shadow_everywhere(target_fn):
+        monkeypatch.setattr(
+            "app.integration.cognition_shadow_memory_v0.run_cognition_shadow_with_memory",
+            target_fn,
+        )
+        monkeypatch.setattr(
+            "apps.obsidia_api.routes.brody.run_cognition_shadow_with_memory",
+            target_fn,
+            raising=False,
+        )
+        for name in alias_names:
+            monkeypatch.setattr(brody_mod, name, target_fn)
+
     # 1. ContextBoundError must propagate
-    monkeypatch.setattr(
-        "app.integration.cognition_shadow_memory_v0.run_cognition_shadow_with_memory",
-        lambda *a, **kw: (_ for _ in ()).throw(ContextBoundError("SENTINEL_CONTEXT_BOUND_VIOLATION")),
-    )
-    monkeypatch.setattr(
-        "apps.obsidia_api.routes.brody.run_cognition_shadow_with_memory",
-        lambda *a, **kw: (_ for _ in ()).throw(ContextBoundError("SENTINEL_CONTEXT_BOUND_VIOLATION")),
-        raising=False,
+    patch_shadow_everywhere(
+        lambda *a, **kw: (_ for _ in ()).throw(ContextBoundError("SENTINEL_CONTEXT_BOUND_VIOLATION"))
     )
     with pytest.raises(ContextBoundError, match="SENTINEL_CONTEXT_BOUND_VIOLATION"):
         await brody_chat(req)
 
     # 2. DuplicateStateError must propagate
-    monkeypatch.setattr(
-        "app.integration.cognition_shadow_memory_v0.run_cognition_shadow_with_memory",
-        lambda *a, **kw: (_ for _ in ()).throw(DuplicateStateError("SENTINEL_DUPLICATE_STATE_VIOLATION")),
-    )
-    monkeypatch.setattr(
-        "apps.obsidia_api.routes.brody.run_cognition_shadow_with_memory",
-        lambda *a, **kw: (_ for _ in ()).throw(DuplicateStateError("SENTINEL_DUPLICATE_STATE_VIOLATION")),
-        raising=False,
+    patch_shadow_everywhere(
+        lambda *a, **kw: (_ for _ in ()).throw(DuplicateStateError("SENTINEL_DUPLICATE_STATE_VIOLATION"))
     )
     with pytest.raises(DuplicateStateError, match="SENTINEL_DUPLICATE_STATE_VIOLATION"):
         await brody_chat(req)
 
     # 3. Uncertain-origin non-ValueError exception (e.g. TypeError) must also propagate
-    monkeypatch.setattr(
-        "app.integration.cognition_shadow_memory_v0.run_cognition_shadow_with_memory",
-        lambda *a, **kw: (_ for _ in ()).throw(TypeError("UNCERTAIN_ORIGIN_TYPE_ERROR")),
-    )
-    monkeypatch.setattr(
-        "apps.obsidia_api.routes.brody.run_cognition_shadow_with_memory",
-        lambda *a, **kw: (_ for _ in ()).throw(TypeError("UNCERTAIN_ORIGIN_TYPE_ERROR")),
-        raising=False,
+    patch_shadow_everywhere(
+        lambda *a, **kw: (_ for _ in ()).throw(TypeError("UNCERTAIN_ORIGIN_TYPE_ERROR"))
     )
     with pytest.raises(TypeError, match="UNCERTAIN_ORIGIN_TYPE_ERROR"):
         await brody_chat(req)
