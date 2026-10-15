@@ -29,6 +29,7 @@ import ast
 import copy
 import hashlib
 import inspect
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -40,7 +41,9 @@ if str(ROOT) not in sys.path:
 import pytest
 
 from app.cognition.b7.detector import detect_unresolved
-from app.harness.state_explicit.contracts import canonical_json
+from app.harness.state_explicit import assemble_context, ContextPacket
+from app.harness.state_explicit.contracts import ContextBoundError, canonical_json
+from app.harness.state_explicit.registry import DuplicateStateError
 from app.integration.cognition_shadow_memory_v0 import (
     BOUNDARY_KEYS,
     RESPONSE_ENVELOPE_KEYS,
@@ -393,15 +396,67 @@ async def test_r5_preservation_of_historic_brody_w3_w4_and_memory_response_chain
 async def test_r6_preservation_of_context_packet_v2_distinct_from_b6_context_packet(
     fast_brody_chat, monkeypatch: pytest.MonkeyPatch
 ):
-    """R6: ContextPacketV2 (W4) remains distinct from B6 ContextPacket (E11)."""
+    """R6: ContextPacketV2 (W4) remains distinct from B6 ContextPacket (E11),
+    and genuine E11/B6 causal execution is verified across the route for short requests.
+    """
+    orig_shadow = run_cognition_shadow_with_memory
+    shadow_code = orig_shadow.__code__
+    assemble_code = assemble_context.__code__
+
+    observed_shadow_calls: list[Any] = []
+    observed_assemble_calls: list[Any] = []
+
+    def b6_profiler(frame, event, arg):
+        if event == "call":
+            if frame.f_code is shadow_code:
+                observed_shadow_calls.append(frame)
+            elif frame.f_code is assemble_code:
+                observed_assemble_calls.append(frame)
+
+    orig_setprofile = sys.setprofile
+
+    def chained_setprofile(new_prof):
+        if new_prof is None or new_prof is b6_profiler:
+            orig_setprofile(b6_profiler)
+        else:
+            def combined(frame, event, arg):
+                b6_profiler(frame, event, arg)
+                try:
+                    new_prof(frame, event, arg)
+                except Exception:
+                    pass
+            orig_setprofile(combined)
+
+    # Dynamically patch any cached or aliased references to run_cognition_shadow_with_memory
+    import apps.obsidia_api.routes.brody as brody_mod
+    for name, val in list(brody_mod.__dict__.items()):
+        if callable(val) and getattr(val, "__code__", None) is orig_shadow.__code__:
+            monkeypatch.setattr(brody_mod, name, orig_shadow)
+
     req = BrodyChatRequest(
-        message="Que dit le kernel b6 ?",
+        message="Que dit le kernel b6 ?",  # Short normal-route request (len 23 <= 40)
         language="fr",
         session_id="test_r6_context_packets",
         compact=False,
         debug=True,
     )
-    result = await brody_chat(req)
+
+    prev_prof = sys.getprofile()
+    orig_setprofile(b6_profiler)
+    monkeypatch.setattr(sys, "setprofile", chained_setprofile)
+    try:
+        result = await brody_chat(req)
+    finally:
+        orig_setprofile(prev_prof)
+
+    # Verify genuine causal execution of E11 and B6 assemble_context for short request
+    assert len(observed_shadow_calls) == 1, (
+        f"Genuine run_cognition_shadow_with_memory was not executed during route for short request "
+        f"'{req.message}' (detected {len(observed_shadow_calls)} calls). Forged packet branch rejected."
+    )
+    assert len(observed_assemble_calls) >= 1, (
+        f"Genuine assemble_context was not executed during B6 context assembly (detected {len(observed_assemble_calls)} calls)"
+    )
 
     cog_receipt = result.get("cognitive_runtime_receipt", {})
     v2_packet = cog_receipt.get("context_packet_v2")
@@ -414,6 +469,11 @@ async def test_r6_preservation_of_context_packet_v2_distinct_from_b6_context_pac
     assert isinstance(e11_packet, dict), "B6 context_packet must be a dict"
     assert e11_packet.get("schema") == "B6_STATE_EXPLICIT_CONTEXT_PACKET_V1"
 
+    # Compute independent canonical B6 oracle for exact comparison
+    oracle_snap = _make_raw_retrieval_snapshot(query=req.message, status="MEMORY_NOT_REQUIRED", items=[])
+    oracle_shadow = orig_shadow(req.message, oracle_snap)
+    oracle_packet = oracle_shadow.get("context_packet", {})
+
     # Genuine certified B6 packet_id: non-None string, starts with 'b6ctx_', 16-hex suffix
     packet_id = e11_packet.get("packet_id")
     assert isinstance(packet_id, str), f"B6 packet_id must be a string, got {type(packet_id)}"
@@ -423,16 +483,33 @@ async def test_r6_preservation_of_context_packet_v2_distinct_from_b6_context_pac
     assert all(c in "0123456789abcdef" for c in packet_id[6:]), (
         f"B6 packet_id suffix must be lowercase hex, got '{packet_id[6:]}'"
     )
+    assert packet_id != "b6ctx_0123456789abcdef", "Forged dummy packet_id rejected"
+    assert packet_id == oracle_packet.get("packet_id"), (
+        f"B6 packet_id does not match canonical computation: {packet_id} vs {oracle_packet.get('packet_id')}"
+    )
 
     # Genuine certified B6 state: list of StateEntry dicts, non-empty, genuine types
     state_entries = e11_packet.get("state")
     assert isinstance(state_entries, list), f"B6 state must be a list of StateEntry dicts, got {type(state_entries)}"
     assert len(state_entries) > 0, "B6 state must contain at least one StateEntry"
-    for entry in state_entries:
-        assert isinstance(entry, dict), f"Each state entry must be a dict, got {type(entry)}"
-        assert "state_id" in entry, "StateEntry must contain 'state_id'"
-        assert "state_type" in entry, "StateEntry must contain 'state_type'"
-        assert "content_digest" in entry, "StateEntry must contain 'content_digest'"
+    oracle_state = oracle_packet.get("state", [])
+    assert len(state_entries) == len(oracle_state), (
+        f"State entries count mismatch: {len(state_entries)} vs {len(oracle_state)}"
+    )
+    for actual, expected in zip(state_entries, oracle_state):
+        assert isinstance(actual, dict), f"Each state entry must be a dict, got {type(actual)}"
+        assert actual.get("state_id") == expected.get("state_id"), (
+            f"state_id mismatch: {actual.get('state_id')} vs {expected.get('state_id')}"
+        )
+        assert actual.get("state_type") == expected.get("state_type"), (
+            f"state_type mismatch: {actual.get('state_type')} vs {expected.get('state_type')}"
+        )
+        assert actual.get("content_digest") == expected.get("content_digest"), (
+            f"content_digest mismatch: {actual.get('content_digest')} vs {expected.get('content_digest')}"
+        )
+        assert actual.get("provenance") == expected.get("provenance"), (
+            f"provenance mismatch: {actual.get('provenance')} vs {expected.get('provenance')}"
+        )
 
     # Provenance query check: must match user message
     assert e11_packet.get("query") == req.message, (
@@ -449,6 +526,89 @@ async def test_r6_preservation_of_context_packet_v2_distinct_from_b6_context_pac
     assert "packet_id" in v2_packet
     assert "state" not in v2_packet
     assert "context_items" not in e11_packet
+
+
+@pytest.mark.parametrize(
+    "msg, expect_unresolved",
+    [
+        ("Que dit le kernel b6 ?", False),
+        ("Que dit le kernel b6 sur la memoire native ?", False),
+        ("Que dit le kernel b6 sur la memoire native et les context packets de l'architecture ?", False),
+        ("Qui a fait ça ?", True),
+        ("Bonjour comment vas-tu ?", False),
+    ],
+)
+@pytest.mark.asyncio
+async def test_r6b_causal_b6_execution_across_query_variations(
+    fast_brody_chat, monkeypatch: pytest.MonkeyPatch, msg: str, expect_unresolved: bool
+):
+    """R6b: Genuine E11 and B6 execution must occur across short, medium, long, and unresolved queries."""
+    orig_shadow = run_cognition_shadow_with_memory
+    shadow_code = orig_shadow.__code__
+    assemble_code = assemble_context.__code__
+
+    observed_shadow_calls: list[Any] = []
+    observed_assemble_calls: list[Any] = []
+
+    def b6_profiler(frame, event, arg):
+        if event == "call":
+            if frame.f_code is shadow_code:
+                observed_shadow_calls.append(frame)
+            elif frame.f_code is assemble_code:
+                observed_assemble_calls.append(frame)
+
+    orig_setprofile = sys.setprofile
+
+    def chained_setprofile(new_prof):
+        if new_prof is None or new_prof is b6_profiler:
+            orig_setprofile(b6_profiler)
+        else:
+            def combined(frame, event, arg):
+                b6_profiler(frame, event, arg)
+                try:
+                    new_prof(frame, event, arg)
+                except Exception:
+                    pass
+            orig_setprofile(combined)
+
+    req = BrodyChatRequest(
+        message=msg,
+        language="fr",
+        session_id="test_r6b_query_variations",
+        compact=False,
+        debug=True,
+    )
+
+    prev_prof = sys.getprofile()
+    orig_setprofile(b6_profiler)
+    monkeypatch.setattr(sys, "setprofile", chained_setprofile)
+    try:
+        result = await brody_chat(req)
+    finally:
+        orig_setprofile(prev_prof)
+
+    assert len(observed_shadow_calls) == 1, (
+        f"Genuine run_cognition_shadow_with_memory was not executed for query '{msg}' "
+        f"(detected {len(observed_shadow_calls)} calls)"
+    )
+    assert len(observed_assemble_calls) >= 1, (
+        f"Genuine assemble_context was not executed for query '{msg}'"
+    )
+
+    cog_receipt = result.get("cognitive_runtime_receipt", {})
+    shadow = cog_receipt.get("cognition_shadow_memory") or result.get("cognition_shadow_memory")
+    assert shadow is not None, f"E11 shadow missing for query '{msg}'"
+
+    e11_packet = shadow.get("context_packet", {})
+    assert e11_packet.get("schema") == "B6_STATE_EXPLICIT_CONTEXT_PACKET_V1"
+    assert e11_packet.get("query") == msg
+    assert e11_packet.get("packet_id") != "b6ctx_0123456789abcdef"
+
+    if expect_unresolved:
+        resolution_requests = shadow.get("resolution_requests", [])
+        assert len(resolution_requests) >= 1, (
+            f"Expected unresolved symbol resolution requests for query '{msg}', got {len(resolution_requests)}"
+        )
 
 
 @pytest.mark.asyncio
@@ -752,58 +912,141 @@ async def test_r14_explicit_error_propagation_on_corrupt_snapshot(
     assert "W3_BRODY" in components, "Historical W3_BRODY component must remain"
     assert "W4_MEMORY_RETRIEVAL" in components, "Historical W4_MEMORY_RETRIEVAL component must remain"
 
-    # 2. No valid E11 Shadow result is emitted
+    # 2. No valid E11 Shadow result is emitted (neither in receipt nor at top level)
     assert cog_receipt.get("cognition_shadow_memory") is None, (
-        "Corrupted snapshot must not emit valid cognition_shadow_memory"
+        "Corrupted snapshot must not emit valid cognition_shadow_memory in receipt"
+    )
+    assert result.get("cognition_shadow_memory") is None, (
+        "Corrupted snapshot must not emit valid cognition_shadow_memory at top level"
     )
 
-    # 3. Degraded shadow status recorded
-    shadow_status = (
-        components.get("COGNITION_SHADOW_MEMORY")
-        or cog_receipt.get("cognition_shadow_memory_status")
-        or cog_receipt.get("shadow_degraded")
+    # 3. Canonical degraded status: MUST be exactly "DEGRADED"
+    assert components.get("COGNITION_SHADOW_MEMORY") == "DEGRADED", (
+        f"Canonical degraded status must be exactly 'DEGRADED', got {components.get('COGNITION_SHADOW_MEMORY')!r}"
     )
-    assert shadow_status is not None, "Degraded shadow status must be explicitly recorded"
-    status_str = str(shadow_status).strip().upper()
 
-    # Reject false success / negative degradation markers (kills adv_false_degradation & basic_swallow_shadow_error)
-    assert not any(
-        neg in status_str
-        for neg in (
-            "NOT_DEGRADED",
-            "NON_DEGRADED",
-            "NOT DEGRADED",
-            "UN_DEGRADED",
-            "NOT_ERROR",
-            "NO_ERROR",
-            "OK",
-            "SUCCESS",
-            "PASS",
+    # 4. Mandatory sanitized error in errors list
+    errors = cog_receipt.get("errors")
+    assert isinstance(errors, list) and len(errors) > 0, (
+        "Receipt errors list must not be empty upon E11 degradation"
+    )
+    e11_errors = [e for e in errors if "E11" in str(e) or "SHADOW" in str(e)]
+    assert len(e11_errors) > 0, (
+        "errors must contain at least one sanitized E11 shadow error code"
+    )
+
+    for err in e11_errors:
+        assert isinstance(err, str), f"Each error must be a string, got {type(err)}"
+        # Must be a sanitized token without spaces, path separators, or punctuation
+        assert not any(c in err for c in (" ", ";", "/", "\\", "\n", "\t")), (
+            f"E11 error code contains forbidden characters, paths, or punctuation: {err!r}"
         )
-    ), f"False degradation marker detected: '{shadow_status}'"
+        assert re.match(r"^[A-Z0-9_]+(:[A-Z0-9_]+)*$", err), (
+            f"E11 error code must be sanitized token format: {err!r}"
+        )
 
-    # Must be canonical DEGRADED, or explicit ERROR code
-    assert (
-        status_str == "DEGRADED"
-        or status_str.startswith("DEGRADED")
-        or status_str.startswith("ERROR:")
-        or status_str.startswith("FAILED")
-    ), f"Invalid degradation status format: '{shadow_status}'"
-
-    # 4. Sanitized error in errors list (if populated)
-    errors = cog_receipt.get("errors", [])
-    if errors:
-        assert isinstance(errors, list)
-        for err in errors:
-            assert isinstance(err, str)
-            # Ensure error is sanitized code without raw memory leaks
-            assert "Ceci est un extrait" not in err
-            assert "test native memory" not in err
+    for err in errors:
+        assert isinstance(err, str), f"Each error must be a string, got {type(err)}"
+        assert not any(
+            phrase in err
+            for phrase in (
+                "carries forbidden",
+                "forbidden authority",
+                "Traceback",
+                "PRIVATE_SENTINEL",
+                "document.md",
+                "Ceci est un extrait",
+                "test native memory",
+            )
+        ), f"Raw detail leaked in errors: {err!r}"
 
     # 5. Public Brody answer contains no raw memory or error internals
     final_answer = str(result.get("final_answer") or result.get("response") or result.get("response_md") or "")
     assert "Ceci est un extrait" not in final_answer
     assert "Traceback" not in final_answer
+
+
+@pytest.mark.asyncio
+async def test_r14b_historical_pipeline_errors_not_swallowed(
+    fast_brody_chat, monkeypatch: pytest.MonkeyPatch
+):
+    """R14b: Failures in the historical response pipeline must NOT be swallowed or converted to E11 degradation."""
+    sentinel_err = "HISTORICAL_BACKEND_CRASH_SENTINEL"
+
+    def fail_historical(**kwargs):
+        raise RuntimeError(sentinel_err)
+
+    monkeypatch.setattr(
+        "apps.obsidia_api.routes.brody.run_brody_real_response_pipeline",
+        fail_historical,
+    )
+
+    req = BrodyChatRequest(
+        message="Que dit le kernel b6 ?",
+        language="fr",
+        session_id="test_r14b_historical_error",
+        compact=False,
+        debug=True,
+    )
+
+    with pytest.raises(RuntimeError, match=sentinel_err):
+        await brody_chat(req)
+
+
+@pytest.mark.asyncio
+async def test_r14c_governance_and_invariant_errors_not_swallowed(
+    fast_brody_chat, monkeypatch: pytest.MonkeyPatch
+):
+    """R14c: Certified invariants (ContextBoundError, DuplicateStateError) and non-attributable errors
+
+    must NOT be swallowed or converted into advisory E11 degradation; they must propagate.
+    """
+    req = BrodyChatRequest(
+        message="Que dit le kernel b6 ?",
+        language="fr",
+        session_id="test_r14c_governance_error",
+        compact=False,
+        debug=True,
+    )
+
+    # 1. ContextBoundError must propagate
+    monkeypatch.setattr(
+        "app.integration.cognition_shadow_memory_v0.run_cognition_shadow_with_memory",
+        lambda *a, **kw: (_ for _ in ()).throw(ContextBoundError("SENTINEL_CONTEXT_BOUND_VIOLATION")),
+    )
+    monkeypatch.setattr(
+        "apps.obsidia_api.routes.brody.run_cognition_shadow_with_memory",
+        lambda *a, **kw: (_ for _ in ()).throw(ContextBoundError("SENTINEL_CONTEXT_BOUND_VIOLATION")),
+        raising=False,
+    )
+    with pytest.raises(ContextBoundError, match="SENTINEL_CONTEXT_BOUND_VIOLATION"):
+        await brody_chat(req)
+
+    # 2. DuplicateStateError must propagate
+    monkeypatch.setattr(
+        "app.integration.cognition_shadow_memory_v0.run_cognition_shadow_with_memory",
+        lambda *a, **kw: (_ for _ in ()).throw(DuplicateStateError("SENTINEL_DUPLICATE_STATE_VIOLATION")),
+    )
+    monkeypatch.setattr(
+        "apps.obsidia_api.routes.brody.run_cognition_shadow_with_memory",
+        lambda *a, **kw: (_ for _ in ()).throw(DuplicateStateError("SENTINEL_DUPLICATE_STATE_VIOLATION")),
+        raising=False,
+    )
+    with pytest.raises(DuplicateStateError, match="SENTINEL_DUPLICATE_STATE_VIOLATION"):
+        await brody_chat(req)
+
+    # 3. Uncertain-origin non-ValueError exception (e.g. TypeError) must also propagate
+    monkeypatch.setattr(
+        "app.integration.cognition_shadow_memory_v0.run_cognition_shadow_with_memory",
+        lambda *a, **kw: (_ for _ in ()).throw(TypeError("UNCERTAIN_ORIGIN_TYPE_ERROR")),
+    )
+    monkeypatch.setattr(
+        "apps.obsidia_api.routes.brody.run_cognition_shadow_with_memory",
+        lambda *a, **kw: (_ for _ in ()).throw(TypeError("UNCERTAIN_ORIGIN_TYPE_ERROR")),
+        raising=False,
+    )
+    with pytest.raises(TypeError, match="UNCERTAIN_ORIGIN_TYPE_ERROR"):
+        await brody_chat(req)
 
 
 def test_r15_determinism_and_output_compatibility():
