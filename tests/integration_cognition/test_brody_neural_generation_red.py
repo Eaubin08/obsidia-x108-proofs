@@ -88,24 +88,28 @@ async def test_g1_brody_api_invokes_model_generation_adapter_when_opted_in():
 
 
 # ---------------------------------------------------------------------------
-# G2: Final answer is influenced by real model output, not static templates.
+# G2: Final answer is influenced by admitted auxiliary evidence, not static templates.
 # ---------------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_g2_final_answer_influenced_by_real_model_output():
     unique_phrase = "GENERATIVE_PROJECTION_ALPHA_7734_OBSIDIA"
     req = BrodyChatRequest(
-        message="Que fais-tu dans ce mode ?",
+        message="Analyse les paramètres de la sonde non-indexée Alpha-7734",
         language="fr",
         session_id="test_g2_influence",
         allow_local_model=True,
     )
-    synthetic_reply = f"Voici l'analyse demandee : {unique_phrase} avec respect des contraintes."
+    synthetic_reply = f"Voici l'analyse demandée : {unique_phrase} avec respect des contraintes."
     with patch("urllib.request.urlopen", return_value=_make_mock_http_response(synthetic_reply)):
         res = await brody_chat(req)
 
     final_answer = res.get("final_answer", "")
     assert unique_phrase in final_answer, (
-        f"RED G2: Final answer must be influenced by model output, got: {final_answer}"
+        f"RED G2: Final answer must be influenced by admitted evidence, got: {final_answer}"
+    )
+    # Attributed raw copy-paste of whole external reply is replaced by Brody native synthesis
+    assert synthetic_reply not in final_answer, (
+        "RED G2: Whole raw synthetic text must not be inserted verbatim without native synthesis"
     )
 
 
@@ -349,4 +353,6 @@ async def test_g12_neural_generation_distinguishable_from_templates_and_evidence
     assert gen_receipt.get("candidate_stage") == "GENERATIVE_RESPONSE_CANDIDATE"
     assert gen_receipt.get("public_stage") == "VALIDATED_PUBLIC_FINAL_ANSWER"
     assert gen_receipt.get("is_neural_generation") is True
-    assert gen_receipt.get("evidence_only") is False
+    assert gen_receipt.get("evidence_only") is True
+    assert gen_receipt.get("qwen_authority") == "NONE"
+    assert gen_receipt.get("decision_authority") == "KX108_ONLY"
