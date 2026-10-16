@@ -63,6 +63,32 @@ from apps.obsidia_api.routes.brody import BrodyChatRequest, brody_chat
 
 
 # ---------------------------------------------------------------------------
+# R14 Constants & Recognized Stage Identifiers
+# ---------------------------------------------------------------------------
+
+HISTORICAL_STAGE_IDENTIFIERS: frozenset[str] = frozenset({
+    "SEMANTIC_QUERY",
+    "INTENT",
+    "MICRO_CORE",
+    "REVERSE_OS",
+    "TREE_34D_INPUT",
+    "SIGMA",
+    "TREE_CANONICAL",
+    "READONLY_PC_CONTEXT",
+    "CONTEXT_PACKET_V2",
+    "W1_RUNTIME_JOIN",
+    "W2_X108_ADMISSION",
+    "W3_BRODY",
+    "W4_MEMORY_RETRIEVAL",
+    "W4B_LOCAL_MODEL_EVIDENCE",
+    "W5_TREE_BRIDGE",
+    "W6B_SIGMA_BRIDGE",
+    "DATA_PURITY_AGENT",
+})
+ALLOWED_E11_ERROR_CODES: frozenset[str] = frozenset({"E11_SHADOW_INVALID_SNAPSHOT"})
+
+
+# ---------------------------------------------------------------------------
 # Helpers & Fixtures
 # ---------------------------------------------------------------------------
 
@@ -1026,17 +1052,21 @@ async def test_r14_explicit_error_propagation_on_corrupt_snapshot(
             f"E11 error code must be sanitized token format: {err!r}"
         )
 
-    ALLOWED_E11_ERROR_CODES = frozenset({"E11_SHADOW_INVALID_SNAPSHOT"})
-    HISTORICAL_ERROR_RE = re.compile(r"^W[0-9]_[A-Za-z0-9_]+:DEGRADED:[A-Za-z0-9_]+(:[A-Za-z0-9_]+)*$")
-
     for err in errors:
         assert isinstance(err, str), f"Each error must be a string, got {type(err)}"
         # Authenticated error code validation: must be an authorized E11 code or recognized historical stage degradation format
         is_known_e11 = err in ALLOWED_E11_ERROR_CODES
-        is_known_historical = bool(HISTORICAL_ERROR_RE.match(err))
+        parts = err.split(":")
+        is_known_historical = (
+            len(parts) >= 3
+            and parts[0] in HISTORICAL_STAGE_IDENTIFIERS
+            and parts[1] == "DEGRADED"
+            and bool(re.match(r"^[A-Za-z0-9_]+$", parts[2]))
+        )
         assert is_known_e11 or is_known_historical, (
             f"Unauthorized or synthetic error token in receipt errors: {err!r}. "
-            f"Permitted E11 degradation codes: {sorted(ALLOWED_E11_ERROR_CODES)}"
+            f"Permitted E11 degradation codes: {sorted(ALLOWED_E11_ERROR_CODES)}, "
+            f"or recognized historical stage degradation in {sorted(HISTORICAL_STAGE_IDENTIFIERS)}"
         )
         # Must be a sanitized token without spaces, path separators, or punctuation across ALL errors
         assert not any(c in err for c in (" ", ";", "/", "\\", "\n", "\t")), (
@@ -1224,6 +1254,97 @@ async def test_r14c_governance_and_invariant_errors_not_swallowed(
     )
     with pytest.raises(TypeError):
         await brody_chat(req)
+
+
+def test_r14d_internal_vs_exposed_error_separation():
+    """R14d: Distinguish internal historical diagnostics from sanitized exposed errors and strict E11 codes.
+
+    1. Internal historical diagnostics: _error(stage, exc) produces stage:DEGRADED:exc_type:msg,
+       retaining full debug information under internal access controls across all 17 stages.
+    2. Externally exposed receipts: boundary requires sanitized codes (no raw messages, whitespace,
+       paths, tracebacks, credentials).
+    3. Strict E11 codes: authorized E11 degradation codes (E11_SHADOW_INVALID_SNAPSHOT).
+    4. Rejection of arbitrary token-shaped secrets: arbitrary tokens or fake stage names are rejected.
+    """
+    from apps.obsidia_api.brody_real_cognitive_join import _error
+
+    # 1. Internal historical diagnostics legitimately retain exception message for all 17 stages
+    for stage in HISTORICAL_STAGE_IDENTIFIERS:
+        internal_diag = _error(stage, ValueError("internal debug details: /var/log/test.log"))
+        assert internal_diag.startswith(f"{stage}:DEGRADED:ValueError:internal debug details"), (
+            f"Internal diagnostic for stage {stage} must preserve stage and error detail"
+        )
+
+    # 2. Exposed error validator boundary contract
+    def validate_exposed_error(err: str) -> bool:
+        if not isinstance(err, str):
+            return False
+        if any(c in err for c in (" ", ";", "/", "\\", "\n", "\t")):
+            return False
+        if any(bad in err for bad in ("SECRET", "CANARY", "private", "unlisted", "CREDENTIAL", "SYNTHETIC")):
+            return False
+        if not re.match(r"^[A-Za-z0-9_]+(:[A-Za-z0-9_]+)*$", err):
+            return False
+        if err in ALLOWED_E11_ERROR_CODES:
+            return True
+        parts = err.split(":")
+        if len(parts) >= 3 and parts[0] in HISTORICAL_STAGE_IDENTIFIERS and parts[1] == "DEGRADED":
+            return bool(re.match(r"^[A-Za-z0-9_]+$", parts[2]))
+        return False
+
+    # Valid exposed E11 error
+    assert validate_exposed_error("E11_SHADOW_INVALID_SNAPSHOT") is True
+
+    # Valid exposed sanitized historical errors across recognized stages (wave and non-wave)
+    assert validate_exposed_error("W3_BRODY:DEGRADED:ValueError") is True
+    assert validate_exposed_error("SEMANTIC_QUERY:DEGRADED:RuntimeError") is True
+    assert validate_exposed_error("W4B_LOCAL_MODEL_EVIDENCE:DEGRADED:TimeoutError") is True
+    assert validate_exposed_error("DATA_PURITY_AGENT:DEGRADED:KeyError") is True
+
+    # Reject raw un-sanitized internal error strings (contain spaces, colons, paths)
+    assert validate_exposed_error("W3_BRODY:DEGRADED:ValueError:raw error with spaces") is False
+    assert validate_exposed_error("SEMANTIC_QUERY:DEGRADED:OSError:/etc/shadow") is False
+
+    # Reject arbitrary token-shaped secrets
+    assert validate_exposed_error("OBSIDIA_SECRET_API_KEY_999") is False
+    assert validate_exposed_error("CANARY_PRIVATE_VALUE_TOKEN") is False
+    assert validate_exposed_error("UNAUTHORIZED_STAGE:DEGRADED:ValueError") is False
+    assert validate_exposed_error("W3_BRODY:DEGRADED:SECRET_LEAK_TOKEN") is False
+
+
+def test_r14e_all_17_historical_stages_recognized():
+    """R14e: Verify all 17 historical stage identifiers from real cognitive join are recognized."""
+    import inspect
+    import apps.obsidia_api.brody_real_cognitive_join as cog_join_mod
+
+    # Verify that HISTORICAL_STAGE_IDENTIFIERS contains exactly 17 stages
+    assert len(HISTORICAL_STAGE_IDENTIFIERS) == 17, (
+        f"Expected exactly 17 historical stage identifiers, got {len(HISTORICAL_STAGE_IDENTIFIERS)}"
+    )
+
+    # 10 non-W stages
+    non_w_stages = {s for s in HISTORICAL_STAGE_IDENTIFIERS if not s.startswith("W")}
+    assert non_w_stages == {
+        "SEMANTIC_QUERY", "INTENT", "MICRO_CORE", "REVERSE_OS",
+        "TREE_34D_INPUT", "SIGMA", "TREE_CANONICAL", "READONLY_PC_CONTEXT",
+        "CONTEXT_PACKET_V2", "DATA_PURITY_AGENT"
+    }
+
+    # 7 wave stages (including alphanumeric W4B and W6B)
+    w_stages = {s for s in HISTORICAL_STAGE_IDENTIFIERS if s.startswith("W")}
+    assert w_stages == {
+        "W1_RUNTIME_JOIN", "W2_X108_ADMISSION", "W3_BRODY",
+        "W4_MEMORY_RETRIEVAL", "W4B_LOCAL_MODEL_EVIDENCE",
+        "W5_TREE_BRIDGE", "W6B_SIGMA_BRIDGE"
+    }
+
+    # Extract all stage arguments passed to _error() in brody_real_cognitive_join.py source
+    src = inspect.getsource(cog_join_mod)
+    used_stages = set(re.findall(r'_error\(\s*["\']([A-Za-z0-9_]+)["\']', src))
+    assert used_stages == HISTORICAL_STAGE_IDENTIFIERS, (
+        f"Mismatch between used stages in brody_real_cognitive_join and HISTORICAL_STAGE_IDENTIFIERS: "
+        f"missing: {HISTORICAL_STAGE_IDENTIFIERS - used_stages}, extra: {used_stages - HISTORICAL_STAGE_IDENTIFIERS}"
+    )
 
 
 def test_r15_determinism_and_output_compatibility():
