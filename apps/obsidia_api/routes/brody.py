@@ -1,4 +1,4 @@
-﻿"""POST /api/brody/chat — Brody runtime + V1.4.12A final_answer layer."""
+"""POST /api/brody/chat — Brody runtime + V1.4.12A final_answer layer."""
 from apps.obsidia_api.brody_capabilities_intent import is_brody_capabilities_query, build_brody_capabilities_response
 import unicodedata
 from fastapi import APIRouter, Depends
@@ -16,6 +16,8 @@ from apps.obsidia_api.brody_semantic_query_router import (
     build_semantic_query,
     build_memory_retrieval_queries,
 )
+from apps.obsidia_api.brody_obsidia_native_memory import build_native_memory_retrieval_snapshot
+from app.integration.cognition_shadow_memory_v0 import run_cognition_shadow_with_memory
 from apps.obsidia_api.brody_native_memory_response_adapter import build_native_memory_response
 from apps.obsidia_api.brody_candidate_memory_adapter import build_candidate_memory_snapshot
 from apps.obsidia_api.brody_operator_loop_adapter import build_operator_loop_snapshot
@@ -641,6 +643,27 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         else ""
     )
 
+    _e11_raw = build_native_memory_retrieval_snapshot(_memory_semantic_query or req.message, memory_required=_memory_required, limit=5)
+    _e11_shadow = None
+    _e11_status = "OK"
+    try:
+        _e11_shadow = run_cognition_shadow_with_memory(req.message, _e11_raw)
+    except ValueError as exc:
+        from app.harness.state_explicit.contracts import ContextBoundError
+        from app.harness.state_explicit.registry import DuplicateStateError
+        if isinstance(exc, (ContextBoundError, DuplicateStateError)):
+            raise
+        from app.integration.cognition_shadow_memory_v0 import _validate_snapshot
+        _tb = exc.__traceback__
+        _positive_attribution = False
+        while _tb is not None:
+            _positive_attribution |= _tb.tb_frame.f_code is _validate_snapshot.__code__
+            _tb = _tb.tb_next
+        if not _positive_attribution:
+            raise
+        # Only the E11 invocation is isolated; historical code is outside this try.
+        _e11_status = "ERROR:" + type(exc).__name__
+
     # Historical variable name intentionally preserved so all downstream
     # response consumers retain their existing generic snapshot contract.
     memory_response_chain = (
@@ -657,6 +680,7 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
             memory_required=_memory_required,
             limit=5,
             max_items=3,
+            precomputed_retrieval=_e11_raw,
         )
     )
 
@@ -1554,11 +1578,47 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
     except Exception:
         pass
 
+    if _e11_shadow is not None:
+        _cog_receipt["cognition_shadow_memory"] = _e11_shadow
+    _cog_receipt["components"]["COGNITION_SHADOW_MEMORY"] = "DEGRADED" if _e11_status.startswith("ERROR:") else _e11_status
+    if _e11_status.startswith("ERROR:"):
+        _cog_receipt.setdefault("errors", []).append("E11_SHADOW_INVALID_SNAPSHOT")
+
+    # Independent external reference: copy at public exposure, leave internal diagnostics intact.
+    import copy as _exposure_copy
+    _exposed_receipt = _exposure_copy.deepcopy(_cog_receipt)
+    _exposure_stages = frozenset(['SEMANTIC_QUERY', 'INTENT', 'MICRO_CORE', 'REVERSE_OS', 'TREE_34D_INPUT', 'SIGMA', 'TREE_CANONICAL', 'READONLY_PC_CONTEXT', 'CONTEXT_PACKET_V2', 'W1_RUNTIME_JOIN', 'W2_X108_ADMISSION', 'W3_BRODY', 'W4_MEMORY_RETRIEVAL', 'W4B_LOCAL_MODEL_EVIDENCE', 'W5_TREE_BRIDGE', 'W6B_SIGMA_BRIDGE', 'DATA_PURITY_AGENT'])
+    _exposure_types = frozenset({'ValueError','RuntimeError','TypeError','KeyError','OSError','FileNotFoundError','PermissionError','TimeoutError','ImportError','ModuleNotFoundError','AttributeError','AssertionError','IndexError','UnicodeError','UnicodeDecodeError','JSONDecodeError','Exception'})
+    _exposure_errors = []
+    for _diag in _exposed_receipt.get('errors', []):
+        if _diag == 'E11_SHADOW_INVALID_SNAPSHOT':
+            _exposure_errors.append(_diag)
+        elif isinstance(_diag, str):
+            _parts = _diag.split(':', 3)
+            if len(_parts) >= 3 and _parts[0] in _exposure_stages and _parts[1] == 'DEGRADED':
+                _safe_type = _parts[2] if _parts[2] in _exposure_types else 'Exception'
+                _exposure_errors.append(_parts[0] + ':DEGRADED:' + _safe_type)
+    _exposed_receipt['errors'] = _exposure_errors
+    if 'error' in _exposed_receipt:
+        _exposed_receipt['error'] = 'BACKEND_ROUTE_BINDING_ERROR'
+    def _clean_public_diagnostic(_value):
+        if isinstance(_value, str):
+            _ps = _value.split(':', 3)
+            if len(_ps) >= 3 and _ps[0] in _exposure_stages and _ps[1] == 'DEGRADED':
+                _et = _ps[2] if _ps[2] in _exposure_types else 'Exception'
+                return _ps[0] + ':DEGRADED:' + _et
+            return _value
+        if isinstance(_value, list):
+            return [_clean_public_diagnostic(_v) for _v in _value]
+        if isinstance(_value, dict):
+            return {_k: _clean_public_diagnostic(_v) for _k, _v in _value.items()}
+        return _value
+    _exposed_receipt = _clean_public_diagnostic(_exposed_receipt)
     try:
         from apps.obsidia_api.brody_secret_scrubber import scrub_secret_like_deep as _cog_deep
-        _payload['cognitive_runtime_receipt'] = _cog_deep(_cog_receipt)
+        _payload['cognitive_runtime_receipt'] = _cog_deep(_exposed_receipt)
     except Exception:
-        _payload['cognitive_runtime_receipt'] = _cog_receipt
+        _payload['cognitive_runtime_receipt'] = _exposed_receipt
     return safe_backend_response(_brody_attach_cic_readonly_context_v0(_payload), source=r.get("source", "REAL_BACKEND"))
 
 

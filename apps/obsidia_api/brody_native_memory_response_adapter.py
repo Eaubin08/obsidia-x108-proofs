@@ -184,6 +184,7 @@ def build_native_memory_response(
     limit: int = 8,
     max_items: int = 6,
     index_path: str | Path | None = None,
+    precomputed_retrieval: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """
     Execute native readonly retrieval then the existing local response engine.
@@ -204,7 +205,7 @@ def build_native_memory_response(
         memory_required=memory_required,
     )
 
-    retrieval = build_native_memory_retrieval_snapshot(
+    retrieval = precomputed_retrieval if precomputed_retrieval is not None else build_native_memory_retrieval_snapshot(
         query,
         memory_required=bool(memory_required),
         limit=limit,
