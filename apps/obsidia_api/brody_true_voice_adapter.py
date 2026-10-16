@@ -195,6 +195,56 @@ def build_true_brody_answer(
             )
         voice_source = "WORLD_HYPOTHESIS_ADVISORY"
 
+    # 0C. Governed neural generation candidate
+    gen_snap = ctx.get("neural_generation_snapshot") or gov_proj.get("neural_generation_snapshot") or {}
+    has_valid_neural_generation = (
+        isinstance(gen_snap, dict)
+        and gen_snap.get("status") == "GENERATION_SUCCESS"
+        and bool(gen_snap.get("validated_content"))
+    )
+
+    # 0D. B6 state uncertainty context
+    b6_pkt = ctx.get("b6_context_packet") or gov_proj.get("b6_context_packet") or {}
+    has_b6_unknowns = (
+        isinstance(b6_pkt, dict)
+        and bool(b6_pkt.get("unknowns"))
+    )
+
+    if (not action_boundary_already) and has_valid_hypotheses:
+        pass  # Handled above
+    elif (not action_boundary_already) and has_valid_neural_generation:
+        answer_parts = [gen_snap["validated_content"]]
+        voice_source = "NEURAL_GENERATION_VALIDATED"
+    elif (not action_boundary_already) and has_b6_unknowns:
+        answer_parts = []
+        if creator_detected:
+            if fr:
+                answer_parts.append(
+                    "Salut. Je reconnais le contexte : tu es le créateur du cadre Obsidia/Brody "
+                    "dans cette session. Cela ne donne aucune autorité pour dépasser X108, "
+                    "mais donne le bon axe : parler avec toi depuis la structure, "
+                    "reconstruire les chemins, garder les limites propres. "
+                )
+            else:
+                answer_parts.append(
+                    "I recognize the creator context for the Obsidia/Brody framework "
+                    "in this session. This grants no authority to override X108. "
+                )
+        if fr:
+            answer_parts.append(
+                "Analyse consultative Brody : l'état du kernel B6 comporte des éléments non résolus "
+                f"({', '.join(str(u) for u in b6_pkt.get('unknowns', []))}). "
+                "Cette incertitude est préservée : aucun fait monde n'est affirmé unilatéralement. "
+                "KX108_ONLY."
+            )
+        else:
+            answer_parts.append(
+                "Brody advisory analysis: the B6 kernel state carries unresolved entries "
+                f"({', '.join(str(u) for u in b6_pkt.get('unknowns', []))}). "
+                "This uncertainty is preserved: no world fact is asserted unilaterally. "
+                "KX108_ONLY."
+            )
+        voice_source = "B6_ADVISORY_CONTEXT"
     elif not action_boundary_already:
         # 1. Creator context acknowledgment — natural greeting, no source dump
         if creator_detected:
@@ -270,7 +320,7 @@ def build_true_brody_answer(
 
     elif (
         ((not action_boundary_already) or useful_domain_priority)
-        and voice_source != "WORLD_HYPOTHESIS_ADVISORY"
+        and voice_source not in ("WORLD_HYPOTHESIS_ADVISORY", "B6_ADVISORY_CONTEXT", "NEURAL_GENERATION_VALIDATED")
         and domain_raccord.get("structural_answer_available")
         # Don't intercept when chain has a clear semantic routing decision.
         # ERROR → MEMORY_CHAIN_INFRASTRUCTURE_ERROR must not be masked.
@@ -288,7 +338,7 @@ def build_true_brody_answer(
         domain_answered = True
 
     # 5. Project memory context
-    if project_has_material and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST) and voice_source != "WORLD_HYPOTHESIS_ADVISORY":
+    if project_has_material and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST) and voice_source not in ("WORLD_HYPOTHESIS_ADVISORY", "B6_ADVISORY_CONTEXT", "NEURAL_GENERATION_VALIDATED"):
         item_count = project.get("local_index_item_count", project.get("record_count", 0))
         tags = project.get("top_context_tags", project.get("top_context_items", []))
         tags_str = ", ".join(tags[:5]) if tags else ""
@@ -346,7 +396,7 @@ def build_true_brody_answer(
                     f"\n\nMemory material available as enrichment: {item_count} readonly item(s). "
                     "It does not replace the structural raccord above."
                 )
-    elif (not action_boundary_already) and voice_source != "WORLD_HYPOTHESIS_ADVISORY" and chain_pass and chain_has_mat and chain_response_md and len(chain_response_md) > 50:
+    elif (not action_boundary_already) and voice_source not in ("WORLD_HYPOTHESIS_ADVISORY", "B6_ADVISORY_CONTEXT", "NEURAL_GENERATION_VALIDATED") and chain_pass and chain_has_mat and chain_response_md and len(chain_response_md) > 50:
         # Reset answer — synthesize from memory chain, not raw dump
         answer_parts = []
         if creator_detected:
@@ -384,7 +434,7 @@ def build_true_brody_answer(
         voice_source = "MEMORY_RESPONSE_CHAIN"
     elif (chain_local_fallback_partial and chain_selected_items
           and not creator_detected
-          and voice_source != "WORLD_HYPOTHESIS_ADVISORY"
+          and voice_source not in ("WORLD_HYPOTHESIS_ADVISORY", "B6_ADVISORY_CONTEXT", "NEURAL_GENERATION_VALIDATED")
           and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST)):
         # Local Graphiti index fallback — Neo4j offline; synthesize from index metadata
         # Guard: skip for action-boundary / creator-context messages (keep their own text)
@@ -577,7 +627,7 @@ def build_true_brody_answer(
     try:
         _sp_material_answer = _brody_source_pack_answer_v0(source_pack_context or {}, language)
         _sp_current_answer = "".join(answer_parts)
-        if _sp_material_answer and voice_source != "WORLD_HYPOTHESIS_ADVISORY" and _brody_source_pack_should_override_v0(_sp_current_answer):
+        if _sp_material_answer and voice_source not in ("WORLD_HYPOTHESIS_ADVISORY", "B6_ADVISORY_CONTEXT", "NEURAL_GENERATION_VALIDATED") and _brody_source_pack_should_override_v0(_sp_current_answer):
             answer_parts = [_sp_material_answer]
             voice_source = voice_source or "SOURCE_PACK_MATERIAL_BINDING_V0"
     except Exception:

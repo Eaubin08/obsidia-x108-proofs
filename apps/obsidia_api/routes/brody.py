@@ -189,6 +189,7 @@ class BrodyChatRequest(BaseModel):
     allow_provider: bool = False
     allow_memory_candidate: bool = False
     allow_manual_apply: bool = False
+    allow_local_model: bool = False
     compact: bool = False
     debug: bool = False
     debug_full: bool = False
@@ -969,6 +970,7 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         "kx108_admission": _cog_receipt.get("kx108_admission") if isinstance(_cog_receipt, dict) else None,
         "decision_ticket_dry_run": _cog_receipt.get("decision_ticket_dry_run") if isinstance(_cog_receipt, dict) else None,
         "components": _cog_receipt.get("components", {}) if isinstance(_cog_receipt, dict) else {},
+        "b6_context_packet": _e11_shadow.get("context_packet") if isinstance(_e11_shadow, dict) else None,
         "readonly": True,
         "memory_write": False,
         "emits_act": False,
@@ -989,7 +991,8 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
             freeze_metrics_snapshot=freeze_metrics_snapshot, authority_snapshot=authority_snapshot,
             automation_snapshot=automation_snapshot, memory_response_chain_snapshot=memory_response_chain,
             semantic_query_snapshot=semantic_query_snapshot,
-            governed_cognitive_projection=governed_cognitive_projection))
+            governed_cognitive_projection=governed_cognitive_projection,
+            b6_context_packet=(_e11_shadow.get("context_packet") if isinstance(_e11_shadow, dict) else None)))
 
     # P51 — Brody readonly activation state
     _brody_readonly_state: dict = {}
@@ -1026,6 +1029,28 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
             build_action_gateway_sandbox_state,
             query=req.message,
         )
+
+    _neural_generation_snapshot = None
+    if getattr(req, "allow_local_model", False):
+        try:
+            from apps.obsidia_api.brody_neural_generation_adapter import propose_neural_response_candidate
+            _neural_generation_snapshot = safe_call_snapshot(
+                "neural_generation_snapshot",
+                propose_neural_response_candidate,
+                user_message=req.message,
+                language=req.language,
+                brody_full_context=brody_full_context,
+                allow_local_model=req.allow_local_model,
+            )
+        except Exception as _gen_exc:
+            _neural_generation_snapshot = {
+                "status": "PROVIDER_OFFLINE",
+                "error": str(_gen_exc)[:200],
+            }
+    if _neural_generation_snapshot is not None:
+        _cog_receipt["neural_generation_snapshot"] = _neural_generation_snapshot
+        if isinstance(brody_full_context, dict):
+            brody_full_context["neural_generation_snapshot"] = _neural_generation_snapshot
 
     true_voice_snapshot = ({} if _dissipation_lazy else
         safe_call_snapshot("true_voice_snapshot", build_true_brody_answer,
@@ -1687,6 +1712,8 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         _cog_receipt["cognition_shadow_memory"] = _e11_shadow
     if _world_hypothesis_snapshot is not None:
         _cog_receipt["world_hypothesis_snapshot"] = _world_hypothesis_snapshot
+    if _neural_generation_snapshot is not None:
+        _cog_receipt["neural_generation_snapshot"] = _neural_generation_snapshot
     _cog_receipt["components"]["COGNITION_SHADOW_MEMORY"] = "DEGRADED" if _e11_status.startswith("ERROR:") else _e11_status
     if _e11_status.startswith("ERROR:"):
         _cog_receipt.setdefault("errors", []).append("E11_SHADOW_INVALID_SNAPSHOT")

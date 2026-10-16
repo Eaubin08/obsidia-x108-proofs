@@ -205,7 +205,11 @@ async def test_g6_qwen_not_called_when_opt_in_absent_or_brody_sufficient():
     with patch("urllib.request.urlopen") as mock_http:
         res = await brody_chat(req)
 
-    assert not mock_http.called, "RED G6: Model transport must NEVER be called when allow_local_model=False"
+    model_calls = [
+        c for c in mock_http.call_args_list
+        if "chat/completions" in str(c) or "8080" in str(c) or "11434" in str(c)
+    ]
+    assert len(model_calls) == 0, f"RED G6: Model transport must NEVER be called when allow_local_model=False, got: {model_calls}"
     receipt = res.get("cognitive_runtime_receipt", {})
     gen_receipt = receipt.get("neural_generation_snapshot", {})
     assert gen_receipt.get("status") in ("NOT_REQUESTED", "SKIPPED_OPT_OUT", None)

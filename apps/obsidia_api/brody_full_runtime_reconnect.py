@@ -79,6 +79,9 @@ def build_brody_full_context(
     memory_response_chain_snapshot: dict[str, Any] | None = None,
     semantic_query_snapshot: dict[str, Any] | None = None,
     governed_cognitive_projection: dict[str, Any] | None = None,
+    b6_context_packet: dict[str, Any] | None = None,
+    local_model_evidence: dict[str, Any] | None = None,
+    neural_generation_snapshot: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """
     Build unified Brody full context from all existing sources.
@@ -164,6 +167,9 @@ def build_brody_full_context(
         "semantic_query_snapshot": semantic_query_snapshot or {},
         "governed_cognitive_projection": governed_cognitive_projection or {},
         "world_hypothesis_snapshot": (governed_cognitive_projection or {}).get("world_hypothesis_snapshot"),
+        "b6_context_packet": b6_context_packet or (governed_cognitive_projection or {}).get("b6_context_packet"),
+        "local_model_evidence": local_model_evidence or (governed_cognitive_projection or {}).get("local_model_evidence"),
+        "neural_generation_snapshot": neural_generation_snapshot or (governed_cognitive_projection or {}).get("neural_generation_snapshot"),
         "creator_context": creator,
         "contextual_material_status": material,
         "followup_resolved": session_memory.get("followup_resolved", False),
