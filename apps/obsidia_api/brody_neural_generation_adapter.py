@@ -63,6 +63,13 @@ _SOVEREIGN_ASSIGNMENT_RE = re.compile(
     r")\s*[:=]"
 )
 
+_SOVEREIGN_PHRASE_PATTERNS = (
+    re.compile(r"\b(i\s+(?:hereby\s+|now\s+)?(?:decide|authorize|certify|order|decree|assign|execute))\b", re.I),
+    re.compile(r"\b(je\s+(?:ici\s+|maintenant\s+)?(?:décide|ordonne|attribue|décrète|valide\s+canon|certifie|exécute))\b", re.I),
+    re.compile(r"\b(established\s+world\s+fact|fait\s+monde\s+établi)\b", re.I),
+    re.compile(r"\b(unilateral\s+decision|décision\s+unilatérale)\b", re.I),
+)
+
 _ERROR_MARKERS = (
     "Traceback (most recent call last):",
     "[INTERNAL ERROR]",
@@ -130,8 +137,8 @@ def validate_generative_response_candidate(
 
     content = clean_res["content"]
 
-    # Authority check: Model candidate cannot claim sovereign assignments
-    if _SOVEREIGN_ASSIGNMENT_RE.search(content):
+    # Authority check: Model candidate cannot claim sovereign assignments or phrasing
+    if _SOVEREIGN_ASSIGNMENT_RE.search(content) or any(p.search(content) for p in _SOVEREIGN_PHRASE_PATTERNS):
         return {
             "valid": False,
             "repaired_content": "",
@@ -182,7 +189,55 @@ def validate_generative_response_candidate(
     }
 
 
-def propose_neural_response_candidate(
+def _query_evidence_step(
+    query_text: str,
+    *,
+    endpoint: str | None = None,
+    timeout: float = _DEFAULT_TIMEOUT,
+    max_tokens: int = _DEFAULT_MAX_TOKENS,
+    system_prompt: str | None = None,
+) -> dict[str, Any]:
+    target_endpoint = (endpoint or os.environ.get("QWEN_LOCAL_ENDPOINT", _DEFAULT_ENDPOINT)).rstrip("/")
+    _assert_loopback(target_endpoint)
+
+    sys_p = system_prompt or (
+        "You are an auxiliary evidence and knowledge assistant to Brody, the sovereign conversational interface of Obsidia. "
+        "You are NOT Brody. You do not impersonate Brody. Provide objective, advisory evidence in French (or English if requested). "
+        "Decision authority is KX108_ONLY. You have no authority to execute actions, modify memory, establish ungrounded facts, or decide. "
+        "Reflect uncertainties naturally without making authoritative claims. Never emit [ACT] directives."
+    )
+    body = json.dumps({
+        "model": "qwen",
+        "messages": [
+            {"role": "system", "content": sys_p},
+            {"role": "user", "content": query_text},
+        ],
+        "temperature": 0.2,
+        "max_tokens": int(max_tokens),
+        "stream": False,
+    }).encode("utf-8")
+
+    req = urllib.request.Request(
+        target_endpoint + "/chat/completions",
+        data=body,
+        headers={"Content-Type": "application/json", "Accept": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=float(timeout)) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+
+    choices = data.get("choices") or []
+    if not choices:
+        return {"status": "EMPTY_CHOICES", "content": "", "evidence": None}
+    raw_text = str(choices[0].get("message", {}).get("content") or "")
+    return {
+        "status": "EVIDENCE_READY",
+        "content": raw_text,
+        "evidence": {"content": raw_text},
+    }
+
+
+def exchange_cognitive_evidence_rounds(
     *,
     user_message: str,
     language: str = "fr",
@@ -191,15 +246,23 @@ def propose_neural_response_candidate(
     endpoint: str | None = None,
     timeout: float = _DEFAULT_TIMEOUT,
     max_tokens: int = _DEFAULT_MAX_TOKENS,
+    max_rounds: int = 2,
 ) -> dict[str, Any]:
     """
-    Invokes the local model to produce a bounded generative response candidate.
-    Returns structured generation receipt for cognitive_runtime_receipt.
+    Executes a bounded iterative evidence exchange between Brody and auxiliary local model (Qwen).
+    Maximum rounds: strictly bounded to <= 2.
+    Halts immediately on:
+    - Information need resolved / complete
+    - Stagnation (repetition without progress or empty output)
+    - Validation rejection
+    - Provider offline or network failure
+    - Max rounds reached
     """
     ctx = brody_full_context or {}
-    target_endpoint = (endpoint or os.environ.get("QWEN_LOCAL_ENDPOINT", _DEFAULT_ENDPOINT)).rstrip("/")
+    b6_pkt = ctx.get("b6_context_packet") or {}
+    wh_snap = ctx.get("world_hypothesis_snapshot") or {}
 
-    base_snapshot: dict[str, Any] = {
+    receipt: dict[str, Any] = {
         "schema_version": NEURAL_GENERATION_SCHEMA_VERSION,
         "status": "NOT_REQUESTED",
         "candidate_stage": "GENERATIVE_RESPONSE_CANDIDATE",
@@ -207,8 +270,12 @@ def propose_neural_response_candidate(
         "provider": "QWEN_LOCAL",
         "model": "qwen2.5-3b-instruct-q4_k_m",
         "is_neural_generation": True,
-        "evidence_only": False,
+        "evidence_only": True,
         "opt_in": bool(allow_local_model),
+        "rounds_executed": 0,
+        "max_rounds": min(int(max_rounds), 2),
+        "halt_reason": "NOT_STARTED",
+        "validated_evidence_items": [],
         "candidate": None,
         "validated_content": None,
         "error": None,
@@ -222,107 +289,187 @@ def propose_neural_response_candidate(
     }
 
     if not allow_local_model:
-        base_snapshot["status"] = "SKIPPED_OPT_OUT"
-        return base_snapshot
+        receipt["status"] = "SKIPPED_OPT_OUT"
+        receipt["halt_reason"] = "OPT_OUT"
+        return receipt
 
+    target_endpoint = (endpoint or os.environ.get("QWEN_LOCAL_ENDPOINT", _DEFAULT_ENDPOINT)).rstrip("/")
     try:
         _assert_loopback(target_endpoint)
     except Exception as exc:
-        base_snapshot.update(
+        receipt.update(
             status="BLOCKED_NON_LOOPBACK",
+            halt_reason="BLOCKED_NON_LOOPBACK",
             error=str(exc),
         )
-        return base_snapshot
+        return receipt
 
-    # Build cognitive instructions incorporating admitted context
-    b6_pkt = ctx.get("b6_context_packet") or {}
-    wh_snap = ctx.get("world_hypothesis_snapshot") or {}
-    local_ev = ctx.get("local_model_evidence") or {}
+    start_time = time.perf_counter()
+    target_max_rounds = min(int(max_rounds), 2)
+    history_contents: list[str] = []
 
-    b6_context_str = ""
+    # --- ROUND 1 ---
+    q1 = user_message
     if b6_pkt.get("unknowns"):
-        b6_context_str = f" Context unknowns: {b6_pkt['unknowns']}."
+        q1 = f"{user_message} (Contexte B6 inconnus : {b6_pkt['unknowns']})"
 
-    wh_context_str = ""
-    if wh_snap.get("members"):
-        wh_context_str = f" Multiple advisory hypotheses exist: {len(wh_snap['members'])} candidates."
-
-    system_prompt = (
-        "You are an auxiliary evidence and knowledge assistant to Brody, the sovereign conversational interface of Obsidia. "
-        "You are NOT Brody. You do not impersonate Brody. Provide objective, advisory evidence in French (or English if requested). "
-        "Decision authority is KX108_ONLY. You have no authority to execute actions, modify memory, establish ungrounded facts, or decide. "
-        "Reflect uncertainties naturally without making authoritative claims. Never emit [ACT] directives."
-        f"{b6_context_str}{wh_context_str}"
-    )
-
-    body = json.dumps({
-        "model": "qwen",
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_message},
-        ],
-        "temperature": 0.2,
-        "max_tokens": int(max_tokens),
-        "stream": False,
-    }).encode("utf-8")
-
-    req = urllib.request.Request(
-        target_endpoint + "/chat/completions",
-        data=body,
-        headers={"Content-Type": "application/json", "Accept": "application/json"},
-        method="POST",
-    )
-
-    start = time.perf_counter()
     try:
-        with urllib.request.urlopen(req, timeout=float(timeout)) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
+        step1 = _query_evidence_step(
+            q1,
+            endpoint=target_endpoint,
+            timeout=timeout,
+            max_tokens=max_tokens,
+        )
     except urllib.error.URLError as exc:
-        elapsed = round((time.perf_counter() - start) * 1000, 2)
-        status = "TIMEOUT" if "timed out" in str(exc).lower() else "PROVIDER_OFFLINE"
-        base_snapshot.update(
-            status=status,
+        elapsed = round((time.perf_counter() - start_time) * 1000, 2)
+        receipt.update(
+            status="TIMEOUT" if "timed out" in str(exc).lower() else "PROVIDER_OFFLINE",
+            halt_reason="PROVIDER_OFFLINE",
             error=str(exc),
             elapsed_ms=elapsed,
         )
-        return base_snapshot
+        return receipt
     except Exception as exc:
-        elapsed = round((time.perf_counter() - start) * 1000, 2)
-        base_snapshot.update(
+        elapsed = round((time.perf_counter() - start_time) * 1000, 2)
+        receipt.update(
             status="INVALID_RESPONSE",
+            halt_reason="INVALID_RESPONSE",
             error=f"{type(exc).__name__}:{str(exc)}",
             elapsed_ms=elapsed,
         )
-        return base_snapshot
+        return receipt
 
-    elapsed = round((time.perf_counter() - start) * 1000, 2)
-    choices = data.get("choices") or []
-    if not choices:
-        base_snapshot.update(
-            status="EMPTY_CHOICES",
+    ev1 = step1.get("evidence") if isinstance(step1.get("evidence"), dict) else None
+    content1 = str(ev1.get("content") or step1.get("content") or "") if ev1 else str(step1.get("content") or "")
+    if not content1 and step1.get("status") not in ("EVIDENCE_READY", "GENERATION_SUCCESS"):
+        elapsed = round((time.perf_counter() - start_time) * 1000, 2)
+        receipt.update(
+            status=step1.get("status", "PROVIDER_OFFLINE"),
+            halt_reason=step1.get("status", "PROVIDER_OFFLINE"),
+            error=step1.get("error"),
             elapsed_ms=elapsed,
         )
-        return base_snapshot
+        return receipt
 
-    raw_text = str(choices[0].get("message", {}).get("content") or "")
-    validation = validate_generative_response_candidate(
-        raw_text,
+    val1 = validate_generative_response_candidate(
+        content1,
         b6_context_packet=b6_pkt,
         world_hypothesis_snapshot=wh_snap,
     )
-
-    if not validation["valid"]:
-        base_snapshot.update(
+    if not val1["valid"]:
+        elapsed = round((time.perf_counter() - start_time) * 1000, 2)
+        receipt.update(
             status="VALIDATION_REJECTED",
-            error=validation["reason"],
+            halt_reason="VALIDATION_REJECTED",
+            error=val1["reason"],
+            rounds_executed=1,
             elapsed_ms=elapsed,
         )
-        return base_snapshot
+        return receipt
 
-    base_snapshot.update(
+    receipt["rounds_executed"] = 1
+    receipt["validated_evidence_items"].append(val1["repaired_content"])
+    history_contents.append(val1["repaired_content"].strip())
+
+    # --- ROUND 2 (Conditional & Bounded) ---
+    has_unresolved_need = bool(b6_pkt.get("unknowns")) or (wh_snap.get("status") == "HYPOTHESIS_SET_ATTACHED")
+    if target_max_rounds < 2 or not has_unresolved_need:
+        elapsed = round((time.perf_counter() - start_time) * 1000, 2)
+        receipt.update(
+            status="GENERATION_SUCCESS",
+            halt_reason="RESOLVED",
+            candidate=content1,
+            validated_content=val1["repaired_content"],
+            elapsed_ms=elapsed,
+        )
+        return receipt
+
+    q2 = f"Précision sur les éléments résiduels pour : {user_message}"
+    try:
+        step2 = _query_evidence_step(
+            q2,
+            endpoint=target_endpoint,
+            timeout=timeout,
+            max_tokens=max_tokens,
+        )
+    except Exception:
+        elapsed = round((time.perf_counter() - start_time) * 1000, 2)
+        receipt.update(
+            status="GENERATION_SUCCESS",
+            halt_reason="ROUND2_FAILED_SOFT",
+            candidate=content1,
+            validated_content=val1["repaired_content"],
+            elapsed_ms=elapsed,
+        )
+        return receipt
+
+    ev2 = step2.get("evidence") if isinstance(step2.get("evidence"), dict) else None
+    content2 = str(ev2.get("content") or step2.get("content") or "") if ev2 else str(step2.get("content") or "")
+
+    # Anti-loop check: halt without progress if output is empty or repeats
+    if not content2.strip() or content2.strip() in history_contents:
+        elapsed = round((time.perf_counter() - start_time) * 1000, 2)
+        receipt.update(
+            status="GENERATION_SUCCESS",
+            halt_reason="NO_PROGRESS",
+            candidate=content1,
+            validated_content=val1["repaired_content"],
+            elapsed_ms=elapsed,
+        )
+        return receipt
+
+    val2 = validate_generative_response_candidate(
+        content2,
+        b6_context_packet=b6_pkt,
+        world_hypothesis_snapshot=wh_snap,
+    )
+    if not val2["valid"]:
+        elapsed = round((time.perf_counter() - start_time) * 1000, 2)
+        receipt.update(
+            status="GENERATION_SUCCESS",
+            halt_reason="ROUND2_VALIDATION_REJECTED",
+            candidate=content1,
+            validated_content=val1["repaired_content"],
+            elapsed_ms=elapsed,
+        )
+        return receipt
+
+    receipt["rounds_executed"] = 2
+    receipt["validated_evidence_items"].append(val2["repaired_content"])
+    elapsed = round((time.perf_counter() - start_time) * 1000, 2)
+    receipt.update(
         status="GENERATION_SUCCESS",
-        candidate=raw_text,
-        validated_content=validation["repaired_content"],
+        halt_reason="MAX_ROUNDS_REACHED",
+        candidate=f"{content1}\n\n{content2}",
+        validated_content=f"{val1['repaired_content']}\n\n{val2['repaired_content']}",
         elapsed_ms=elapsed,
     )
-    return base_snapshot
+    return receipt
+
+
+def propose_neural_response_candidate(
+    *,
+    user_message: str,
+    language: str = "fr",
+    brody_full_context: dict[str, Any] | None = None,
+    allow_local_model: bool = False,
+    endpoint: str | None = None,
+    timeout: float = _DEFAULT_TIMEOUT,
+    max_tokens: int = _DEFAULT_MAX_TOKENS,
+    max_rounds: int = 2,
+) -> dict[str, Any]:
+    """
+    Invokes the local model to produce a bounded generative response candidate.
+    Delegates to exchange_cognitive_evidence_rounds.
+    Returns structured generation receipt for cognitive_runtime_receipt.
+    """
+    return exchange_cognitive_evidence_rounds(
+        user_message=user_message,
+        language=language,
+        brody_full_context=brody_full_context,
+        allow_local_model=allow_local_model,
+        endpoint=endpoint,
+        timeout=timeout,
+        max_tokens=max_tokens,
+        max_rounds=max_rounds,
+    )

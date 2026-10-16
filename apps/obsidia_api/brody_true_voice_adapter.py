@@ -211,7 +211,15 @@ def build_true_brody_answer(
     )
 
     if (not action_boundary_already) and has_valid_hypotheses:
-        pass  # Handled above
+        if has_valid_neural_generation:
+            if fr:
+                answer_parts.append(
+                    f"\n\nÉlément consultatif auxiliaire recueilli :\n{gen_snap['validated_content']}"
+                )
+            else:
+                answer_parts.append(
+                    f"\n\nAuxiliary advisory evidence retrieved:\n{gen_snap['validated_content']}"
+                )
     elif (not action_boundary_already) and has_b6_unknowns:
         answer_parts = []
         if creator_detected:
@@ -241,6 +249,15 @@ def build_true_brody_answer(
                 "This uncertainty is preserved: no world fact is asserted unilaterally. "
                 "KX108_ONLY."
             )
+        if has_valid_neural_generation:
+            if fr:
+                answer_parts.append(
+                    f"\n\nÉlément consultatif auxiliaire recueilli :\n{gen_snap['validated_content']}"
+                )
+            else:
+                answer_parts.append(
+                    f"\n\nAuxiliary advisory evidence retrieved:\n{gen_snap['validated_content']}"
+                )
         voice_source = "B6_ADVISORY_CONTEXT"
     elif not action_boundary_already:
         # 1. Creator context acknowledgment — natural greeting, no source dump

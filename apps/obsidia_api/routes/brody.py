@@ -1034,6 +1034,11 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
     if getattr(req, "allow_local_model", False):
         _msg_stripped = (req.message or "").strip()
         _msg_lower = _msg_stripped.lower()
+        _has_usable_memory = (
+            isinstance(memory_response_chain, dict)
+            and memory_response_chain.get("material_quality") in ("USABLE_MATERIAL", "PARTIAL_MATERIAL")
+            and memory_response_chain.get("query_results_count", 0) > 0
+        )
         _is_brody_sufficient = (
             is_brody_capabilities_query(req.message)
             or intent == "greeting"
@@ -1041,9 +1046,7 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
             or _msg_stripped.startswith(":")
             or auth_esc
             or request_type in ("ACTION_OR_ACT_REQUEST", "MEMORY_WRITE_REQUEST")
-            or (isinstance(memory_response_chain, dict) and memory_response_chain.get("material_quality") in ("USABLE_MATERIAL", "PARTIAL_MATERIAL") and memory_response_chain.get("query_results_count", 0) > 0)
-            or (_world_hypothesis_snapshot is not None)
-            or (isinstance(_e11_shadow, dict) and bool(_e11_shadow.get("context_packet", {}).get("unknowns")))
+            or _has_usable_memory
         )
         if _is_brody_sufficient:
             _neural_generation_snapshot = {

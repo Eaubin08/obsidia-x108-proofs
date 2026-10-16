@@ -59,8 +59,8 @@ def _mock_qwen_http_response(content: str, status_code: int = 200) -> MagicMock:
 
 
 def _is_model_endpoint_call(call_arg: Any) -> bool:
-    s = str(call_arg)
-    return "8080" in s or "chat/completions" in s or "11434" in s
+    url = getattr(call_arg, "full_url", None) or getattr(call_arg, "url", None) or str(call_arg)
+    return "8080" in url or "chat/completions" in url or "11434" in url
 
 
 # ==============================================================================
