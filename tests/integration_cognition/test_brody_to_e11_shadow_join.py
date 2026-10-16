@@ -501,6 +501,28 @@ async def test_r6_preservation_of_context_packet_v2_distinct_from_b6_context_pac
     assert v2_packet is not None, "ContextPacketV2 must exist in receipt"
     assert shadow is not None, "E11 shadow must exist in receipt"
 
+    # Public receipt errors must be sanitized and contain no raw diagnostics or leaked paths
+    receipt_errors = cog_receipt.get("errors", [])
+    for err in receipt_errors:
+        assert isinstance(err, str), f"Each error must be a string, got {type(err)}"
+        assert not any(c in err for c in (" ", ";", "/", "\\", "\n", "\t")), (
+            f"Public receipt error contains forbidden characters, paths, or whitespace: {err!r}"
+        )
+        assert not any(bad in err for bad in ("SECRET", "CANARY", "private", "unlisted", "CREDENTIAL", "SYNTHETIC", "/virtual/", "audit fixture")), (
+            f"Public receipt error contains sensitive or forbidden tokens: {err!r}"
+        )
+        parts = err.split(":")
+        is_known_e11 = err in ALLOWED_E11_ERROR_CODES
+        is_known_historical = (
+            len(parts) == 3
+            and parts[0] in HISTORICAL_STAGE_IDENTIFIERS
+            and parts[1] == "DEGRADED"
+            and bool(re.match(r"^[A-Za-z0-9_]+$", parts[2]))
+        )
+        assert is_known_e11 or is_known_historical, (
+            f"Unauthorized or raw error token in public receipt errors: {err!r}"
+        )
+
     e11_packet = shadow.get("context_packet")
     assert isinstance(e11_packet, dict), "B6 context_packet must be a dict"
     assert e11_packet.get("schema") == "B6_STATE_EXPLICIT_CONTEXT_PACKET_V1"
@@ -1052,13 +1074,20 @@ async def test_r14_explicit_error_propagation_on_corrupt_snapshot(
             f"E11 error code must be sanitized token format: {err!r}"
         )
 
+    for comp_k, comp_v in components.items():
+        if isinstance(comp_v, str) and ":DEGRADED:" in comp_v:
+            assert comp_v.count(":") == 2, f"Component diagnostic contains extra segments: {comp_v!r}"
+            assert not any(c in comp_v for c in (" ", ";", "/", "\\", "\n", "\t")), (
+                f"Component diagnostic contains forbidden characters: {comp_v!r}"
+            )
+
     for err in errors:
         assert isinstance(err, str), f"Each error must be a string, got {type(err)}"
         # Authenticated error code validation: must be an authorized E11 code or recognized historical stage degradation format
         is_known_e11 = err in ALLOWED_E11_ERROR_CODES
         parts = err.split(":")
         is_known_historical = (
-            len(parts) >= 3
+            len(parts) == 3
             and parts[0] in HISTORICAL_STAGE_IDENTIFIERS
             and parts[1] == "DEGRADED"
             and bool(re.match(r"^[A-Za-z0-9_]+$", parts[2]))
@@ -1078,6 +1107,7 @@ async def test_r14_explicit_error_propagation_on_corrupt_snapshot(
         assert re.match(r"^[A-Za-z0-9_]+(:[A-Za-z0-9_]+)*$", err), (
             f"Receipt error code must be sanitized token format: {err!r}"
         )
+        assert err.count(":") <= 2, f"Receipt error code must not contain extra segments: {err!r}"
         assert not any(
             phrase in err
             for phrase in (
@@ -1288,7 +1318,7 @@ def test_r14d_internal_vs_exposed_error_separation():
         if err in ALLOWED_E11_ERROR_CODES:
             return True
         parts = err.split(":")
-        if len(parts) >= 3 and parts[0] in HISTORICAL_STAGE_IDENTIFIERS and parts[1] == "DEGRADED":
+        if len(parts) == 3 and parts[0] in HISTORICAL_STAGE_IDENTIFIERS and parts[1] == "DEGRADED":
             return bool(re.match(r"^[A-Za-z0-9_]+$", parts[2]))
         return False
 
@@ -1304,6 +1334,11 @@ def test_r14d_internal_vs_exposed_error_separation():
     # Reject raw un-sanitized internal error strings (contain spaces, colons, paths)
     assert validate_exposed_error("W3_BRODY:DEGRADED:ValueError:raw error with spaces") is False
     assert validate_exposed_error("SEMANTIC_QUERY:DEGRADED:OSError:/etc/shadow") is False
+
+    # Reject historical errors with 4th segment (e.g. sensitive credential token, key, or data)
+    assert validate_exposed_error("SEMANTIC_QUERY:DEGRADED:ValueError:SYNTHETIC_PRIVATE_CREDENTIAL_47391") is False
+    assert validate_exposed_error("W3_BRODY:DEGRADED:ValueError:AUDITKEY778899") is False
+    assert validate_exposed_error("W4_MEMORY_RETRIEVAL:DEGRADED:RuntimeError:RAW_MEMORY_TOKEN_88") is False
 
     # Reject arbitrary token-shaped secrets
     assert validate_exposed_error("OBSIDIA_SECRET_API_KEY_999") is False
@@ -1345,6 +1380,125 @@ def test_r14e_all_17_historical_stages_recognized():
         f"Mismatch between used stages in brody_real_cognitive_join and HISTORICAL_STAGE_IDENTIFIERS: "
         f"missing: {HISTORICAL_STAGE_IDENTIFIERS - used_stages}, extra: {used_stages - HISTORICAL_STAGE_IDENTIFIERS}"
     )
+
+
+@pytest.mark.asyncio
+async def test_r14f_public_boundary_sanitizes_historical_errors_on_e11_success(
+    fast_brody_chat, monkeypatch: pytest.MonkeyPatch
+):
+    """R14f: Real public boundary sanitizes historical errors during successful E11 execution.
+
+    - E11 executes successfully and genuine E11/B6 output is preserved.
+    - Historical cognitive stages (both non-wave and wave) report controlled synthetic diagnostics
+      containing sensitive 4th segment tokens and path markers.
+    - Public receipt contains strictly sanitized errors (len(parts) == 3, no 4th segment, no whitespace/paths).
+    - No raw diagnostic or sensitive marker leaks to public response.
+    - Historical stages remain traceable in errors and components.
+    - E11 remains successful and no false degradation is created.
+    """
+    import apps.obsidia_api.brody_real_cognitive_join as cog_join_mod
+    orig_cog_join = cog_join_mod.run_real_cognitive_join
+
+    def mock_cog_join(*args, **kwargs):
+        receipt = orig_cog_join(*args, **kwargs)
+        # Inject controlled historical errors using genuine recognized stage names
+        # Non-wave stage with sensitive 4th segment credential token
+        diag_non_wave = cog_join_mod._error(
+            "SEMANTIC_QUERY",
+            ValueError("SYNTHETIC_PRIVATE_CREDENTIAL_47391"),
+        )
+        # Recognized wave stage with sensitive path and details
+        diag_wave = cog_join_mod._error(
+            "W3_BRODY",
+            ValueError("audit fixture details /virtual/audit-fixture.txt"),
+        )
+        receipt.setdefault("errors", []).extend([diag_non_wave, diag_wave])
+        receipt.setdefault("components", {})["SEMANTIC_QUERY"] = diag_non_wave
+        receipt.setdefault("components", {})["W3_BRODY"] = diag_wave
+        return receipt
+
+    monkeypatch.setattr(
+        "apps.obsidia_api.brody_real_cognitive_join.run_real_cognitive_join",
+        mock_cog_join,
+    )
+    monkeypatch.setattr(
+        "apps.obsidia_api.routes.brody.run_real_cognitive_join",
+        mock_cog_join,
+        raising=False,
+    )
+
+    req = BrodyChatRequest(
+        message="Que dit le kernel b6 ?",
+        language="fr",
+        session_id="test_r14f_public_sanitization",
+        compact=False,
+        debug=True,
+    )
+
+    result = await brody_chat(req)
+
+    # 1. E11 must execute successfully and emit genuine B6 output
+    cog_receipt = result.get("cognitive_runtime_receipt", {})
+    shadow = cog_receipt.get("cognition_shadow_memory") or result.get("cognition_shadow_memory")
+    assert shadow is not None, "E11 shadow memory must be present on successful E11"
+    components = cog_receipt.get("components", {})
+    assert components.get("COGNITION_SHADOW_MEMORY") != "DEGRADED", (
+        "E11 shadow must remain successful; no false degradation allowed"
+    )
+
+    # 2. Public receipt errors must contain sanitized historical errors
+    public_errors = cog_receipt.get("errors", [])
+    assert isinstance(public_errors, list) and len(public_errors) >= 2, (
+        f"Public errors must contain sanitized historical entries, got {public_errors!r}"
+    )
+
+    # Historical stages remain traceable
+    assert "SEMANTIC_QUERY:DEGRADED:ValueError" in public_errors, (
+        f"Sanitized SEMANTIC_QUERY error missing from public errors: {public_errors!r}"
+    )
+    assert "W3_BRODY:DEGRADED:ValueError" in public_errors, (
+        f"Sanitized W3_BRODY error missing from public errors: {public_errors!r}"
+    )
+
+    # 3. No raw diagnostic or sensitive marker leaks into public receipt or response
+    import json
+    public_serialized = json.dumps(cog_receipt, ensure_ascii=False)
+    assert "SYNTHETIC_PRIVATE_CREDENTIAL_47391" not in public_serialized, (
+        "Sensitive 4th segment leaked into public cognitive receipt"
+    )
+    assert "/virtual/audit-fixture.txt" not in public_serialized, (
+        "Internal raw file path leaked into public cognitive receipt"
+    )
+    assert "audit fixture details" not in public_serialized, (
+        "Raw exception message leaked into public cognitive receipt"
+    )
+    final_answer = str(result.get("final_answer") or result.get("response") or "")
+    assert "SYNTHETIC_PRIVATE_CREDENTIAL_47391" not in final_answer
+    assert "/virtual/audit-fixture.txt" not in final_answer
+
+    # 4. Strict structural validation on all public errors
+    for err in public_errors:
+        assert isinstance(err, str), f"Each error must be a string, got {type(err)}"
+        assert not any(c in err for c in (" ", ";", "/", "\\", "\n", "\t")), (
+            f"Public error contains whitespace or path separators: {err!r}"
+        )
+        assert err.count(":") <= 2, f"Public error must have at most 2 colons (3 segments): {err!r}"
+        parts = err.split(":")
+        is_known_e11 = err in ALLOWED_E11_ERROR_CODES
+        is_known_historical = (
+            len(parts) == 3
+            and parts[0] in HISTORICAL_STAGE_IDENTIFIERS
+            and parts[1] == "DEGRADED"
+            and bool(re.match(r"^[A-Za-z0-9_]+$", parts[2]))
+        )
+        assert is_known_e11 or is_known_historical, f"Unauthorized public error format: {err!r}"
+
+    # 5. Component values must also be sanitized
+    for comp_name in ("SEMANTIC_QUERY", "W3_BRODY"):
+        comp_val = components.get(comp_name)
+        assert comp_val == f"{comp_name}:DEGRADED:ValueError", (
+            f"Component {comp_name} was not sanitized in public receipt: {comp_val!r}"
+        )
 
 
 def test_r15_determinism_and_output_compatibility():
