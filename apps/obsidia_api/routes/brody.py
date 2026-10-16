@@ -838,11 +838,116 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
                 else {}
             )
         )
+
+    # ── B7 Cognitive Resolution & M41 World Hypotheses Causal Integration ──
+    _world_hypothesis_snapshot = None
+    if _e11_shadow and isinstance(_e11_shadow, dict) and _e11_shadow.get("resolution_requests"):
+        try:
+            import app.cognition.b7 as _b7
+            import app.world_model as _wm
+            from app.harness.state_explicit.sens_adapter import sens_state_entries as _sens_entries
+            import re as _re
+
+            _entries = _sens_entries(req.message)
+            if _entries:
+                _origin_entry = _entries[0]
+                _requests = _b7.detect_unresolved(_origin_entry)
+                for _b7_req in _requests:
+                    if _b7_req.unresolved_kind == _b7.UnresolvedKind.COREFERENCE:
+                        _problem_ref = _b7_req.problem_refs[0] if _b7_req.problem_refs else "u1:le"
+                        _mention = _problem_ref.split(":", 1)[1] if ":" in _problem_ref else _problem_ref
+                        _nps = _re.findall(r"\b(?:le|la|les|l'|un|une|des|ce|cet|cette)\s+([a-zA-Z\u00C0-\u017F_-]+)", req.message.lower())
+                        _valid_nps = [w for w in _nps if w not in ("on", "il", "elle", "ce", "tout")]
+                        if len(_valid_nps) >= 2:
+                            _cand1_text = f"le {_valid_nps[0]}"
+                            _cand2_text = f"le {_valid_nps[1]}"
+                            _rem = [u for u in _b7_req.uncertainty if u not in _b7_req.problem_refs and u != f"frame:unresolved_reference:{_mention}"]
+                            _provider_ref = "provider:brody_cognitive_adapter"
+                            _provider_roles = {_provider_ref: frozenset({"RESOLVER", "UNDERSTANDER", "CRITIC"})}
+
+                            _raw1 = {
+                                "request_id": _b7_req.request_id,
+                                "origin_state_id": _b7_req.origin_state_id,
+                                "original_state_digest": _b7_req.original_state_digest,
+                                "candidate_kind": "REFERENCE_BINDING",
+                                "proposer_role": "RESOLVER",
+                                "provider_ref": _provider_ref,
+                                "resolves": list(_b7_req.problem_refs),
+                                "proposed_resolution": {"mention": _mention, "hypothesis": _cand1_text},
+                                "evidence_refs": ["sens:frame#raw"],
+                                "context_refs": [],
+                                "provenance_refs": list(_b7_req.provenance_refs),
+                                "confidence_class": "MEDIUM",
+                                "remaining_unknowns": _rem,
+                                "contradictions": [],
+                                "assumptions": [],
+                            }
+                            _cand1 = _b7.translate(_raw1, _b7_req)
+                            _res1 = _b7.validate_candidate(_b7_req, _cand1, origin=_origin_entry, provider_roles=_provider_roles)
+
+                            _raw2 = dict(_raw1, proposed_resolution={"mention": _mention, "hypothesis": _cand2_text})
+                            _cand2 = _b7.translate(_raw2, _b7_req)
+                            _res2 = _b7.validate_candidate(_b7_req, _cand2, origin=_origin_entry, provider_roles=_provider_roles)
+
+                            _mat_ref = _wm.WorldMaterialRef(
+                                ref_kind="sens.event_ref",
+                                ref_id=_origin_entry.state_id,
+                                source_label="sens:frame",
+                            )
+                            _subj_ref = _wm.WorldMaterialRef(
+                                ref_kind="sens.mention_ref",
+                                ref_id=_problem_ref,
+                                source_label="sens:frame",
+                            )
+                            _hyp1 = _wm.WorldStateHypothesis(
+                                hypothesis_kind="REFERENT_IDENTITY",
+                                presumed_referent_ref=_subj_ref,
+                                material_refs=(_mat_ref,),
+                                modality_label="brody.candidate",
+                                unknowns=(_cand1_text,),
+                            )
+                            _hyp2 = _wm.WorldStateHypothesis(
+                                hypothesis_kind="REFERENT_IDENTITY",
+                                presumed_referent_ref=_subj_ref,
+                                material_refs=(_mat_ref,),
+                                modality_label="brody.candidate",
+                                unknowns=(_cand2_text,),
+                            )
+                            _hset = _wm.WorldHypothesisSet(subject_ref=_subj_ref, members=(_hyp1, _hyp2))
+
+                            _world_hypothesis_snapshot = {
+                                "status": "HYPOTHESIS_SET_ATTACHED",
+                                "set_id": _hset.set_id,
+                                "subject_ref": _hset.subject_ref._canonical(),
+                                "hypotheses_count": len(_hset.members),
+                                "coexisting_count": len(_hset.members),
+                                "dominant_candidate_id": None,
+                                "advisory_only": True,
+                                "members": [
+                                    {
+                                        "hypothesis_id": m.hypothesis_id,
+                                        "kind": m.hypothesis_kind,
+                                        "modality": m.modality_label,
+                                        "unknowns": list(m.unknowns),
+                                    }
+                                    for m in _hset.members
+                                ],
+                                "readonly": True,
+                                "decision_authority": "KX108_ONLY",
+                            }
+                            break
+        except Exception:
+            _world_hypothesis_snapshot = None
+
+    if _world_hypothesis_snapshot is not None:
+        _cog_receipt["world_hypothesis_snapshot"] = _world_hypothesis_snapshot
+
     governed_cognitive_projection = {
         "status": _cog_receipt.get("status") if isinstance(_cog_receipt, dict) else "UNAVAILABLE",
         "completeness": _cog_receipt.get("completeness") if isinstance(_cog_receipt, dict) else "UNAVAILABLE",
         "context_packet_v2": _c1_context_packet,
         "ir_candidate": _c1_ir_candidate,
+        "world_hypothesis_snapshot": _world_hypothesis_snapshot,
         "deep_cognitive_signal_snapshot": (
             _cog_receipt.get("deep_cognitive_signal_snapshot", {})
             if isinstance(_cog_receipt, dict)
@@ -1580,6 +1685,8 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
 
     if _e11_shadow is not None:
         _cog_receipt["cognition_shadow_memory"] = _e11_shadow
+    if _world_hypothesis_snapshot is not None:
+        _cog_receipt["world_hypothesis_snapshot"] = _world_hypothesis_snapshot
     _cog_receipt["components"]["COGNITION_SHADOW_MEMORY"] = "DEGRADED" if _e11_status.startswith("ERROR:") else _e11_status
     if _e11_status.startswith("ERROR:"):
         _cog_receipt.setdefault("errors", []).append("E11_SHADOW_INVALID_SNAPSHOT")

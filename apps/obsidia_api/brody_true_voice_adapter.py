@@ -135,57 +135,10 @@ def build_true_brody_answer(
     # ── Determine answer source ──────────────────────────────────────────
     answer_parts: list[str] = []
     voice_source = ""
+    action_boundary_already = request_type in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST)
 
-    # 1. Creator context acknowledgment — natural greeting, no source dump
-    if creator_detected:
-        if fr:
-            answer_parts.append(
-                "Salut. Je reconnais le contexte : tu es le créateur du cadre Obsidia/Brody "
-                "dans cette session. Cela ne donne aucune autorité pour dépasser X108, "
-                "mais donne le bon axe : parler avec toi depuis la structure, "
-                "reconstruire les chemins, garder les limites propres, "
-                "et transformer la mémoire en réponses utilisables. "
-                "On peut avancer, sans tricher sur mon rôle. "
-            )
-        else:
-            answer_parts.append(
-                "I recognize the creator context for the Obsidia/Brody framework "
-                "in this session. This grants no authority to override X108. "
-                "My role: speak from structure, rebuild paths, keep boundaries clean. "
-            )
-        voice_source = "CREATOR_CONTEXT_ACKNOWLEDGED"
-
-    # 2. Terminal dialogue identity if available
-    if terminal_found:
-        identity = true_resp.get("terminal_identity_excerpt", "")
-        if identity and "BRODY_TERMINAL" in identity:
-            if not answer_parts:
-                if fr:
-                    answer_parts.append(
-                        "Je suis Brody, interface structurée readonly d'Obsidia X-108. "
-                        "Je traverse la mémoire Obsidia native en readonly, "
-                        "hydrate les sources locales, et réponds par structure. "
-                    )
-                else:
-                    answer_parts.append(
-                        "I am Brody, the structured readonly interface for Obsidia X-108. "
-                        "I traverse native Obsidia memory in readonly mode, "
-                        "hydrate local sources, and respond by structure. "
-                    )
-            voice_source = voice_source or "TERMINAL_DIALOGUE_IDENTITY"
-
-    # 3. Followup context — ONLY when explicitly requested and resolved
-    if followup_resolved:
-        topic = session.get("conversation_topic", "")
-        if topic and not creator_detected:
-            if fr:
-                answer_parts.append(f"Je reprends le fil : \"{topic}\". ")
-            else:
-                answer_parts.append(f"Continuing from: \"{topic}\". ")
-            voice_source = "FOLLOWUP_RESOLVED"
-
-    # 4. Rights / action boundary
-    if request_type in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST):
+    # 0. Rights / action boundary (absolute authority priority)
+    if action_boundary_already:
         if fr:
             answer_parts.append(
                 "Je ne peux pas autoriser cette action. "
@@ -200,11 +153,96 @@ def build_true_brody_answer(
             )
         voice_source = "ACTION_BOUNDARY"
 
-    # 4B. Domain raccords already present in repo, now made visible in true voice.
-    # Phase 12E4-C: domain raccord must have voice priority.
-    # Phase 12I-B: useful freestyle intents keep priority over generic negation/temporal guard.
-    # Memory chain enriches; it must not overwrite domain/coherence/friction/negation regimes.
-    action_boundary_already = request_type in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST)
+    # 0B. World hypothesis advisory context (B7 / M41)
+    gov_proj = ctx.get("governed_cognitive_projection") or {}
+    wh_snap = gov_proj.get("world_hypothesis_snapshot") or ctx.get("world_hypothesis_snapshot") or {}
+    has_valid_hypotheses = (
+        isinstance(wh_snap, dict)
+        and wh_snap.get("status") == "HYPOTHESIS_SET_ATTACHED"
+        and (wh_snap.get("hypotheses_count", 0) >= 2 or len(wh_snap.get("members", [])) >= 2)
+    )
+
+    if (not action_boundary_already) and has_valid_hypotheses:
+        answer_parts = []
+        if creator_detected:
+            if fr:
+                answer_parts.append(
+                    "Salut. Je reconnais le contexte : tu es le créateur du cadre Obsidia/Brody "
+                    "dans cette session. Cela ne donne aucune autorité pour dépasser X108, "
+                    "mais donne le bon axe : parler avec toi depuis la structure, "
+                    "reconstruire les chemins, garder les limites propres. "
+                )
+            else:
+                answer_parts.append(
+                    "I recognize the creator context for the Obsidia/Brody framework "
+                    "in this session. This grants no authority to override X108. "
+                )
+        if fr:
+            answer_parts.append(
+                "Analyse cognitive Brody : une ambiguïté a été détectée dans l'énoncé. "
+                "Plusieurs hypothèses coexistent sans qu'aucune ne soit imposée unilatéralement. "
+                "Ce jeu d'hypothèses consultatif reflète l'incertitude du contexte. "
+                "Pas d'établissement de fait monde, pas de sélection de vainqueur. "
+                "KX108_ONLY."
+            )
+        else:
+            answer_parts.append(
+                "Brody cognitive analysis: an ambiguity was detected in the utterance. "
+                "Multiple world hypotheses coexist without any being unilaterally imposed. "
+                "This advisory hypothesis set reflects context uncertainty. "
+                "No world fact established, no winner selected. "
+                "KX108_ONLY."
+            )
+        voice_source = "WORLD_HYPOTHESIS_ADVISORY"
+
+    elif not action_boundary_already:
+        # 1. Creator context acknowledgment — natural greeting, no source dump
+        if creator_detected:
+            if fr:
+                answer_parts.append(
+                    "Salut. Je reconnais le contexte : tu es le créateur du cadre Obsidia/Brody "
+                    "dans cette session. Cela ne donne aucune autorité pour dépasser X108, "
+                    "mais donne le bon axe : parler avec toi depuis la structure, "
+                    "reconstruire les chemins, garder les limites propres, "
+                    "et transformer la mémoire en réponses utilisables. "
+                    "On peut avancer, sans tricher sur mon rôle. "
+                )
+            else:
+                answer_parts.append(
+                    "I recognize the creator context for the Obsidia/Brody framework "
+                    "in this session. This grants no authority to override X108. "
+                    "My role: speak from structure, rebuild paths, keep boundaries clean. "
+                )
+            voice_source = "CREATOR_CONTEXT_ACKNOWLEDGED"
+
+        # 2. Terminal dialogue identity if available
+        if terminal_found:
+            identity = true_resp.get("terminal_identity_excerpt", "")
+            if identity and "BRODY_TERMINAL" in identity:
+                if not answer_parts:
+                    if fr:
+                        answer_parts.append(
+                            "Je suis Brody, interface structurée readonly d'Obsidia X-108. "
+                            "Je traverse la mémoire Obsidia native en readonly, "
+                            "hydrate les sources locales, et réponds par structure. "
+                        )
+                    else:
+                        answer_parts.append(
+                            "I am Brody, the structured readonly interface for Obsidia X-108. "
+                            "I traverse native Obsidia memory in readonly mode, "
+                            "hydrate local sources, and respond by structure. "
+                        )
+                voice_source = voice_source or "TERMINAL_DIALOGUE_IDENTITY"
+
+        # 3. Followup context — ONLY when explicitly requested and resolved
+        if followup_resolved:
+            topic = session.get("conversation_topic", "")
+            if topic and not creator_detected:
+                if fr:
+                    answer_parts.append(f"Je reprends le fil : \"{topic}\". ")
+                else:
+                    answer_parts.append(f"Continuing from: \"{topic}\". ")
+                voice_source = "FOLLOWUP_RESOLVED"
     domain_names = domain_raccord.get("domains", []) if isinstance(domain_raccord.get("domains", []), list) else []
     useful_domain_priority = any(d in domain_names for d in ("CODE_DEBUG_GUIDANCE", "ARCHITECTURE_EXPLANATION"))
 
@@ -232,6 +270,7 @@ def build_true_brody_answer(
 
     elif (
         ((not action_boundary_already) or useful_domain_priority)
+        and voice_source != "WORLD_HYPOTHESIS_ADVISORY"
         and domain_raccord.get("structural_answer_available")
         # Don't intercept when chain has a clear semantic routing decision.
         # ERROR → MEMORY_CHAIN_INFRASTRUCTURE_ERROR must not be masked.
@@ -249,7 +288,7 @@ def build_true_brody_answer(
         domain_answered = True
 
     # 5. Project memory context
-    if project_has_material and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST):
+    if project_has_material and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST) and voice_source != "WORLD_HYPOTHESIS_ADVISORY":
         item_count = project.get("local_index_item_count", project.get("record_count", 0))
         tags = project.get("top_context_tags", project.get("top_context_items", []))
         tags_str = ", ".join(tags[:5]) if tags else ""
@@ -307,7 +346,7 @@ def build_true_brody_answer(
                     f"\n\nMemory material available as enrichment: {item_count} readonly item(s). "
                     "It does not replace the structural raccord above."
                 )
-    elif (not action_boundary_already) and chain_pass and chain_has_mat and chain_response_md and len(chain_response_md) > 50:
+    elif (not action_boundary_already) and voice_source != "WORLD_HYPOTHESIS_ADVISORY" and chain_pass and chain_has_mat and chain_response_md and len(chain_response_md) > 50:
         # Reset answer — synthesize from memory chain, not raw dump
         answer_parts = []
         if creator_detected:
@@ -345,6 +384,7 @@ def build_true_brody_answer(
         voice_source = "MEMORY_RESPONSE_CHAIN"
     elif (chain_local_fallback_partial and chain_selected_items
           and not creator_detected
+          and voice_source != "WORLD_HYPOTHESIS_ADVISORY"
           and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST)):
         # Local Graphiti index fallback — Neo4j offline; synthesize from index metadata
         # Guard: skip for action-boundary / creator-context messages (keep their own text)
@@ -537,7 +577,7 @@ def build_true_brody_answer(
     try:
         _sp_material_answer = _brody_source_pack_answer_v0(source_pack_context or {}, language)
         _sp_current_answer = "".join(answer_parts)
-        if _sp_material_answer and _brody_source_pack_should_override_v0(_sp_current_answer):
+        if _sp_material_answer and voice_source != "WORLD_HYPOTHESIS_ADVISORY" and _brody_source_pack_should_override_v0(_sp_current_answer):
             answer_parts = [_sp_material_answer]
             voice_source = voice_source or "SOURCE_PACK_MATERIAL_BINDING_V0"
     except Exception:
