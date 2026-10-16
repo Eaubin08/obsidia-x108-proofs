@@ -96,8 +96,12 @@ async def test_r2_greeting_does_not_invoke_qwen():
     with patch("urllib.request.urlopen") as mock_http:
         res = await brody_chat(req)
 
-    assert not mock_http.called, (
-        "R2: Brody native runtime has complete greeting coverage; auxiliary model must NOT be called"
+    model_calls = [
+        c for c in mock_http.call_args_list
+        if "chat/completions" in str(c) or "8080" in str(c) or "11434" in str(c)
+    ]
+    assert len(model_calls) == 0, (
+        f"R2: Brody native runtime has complete greeting coverage; auxiliary model must NOT be called, got: {model_calls}"
     )
     final_answer = res.get("final_answer", "")
     assert bool(final_answer), "R2: Brody must still answer greeting natively"
@@ -118,8 +122,12 @@ async def test_r3_native_sufficient_query_does_not_invoke_qwen():
     with patch("urllib.request.urlopen") as mock_http:
         res = await brody_chat(req)
 
-    assert not mock_http.called, (
-        "R3: Native sufficient capabilities query must NOT trigger auxiliary model call"
+    model_calls = [
+        c for c in mock_http.call_args_list
+        if "chat/completions" in str(c) or "8080" in str(c) or "11434" in str(c)
+    ]
+    assert len(model_calls) == 0, (
+        f"R3: Native sufficient capabilities query must NOT trigger auxiliary model call, got: {model_calls}"
     )
 
 

@@ -1032,21 +1032,57 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
 
     _neural_generation_snapshot = None
     if getattr(req, "allow_local_model", False):
-        try:
-            from apps.obsidia_api.brody_neural_generation_adapter import propose_neural_response_candidate
-            _neural_generation_snapshot = safe_call_snapshot(
-                "neural_generation_snapshot",
-                propose_neural_response_candidate,
-                user_message=req.message,
-                language=req.language,
-                brody_full_context=brody_full_context,
-                allow_local_model=req.allow_local_model,
-            )
-        except Exception as _gen_exc:
+        _msg_stripped = (req.message or "").strip()
+        _msg_lower = _msg_stripped.lower()
+        _is_brody_sufficient = (
+            is_brody_capabilities_query(req.message)
+            or intent == "greeting"
+            or any(_msg_lower.startswith(g) for g in ("bonjour", "salut", "coucou", "hello", "hi ", "hey", "bonsoir"))
+            or _msg_stripped.startswith(":")
+            or auth_esc
+            or request_type in ("ACTION_OR_ACT_REQUEST", "MEMORY_WRITE_REQUEST")
+            or (isinstance(memory_response_chain, dict) and memory_response_chain.get("material_quality") in ("USABLE_MATERIAL", "PARTIAL_MATERIAL") and memory_response_chain.get("query_results_count", 0) > 0)
+            or (_world_hypothesis_snapshot is not None)
+            or (isinstance(_e11_shadow, dict) and bool(_e11_shadow.get("context_packet", {}).get("unknowns")))
+        )
+        if _is_brody_sufficient:
             _neural_generation_snapshot = {
-                "status": "PROVIDER_OFFLINE",
-                "error": str(_gen_exc)[:200],
+                "schema_version": "BRODY_NEURAL_GENERATION_V0_1",
+                "status": "SKIPPED_BRODY_SUFFICIENT",
+                "candidate_stage": "GENERATIVE_RESPONSE_CANDIDATE",
+                "public_stage": "VALIDATED_PUBLIC_FINAL_ANSWER",
+                "provider": "QWEN_LOCAL",
+                "model": "qwen2.5-3b-instruct-q4_k_m",
+                "is_neural_generation": False,
+                "evidence_only": True,
+                "opt_in": bool(req.allow_local_model),
+                "candidate": None,
+                "validated_content": None,
+                "error": None,
+                "elapsed_ms": 0.0,
+                "decision_authority": "KX108_ONLY",
+                "qwen_authority": "NONE",
+                "readonly": True,
+                "memory_write": False,
+                "emits_act": False,
+                "kernel_mutation": False,
             }
+        else:
+            try:
+                from apps.obsidia_api.brody_neural_generation_adapter import propose_neural_response_candidate
+                _neural_generation_snapshot = safe_call_snapshot(
+                    "neural_generation_snapshot",
+                    propose_neural_response_candidate,
+                    user_message=req.message,
+                    language=req.language,
+                    brody_full_context=brody_full_context,
+                    allow_local_model=req.allow_local_model,
+                )
+            except Exception as _gen_exc:
+                _neural_generation_snapshot = {
+                    "status": "PROVIDER_OFFLINE",
+                    "error": str(_gen_exc)[:200],
+                }
     if _neural_generation_snapshot is not None:
         _cog_receipt["neural_generation_snapshot"] = _neural_generation_snapshot
         if isinstance(brody_full_context, dict):

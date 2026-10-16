@@ -212,9 +212,6 @@ def build_true_brody_answer(
 
     if (not action_boundary_already) and has_valid_hypotheses:
         pass  # Handled above
-    elif (not action_boundary_already) and has_valid_neural_generation:
-        answer_parts = [gen_snap["validated_content"]]
-        voice_source = "NEURAL_GENERATION_VALIDATED"
     elif (not action_boundary_already) and has_b6_unknowns:
         answer_parts = []
         if creator_detected:
@@ -320,7 +317,7 @@ def build_true_brody_answer(
 
     elif (
         ((not action_boundary_already) or useful_domain_priority)
-        and voice_source not in ("WORLD_HYPOTHESIS_ADVISORY", "B6_ADVISORY_CONTEXT", "NEURAL_GENERATION_VALIDATED")
+        and voice_source not in ("WORLD_HYPOTHESIS_ADVISORY", "B6_ADVISORY_CONTEXT")
         and domain_raccord.get("structural_answer_available")
         # Don't intercept when chain has a clear semantic routing decision.
         # ERROR → MEMORY_CHAIN_INFRASTRUCTURE_ERROR must not be masked.
@@ -338,7 +335,7 @@ def build_true_brody_answer(
         domain_answered = True
 
     # 5. Project memory context
-    if project_has_material and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST) and voice_source not in ("WORLD_HYPOTHESIS_ADVISORY", "B6_ADVISORY_CONTEXT", "NEURAL_GENERATION_VALIDATED"):
+    if project_has_material and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST) and voice_source not in ("WORLD_HYPOTHESIS_ADVISORY", "B6_ADVISORY_CONTEXT"):
         item_count = project.get("local_index_item_count", project.get("record_count", 0))
         tags = project.get("top_context_tags", project.get("top_context_items", []))
         tags_str = ", ".join(tags[:5]) if tags else ""
@@ -396,7 +393,7 @@ def build_true_brody_answer(
                     f"\n\nMemory material available as enrichment: {item_count} readonly item(s). "
                     "It does not replace the structural raccord above."
                 )
-    elif (not action_boundary_already) and voice_source not in ("WORLD_HYPOTHESIS_ADVISORY", "B6_ADVISORY_CONTEXT", "NEURAL_GENERATION_VALIDATED") and chain_pass and chain_has_mat and chain_response_md and len(chain_response_md) > 50:
+    elif (not action_boundary_already) and voice_source not in ("WORLD_HYPOTHESIS_ADVISORY", "B6_ADVISORY_CONTEXT") and chain_pass and chain_has_mat and chain_response_md and len(chain_response_md) > 50:
         # Reset answer — synthesize from memory chain, not raw dump
         answer_parts = []
         if creator_detected:
@@ -434,7 +431,7 @@ def build_true_brody_answer(
         voice_source = "MEMORY_RESPONSE_CHAIN"
     elif (chain_local_fallback_partial and chain_selected_items
           and not creator_detected
-          and voice_source not in ("WORLD_HYPOTHESIS_ADVISORY", "B6_ADVISORY_CONTEXT", "NEURAL_GENERATION_VALIDATED")
+          and voice_source not in ("WORLD_HYPOTHESIS_ADVISORY", "B6_ADVISORY_CONTEXT")
           and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST)):
         # Local Graphiti index fallback — Neo4j offline; synthesize from index metadata
         # Guard: skip for action-boundary / creator-context messages (keep their own text)
@@ -551,8 +548,20 @@ def build_true_brody_answer(
                     answer_parts = [build_general_conversation_answer(user_message)]
                     voice_source = "GENERAL_CONVERSATION_READONLY"
                 else:
-                    # Generic query, GENERAL topic, no match — notify miss
-                    if fr:
+                    # Generic query, GENERAL topic, no match — notify miss or enrich with auxiliary evidence
+                    if has_valid_neural_generation:
+                        if fr:
+                            answer_parts.append(
+                                "Analyse consultative Brody : en complément des sources locales, l'élément indicatif suivant a été recueilli :\n\n"
+                                f"{gen_snap['validated_content']}"
+                            )
+                        else:
+                            answer_parts.append(
+                                "Brody advisory analysis: in complement to local sources, the following advisory evidence was retrieved:\n\n"
+                                f"{gen_snap['validated_content']}"
+                            )
+                        voice_source = "BRODY_ADVISORY_WITH_AUXILIARY_EVIDENCE"
+                    elif fr:
                         tried_str = ", ".join(f"`{q}`" for q in tried[:3]) if tried else "aucune"
                         answer_parts.append(
                             f"Requête non classifiée — aucune correspondance dans l'index local. "
@@ -561,6 +570,7 @@ def build_true_brody_answer(
                             "(X108, mémoire, arbres, preuves, opérateur, gencoin) "
                             "ou un identifiant explicite (ex. P136, T13)."
                         )
+                        voice_source = "SEMANTIC_MATCH_FAILED_GENERAL"
                     else:
                         tried_str = ", ".join(f"`{q}`" for q in tried[:3]) if tried else "none"
                         answer_parts.append(
@@ -570,19 +580,32 @@ def build_true_brody_answer(
                             "(X108, memory, trees, proofs, operator, gencoin) "
                             "or an explicit identifier (e.g. P136, T13)."
                         )
-                    voice_source = "SEMANTIC_MATCH_FAILED_GENERAL"
+                        voice_source = "SEMANTIC_MATCH_FAILED_GENERAL"
         else:
             # Known topic but no index results — synthesize from topic classification.
             answer_parts = []
-            if fr:
+            if has_valid_neural_generation:
+                if fr:
+                    answer_parts.append(
+                        f"Analyse consultative Brody : {_synthesize_auditor_response_fr(user_message, chain_topic_ctx, '', [], 0, 'NO_MATERIAL')}\n\n"
+                        f"Élément consultatif auxiliaire recueilli :\n{gen_snap['validated_content']}"
+                    )
+                else:
+                    answer_parts.append(
+                        f"Brody advisory analysis: {_synthesize_auditor_response_en(user_message, chain_topic_ctx, '', [], 0, 'NO_MATERIAL')}\n\n"
+                        f"Auxiliary advisory evidence retrieved:\n{gen_snap['validated_content']}"
+                    )
+                voice_source = "BRODY_ADVISORY_WITH_AUXILIARY_EVIDENCE"
+            elif fr:
                 answer_parts.append(_synthesize_auditor_response_fr(
                     user_message, chain_topic_ctx, "", [], 0, "NO_MATERIAL"
                 ))
+                voice_source = "SEMANTIC_ADVISORY_NO_MEMORY"
             else:
                 answer_parts.append(_synthesize_auditor_response_en(
                     user_message, chain_topic_ctx, "", [], 0, "NO_MATERIAL"
                 ))
-            voice_source = "SEMANTIC_ADVISORY_NO_MEMORY"
+                voice_source = "SEMANTIC_ADVISORY_NO_MEMORY"
 
     # 7.5. Source pack context enrichment (P27) — readonly, advisory, X108-gated
     sp = source_pack_context or {}
@@ -627,7 +650,7 @@ def build_true_brody_answer(
     try:
         _sp_material_answer = _brody_source_pack_answer_v0(source_pack_context or {}, language)
         _sp_current_answer = "".join(answer_parts)
-        if _sp_material_answer and voice_source not in ("WORLD_HYPOTHESIS_ADVISORY", "B6_ADVISORY_CONTEXT", "NEURAL_GENERATION_VALIDATED") and _brody_source_pack_should_override_v0(_sp_current_answer):
+        if _sp_material_answer and voice_source not in ("WORLD_HYPOTHESIS_ADVISORY", "B6_ADVISORY_CONTEXT") and _brody_source_pack_should_override_v0(_sp_current_answer):
             answer_parts = [_sp_material_answer]
             voice_source = voice_source or "SOURCE_PACK_MATERIAL_BINDING_V0"
     except Exception:
