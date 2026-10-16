@@ -1,4 +1,6 @@
 """POST /api/brody/chat — Brody runtime + V1.4.12A final_answer layer."""
+from __future__ import annotations
+from typing import Any
 from apps.obsidia_api.brody_capabilities_intent import is_brody_capabilities_query, build_brody_capabilities_response
 import unicodedata
 from fastapi import APIRouter, Depends
@@ -180,6 +182,113 @@ def _check_quick_followup(message: str) -> str:
             pass
         return "previous topic"
     return ""
+
+
+def evaluate_memory_sufficiency(
+    user_message: str,
+    memory_response_chain: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """
+    Distinguishes:
+    - MEMORY_PRESENT
+    - MEMORY_RELEVANT
+    - EVIDENCE_USABLE
+    - QUESTION_SUFFICIENTLY_ANSWERABLE
+    Only QUESTION_SUFFICIENTLY_ANSWERABLE justifies skipping auxiliary consultation.
+    """
+    if not isinstance(memory_response_chain, dict):
+        return {
+            "memory_present": False,
+            "memory_relevant": False,
+            "evidence_usable": False,
+            "question_sufficiently_answerable": False,
+            "sufficiency_state": "NO_MEMORY",
+            "relevant_item_count": 0,
+            "matched_tokens": [],
+        }
+
+    raw_items = list(memory_response_chain.get("selected_items") or [])
+    total_records = int(
+        memory_response_chain.get("native_index_records_total")
+        or memory_response_chain.get("query_results_count")
+        or len(raw_items)
+    )
+    memory_present = total_records > 0 or len(raw_items) > 0
+
+    if not memory_present or not raw_items:
+        return {
+            "memory_present": memory_present,
+            "memory_relevant": False,
+            "evidence_usable": False,
+            "question_sufficiently_answerable": False,
+            "sufficiency_state": "MEMORY_PRESENT" if memory_present else "NO_MEMORY",
+            "relevant_item_count": 0,
+            "matched_tokens": [],
+        }
+
+    _STOPWORDS = {
+        "dans", "pour", "avec", "sans", "sous", "vers", "chez", "dans", "cette", "cet",
+        "cette", "ces", "mon", "ton", "son", "notre", "votre", "leur", "mes", "tes", "ses",
+        "nos", "vos", "leurs", "qui", "que", "quoi", "dont", "ou", "quand", "comment",
+        "pourquoi", "est", "sont", "ete", "etre", "avoir", "fait", "faire", "plus", "moins",
+        "mode", "quelle", "quel", "quels", "quelles", "les", "des", "une", "aux", "par",
+        "the", "and", "for", "with", "from", "this", "that", "what", "which", "where", "how",
+        "why", "are", "have", "has", "had", "can", "could", "will", "would", "fais", "peux",
+        "salut", "bonjour", "brody", "obsidia", "merci", "aide", "analyse",
+    }
+    import re
+    msg_tokens = set(re.findall(r"\b[a-zA-Z0-9_\-\.]{3,}\b", (user_message or "").lower()))
+    content_tokens = {t for t in msg_tokens if t not in _STOPWORDS}
+
+    relevant_items = []
+    matched_all = set()
+
+    for it in raw_items:
+        if not isinstance(it, dict):
+            continue
+        it_tags = [str(t).lower() for t in (it.get("tags") or [])]
+        it_title = str(it.get("title") or "").lower()
+        it_excerpt = str(it.get("excerpt") or it.get("summary") or it.get("content") or "").lower()
+        combined_text = f"{it_title} {' '.join(it_tags)} {it_excerpt}"
+
+        item_matches = [t for t in content_tokens if t in combined_text]
+        if item_matches:
+            relevant_items.append(it)
+            matched_all.update(item_matches)
+
+    memory_relevant = len(relevant_items) > 0
+    mat_quality = str(memory_response_chain.get("material_quality") or "")
+    evidence_usable = memory_relevant and (mat_quality in ("USABLE_MATERIAL", "PARTIAL_MATERIAL"))
+
+    question_sufficiently_answerable = False
+    if evidence_usable:
+        if not content_tokens:
+            question_sufficiently_answerable = True
+        else:
+            question_sufficiently_answerable = len(matched_all) > 0 and any(
+                len(str(it.get("excerpt") or it.get("content") or "")) >= 20 for it in relevant_items
+            )
+
+    if question_sufficiently_answerable:
+        state = "QUESTION_SUFFICIENTLY_ANSWERABLE"
+    elif evidence_usable:
+        state = "EVIDENCE_USABLE"
+    elif memory_relevant:
+        state = "MEMORY_RELEVANT"
+    elif memory_present:
+        state = "MEMORY_PRESENT"
+    else:
+        state = "NO_MEMORY"
+
+    return {
+        "memory_present": memory_present,
+        "memory_relevant": memory_relevant,
+        "evidence_usable": evidence_usable,
+        "question_sufficiently_answerable": question_sufficiently_answerable,
+        "sufficiency_state": state,
+        "relevant_item_count": len(relevant_items),
+        "matched_tokens": sorted(list(matched_all)),
+    }
 
 
 class BrodyChatRequest(BaseModel):
@@ -1034,11 +1143,7 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
     if getattr(req, "allow_local_model", False):
         _msg_stripped = (req.message or "").strip()
         _msg_lower = _msg_stripped.lower()
-        _has_usable_memory = (
-            isinstance(memory_response_chain, dict)
-            and memory_response_chain.get("material_quality") in ("USABLE_MATERIAL", "PARTIAL_MATERIAL")
-            and memory_response_chain.get("query_results_count", 0) > 0
-        )
+        _suff_eval = evaluate_memory_sufficiency(req.message, memory_response_chain)
         _is_brody_sufficient = (
             is_brody_capabilities_query(req.message)
             or intent == "greeting"
@@ -1046,7 +1151,7 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
             or _msg_stripped.startswith(":")
             or auth_esc
             or request_type in ("ACTION_OR_ACT_REQUEST", "MEMORY_WRITE_REQUEST")
-            or _has_usable_memory
+            or _suff_eval["question_sufficiently_answerable"]
         )
         if _is_brody_sufficient:
             _neural_generation_snapshot = {

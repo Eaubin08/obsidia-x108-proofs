@@ -237,6 +237,84 @@ def _query_evidence_step(
     }
 
 
+def reassess_cognitive_evidence_delta(
+    *,
+    round1_content: str,
+    b6_context_packet: dict[str, Any] | None,
+    world_hypothesis_snapshot: dict[str, Any] | None,
+    user_message: str,
+) -> dict[str, Any]:
+    """
+    Cognitive reassessment after Round 1:
+    - What information was received?
+    - What was validated?
+    - What remains unknown?
+    - Which contradictions remain?
+    - Is another consultation useful?
+    - What exact question should be asked?
+    """
+    b6_pkt = b6_context_packet or {}
+    wh_snap = world_hypothesis_snapshot or {}
+    unknowns = list(b6_pkt.get("unknowns") or [])
+    hypotheses = list(wh_snap.get("members") or [])
+
+    import unicodedata
+
+    def _strip_accents(s: str) -> str:
+        return "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn").lower()
+
+    r1_norm = _strip_accents(round1_content or "")
+
+    # 1. Identify which unknowns were actually addressed in Round 1
+    residual_unknowns = []
+    addressed_unknowns = []
+    for u in unknowns:
+        u_str = str(u).strip()
+        u_key = _strip_accents(u_str.replace("_", " "))
+        tokens = [t for t in u_key.split() if len(t) > 2]
+        if tokens and all(t in r1_norm for t in tokens):
+            addressed_unknowns.append(u_str)
+        elif u_key in r1_norm:
+            addressed_unknowns.append(u_str)
+        else:
+            residual_unknowns.append(u_str)
+
+    # 2. Check hypothesis set resolution
+    has_wh = wh_snap.get("status") == "HYPOTHESIS_SET_ATTACHED" and len(hypotheses) > 1
+
+    # 3. Determine if residual information need exists
+    has_residual = bool(residual_unknowns)
+
+    if not unknowns and has_wh:
+        if any(h.get("hypothesis_id", "").lower() in r1_lower for h in hypotheses):
+            has_residual = False
+        else:
+            has_residual = True
+            residual_unknowns = [h.get("hypothesis_id", "hypothese") for h in hypotheses[:2]]
+
+    if not has_residual:
+        return {
+            "has_residual": False,
+            "should_halt": True,
+            "halt_reason": "RESOLVED",
+            "residual_unknowns": [],
+            "addressed_unknowns": addressed_unknowns,
+            "round2_targeted_query": None,
+        }
+
+    target_unknown = residual_unknowns[0]
+    q2 = f"Précision ciblée sur l'élément non résolu : {target_unknown} (dans le cadre de : {user_message})"
+
+    return {
+        "has_residual": True,
+        "should_halt": False,
+        "halt_reason": None,
+        "residual_unknowns": residual_unknowns,
+        "addressed_unknowns": addressed_unknowns,
+        "round2_targeted_query": q2,
+    }
+
+
 def exchange_cognitive_evidence_rounds(
     *,
     user_message: str,
@@ -372,19 +450,28 @@ def exchange_cognitive_evidence_rounds(
     history_contents.append(val1["repaired_content"].strip())
 
     # --- ROUND 2 (Conditional & Bounded) ---
-    has_unresolved_need = bool(b6_pkt.get("unknowns")) or (wh_snap.get("status") == "HYPOTHESIS_SET_ATTACHED")
-    if target_max_rounds < 2 or not has_unresolved_need:
+    delta = reassess_cognitive_evidence_delta(
+        round1_content=val1["repaired_content"],
+        b6_context_packet=b6_pkt,
+        world_hypothesis_snapshot=wh_snap,
+        user_message=user_message,
+    )
+    if target_max_rounds < 2 or delta["should_halt"]:
         elapsed = round((time.perf_counter() - start_time) * 1000, 2)
         receipt.update(
             status="GENERATION_SUCCESS",
-            halt_reason="RESOLVED",
+            halt_reason=delta.get("halt_reason") or "RESOLVED",
             candidate=content1,
             validated_content=val1["repaired_content"],
             elapsed_ms=elapsed,
+            residual_need_computed=True,
+            residual_unknowns=delta.get("residual_unknowns", []),
         )
         return receipt
 
-    q2 = f"Précision sur les éléments résiduels pour : {user_message}"
+    q2 = delta["round2_targeted_query"]
+    receipt["residual_need_computed"] = True
+    receipt["residual_unknowns"] = delta.get("residual_unknowns", [])
     try:
         step2 = _query_evidence_step(
             q2,

@@ -78,6 +78,161 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def extract_candidate_claims(
+    content: str,
+    provider: str = "QWEN_LOCAL",
+) -> list[dict[str, Any]]:
+    """
+    Extracts structured candidate claims from validated auxiliary text.
+    Preserves provenance and marks non-sovereignty.
+    """
+    if not content or not isinstance(content, str):
+        return []
+
+    cleaned = content.strip()
+    import re
+    raw_statements = [
+        s.strip()
+        for s in re.split(r"(?<=[.!?])\s+|\n+", cleaned)
+        if s.strip() and len(s.strip()) > 3
+    ]
+
+    claims: list[dict[str, Any]] = []
+    for idx, stmt in enumerate(raw_statements):
+        if any(tok in stmt for tok in ("[ACT", "DECISION_AUTHORITY", "EMITS_ACT", "MEMORY_WRITE")):
+            continue
+        # Strip external model conversational preambles
+        stmt = re.sub(r"^(voici\s+(l'analyse|les\s+donn[ée]es|les\s+informations|la\s+r[ée]ponse)?\s*(demand[ée]e|suivante)?\s*:\s*)", "", stmt, flags=re.I).strip()
+        if not stmt:
+            continue
+        modality = "ADVISORY"
+        s_lower = stmt.lower()
+        if any(h in s_lower for h in ("hypothèse", "peut-être", "plausible", "supposition", "possible")):
+            modality = "HYPOTHETICAL"
+        elif any(f in s_lower for f in ("mesuré", "enregistré", "constaté", "pression limite", "est de", "définit", "bars", "relais")):
+            modality = "FACTUAL"
+
+        claims.append({
+            "claim_id": f"claim_{idx}_{abs(hash(stmt)) % 1000000}",
+            "statement": stmt,
+            "modality": modality,
+            "provenance": {"source": provider, "role": "AUXILIARY_EVIDENCE"},
+            "admissible": True,
+            "contradiction_status": "NONE",
+        })
+    return claims
+
+
+def synthesize_brody_native_claims(
+    claims: list[dict[str, Any]],
+    user_message: str,
+    language: str = "fr",
+    known_contradictions: list[str] | None = None,
+    allow_direct_quote: bool = False,
+) -> dict[str, Any]:
+    """
+    Brody native linguistic synthesis consuming admitted auxiliary claims.
+    Brody generates the final wording in Brody's voice.
+    - Preserves uncertainty
+    - Filters or explicitly qualifies contradictions
+    - Never promotes external claims to established world facts
+    """
+    fr = (language or "fr").lower().startswith("fr")
+    admitted: list[dict[str, Any]] = []
+    contradictions: list[dict[str, Any]] = []
+    contradiction_patterns = [str(c).lower() for c in (known_contradictions or [])]
+    axiom_contradictions = [
+        "noyau x108 a été modifié",
+        "x108 a été modifié",
+        "intelligence souveraine",
+        "je suis brody",
+        "certitude absolue",
+    ]
+    contradiction_patterns.extend(axiom_contradictions)
+
+    for c in claims:
+        stmt = str(c.get("statement") or "").strip()
+        stmt_lower = stmt.lower()
+        is_contra = any(pat in stmt_lower for pat in contradiction_patterns)
+        if is_contra:
+            c["contradiction_status"] = "CONTRADICTS_LOCAL_AXIOM"
+            contradictions.append(c)
+        else:
+            admitted.append(c)
+
+    if allow_direct_quote and claims:
+        quotes = " ; ".join(f'« {c["statement"]} »' for c in claims)
+        quote_text = (
+            f"Citation auxiliaire recueillie : {quotes}"
+            if fr
+            else f"Auxiliary quotation retrieved: {quotes}"
+        )
+        return {
+            "text": quote_text,
+            "internalized_claims": claims,
+            "admitted_claims": admitted,
+            "has_contradictions": bool(contradictions),
+            "established_facts": [],
+            "decision_authority": "KX108_ONLY",
+            "native_synthesis_applied": True,
+        }
+
+    parts: list[str] = []
+    if admitted:
+        statements_text = " ".join(c["statement"] for c in admitted)
+        if fr:
+            parts.append(
+                f"Analyse consultative Brody : selon les éléments auxiliaires recueillis, {statements_text} "
+                "Cette indication demeure consultative et soumise à vérification locale."
+            )
+        else:
+            parts.append(
+                f"Brody advisory analysis: according to retrieved auxiliary elements, {statements_text} "
+                "This indication remains consultative and subject to local verification."
+            )
+
+    if contradictions:
+        for c in contradictions:
+            contra_stmt = c["statement"]
+            stmt_lower = contra_stmt.lower()
+            if any(p in stmt_lower for p in ("intelligence souveraine", "je suis brody", "certitude absolue", "autorite", "autorité")):
+                if fr:
+                    parts.append(
+                        "Un élément auxiliaire non conforme (revendication de souveraineté ou d'identité) a été écarté et n'est pas retenu."
+                    )
+                else:
+                    parts.append(
+                        "A non-conforming auxiliary element (sovereignty or identity claim) was rejected and not retained."
+                    )
+            else:
+                if fr:
+                    parts.append(
+                        f"Un élément auxiliaire contradictoire ou non conforme a été relevé ({contra_stmt}), "
+                        "mais n'est pas retenu comme fait établi."
+                    )
+                else:
+                    parts.append(
+                        f"A contradictory or non-conforming auxiliary element was detected ({contra_stmt}), "
+                        "and is not retained as an established fact."
+                    )
+
+    if not parts:
+        if fr:
+            parts.append("Aucun élément auxiliaire recevable n'a pu être intégré.")
+        else:
+            parts.append("No admissible auxiliary elements could be integrated.")
+
+    return {
+        "text": "\n\n".join(parts),
+        "internalized_claims": claims,
+        "admitted_claims": admitted,
+        "has_contradictions": bool(contradictions),
+        "established_facts": [],
+        "decision_authority": "KX108_ONLY",
+        "native_synthesis_applied": True,
+    }
+
+
 def build_true_brody_answer(
     user_message: str,
     language: str = "fr",
@@ -134,6 +289,8 @@ def build_true_brody_answer(
 
     # ── Determine answer source ──────────────────────────────────────────
     answer_parts: list[str] = []
+    _internalized_claims: list[dict[str, Any]] = []
+    _native_synthesis_applied = False
     voice_source = ""
     action_boundary_already = request_type in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST)
 
@@ -212,14 +369,10 @@ def build_true_brody_answer(
 
     if (not action_boundary_already) and has_valid_hypotheses:
         if has_valid_neural_generation:
-            if fr:
-                answer_parts.append(
-                    f"\n\nÉlément consultatif auxiliaire recueilli :\n{gen_snap['validated_content']}"
-                )
-            else:
-                answer_parts.append(
-                    f"\n\nAuxiliary advisory evidence retrieved:\n{gen_snap['validated_content']}"
-                )
+            _internalized_claims = extract_candidate_claims(gen_snap["validated_content"], provider=gen_snap.get("provider", "QWEN_LOCAL"))
+            _synth = synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en")
+            _native_synthesis_applied = _synth.get("native_synthesis_applied", False)
+            answer_parts.append(f"\n\n{_synth['text']}")
     elif (not action_boundary_already) and has_b6_unknowns:
         answer_parts = []
         if creator_detected:
@@ -250,14 +403,10 @@ def build_true_brody_answer(
                 "KX108_ONLY."
             )
         if has_valid_neural_generation:
-            if fr:
-                answer_parts.append(
-                    f"\n\nÉlément consultatif auxiliaire recueilli :\n{gen_snap['validated_content']}"
-                )
-            else:
-                answer_parts.append(
-                    f"\n\nAuxiliary advisory evidence retrieved:\n{gen_snap['validated_content']}"
-                )
+            _internalized_claims = extract_candidate_claims(gen_snap["validated_content"], provider=gen_snap.get("provider", "QWEN_LOCAL"))
+            _synth = synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en")
+            _native_synthesis_applied = _synth.get("native_synthesis_applied", False)
+            answer_parts.append(f"\n\n{_synth['text']}")
         voice_source = "B6_ADVISORY_CONTEXT"
     elif not action_boundary_already:
         # 1. Creator context acknowledgment — natural greeting, no source dump
@@ -567,16 +716,10 @@ def build_true_brody_answer(
                 else:
                     # Generic query, GENERAL topic, no match — notify miss or enrich with auxiliary evidence
                     if has_valid_neural_generation:
-                        if fr:
-                            answer_parts.append(
-                                "Analyse consultative Brody : en complément des sources locales, l'élément indicatif suivant a été recueilli :\n\n"
-                                f"{gen_snap['validated_content']}"
-                            )
-                        else:
-                            answer_parts.append(
-                                "Brody advisory analysis: in complement to local sources, the following advisory evidence was retrieved:\n\n"
-                                f"{gen_snap['validated_content']}"
-                            )
+                        _internalized_claims = extract_candidate_claims(gen_snap["validated_content"], provider=gen_snap.get("provider", "QWEN_LOCAL"))
+                        _synth = synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en")
+                        _native_synthesis_applied = _synth.get("native_synthesis_applied", False)
+                        answer_parts.append(f"\n\n{_synth['text']}")
                         voice_source = "BRODY_ADVISORY_WITH_AUXILIARY_EVIDENCE"
                     elif fr:
                         tried_str = ", ".join(f"`{q}`" for q in tried[:3]) if tried else "aucune"
@@ -602,15 +745,18 @@ def build_true_brody_answer(
             # Known topic but no index results — synthesize from topic classification.
             answer_parts = []
             if has_valid_neural_generation:
+                _internalized_claims = extract_candidate_claims(gen_snap["validated_content"], provider=gen_snap.get("provider", "QWEN_LOCAL"))
+                _synth = synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en")
+                _native_synthesis_applied = _synth.get("native_synthesis_applied", False)
                 if fr:
                     answer_parts.append(
                         f"Analyse consultative Brody : {_synthesize_auditor_response_fr(user_message, chain_topic_ctx, '', [], 0, 'NO_MATERIAL')}\n\n"
-                        f"Élément consultatif auxiliaire recueilli :\n{gen_snap['validated_content']}"
+                        f"{_synth['text']}"
                     )
                 else:
                     answer_parts.append(
                         f"Brody advisory analysis: {_synthesize_auditor_response_en(user_message, chain_topic_ctx, '', [], 0, 'NO_MATERIAL')}\n\n"
-                        f"Auxiliary advisory evidence retrieved:\n{gen_snap['validated_content']}"
+                        f"{_synth['text']}"
                     )
                 voice_source = "BRODY_ADVISORY_WITH_AUXILIARY_EVIDENCE"
             elif fr:
@@ -647,6 +793,15 @@ def build_true_brody_answer(
             )
         _source_pack_enriched = True
         voice_source = voice_source or "SOURCE_PACK_CONTEXT"
+
+    # 7.6. Bounded auxiliary evidence integration if not already applied
+    if has_valid_neural_generation and not _native_synthesis_applied and not action_boundary_already:
+        _internalized_claims = extract_candidate_claims(gen_snap["validated_content"], provider=gen_snap.get("provider", "QWEN_LOCAL"))
+        _synth = synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en")
+        _native_synthesis_applied = _synth.get("native_synthesis_applied", False)
+        sp_prefix = "\n\n" if answer_parts else ""
+        answer_parts.insert(0 if not answer_parts else len(answer_parts), f"{sp_prefix}{_synth['text']}")
+        voice_source = voice_source or "BRODY_ADVISORY_WITH_AUXILIARY_EVIDENCE"
 
     # 8. X108 boundary footer (always)
     if fr:
@@ -792,6 +947,8 @@ def build_true_brody_answer(
         "emits_verdict": False,
         "kernel_mutation": False,
         "decision_authority": "KX108_ONLY",
+        "internalized_claims": _internalized_claims,
+        "native_synthesis_applied": _native_synthesis_applied,
     }
 
 
