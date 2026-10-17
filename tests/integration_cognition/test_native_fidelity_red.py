@@ -33,7 +33,7 @@ def test_fidelity_lossy_statements_are_not_native(stmt):
     from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
 
     _text, provenance = _reconstruct_with_provenance(stmt, fr=True)
-    assert provenance != "NATIVE_VERIFIED_ECHO"
+    assert provenance != "AUXILIARY_WORDING_REUSED"
 
 
 @pytest.mark.parametrize("stmt", [
@@ -46,7 +46,7 @@ def test_fidelity_native_output_covers_every_input_token(stmt):
     from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
 
     text, provenance = _reconstruct_with_provenance(stmt, fr=True)
-    if provenance == "NATIVE_VERIFIED_ECHO":
+    if provenance == "AUXILIARY_WORDING_REUSED":
         assert text.lower() == stmt.rstrip(".").lower()
 
 
@@ -100,7 +100,7 @@ def test_fidelity_noun_complement_outside_object_is_not_dropped():
     from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
 
     text, provenance = _reconstruct_with_provenance("L'opérateur vérifie la température du circuit.", fr=True)
-    assert provenance != "NATIVE_VERIFIED_ECHO" or "du circuit" in text
+    assert provenance != "AUXILIARY_WORDING_REUSED" or "du circuit" in text
 
 
 # Third audit (1970d041): set-based coverage and punctuation --------------------
@@ -124,7 +124,7 @@ def test_fidelity_identifiers_and_symbols_are_never_lost(stmt):
     from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
 
     text, provenance = _reconstruct_with_provenance(stmt, fr=True)
-    assert provenance != "NATIVE_VERIFIED_ECHO", text
+    assert provenance != "AUXILIARY_WORDING_REUSED", text
 
 
 @pytest.mark.parametrize("subject,verb,obj,kw", [
@@ -161,15 +161,15 @@ def test_fidelity_identifier_case_is_preserved_exactly(stmt):
     from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
 
     text, provenance = _reconstruct_with_provenance(stmt, fr=True)
-    if provenance == "NATIVE_VERIFIED_ECHO":
+    if provenance == "AUXILIARY_WORDING_REUSED":
         assert text == stmt.rstrip(".")
 
 
-def test_fidelity_native_provenance_is_named_as_verified_echo():
+def test_fidelity_reuse_provenance_is_named_as_wording_reuse():
     from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
 
     _text, provenance = _reconstruct_with_provenance("L'opérateur vérifiera la vanne.", fr=True)
-    assert provenance == "NATIVE_VERIFIED_ECHO"
+    assert provenance == "AUXILIARY_WORDING_REUSED"
 
 
 @pytest.mark.parametrize("subject,verb,obj,kw", [
@@ -224,7 +224,7 @@ def test_fidelity_trailing_identifier_does_not_hide_the_head_noun(subject, expec
 def test_fidelity_ungrammatical_statement_is_never_a_verified_echo(stmt):
     from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
 
-    assert _reconstruct_with_provenance(stmt, fr=True)[1] != "NATIVE_VERIFIED_ECHO"
+    assert _reconstruct_with_provenance(stmt, fr=True)[1] != "AUXILIARY_WORDING_REUSED"
 
 
 # Closure audit (15239e1c): positive noun-phrase verification ---------------------
@@ -238,7 +238,7 @@ def test_fidelity_ungrammatical_statement_is_never_a_verified_echo(stmt):
 def test_closure_ungrammatical_statements_are_never_verified_echoes(stmt):
     from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
 
-    assert _reconstruct_with_provenance(stmt, fr=True)[1] != "NATIVE_VERIFIED_ECHO"
+    assert _reconstruct_with_provenance(stmt, fr=True)[1] != "AUXILIARY_WORDING_REUSED"
 
 
 @pytest.mark.parametrize("subject,verb,obj,kw", [
@@ -280,7 +280,7 @@ def test_closure_correct_simple_sentences_are_not_over_limited(subject, verb, ob
 def test_closure2_ungrammatical_statements_are_never_verified_echoes(stmt):
     from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
 
-    assert _reconstruct_with_provenance(stmt, fr=True)[1] != "NATIVE_VERIFIED_ECHO"
+    assert _reconstruct_with_provenance(stmt, fr=True)[1] != "AUXILIARY_WORDING_REUSED"
 
 
 @pytest.mark.parametrize("subject,verb,obj,kw", [
@@ -321,7 +321,7 @@ def test_closure2_verified_phrases_stay_confident(subject, verb, obj, kw, expect
 def test_closure3_echo_requires_verified_noun_phrases_and_plain_case(stmt):
     from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
 
-    assert _reconstruct_with_provenance(stmt, fr=True)[1] != "NATIVE_VERIFIED_ECHO"
+    assert _reconstruct_with_provenance(stmt, fr=True)[1] != "AUXILIARY_WORDING_REUSED"
 
 
 @pytest.mark.parametrize("stmt", [
@@ -331,4 +331,4 @@ def test_closure3_echo_requires_verified_noun_phrases_and_plain_case(stmt):
 def test_closure3_verified_echoes_still_pass(stmt):
     from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
 
-    assert _reconstruct_with_provenance(stmt, fr=True)[1] == "NATIVE_VERIFIED_ECHO"
+    assert _reconstruct_with_provenance(stmt, fr=True)[1] == "AUXILIARY_WORDING_REUSED"
