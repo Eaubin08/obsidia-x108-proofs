@@ -19,6 +19,8 @@ Un dépôt GitHub et un worktree local ne sont jamais supposés identiques ; cha
 
 ## 1. Vision du fondateur — sources et chronologie
 
+> **Obsolète (v1), voir partie III.** Les attributions de ce tableau (FSO, « 81 » en « § 162 / § 474 », Drive « non relue ») sont remplacées par III.1 (C1, C4, C6) et III.2. Les « 81 » se trouvent en 02 L253 et L274 (formulations d'assistant). Le texte v1 est conservé pour l'historique.
+
 | Date | Source exacte | Étiquette | Contenu |
 |---|---|---|---|
 | non datée (transcript) | Drive « Formule du Savoir Obsidia et apprentisage full auto » (FSO), `docs.google.com/document/d/14yk4MPqd5rd3RnB1AAyys8zHU4KD4Dq1eqNtLQFJTA0`, § 1 | [F] *candidat* | « … c'est ce qu'on va appliquer à tous les domaines … comme un enfant ou un humain apprend à l'école. On te dit, t'apprends, t'enregistres, et après, on t'évalue de différentes manières. » |
@@ -50,6 +52,8 @@ Aucune définition trouvée comme **stades** dans les sources lues (`obsidia-x10
 
 ### 1.4 Les « 81 »
 
+> **Obsolète (v1), voir partie III.3 (C5).** « Matrice théorique 9×9 » et les références « § 162, § 474 » sont des formulations d'assistant (02 L253, L274) ; chez le fondateur, les versions 9×9 restent une ambiguïté historique (versions entraînées séparément, sans coopération).
+
 Les « 81 » désignent une **matrice théorique 9×9 de versions d'Obsidia** (Architecture Cognitive Multiverselle § 162, § 474). Ce ne sont ni 81 identités, ni 81 enfants, ni 81 programmes d'éducation réalisés, ni 81 entraînements.
 
 ## 2. Propositions ultérieures des assistants / agents ([S] / [CT])
@@ -74,6 +78,8 @@ Les « 81 » désignent une **matrice théorique 9×9 de versions d'Obsidia** (A
 | `docs/memory/MEMORY_PROMOTION_MANUAL_ONLY_V1.md` | commit `a5f21c6b` (2026-05-26), identique local / `main` | promotion manuelle uniquement [CT] ; version canonique en vigueur à confirmer |
 
 ### 3.2 Google Drive (identifiés par le handoff utilisateur, **non lus par Claude**)
+
+> **Obsolète (v1), voir II.0 et III.2.** Les six exports ont depuis été lus intégralement (pack SHA-256 vérifié) ; le statut « non lus » ne vaut que pour la v1.
 
 | Document | URL | Taille annoncée | Nature (selon le handoff) |
 |---|---|---|---|
@@ -181,7 +187,7 @@ STOP BEFORE APPLY sur l'architecture éducative.
 
 # Partie II — Vérification directe des sources (2026-10-17, v2)
 
-> **Corrigée par la partie III (v3).** Les points II.0 (FSO), II.1 (« une seule essence », « Oxygen », numéros de ligne), II.2 (N0–N4), II.3, II.4, II.5 et II.6 (P155 / P156 / G1) sont amendés en III.1. Le texte v2 est conservé pour la traçabilité.
+> **Corrigée par la partie III (v3).** Les points II.0 (FSO), II.1 (« une seule essence », « Oxygen », numéros de ligne), II.2 (N0–N4), II.3, II.4, II.5, II.6 (P155 / P156 / G1), II.7 (lacunes n° 2 « Oxygen » et n° 3 « une seule essence »), II.8 (verdict v2 : `FOUNDER_VISION_VERIFIED`, `EIGHTY_ONE`) et II.9 (décision 3a) sont amendés en III.1, III.3 et III.7. Le texte v2 est conservé pour la traçabilité.
 
 ## II.0 Pack vérifié
 
@@ -347,7 +353,7 @@ Base : audit indépendant de `636f55fd` (verdict PARTIAL, corrections C1–C9). 
 | 02 Architecture Cognitive Multiverselle | Drive `1lsxNC3K…` | prompt du fondateur + réponses d'assistant (dont réponse collée dans le préambule) | demande de cartographie ; formulations d'assistant « 81 versions théoriques » (L253), « 81+ entités singulières » (L274), « Enfance → Maîtrise → Sagesse » (L1590) | une décision du fondateur sur l'identité des versions |
 | 03 Monde, mémoire, apprentissage | Drive `1gLu3ssn…` | audit d'assistant, oct. 2026 | distinctions apprendre / mémoriser / acquérir ; références d'apprentissage continu ; renvois sources 47 / 48 / 91 | une parole du fondateur |
 | 04 Atlas 81 pépites | Drive `1vKDoa35…` | audit rétrospectif d'assistant | doctrine Oxygen du 5 août 2026 (§ 238–239), chaîne pédagogique (§ 240), distribution progressive des connaissances (§ 24) | le texte d'origine de ces doctrines |
-| 05 Cartographie Master | Drive `14WUSNQP…` | dialogue fondateur / ChatGPT | progression anti-dérive (L330), enseignement adaptatif (L1228), compte rendu humain (L1320), échec et relève (L1423), versions 9×9 entraînées séparément (L1919–L1922, L2475, L2678) | des stades de l'IA ; une identité Oxygen (occurrences ambiguës, C3) |
+| 05 Cartographie Master | Drive `14WUSNQP…` | dialogue fondateur / ChatGPT | progression anti-dérive (L330), enseignement adaptatif (L1234), compte rendu humain (L1320), échec et relève (L1423), versions 9×9 entraînées séparément (L1919–L1922, L2475, L2678) | des stades de l'IA ; une identité Oxygen (occurrences ambiguës, C3) |
 | 06 Shazam 34 arbres | Drive `1KshgP97…` | texte d'assistant | pseudo-code de hachage spectral | une implémentation |
 | `docs/EDUCATION.md` | `obsidia-x108-proofs@main` `48f0c2fb` | synthèse d'assistant (2026-09-15) | doctrine « une seule naissance », entraînement ≠ éducation | une preuve de runtime éducatif |
 | Branche `exp/p2-multirepresentation-ablation-20261009` | `brody-world-physique` `966df622` | code + docs expérimentaux | P155 reproduit ; P156 contrôles reproduits ; G1 tests 3/3 | apprentissage persistant, transfert, authenticité, multi-session |
