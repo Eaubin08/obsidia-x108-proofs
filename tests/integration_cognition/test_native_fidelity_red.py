@@ -309,3 +309,26 @@ def test_closure2_unverified_phrases_are_limited(subject, verb, obj, kw):
 def test_closure2_verified_phrases_stay_confident(subject, verb, obj, kw, expected):
     res = realize(subject=subject, verb_lemma=verb, obj=obj, **kw)
     assert res["text"] == expected and res["has_linguistic_limitations"] is False
+
+
+# Closure audit 3 (e9ae36a4): narrow echo policy on the public path ---------------
+
+@pytest.mark.parametrize("stmt", [
+    "L'opérateur vérifie rouge.", "L'opérateur vérifie grand.", "L'opérateur vérifie ouvertes.",
+    "L'opérateur vérifie Chat.", "Il pleut la vanne.", "L'opérateur vérifie Le Chat.",
+    "L'opérateur vérifie la Vanne.", "L'OPÉRATEUR VÉRIFIE LA VANNE.", "L'opérateur Vérifie la vanne.",
+])
+def test_closure3_echo_requires_verified_noun_phrases_and_plain_case(stmt):
+    from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
+
+    assert _reconstruct_with_provenance(stmt, fr=True)[1] != "NATIVE_VERIFIED_ECHO"
+
+
+@pytest.mark.parametrize("stmt", [
+    "Les opérateurs ne vérifiaient pas la vanne principale.", "L'opérateur vérifiera les vannes.",
+    "Le technicien a lancé le test.",
+])
+def test_closure3_verified_echoes_still_pass(stmt):
+    from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
+
+    assert _reconstruct_with_provenance(stmt, fr=True)[1] == "NATIVE_VERIFIED_ECHO"
