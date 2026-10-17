@@ -19,6 +19,20 @@
       "forms_count": 976570
     },
     {
+      "id": "unimorph_fra",
+      "name": "UniMorph French",
+      "version": "UniMorph 4.0 / Master",
+      "language": "fr",
+      "license": "CC-BY-SA 4.0",
+      "commercial_use": true,
+      "attribution": "UniMorph Consortium (Universal Morphological Ant)",
+      "url": "https://github.com/unimorph/fra",
+      "description": "Morphological paradigms for French inflectional paradigms.",
+      "sha256": "4760fc36435a9ffba9b4de6f0787d8eca5b15022e6b141e3b242b129f0d88dcb",
+      "lemmas_count": 0,
+      "forms_count": 367732
+    },
+    {
       "id": "unimorph_eng",
       "name": "UniMorph English",
       "version": "UniMorph 4.0 / Master",
@@ -31,6 +45,20 @@
       "sha256": "20a191cefdc7cad6fa74b00f49d6f658684f17b14541aae372e5a3d5a8c15c67",
       "lemmas_count": 427464,
       "forms_count": 652477
+    },
+    {
+      "id": "wordnet_exc",
+      "name": "Princeton WordNet Morphological Exceptions",
+      "version": "WordNet 3.0 Exceptions",
+      "language": "en",
+      "license": "WordNet 3.0 License (BSD-style)",
+      "commercial_use": true,
+      "attribution": "Princeton University / NLTK",
+      "url": "https://github.com/nltk/nltk_data",
+      "description": "Exhaustive morphological irregular exceptions for English verbs, nouns, adjectives, and adverbs.",
+      "sha256": "cbda5ea6eef7f36a97a43d4a75f85e07fccbb4f23657d27b4ccbc93e2646ab59",
+      "lemmas_count": 0,
+      "forms_count": 5945
     },
     {
       "id": "oewn_2025",

@@ -1,0 +1,90 @@
+[
+  {
+    "name": "Morphalou 3.1 (ToutEnUn CSV)",
+    "id": "morphalou_3_1",
+    "lang": "fr",
+    "url": "https://huggingface.co/datasets/datasets-CNRS/Morphalou/resolve/main/Morphalou3.1_formatCSV_toutEnUn.zip",
+    "filename": "Morphalou3.1_formatCSV_toutEnUn.zip",
+    "license": "LGPL-LR",
+    "source": "ATILF CNRS / ORTOLANG",
+    "bytes": 38062358,
+    "sha256": "4fc815cbf17aecdf1b47f6bbc263489a460fd8d11ae17e6b522336c72bd0e333"
+  },
+  {
+    "name": "UniMorph French",
+    "id": "unimorph_fra",
+    "lang": "fr",
+    "url": "https://raw.githubusercontent.com/unimorph/fra/master/fra",
+    "filename": "unimorph_fra.tsv",
+    "license": "CC-BY-SA 4.0",
+    "source": "UniMorph (Universal Morphological Ant)",
+    "bytes": 13405679,
+    "sha256": "4760fc36435a9ffba9b4de6f0787d8eca5b15022e6b141e3b242b129f0d88dcb"
+  },
+  {
+    "name": "UniMorph English",
+    "id": "unimorph_eng",
+    "lang": "en",
+    "url": "https://raw.githubusercontent.com/unimorph/eng/master/eng",
+    "filename": "unimorph_eng.tsv",
+    "license": "CC-BY-SA 4.0",
+    "source": "UniMorph (Universal Morphological Ant)",
+    "bytes": 18022905,
+    "sha256": "20a191cefdc7cad6fa74b00f49d6f658684f17b14541aae372e5a3d5a8c15c67"
+  },
+  {
+    "name": "Open English WordNet 2025 (JSON)",
+    "id": "oewn_2025",
+    "lang": "en",
+    "url": "https://github.com/globalwordnet/english-wordnet/releases/download/2025-edition/english-wordnet-2025-json.zip",
+    "filename": "english-wordnet-2025-json.zip",
+    "license": "CC-BY 4.0",
+    "source": "Global WordNet Association / Princeton",
+    "bytes": 9986555,
+    "sha256": "7d749f6e2c39e6970e4997839dcf6e42fd281f3c2fae0171d2192bae8cfa4b51"
+  },
+  {
+    "name": "French Thesaurus (Dicollecte / LibreOffice)",
+    "id": "thes_fr",
+    "lang": "fr",
+    "url": "https://raw.githubusercontent.com/LibreOffice/dictionaries/master/fr_FR/dictionaries/thes_fr.dat",
+    "filename": "thes_fr.dat",
+    "license": "MPL 2.0 / LGPL 3.0 / GPL 3.0",
+    "source": "Dicollecte / LibreOffice",
+    "bytes": 4801627,
+    "sha256": "52efa736c37f98d7f0abfe5dd4345b6f712880ca0ca664c15a8168d9475a0b46"
+  },
+  {
+    "name": "Princeton WordNet Morphological Exceptions",
+    "id": "wordnet_exc",
+    "lang": "en",
+    "url": "https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/corpora/wordnet.zip",
+    "filename": "wordnet_exceptions.zip",
+    "license": "WordNet 3.0 License (BSD-style)",
+    "source": "Princeton University / NLTK",
+    "bytes": 10775600,
+    "sha256": "cbda5ea6eef7f36a97a43d4a75f85e07fccbb4f23657d27b4ccbc93e2646ab59"
+  },
+  {
+    "name": "XMLittré (Dictionnaire de la langue française par Émile Littré)",
+    "id": "xmlittre_fr",
+    "lang": "fr",
+    "url": "https://bitbucket.org/Mytskine/xmlittre-data/get/master.zip",
+    "filename": "xmlittre_data.zip",
+    "license": "CC-BY-SA 3.0 / Public Domain",
+    "source": "François Gannaz / Littre.org",
+    "bytes": 29726294,
+    "sha256": "7d2f4205b70b49d0d6503cb0f9b70b16ee428350be8f8c3260ad1d5876274448"
+  },
+  {
+    "name": "FreeDict French-English Dictionary",
+    "id": "freedict_fra_eng",
+    "lang": "fr",
+    "url": "https://raw.githubusercontent.com/freedict/fd-dictionaries/master/fra-eng/fra-eng.tei",
+    "filename": "freedict_fra_eng.tei",
+    "license": "GPL v2+",
+    "source": "FreeDict Project",
+    "bytes": 2691924,
+    "sha256": "de9eb6e5756d994bca9bdb2a91bfc2bb8d8822d3387f5a3b586acc8d42133114"
+  }
+]

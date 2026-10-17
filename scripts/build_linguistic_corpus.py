@@ -15,7 +15,9 @@ Generates:
 """
 from __future__ import annotations
 
+import argparse
 import csv
+import hashlib
 import io
 import json
 import os
@@ -27,9 +29,10 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-RAW_DIR = ROOT / "_external_sources" / "lexicon" / "raw"
+DEFAULT_RAW_DIR = ROOT / "_external_sources" / "lexicon" / "raw"
 DATA_DIR = ROOT / "data" / "linguistic_corpus"
-DB_PATH = DATA_DIR / "lexicon.db"
+DEFAULT_MANIFEST = DATA_DIR / "DOWNLOAD_MANIFEST.json"
+DEFAULT_DB_PATH = DATA_DIR / "lexicon.db"
 
 
 def init_db(conn: sqlite3.Connection):
@@ -890,20 +893,71 @@ def create_indexes(conn: sqlite3.Connection):
     print(f"  Indexes created in {elapsed:.2f}s.")
 
 
-def main():
-    print(f"=== Obsidia Brody Linguistic Corpus Ingestion ===")
-    print(f"Database destination: {DB_PATH}")
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
+def check_file_sha256(path: Path, expected_sha: str) -> bool:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        while chunk := f.read(1024 * 1024):
+            h.update(chunk)
+    return h.hexdigest().lower() == expected_sha.lower()
 
-    manifest_json_path = RAW_DIR.parent / "download_manifest.json"
-    if not manifest_json_path.exists():
-        print(f"ERROR: {manifest_json_path} not found. Run download_corpora.py first.")
+
+def main():
+    parser = argparse.ArgumentParser(description="Ingest verified linguistic datasets into SQLite.")
+    parser.add_argument("--raw-dir", type=Path, default=DEFAULT_RAW_DIR, help="Directory containing downloaded raw dataset archives.")
+    parser.add_argument("--db-path", type=Path, default=DEFAULT_DB_PATH, help="Destination path for lexicon.db.")
+    parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST, help="Path to DOWNLOAD_MANIFEST.json.")
+    args = parser.parse_args()
+
+    raw_dir: Path = args.raw_dir
+    db_path: Path = args.db_path
+    manifest_path: Path = args.manifest
+
+    print(f"=== Obsidia Brody Linguistic Corpus Ingestion ===")
+    print(f"Database destination: {db_path}")
+    print(f"Raw sources directory: {raw_dir}")
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if not manifest_path.exists():
+        legacy_manifest = raw_dir.parent / "download_manifest.json"
+        if legacy_manifest.exists():
+            manifest_path = legacy_manifest
+        else:
+            print(f"ERROR: Manifest {manifest_path} not found.", file=sys.stderr)
+            sys.exit(1)
+
+    with open(manifest_path, "r", encoding="utf-8") as f:
+        datasets = json.load(f)
+
+    # Verify presence and SHA-256 of all datasets in raw_dir
+    missing_or_corrupt = []
+    resolved_items = {}
+
+    for item in datasets:
+        filename = item.get("filename")
+        expected_sha = item.get("sha256")
+        local_candidate = (raw_dir / filename) if filename else None
+        if not local_candidate or not local_candidate.exists():
+            if item.get("local_path") and Path(item["local_path"]).exists():
+                local_candidate = Path(item["local_path"])
+            else:
+                missing_or_corrupt.append((item["name"], filename or "unknown", "FILE_NOT_FOUND"))
+                continue
+
+        if expected_sha and not check_file_sha256(local_candidate, expected_sha):
+            missing_or_corrupt.append((item["name"], local_candidate.name, "SHA256_MISMATCH"))
+            continue
+
+        resolved_items[item["id"]] = (item, local_candidate)
+
+    if missing_or_corrupt:
+        print(f"\nERROR: Raw linguistic datasets are missing or invalid in '{raw_dir}':", file=sys.stderr)
+        for name, fn, reason in missing_or_corrupt:
+            print(f"  - [{reason}] {name} ({fn})", file=sys.stderr)
+        print("\nTo download and verify all required official datasets, run:", file=sys.stderr)
+        print(f"    python {Path(__file__).parent / 'download_linguistic_corpora.py'} --raw-dir \"{raw_dir}\"", file=sys.stderr)
         sys.exit(1)
 
-    with open(manifest_json_path, "r", encoding="utf-8") as f:
-        download_manifest = {item["id"]: item for item in json.load(f)}
-
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(db_path)
     conn.execute("PRAGMA synchronous = OFF")
     conn.execute("PRAGMA journal_mode = MEMORY")
     conn.execute("PRAGMA cache_size = 100000")
@@ -913,15 +967,15 @@ def main():
     report_entries = []
 
     # 1. Morphalou 3.1
-    morph_item = download_manifest["morphalou_3_1"]
-    morph_res = ingest_morphalou(conn, Path(morph_item["local_path"]))
+    morph_item, morph_path = resolved_items["morphalou_3_1"]
+    morph_res = ingest_morphalou(conn, morph_path)
     report_entries.append({
         "source": morph_item["name"],
         "id": morph_item["id"],
         "version": "3.1 (06/2016)",
         "license": morph_item["license"],
         "official_source": morph_item["source"],
-        "bytes_downloaded": morph_item["bytes_downloaded"],
+        "bytes_downloaded": morph_item.get("bytes") or morph_item.get("bytes_downloaded", 0),
         "lemmas_imported": morph_res["lemmas"],
         "forms_imported": morph_res["forms"],
         "senses_imported": morph_res["senses"],
@@ -931,16 +985,16 @@ def main():
     })
 
     # 2. UniMorph French
-    if "unimorph_fra" in download_manifest:
-        fra_item = download_manifest["unimorph_fra"]
-        fra_res = ingest_unimorph_fra(conn, Path(fra_item["local_path"]))
+    if "unimorph_fra" in resolved_items:
+        fra_item, fra_path = resolved_items["unimorph_fra"]
+        fra_res = ingest_unimorph_fra(conn, fra_path)
         report_entries.append({
             "source": fra_item["name"],
             "id": fra_item["id"],
             "version": "UniMorph 4.0 / Master",
             "license": fra_item["license"],
             "official_source": fra_item["source"],
-            "bytes_downloaded": fra_item["bytes_downloaded"],
+            "bytes_downloaded": fra_item.get("bytes") or fra_item.get("bytes_downloaded", 0),
             "lemmas_imported": fra_res["lemmas"],
             "forms_imported": fra_res["forms"],
             "senses_imported": fra_res["senses"],
@@ -950,15 +1004,15 @@ def main():
         })
 
     # 3. UniMorph English
-    eng_item = download_manifest["unimorph_eng"]
-    eng_res = ingest_unimorph_eng(conn, Path(eng_item["local_path"]))
+    eng_item, eng_path = resolved_items["unimorph_eng"]
+    eng_res = ingest_unimorph_eng(conn, eng_path)
     report_entries.append({
         "source": eng_item["name"],
         "id": eng_item["id"],
         "version": "UniMorph 4.0 / Master",
         "license": eng_item["license"],
         "official_source": eng_item["source"],
-        "bytes_downloaded": eng_item["bytes_downloaded"],
+        "bytes_downloaded": eng_item.get("bytes") or eng_item.get("bytes_downloaded", 0),
         "lemmas_imported": eng_res["lemmas"],
         "forms_imported": eng_res["forms"],
         "senses_imported": eng_res["senses"],
@@ -968,16 +1022,16 @@ def main():
     })
 
     # 4. WordNet Exceptions
-    if "wordnet_exc" in download_manifest:
-        wexc_item = download_manifest["wordnet_exc"]
-        wexc_res = ingest_wordnet_exceptions(conn, Path(wexc_item["local_path"]))
+    if "wordnet_exc" in resolved_items:
+        wexc_item, wexc_path = resolved_items["wordnet_exc"]
+        wexc_res = ingest_wordnet_exceptions(conn, wexc_path)
         report_entries.append({
             "source": wexc_item["name"],
             "id": wexc_item["id"],
             "version": "WordNet 3.0 Exceptions",
             "license": wexc_item["license"],
             "official_source": wexc_item["source"],
-            "bytes_downloaded": wexc_item["bytes_downloaded"],
+            "bytes_downloaded": wexc_item.get("bytes") or wexc_item.get("bytes_downloaded", 0),
             "lemmas_imported": wexc_res["lemmas"],
             "forms_imported": wexc_res["forms"],
             "senses_imported": wexc_res["senses"],
@@ -987,15 +1041,15 @@ def main():
         })
 
     # 5. Open English WordNet 2025
-    oewn_item = download_manifest["oewn_2025"]
-    oewn_res = ingest_oewn_senses(conn, Path(oewn_item["local_path"]))
+    oewn_item, oewn_path = resolved_items["oewn_2025"]
+    oewn_res = ingest_oewn_senses(conn, oewn_path)
     report_entries.append({
         "source": oewn_item["name"],
         "id": oewn_item["id"],
         "version": "2025-edition",
         "license": oewn_item["license"],
         "official_source": oewn_item["source"],
-        "bytes_downloaded": oewn_item["bytes_downloaded"],
+        "bytes_downloaded": oewn_item.get("bytes") or oewn_item.get("bytes_downloaded", 0),
         "lemmas_imported": oewn_res["lemmas"],
         "forms_imported": oewn_res["forms"],
         "senses_imported": oewn_res["senses"],
@@ -1005,15 +1059,15 @@ def main():
     })
 
     # 6. French Thesaurus (Dicollecte)
-    thes_item = download_manifest["thes_fr"]
-    thes_res = ingest_french_thesaurus(conn, Path(thes_item["local_path"]))
+    thes_item, thes_path = resolved_items["thes_fr"]
+    thes_res = ingest_french_thesaurus(conn, thes_path)
     report_entries.append({
         "source": thes_item["name"],
         "id": thes_item["id"],
         "version": "7.0 (LibreOffice / Dicollecte)",
         "license": thes_item["license"],
         "official_source": thes_item["source"],
-        "bytes_downloaded": thes_item["bytes_downloaded"],
+        "bytes_downloaded": thes_item.get("bytes") or thes_item.get("bytes_downloaded", 0),
         "lemmas_imported": thes_res["lemmas"],
         "forms_imported": thes_res["forms"],
         "senses_imported": thes_res["senses"],
@@ -1023,16 +1077,16 @@ def main():
     })
 
     # 7. XMLittré (Émile Littré French Definitions)
-    if "xmlittre_fr" in download_manifest:
-        xmlittre_item = download_manifest["xmlittre_fr"]
-        xmlittre_res = ingest_xmlittre(conn, Path(xmlittre_item["local_path"]))
+    if "xmlittre_fr" in resolved_items:
+        xmlittre_item, xmlittre_path = resolved_items["xmlittre_fr"]
+        xmlittre_res = ingest_xmlittre(conn, xmlittre_path)
         report_entries.append({
             "source": xmlittre_item["name"],
             "id": xmlittre_item["id"],
             "version": "XMLittré (Gannaz / Littre.org)",
             "license": xmlittre_item["license"],
             "official_source": xmlittre_item["source"],
-            "bytes_downloaded": xmlittre_item["bytes_downloaded"],
+            "bytes_downloaded": xmlittre_item.get("bytes") or xmlittre_item.get("bytes_downloaded", 0),
             "lemmas_imported": xmlittre_res["lemmas"],
             "forms_imported": xmlittre_res["forms"],
             "senses_imported": xmlittre_res["senses"],
@@ -1042,16 +1096,16 @@ def main():
         })
 
     # 8. FreeDict French-English Lexicon
-    if "freedict_fra_eng" in download_manifest:
-        freedict_item = download_manifest["freedict_fra_eng"]
-        freedict_res = ingest_freedict(conn, Path(freedict_item["local_path"]))
+    if "freedict_fra_eng" in resolved_items:
+        freedict_item, freedict_path = resolved_items["freedict_fra_eng"]
+        freedict_res = ingest_freedict(conn, freedict_path)
         report_entries.append({
             "source": freedict_item["name"],
             "id": freedict_item["id"],
             "version": "FreeDict fra-eng TEI",
             "license": freedict_item["license"],
             "official_source": freedict_item["source"],
-            "bytes_downloaded": freedict_item["bytes_downloaded"],
+            "bytes_downloaded": freedict_item.get("bytes") or freedict_item.get("bytes_downloaded", 0),
             "lemmas_imported": freedict_res["lemmas"],
             "forms_imported": freedict_res["forms"],
             "senses_imported": freedict_res["senses"],
@@ -1097,12 +1151,12 @@ def main():
     conn.commit()
     conn.close()
 
-    db_size = DB_PATH.stat().st_size
+    db_size = db_path.stat().st_size
     print(f"\nIngestion Complete! Database size: {db_size / (1024 * 1024):.1f} MB ({db_size:,} bytes).")
     print(f"Total Lemmas: {total_lemmas:,} | Total Forms: {total_forms:,} | Total Senses: {total_senses:,}")
 
     # Write Ingestion Report
-    ingestion_report_path = DATA_DIR / "INGESTION_REPORT.json"
+    ingestion_report_path = db_path.parent / "INGESTION_REPORT.json"
     with open(ingestion_report_path, "w", encoding="utf-8") as f:
         json.dump({
             "schema_version": "BRODY_LINGUISTIC_CORPUS_INGESTION_REPORT_V1",
