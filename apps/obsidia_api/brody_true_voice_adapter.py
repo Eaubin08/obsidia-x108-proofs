@@ -194,6 +194,7 @@ def _sens_tense_to_realization(tense_aspect: str, verb_form: str, surface: str, 
 _NEGATION_CLITICS = frozenset({"ne", "n'"})
 _AVOIR_AUX = frozenset({"a", "ont", "ai", "as", "avons", "avez"})
 _ETRE_AUX = frozenset({"est", "sont", "es", "suis", "sommes", "êtes"})
+_OBJECT_PREPOSITIONS = frozenset({"à", "au", "aux", "du", "de", "en", "dans", "sur", "sous", "avec", "pour", "par", "vers", "chez", "sans"})
 _WORD_RE = r"[0-9a-zàâäéèêëîïôöùûüç]+'?"
 _PLAIN_STATEMENT_RE = re.compile(
     r"^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[-'’][A-Za-zÀ-ÖØ-öø-ÿ]+)*['’]?"
@@ -267,6 +268,12 @@ def _native_realization_for(s: str, fr: bool) -> str | None:
         return None
     if not u0.lemma or _extract_claim_property_value(s):
         return None
+    # Only plain direct objects: a prepositional or partitive object depends on the verb's
+    # valency, which nothing here can check ("vérifie au chat").
+    for o in u0.objects:
+        head = (o.text or "").lower().replace("’", "'").split()
+        if head and (head[0] in _OBJECT_PREPOSITIONS or head[0].startswith("d'")):
+            return None
     subject = _subject_phrase(frame.raw, u0)
     if subject is None:
         return None

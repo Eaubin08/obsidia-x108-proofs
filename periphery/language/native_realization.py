@@ -202,32 +202,160 @@ def _verify_en_noun_phrase(words: list[str]) -> str | None:
     return None
 
 
-def _phrase_form_problem(phrase: str, is_fr: bool) -> str | None:
+_FR_NUMERALS = frozenset({
+    "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix", "onze", "douze", "vingt",
+    "cent", "mille", "plusieurs", "quelques", "certains", "certaines", "différents", "divers",
+})
+_FR_SG_QUANTIFIERS = frozenset({"chaque"})
+_EN_QUANTIFIERS = {
+    "two": "pl", "three": "pl", "four": "pl", "five": "pl", "six": "pl", "ten": "pl", "many": "pl",
+    "several": "pl", "few": "pl", "both": "pl", "some": "", "all": "", "no": "", "one": "sg", "much": "sg",
+}
+_FR_PREPOSITIONS = frozenset({"à", "de", "en", "dans", "sur", "sous", "avec", "pour", "par", "vers", "chez", "sans", "contre", "entre"})
+_EN_PREPOSITIONS = frozenset({"to", "at", "in", "on", "for", "with", "from", "into", "by", "about", "under", "over"})
+_FR_PERSONAL_PRONOUNS = frozenset({"je", "j'", "tu", "il", "elle", "on", "nous", "vous", "ils", "elles"})
+_EN_PERSONAL_PRONOUNS = frozenset({"i", "you", "he", "she", "it", "we", "they"})
+# Bare nouns are not grammatical French objects except in fixed verb + noun phrases.
+_FR_BARE_NOUN_IDIOMS = {
+    "avoir": frozenset({"faim", "soif", "raison", "tort", "peur", "froid", "chaud", "sommeil", "besoin", "envie", "mal", "lieu", "honte"}),
+    "faire": frozenset({"attention", "partie", "face", "confiance"}),
+    "prendre": frozenset({"part", "place", "soin", "fin"}),
+}
+
+
+def _is_attested_adjective(word: str, lang: str) -> bool:
+    from periphery.language.lexical_corpus import is_defective_analysis
+
+    return any(a.pos == "adj" and a.surface_form == word and not is_defective_analysis(a)
+               for a in lookup_surface_form(word, lang=lang))
+
+
+def _is_common_noun(word: str, lang: str) -> bool:
+    return bool(_noun_cells(word.lower(), lang))
+
+
+def _verify_quantified_fr(words: list[str]) -> str | None:
+    """Numeral/quantifier + noun: number agreement only (these words carry no gender)."""
+    q, rest = words[0], words[1:]
+    if q in ("tous", "toutes"):
+        if len(rest) < 2 or rest[0] not in ("les", "ces", "mes", "tes", "ses", "nos", "vos", "leurs"):
+            return f"QUANTIFIER_STRUCTURE:{' '.join(words)}"
+        problem = _verify_fr_noun_phrase(rest)
+        if problem:
+            return problem
+        genders = {g for g, _ in _noun_cells(rest[1], "fr")}
+        if genders and ("masc" if q == "tous" else "fem") not in genders:
+            return f"QUANTIFIER_GENDER_MISMATCH:{q} {rest[1]}"
+        return None
+    if not rest or len(rest) > 1:
+        return f"QUANTIFIER_STRUCTURE:{' '.join(words)}"
+    numbers = {n for _, n in _noun_cells(rest[0], "fr")}
+    wanted = "sg" if q in _FR_SG_QUANTIFIERS else "pl"
+    if not numbers:
+        return f"NOUN_NOT_ATTESTED:{rest[0]}"
+    if wanted not in numbers and "inv" not in numbers:
+        return f"QUANTIFIER_NUMBER_MISMATCH:{q} {rest[0]}"
+    if q in ("certains", "certaines"):
+        genders = {g for g, _ in _noun_cells(rest[0], "fr")}
+        if genders and ("masc" if q == "certains" else "fem") not in genders:
+            return f"QUANTIFIER_GENDER_MISMATCH:{q} {rest[0]}"
+    return None
+
+
+def _verify_member(original: list[str], is_fr: bool, role: str, verb_lemma: str) -> str | None:
+    """Closed-world check of one noun-phrase member; None only for a verified category."""
+    words = [w.lower() for w in original]
+    first = words[0]
+    if first in _WH_SUBJECTS:
+        return f"INTERROGATIVE_PHRASE:{' '.join(original)}"
+    if any(ch.isdigit() for ch in "".join(words)):
+        return f"NUMERIC_PHRASE_UNVERIFIED:{' '.join(original)}"
+    if is_fr:
+        if role == "subject" and len(words) == 1 and first in _FR_PERSONAL_PRONOUNS:
+            return None
+        if first.startswith(("qu'", "que")) and role == "subject":
+            rest = words[1:] if first == "que" else [first[3:]] + words[1:]
+            if len(rest) == 1 and rest[0] in _FR_PERSONAL_PRONOUNS:
+                return None
+            return _verify_member(rest, is_fr, role, verb_lemma) if rest else "QUE_ONLY"
+        det = "l'" if first.startswith("l'") else first
+        if det in ("de", "d'") or first.startswith("d'"):
+            return f"BARE_DE_PHRASE:{' '.join(original)}"
+        if det in _FR_DETERMINERS:
+            if role == "subject" and det in ("du", "au", "aux"):
+                return f"PREPOSITIONAL_SUBJECT:{' '.join(original)}"
+            return _verify_fr_noun_phrase(words)
+        if first in _FR_NUMERALS or first in _FR_SG_QUANTIFIERS or first in ("tous", "toutes"):
+            return _verify_quantified_fr(words)
+        if role == "object" and first in _FR_PREPOSITIONS:
+            inner = original[1:]
+            if inner and inner[0].lower() in ("la", "l'") or (inner and inner[0].lower().startswith("l'")):
+                return _verify_member(inner, is_fr, "object", "")
+            if inner and inner[0][:1].isupper():
+                return _verify_member(inner, is_fr, "object", "")
+            return f"PREPOSITIONAL_PHRASE_UNVERIFIED:{' '.join(original)}"
+        if role == "object" and all(w[:1].isupper() for w in original):
+            return None  # proper name inside the sentence
+        if len(words) == 1 and role == "object":
+            if _is_attested_adjective(first, "fr"):
+                return None
+            if first in _FR_BARE_NOUN_IDIOMS.get(verb_lemma, frozenset()):
+                return None
+            return f"BARE_NOUN_OBJECT:{first}"
+    else:
+        if role == "subject" and len(words) == 1 and first in _EN_PERSONAL_PRONOUNS:
+            return None
+        if first in _EN_DETERMINERS:
+            return _verify_en_noun_phrase(words)
+        if first in _EN_QUANTIFIERS:
+            rest = words[1:]
+            if len(rest) != 1:
+                return f"QUANTIFIER_STRUCTURE:{' '.join(original)}"
+            numbers = {n for _, n in _noun_cells(rest[0], "en")}
+            wanted = _EN_QUANTIFIERS[first]
+            if not numbers:
+                return f"NOUN_NOT_ATTESTED:{rest[0]}"
+            if wanted and wanted not in numbers and "inv" not in numbers:
+                return f"QUANTIFIER_NUMBER_MISMATCH:{first} {rest[0]}"
+            return None
+        if role == "object" and first in _EN_PREPOSITIONS:
+            inner = original[1:]
+            return _verify_member(inner, is_fr, "object", "") if inner else "PREPOSITION_ONLY"
+        if len(words) == 1:
+            if _is_attested_adjective(first, "en") or _is_common_noun(first, "en"):
+                return None  # English bare nouns (mass/plural) and predicative adjectives
+    # Proper names: every word capitalized. Inside the sentence (objects, prepositional
+    # complements) capitalization is meaningful; sentence-initially it is ambiguous, so the
+    # first word must not also be a common noun ("Opérateur vérifie" vs "Brody analyse").
+    if all(w[:1].isupper() for w in original):
+        if role == "object" or not _is_common_noun(original[0], "fr" if is_fr else "en"):
+            return None
+    if is_fr and role == "subject" and len(words) == 1:
+        return f"BARE_NOUN_SUBJECT:{original[0]}"
+    if not is_fr and role == "subject":
+        return None if all(_is_common_noun(w, "en") for w in words[-1:]) and len(words) == 1 else f"UNVERIFIED_PHRASE:{' '.join(original)}"
+    return f"UNVERIFIED_PHRASE:{' '.join(original)}"
+
+
+def _phrase_form_problem(phrase: str, is_fr: bool, role: str = "subject", verb_lemma: str = "") -> str | None:
     """Why a noun phrase copied verbatim into the sentence cannot be vouched for, or None.
 
-    Phrases opening with a determiner are verified positively: the determiner French or
-    English requires for the attested noun (gender, number, onset) is regenerated and must
-    equal the one written. Each coordinated member is checked. Phrases without a determiner
-    (pronouns, proper names, bare nouns) are handled by the subject agreement logic.
+    Closed world: a phrase is accepted only when every coordinated member belongs to a
+    verified category (personal pronoun, determiner/numeral/quantifier + attested noun with
+    regenerated agreement, proper name, attested adjective, preposition + verified phrase,
+    English bare attested noun, fixed French verb + bare noun idiom). Anything else is
+    reported, so the realizer declares a limitation instead of vouching for it.
     """
     text = phrase.replace("’", "'").strip()
     if not text:
         return None
-    members = re.split(r"\s+(?:et|ou|and|or)\s+", text)
-    for member in members:
+    for member in re.split(r"\s+(?:et|ou|and|or)\s+", text):
         original = member.split()
         while len(original) > 1 and len(original[-1]) <= 2 and original[-1].isupper():
             original = original[:-1]  # trailing identifier ("pompe B")
-        words = [w.lower() for w in original]
-        if not words:
-            continue
-        if words[0] in _WH_SUBJECTS:
-            return f"INTERROGATIVE_PHRASE:{member}"
-        first = words[0]
-        det = "l'" if is_fr and first.startswith("l'") else first
-        if det not in (_FR_DETERMINERS if is_fr else _EN_DETERMINERS):
-            continue
-        problem = _verify_fr_noun_phrase(words) if is_fr else _verify_en_noun_phrase(words)
+        if not original:
+            return "EMPTY_MEMBER"
+        problem = _verify_member(original, is_fr, role, verb_lemma)
         if problem:
             return problem
     return None
@@ -528,7 +656,8 @@ def realize_semantic_relation(
         if len(clean_subj.split()) == 1:
             _limit(f"UNVERIFIED_SUBJECT_PHRASE:FUNCTION_WORD_ONLY:{clean_subj}")
     for label, phrase in (("subject", clean_subj), ("object", clean_obj)):
-        problem = _phrase_form_problem(phrase, is_fr)
+        verb_key = clean_verb.lower().removeprefix("se ").removeprefix("s'")
+        problem = _phrase_form_problem(phrase, is_fr, label, verb_key)
         if problem:
             _limit(f"UNVERIFIED_{label.upper()}_PHRASE:{problem}")
     obj_first = clean_obj.lower().split()[0] if clean_obj else ""
