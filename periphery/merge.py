@@ -8,6 +8,8 @@ def merge_packets(*packets:PeripheralSignalPacket)->PeripheralSignalPacket:
         if p.action_id!=base.action_id or p.domain!=base.domain: raise ValueError('PACKET_MISMATCH')
         base.extra_metrics.update(p.extra_metrics)
         base.unknowns.extend(p.unknowns); base.risk_flags.extend(p.risk_flags); base.contradictions.extend(p.contradictions); base.evidence_refs.extend(p.evidence_refs)
+        if p.recommended_gate=='HOLD': base.hold_origins.extend(p.resolve_hold_origins())
         if _PRIORITY[p.recommended_gate]>_PRIORITY[base.recommended_gate]: base.recommended_gate=p.recommended_gate
     base.unknowns=sorted(set(base.unknowns)); base.risk_flags=sorted(set(base.risk_flags)); base.contradictions=sorted(set(base.contradictions)); base.evidence_refs=sorted(set(base.evidence_refs))
+    base.hold_origins=sorted(set(base.hold_origins)) if base.recommended_gate=='HOLD' else []
     return base

@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from .common import PeripheralSignalPacket
+from .common import THERMO_HOLD_RISK_FLAGS, PeripheralSignalPacket
 
 from sigma.aggregation import (
     aggregate_bank,
@@ -18,6 +18,9 @@ from sigma.domains.meta_agents import THERMO_CANONICAL_KEYS, build_meta_agents
 from sigma.guard import GuardX108
 
 
+_THERMO_HOLD_RISK_FLAGS = THERMO_HOLD_RISK_FLAGS
+
+
 def _merge_periphery_into_aggregate(aggregate: Any, packet: PeripheralSignalPacket) -> Any:
     packet.assert_non_sovereign()
 
@@ -30,6 +33,10 @@ def _merge_periphery_into_aggregate(aggregate: Any, packet: PeripheralSignalPack
     if thermo_packet_keys:
         aggregate.extra_metrics["thermo_packet_keys"] = thermo_packet_keys
 
+    hold_origins = packet.resolve_hold_origins() if hasattr(packet, "resolve_hold_origins") else []
+    if hold_origins:
+        aggregate.extra_metrics["periphery_hold_origins"] = hold_origins
+
     aggregate.contradictions.extend(packet.contradictions)
     aggregate.unknowns.extend(packet.unknowns)
     aggregate.risk_flags.extend(packet.risk_flags)
@@ -39,7 +46,15 @@ def _merge_periphery_into_aggregate(aggregate: Any, packet: PeripheralSignalPack
     aggregate.extra_metrics["periphery_recommended_gate"] = packet.recommended_gate
     aggregate.extra_metrics["periphery_can_emit_act"] = packet.can_emit_act
 
-    if packet.recommended_gate == "HOLD":
+    thermo_only_hold = (
+        hold_origins == ["thermo"]
+        and bool(thermo_packet_keys)
+        and not packet.unknowns
+        and not packet.contradictions
+        and bool(packet.risk_flags)
+        and set(packet.risk_flags).issubset(_THERMO_HOLD_RISK_FLAGS)
+    )
+    if packet.recommended_gate == "HOLD" and not thermo_only_hold:
         aggregate.unknowns.append("PERIPHERY_RECOMMENDS_HOLD")
     elif packet.recommended_gate == "BLOCK_CANDIDATE":
         aggregate.contradictions.append("PERIPHERY_BLOCK_CANDIDATE")
