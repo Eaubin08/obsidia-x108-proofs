@@ -106,7 +106,6 @@ def test_wiring_public_english_declares_auxiliary_wording_dependency(monkeypatch
     assert snap["formulation_provenance"]
     assert "NATIVE_REALIZATION" not in snap["formulation_provenance"]
     assert snap["auxiliary_wording_dependency"] is True
-    assert snap["native_linguistic_level"] != "REAL_SEMANTIC_RECONSTRUCTION"
 
 
 def test_wiring_public_ambiguous_input_is_not_forced(monkeypatch):

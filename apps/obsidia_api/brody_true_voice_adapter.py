@@ -188,42 +188,109 @@ def _sens_tense_to_realization(tense_aspect: str, verb_form: str, surface: str, 
     return None
 
 
+# Tokens that may legitimately sit between a sentence-initial subject and the verb span
+# (negation clitic, reflexive clitics, passé-composé auxiliaries).
+_PRE_VERB_TOKENS = frozenset({
+    "ne", "n'", "se", "s'", "a", "ont", "ai", "as", "avons", "avez", "est", "sont", "es", "suis",
+    "sommes", "êtes",
+})
+
+
+def _subject_phrase(raw: str, unit: Any) -> str | None:
+    """Sentence-initial subject noun phrase whose head is the SENS subject, or None.
+
+    SENS stores only the subject head ("opérateur"); the determiner is recovered from the
+    raw text only when nothing but negation/auxiliary clitics separates it from the verb.
+    """
+    head = (unit.subject or "").strip()
+    if not head:
+        return None
+    idx = raw.lower().find(head.lower())
+    if idx < 0:
+        return None
+    phrase = raw[: idx + len(head)].strip()
+    gap = raw[idx + len(head): unit.span[0]].lower().replace("’", "'")
+    gap_tokens = re.findall(r"[a-zàâäéèêëîïôöùûüç]+'?", gap)
+    if any(t not in _PRE_VERB_TOKENS for t in gap_tokens):
+        return None
+    if len(phrase.split()) > 4 or "," in phrase:
+        return None
+    return phrase
+
+
+def _native_realization_for(s: str, fr: bool) -> str | None:
+    """Realize a statement natively from its SENS frame, only when nothing would be lost.
+
+    The frame must hold exactly one asserted declarative unit whose subject, verb, tense,
+    polarity and objects are all captured; deixis, obliques, coordinations, modality,
+    non-"pas" negators, ambiguity or missing content make the statement inadmissible.
+    """
+    if not fr:
+        return None  # the SENS grammar is French-only; no English frame exists yet
+    from app.semantic.lattice.french_grammar import parse_utterance
+
+    frame = parse_utterance(s)
+    if len(frame.units) != 1 or frame.surface_act != "declarative":
+        return None
+    if (frame.missing or frame.ambiguities or frame.contradictions or frame.deixis
+            or frame.coordinations or frame.oblique_arguments or frame.manner_modifiers
+            or frame.disfluencies or frame.relations):
+        return None
+    u0 = frame.units[0]
+    if u0.pragmatic != "ASSERTED" or u0.epistemic != "ASSERTED" or u0.modality is not None:
+        return None
+    if u0.polarity == "negative" and u0.negator != "pas":
+        return None
+    if not u0.lemma or _extract_claim_property_value(s):
+        return None
+    subject = _subject_phrase(frame.raw, u0)
+    if subject is None:
+        return None
+    cell = _sens_tense_to_realization(u0.tense_aspect, u0.verb_form, u0.surface, u0.lemma)
+    if cell is None:
+        return None
+    from periphery.language import native_realization
+
+    realized = native_realization.realize_semantic_relation(
+        subject=subject,
+        verb_lemma=u0.lemma,
+        obj=", ".join(o.text for o in u0.objects if o.text),
+        polarity="negative" if u0.polarity == "negative" else "affirmative",
+        lang="fr",
+        **cell,
+    )
+    if not realized["text"] or realized["has_linguistic_limitations"]:
+        return None
+    return realized["text"].rstrip(". ")
+
+
 def _reconstruct_native_statement(stmt: str, fr: bool = True) -> str:
+    return _reconstruct_with_provenance(stmt, fr=fr)[0]
+
+
+def _reconstruct_with_provenance(stmt: str, fr: bool = True) -> tuple[str, str]:
+    """Reformulate an admitted auxiliary statement and declare who formulated it.
+
+    Provenance is NATIVE_REALIZATION (Brody regenerated the sentence from its SENS frame),
+    TEMPLATE_REWRITE (pattern-based rewording of the auxiliary text) or
+    AUXILIARY_WORDING_PRESERVED (the auxiliary model's wording is kept).
+    """
     s = stmt.strip()
     if not s:
-        return ""
+        return "", "AUXILIARY_WORDING_PRESERVED"
     # Strip any external model conversational preambles
     s = re.sub(r"^(voici\s+(l'analyse|les\s+donn[ée]es|les\s+informations|la\s+r[ée]ponse)?\s*(demand[ée]e|suivante)?\s*:\s*)", "", s, flags=re.I).strip()
-    
-    # Try structured lattice relation reconstruction
+
     try:
+        native = _native_realization_for(s, fr)
+        if native:
+            return native, "NATIVE_REALIZATION"
         from app.semantic.lattice.french_grammar import parse_utterance
-        frame = parse_utterance(s)
-        if frame.units:
+        frame = parse_utterance(s) if fr else None
+        if frame is not None and frame.units:
             u0 = frame.units[0]
-            if u0.predicate == "VERIFY" and u0.subject and u0.objects:
-                objs_str = ", ".join(o for o in u0.objects if o)
-                return f"{u0.subject} procède à la vérification de {objs_str}" if fr else f"{u0.subject} conducts verification of {objs_str}"
-            elif u0.predicate == "EXECUTE" and u0.subject and u0.objects:
-                objs_str = ", ".join(o for o in u0.objects if o)
-                return f"{u0.subject} exécute {objs_str}" if fr else f"{u0.subject} executes {objs_str}"
-            elif u0.predicate == "SAY" and u0.subject:
-                return f"{u0.subject} indique la mesure observée" if fr else f"{u0.subject} states the observed measure"
-            elif u0.subject and u0.lemma and u0.objects and not _extract_claim_property_value(stmt):
-                cell = _sens_tense_to_realization(u0.tense_aspect, u0.verb_form, u0.surface, u0.lemma)
-                if cell is not None:
-                    from periphery.language.native_realization import realize_semantic_relation
-                    objs_str = ", ".join(o.text for o in u0.objects if o.text)
-                    realized = realize_semantic_relation(
-                        subject=u0.subject,
-                        verb_lemma=u0.lemma,
-                        obj=objs_str,
-                        polarity=u0.polarity,
-                        lang="fr" if fr else "en",
-                        **cell,
-                    )
-                    if realized["text"] and not realized["has_linguistic_limitations"]:
-                        return realized["text"].rstrip(". ")
+            if u0.predicate == "SAY" and u0.subject:
+                return f"{u0.subject} indique la mesure observée", "TEMPLATE_REWRITE"
     except Exception:
         pass
 
@@ -250,7 +317,8 @@ def _reconstruct_native_statement(stmt: str, fr: bool = True) -> str:
             if s.startswith("The "):
                 reconstructed = "the " + s[4:]
 
-    return reconstructed.rstrip(".? ")
+    changed = re.sub(r"\W", "", reconstructed.lower()) != re.sub(r"\W", "", s.lower())
+    return reconstructed.rstrip(".? "), "TEMPLATE_REWRITE" if changed else "AUXILIARY_WORDING_PRESERVED"
 
 
 def synthesize_brody_native_claims(
@@ -373,6 +441,8 @@ def synthesize_brody_native_claims(
             "decision_authority": "KX108_ONLY",
             "native_synthesis_applied": True,
             "native_linguistic_level": "DIRECT_QUOTATION",
+            "formulation_provenance": ["AUXILIARY_WORDING_PRESERVED"] * len(claims),
+            "auxiliary_wording_dependency": True,
             "parsed_structures": parsed_structures,
             "has_linguistic_limitations": has_linguistic_limitations,
         }
@@ -392,8 +462,15 @@ def synthesize_brody_native_claims(
                     "Brody does not unilaterally resolve this conflict and preserves local uncertainty."
                 )
 
+    formulation_provenance: list[str] = []
     if admitted:
-        reconstructed_statements = [_reconstruct_native_statement(c["statement"], fr=fr) for c in admitted]
+        from periphery.language.native_realization import _inner_subject
+
+        reconstructed = [_reconstruct_with_provenance(c["statement"], fr=fr) for c in admitted]
+        formulation_provenance = [prov for _, prov in reconstructed]
+        reconstructed_statements = [
+            _inner_subject(text, fr) if prov == "NATIVE_REALIZATION" else text for text, prov in reconstructed
+        ]
         statements_text = ". ".join(s for s in reconstructed_statements if s)
         if fr:
             parts.append(
@@ -448,6 +525,8 @@ def synthesize_brody_native_claims(
         "decision_authority": "KX108_ONLY",
         "native_synthesis_applied": True,
         "native_linguistic_level": "GRAMMAR_LATTICE_ADAPTER",
+        "formulation_provenance": formulation_provenance,
+        "auxiliary_wording_dependency": any(p != "NATIVE_REALIZATION" for p in formulation_provenance),
         "parsed_structures": parsed_structures,
         "has_linguistic_limitations": has_linguistic_limitations,
     }
@@ -512,6 +591,11 @@ def build_true_brody_answer(
     _internalized_claims: list[dict[str, Any]] = []
     _native_synthesis_applied = False
     _native_linguistic_level = "NOT_APPLIED"
+    _formulation_provenance: list[str] = []
+
+    def _record_synth(synth: dict[str, Any]) -> dict[str, Any]:
+        _formulation_provenance.extend(synth.get("formulation_provenance", []))
+        return synth
     voice_source = ""
     action_boundary_already = request_type in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST)
 
@@ -591,7 +675,7 @@ def build_true_brody_answer(
     if (not action_boundary_already) and has_valid_hypotheses:
         if has_valid_neural_generation:
             _internalized_claims = extract_candidate_claims(gen_snap["validated_content"], provider=gen_snap.get("provider", "QWEN_LOCAL"))
-            _synth = synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en")
+            _synth = _record_synth(synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en"))
             _native_synthesis_applied = _synth.get("native_synthesis_applied", False)
             answer_parts.append(f"\n\n{_synth['text']}")
     elif (not action_boundary_already) and has_b6_unknowns:
@@ -625,7 +709,7 @@ def build_true_brody_answer(
             )
         if has_valid_neural_generation:
             _internalized_claims = extract_candidate_claims(gen_snap["validated_content"], provider=gen_snap.get("provider", "QWEN_LOCAL"))
-            _synth = synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en")
+            _synth = _record_synth(synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en"))
             _native_synthesis_applied = _synth.get("native_synthesis_applied", False)
             _native_linguistic_level = "REAL_SEMANTIC_RECONSTRUCTION"
             answer_parts.append(f"\n\n{_synth['text']}")
@@ -939,7 +1023,7 @@ def build_true_brody_answer(
                     # Generic query, GENERAL topic, no match — notify miss or enrich with auxiliary evidence
                     if has_valid_neural_generation:
                         _internalized_claims = extract_candidate_claims(gen_snap["validated_content"], provider=gen_snap.get("provider", "QWEN_LOCAL"))
-                        _synth = synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en")
+                        _synth = _record_synth(synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en"))
                         _native_synthesis_applied = _synth.get("native_synthesis_applied", False)
                         _native_linguistic_level = "REAL_SEMANTIC_RECONSTRUCTION"
                         answer_parts.append(f"\n\n{_synth['text']}")
@@ -969,7 +1053,7 @@ def build_true_brody_answer(
             answer_parts = []
             if has_valid_neural_generation:
                 _internalized_claims = extract_candidate_claims(gen_snap["validated_content"], provider=gen_snap.get("provider", "QWEN_LOCAL"))
-                _synth = synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en")
+                _synth = _record_synth(synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en"))
                 _native_synthesis_applied = _synth.get("native_synthesis_applied", False)
                 if fr:
                     answer_parts.append(
@@ -1020,7 +1104,7 @@ def build_true_brody_answer(
     # 7.6. Bounded auxiliary evidence integration if not already applied
     if has_valid_neural_generation and not _native_synthesis_applied and not action_boundary_already:
         _internalized_claims = extract_candidate_claims(gen_snap["validated_content"], provider=gen_snap.get("provider", "QWEN_LOCAL"))
-        _synth = synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en")
+        _synth = _record_synth(synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en"))
         _native_synthesis_applied = _synth.get("native_synthesis_applied", False)
         _native_linguistic_level = "REAL_SEMANTIC_RECONSTRUCTION"
         sp_prefix = "\n\n" if answer_parts else ""
@@ -1174,6 +1258,10 @@ def build_true_brody_answer(
         "internalized_claims": _internalized_claims,
         "native_synthesis_applied": _native_synthesis_applied,
         "native_linguistic_level": _native_linguistic_level,
+        # Who formulated each admitted auxiliary statement: Brody's native realization,
+        # a template rewrite, or the auxiliary model's own wording.
+        "formulation_provenance": list(_formulation_provenance),
+        "auxiliary_wording_dependency": any(p != "NATIVE_REALIZATION" for p in _formulation_provenance),
     }
 
 
