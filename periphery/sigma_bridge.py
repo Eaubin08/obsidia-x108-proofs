@@ -14,12 +14,21 @@ from sigma.domains.bank_agents import build_bank_agents
 from sigma.domains.trading_agents import build_trading_agents
 from sigma.domains.ecom_agents import build_ecom_agents
 from sigma.domains.gps_defense_aviation_agents import build_gps_defense_aviation_agents
-from sigma.domains.meta_agents import build_meta_agents
+from sigma.domains.meta_agents import THERMO_CANONICAL_KEYS, build_meta_agents
 from sigma.guard import GuardX108
 
 
 def _merge_periphery_into_aggregate(aggregate: Any, packet: PeripheralSignalPacket) -> Any:
     packet.assert_non_sovereign()
+
+    if "truth_score" in aggregate.extra_metrics and "domain_truth_score" not in aggregate.extra_metrics:
+        aggregate.extra_metrics["domain_truth_score"] = float(aggregate.extra_metrics["truth_score"])
+    if "sigma_score" in aggregate.extra_metrics and "domain_sigma_score" not in aggregate.extra_metrics:
+        aggregate.extra_metrics["domain_sigma_score"] = float(aggregate.extra_metrics["sigma_score"])
+
+    thermo_packet_keys = [k for k in THERMO_CANONICAL_KEYS if k in packet.extra_metrics]
+    if thermo_packet_keys:
+        aggregate.extra_metrics["thermo_packet_keys"] = thermo_packet_keys
 
     aggregate.contradictions.extend(packet.contradictions)
     aggregate.unknowns.extend(packet.unknowns)
@@ -49,6 +58,12 @@ def _apply_meta_agents(aggregate: Any) -> Any:
         aggregate.unknowns.extend(meta_vote.unknowns)
         aggregate.risk_flags.extend(meta_vote.risk_flags)
         aggregate.evidence_refs.append(f"meta:{meta_vote.agent_id}")
+
+    thermo_eval = aggregate.extra_metrics.get("sigma_thermo_evaluation")
+    if isinstance(thermo_eval, dict):
+        status = thermo_eval.get("status")
+        if status and status != "NOT_PRESENT":
+            aggregate.evidence_refs.append(f"thermo_sigma:{status}")
 
     aggregate.unknowns = sorted(set(aggregate.unknowns))
     aggregate.risk_flags = sorted(set(aggregate.risk_flags))
