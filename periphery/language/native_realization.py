@@ -81,6 +81,44 @@ _NEGATIVE_QUANTIFIERS = frozenset({
 # French verbs conjugated with être intransitively but with avoir when they take an object.
 _ETRE_OR_AVOIR_VERBS = frozenset({"monter", "descendre", "sortir", "rentrer", "passer", "retourner"})
 
+_FR_ELIDING_WORDS = frozenset({"le", "la", "ce", "de", "que", "ne", "se", "je", "me", "te"})
+_VOWEL_ONSET = "aeiouyàâäéèêëîïôöùûü"
+_WH_SUBJECTS = frozenset({"who", "what", "which", "qui", "que", "quoi", "lequel", "laquelle"})
+_ALL_DETERMINERS = frozenset({
+    "le", "la", "les", "l'", "un", "une", "des", "du", "ce", "cet", "cette", "ces", "mon", "ma",
+    "mes", "ton", "ta", "tes", "son", "sa", "ses", "notre", "nos", "votre", "vos", "leur", "leurs",
+    "the", "a", "an", "this", "that", "these", "those",
+})
+
+
+def _phrase_form_problem(phrase: str, is_fr: bool) -> str | None:
+    """Surface defects of a noun phrase copied verbatim into the sentence, or None.
+
+    The realizer does not rebuild noun phrases; it can only refuse to vouch for one that
+    misses an elision, contradicts its noun's gender, or is a bare function word.
+    """
+    words = phrase.replace("’", "'").split()
+    if not words:
+        return None
+    low = [w.lower() for w in words]
+    if len(low) == 1 and (low[0] in _ALL_DETERMINERS or low[0] in _WH_SUBJECTS):
+        return f"FUNCTION_WORD_ONLY:{phrase}"
+    if low[0] in _WH_SUBJECTS:
+        return f"INTERROGATIVE_PHRASE:{phrase}"
+    if not is_fr:
+        return None
+    for w, nxt in zip(low, low[1:]):
+        if w in _FR_ELIDING_WORDS and nxt[:1] in _VOWEL_ONSET:
+            return f"ELISION_MISSING:{w} {nxt}"
+    if len(low) >= 2 and low[0] in ("le", "la", "un", "une"):
+        det_gender = "masc" if low[0] in ("le", "un") else "fem"
+        genders = {a.gender for a in lookup_surface_form(low[1], lang="fr")
+                   if a.pos == "noun" and a.gender in ("masc", "fem")}
+        if genders and det_gender not in genders:
+            return f"DETERMINER_GENDER_MISMATCH:{low[0]} {low[1]}"
+    return None
+
+
 # English nouns whose number is not marked (or is plural without -s): agreement cannot be
 # read from the form, so the number proposed for them is only tentative.
 _EN_NUMBER_AMBIGUOUS_NOUNS = frozenset({
@@ -129,6 +167,11 @@ def _infer_subject_features(subject: str, is_fr: bool) -> tuple[str, str, str]:
     if re.search(r"\s(et|and)\s", low):
         return "3", "pl", ""
     tokens = re.findall(r"[\w'’-]+", low)
+    original = text.split()
+    while len(tokens) > 1 and len(original) == len(tokens) and len(original[-1]) <= 2 and original[-1].isupper():
+        # "The pump B", "Pompe A": an identifier, not the head noun.
+        tokens, original = tokens[:-1], original[:-1]
+        text = " ".join(original)
     first = tokens[0].replace("’", "'") if tokens else ""
     if first.startswith("l'"):
         return "3", "sg", ""
@@ -321,6 +364,8 @@ def realize_semantic_relation(
         clean_verb = clean_verb[2:].strip()
 
     inf_person, inf_number, inf_gender = _infer_subject_features(clean_subj, is_fr)
+    person_given, number_given, gender_given = person, number, gender
+    is_neg_requested = (polarity or "").lower() in ("negative", "negated")
     person = str(person) if person else inf_person
     number_known = bool(number) or bool(inf_number and not inf_number.endswith("?"))
     number = (number or inf_number.rstrip("?") or "sg").lower()
@@ -356,9 +401,23 @@ def realize_semantic_relation(
     if subj_first in _NEGATIVE_QUANTIFIERS or clean_subj.lower() in _NEGATIVE_QUANTIFIERS:
         # "Personne ne ...", "Aucun X ne ...", "Nobody checks": negation comes from the subject.
         _limit(f"UNSUPPORTED_STRUCTURE:negative_quantifier_subject:{clean_subj}")
-    if (person and str(person) != inf_person) or (number and number.lower() != inf_number.rstrip("?")):
-        if clean_subj and inf_number:
+    if clean_subj and (person_given or number_given):
+        # An imposed person/number is only trusted when the subject itself confirms it.
+        if (not inf_number or inf_number.endswith("?")
+                or (person_given and str(person_given) != inf_person)
+                or (number_given and number_given.lower() != inf_number.rstrip("?"))):
             _limit(f"AGREEMENT_OVERRIDE_CONFLICT:{clean_subj}:{person}:{number}")
+    if clean_subj and gender_given and inf_gender and gender_given.lower() != inf_gender:
+        _limit(f"GENDER_OVERRIDE_CONFLICT:{clean_subj}:{gender_given}")
+    for label, phrase in (("subject", clean_subj), ("object", clean_obj)):
+        problem = _phrase_form_problem(phrase, is_fr) if label == "subject" else (
+            _phrase_form_problem(phrase, is_fr) if is_fr and phrase else None)
+        if problem and not (label == "object" and problem.startswith(("FUNCTION_WORD_ONLY", "INTERROGATIVE"))):
+            _limit(f"UNVERIFIED_{label.upper()}_PHRASE:{problem}")
+    obj_first = clean_obj.lower().split()[0] if clean_obj else ""
+    if obj_first in _NEGATIVE_QUANTIFIERS and not is_neg_requested:
+        # "vérifie aucune vanne": a negative quantifier needs "ne" (FR) or carries the negation (EN).
+        _limit(f"UNSUPPORTED_STRUCTURE:negative_quantifier_object:{obj_first}")
     if is_imperative and is_question:
         _limit("UNSUPPORTED_STRUCTURE:imperative_question")
     if is_imperative and (tense != "present" or aspect != "simple"):
