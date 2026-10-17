@@ -29,6 +29,8 @@ Statuts : **BRANCHÉ** = importé par le chemin public `apps/obsidia_api/routes/
 | Native Memory | `apps/obsidia_api/brody_obsidia_native_memory.py`, index V1 | BRANCHÉ, lecture seule, statique | contexte de projet ; **pas** d'écriture d'expérience | [EC] |
 | Mémoire de session | `brody_session_memory_adapter.py` + ledger `_local_audits/brody_sessions` | BRANCHÉ | continuité de conversation (pas d'acquis) | [EC] |
 | Ledger de candidats | `periphery/memory/memory_candidate_ledger.py` | HORS CHEMIN BRODY (route `apps/obsidia_api/routes/x108.py`) | mémoire candidate append-only | [EC][TE] |
+| Construction de candidats mémoire | `periphery/memory/memory_candidate.py` (`build_memory_candidate_v2`) | BRANCHÉ (import dynamique via `runtime_loader.py`) | forme d'un candidat mémoire | [EC] |
+| Politique de promotion mémoire | `periphery/memory/memory_promotion_policy.py` (`evaluate_promotion_policy`) | BRANCHÉ (import dynamique via `runtime_loader.py`) | évaluation de promotion (sans écriture) | [EC] |
 | Leçons candidates | `brody_memory_education_packet.py` | BRANCHÉ (lecture) | candidat → leçon typée (8 types) | [EC][TE] |
 | Garde de promotion mémoire | `brody_memory_promotion_guard.py` | BRANCHÉ | interdit la promotion implicite | [EC] |
 | Pack éducatif V1 | `brody_education_pack_v1_readonly_adapter.py` | BRANCHÉ mais `PACK_MISSING` localement | contexte éducatif figé | [EC] |
