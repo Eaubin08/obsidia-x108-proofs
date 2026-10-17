@@ -301,7 +301,9 @@ def _native_realization_for(s: str, fr: bool) -> str | None:
     # case and final punctuation). Any difference means something was lost or changed.
     if _normalized_statement(realized["text"]) != _normalized_statement(s):
         return None
-    return realized["text"].rstrip(". ")
+    # The regeneration only verifies the statement; the statement itself is returned so
+    # identifiers and proper nouns keep their exact case and typography.
+    return s.strip().rstrip(".!").strip()
 
 
 def _reconstruct_native_statement(stmt: str, fr: bool = True) -> str:
@@ -311,7 +313,8 @@ def _reconstruct_native_statement(stmt: str, fr: bool = True) -> str:
 def _reconstruct_with_provenance(stmt: str, fr: bool = True) -> tuple[str, str]:
     """Reformulate an admitted auxiliary statement and declare who formulated it.
 
-    Provenance is NATIVE_REALIZATION (Brody regenerated the sentence from its SENS frame),
+    Provenance is NATIVE_VERIFIED_ECHO (Brody regenerated the sentence from its SENS frame and
+    the regeneration reproduced it exactly, so the statement is kept as verified),
     TEMPLATE_REWRITE (pattern-based rewording of the auxiliary text) or
     AUXILIARY_WORDING_PRESERVED (the auxiliary model's wording is kept).
     """
@@ -324,7 +327,7 @@ def _reconstruct_with_provenance(stmt: str, fr: bool = True) -> tuple[str, str]:
     try:
         native = _native_realization_for(s, fr)
         if native:
-            return native, "NATIVE_REALIZATION"
+            return native, "NATIVE_VERIFIED_ECHO"
         from app.semantic.lattice.french_grammar import parse_utterance
         frame = parse_utterance(s) if fr else None
         if frame is not None and frame.units:
@@ -509,7 +512,7 @@ def synthesize_brody_native_claims(
         reconstructed = [_reconstruct_with_provenance(c["statement"], fr=fr) for c in admitted]
         formulation_provenance = [prov for _, prov in reconstructed]
         reconstructed_statements = [
-            _inner_subject(text, fr) if prov == "NATIVE_REALIZATION" else text for text, prov in reconstructed
+            _inner_subject(text, fr) if prov == "NATIVE_VERIFIED_ECHO" else text for text, prov in reconstructed
         ]
         statements_text = ". ".join(s for s in reconstructed_statements if s)
         if fr:
@@ -568,7 +571,7 @@ def synthesize_brody_native_claims(
         # reported separately in formulation_provenance.
         "native_linguistic_level": "GRAMMAR_LATTICE_ADAPTER",
         "formulation_provenance": formulation_provenance,
-        "auxiliary_wording_dependency": any(p != "NATIVE_REALIZATION" for p in formulation_provenance),
+        "auxiliary_wording_dependency": any(p != "NATIVE_VERIFIED_ECHO" for p in formulation_provenance),
         "parsed_structures": parsed_structures,
         "has_linguistic_limitations": has_linguistic_limitations,
     }
@@ -1302,12 +1305,14 @@ def build_true_brody_answer(
         "native_linguistic_level": (
             "AUXILIARY_WORDING_PRESERVED"
             if _formulation_provenance and all(p == "AUXILIARY_WORDING_PRESERVED" for p in _formulation_provenance)
+            else "NATIVE_VERIFIED_ECHO"
+            if _formulation_provenance and all(p == "NATIVE_VERIFIED_ECHO" for p in _formulation_provenance)
             else _native_linguistic_level
         ),
         # Who formulated each admitted auxiliary statement: Brody's native realization,
         # a template rewrite, or the auxiliary model's own wording.
         "formulation_provenance": list(_formulation_provenance),
-        "auxiliary_wording_dependency": any(p != "NATIVE_REALIZATION" for p in _formulation_provenance),
+        "auxiliary_wording_dependency": any(p != "NATIVE_VERIFIED_ECHO" for p in _formulation_provenance),
     }
 
 

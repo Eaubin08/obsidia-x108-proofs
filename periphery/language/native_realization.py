@@ -72,6 +72,15 @@ def _head_noun_number(head: str, lang: str) -> str:
     return numbers.pop() if numbers else ""
 
 
+_KNOWN_POLARITIES = frozenset({"affirmative", "positive", "negative", "negated"})
+_KNOWN_ASPECTS = frozenset({"simple", "progressive", "continuous", "perfect"})
+_NEGATIVE_QUANTIFIERS = frozenset({
+    "personne", "aucun", "aucune", "rien", "nul", "nulle", "nobody", "no", "nothing", "none",
+    "no one", "neither",
+})
+# French verbs conjugated with être intransitively but with avoir when they take an object.
+_ETRE_OR_AVOIR_VERBS = frozenset({"monter", "descendre", "sortir", "rentrer", "passer", "retourner"})
+
 # English nouns whose number is not marked (or is plural without -s): agreement cannot be
 # read from the form, so the number proposed for them is only tentative.
 _EN_NUMBER_AMBIGUOUS_NOUNS = frozenset({
@@ -93,6 +102,10 @@ def _bare_or_head_number(text: str, tokens: list[str], lang: str) -> str:
     if attested == "?":
         return "sg?"
     if len(tokens) > 1:
+        head_original = text.split()[-1]
+        if head_original[:1].isupper() and head_original.lower().endswith(("s", "x")):
+            # "The United States", "Les Pays-Bas": a proper name of plural form.
+            return f"{attested or 'sg'}?"
         return attested
     if text[:1].isupper():
         # A capitalized bare word may be a proper noun ("Paris", "Wales") whatever the
@@ -335,6 +348,17 @@ def realize_semantic_relation(
 
     if not number_known:
         _limit(f"SUBJECT_AGREEMENT_UNCERTAIN:{clean_subj}")
+    if (polarity or "affirmative").lower() not in _KNOWN_POLARITIES:
+        _limit(f"UNSUPPORTED_POLARITY:{polarity}")
+    if aspect not in _KNOWN_ASPECTS:
+        _limit(f"UNSUPPORTED_ASPECT:{aspect}")
+    subj_first = clean_subj.lower().split()[0] if clean_subj else ""
+    if subj_first in _NEGATIVE_QUANTIFIERS or clean_subj.lower() in _NEGATIVE_QUANTIFIERS:
+        # "Personne ne ...", "Aucun X ne ...", "Nobody checks": negation comes from the subject.
+        _limit(f"UNSUPPORTED_STRUCTURE:negative_quantifier_subject:{clean_subj}")
+    if (person and str(person) != inf_person) or (number and number.lower() != inf_number.rstrip("?")):
+        if clean_subj and inf_number:
+            _limit(f"AGREEMENT_OVERRIDE_CONFLICT:{clean_subj}:{person}:{number}")
     if is_imperative and is_question:
         _limit("UNSUPPORTED_STRUCTURE:imperative_question")
     if is_imperative and (tense != "present" or aspect != "simple"):
@@ -389,10 +413,14 @@ def realize_semantic_relation(
                     pp_gender, pp_number = gender, number
                     if not gender_known:
                         _limit(f"PARTICIPLE_AGREEMENT_UNCERTAIN:{clean_verb}:gender")
-                    if refl and clean_obj:
-                        # "Elle s'est lavé les mains": with a following direct object the
-                        # participle does not agree with the subject; not decided here.
-                        _limit(f"PARTICIPLE_AGREEMENT_UNCERTAIN:{clean_verb}:pronominal_with_object")
+                    if refl:
+                        # Reflexive vs. reciprocal-indirect ("ils se sont parlé") and a following
+                        # direct object ("elle s'est lavé les mains") change the agreement;
+                        # the structure does not say which applies.
+                        _limit(f"PARTICIPLE_AGREEMENT_UNCERTAIN:{clean_verb}:pronominal")
+                    if clean_verb.lower() in _ETRE_OR_AVOIR_VERBS and clean_obj:
+                        # "Il a monté la valise" vs "il est monté": transitive use takes avoir.
+                        _limit(f"AUXILIARY_UNCERTAIN:{clean_verb}:with_object")
                 else:
                     pp_gender, pp_number = "masc", "sg"
                 pp_form = _french_past_participle(clean_verb, pp_gender, pp_number)
