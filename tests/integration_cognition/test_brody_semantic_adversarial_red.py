@@ -84,7 +84,15 @@ def test_adv_a_raw_claim_not_reused_verbatim_in_brody_answer():
     assert raw_clause not in final_answer, (
         f"ADV-A: Raw auxiliary clause was pasted verbatim into final answer: {final_answer}"
     )
-    assert res.get("native_linguistic_level") == "REAL_SEMANTIC_RECONSTRUCTION"
+    # Contract updated on the Claude branch (provenance honesty closure): the answer is a
+    # deterministic pattern rewrite of the auxiliary clause, not a proven semantic
+    # reconstruction. The level must say so, and the per-statement record must agree.
+    # NOTE: conflicts with the AGY branch contract (REAL_SEMANTIC_RECONSTRUCTION); to reconcile.
+    assert res.get("native_linguistic_level") == "TEMPLATE_REWRITE"
+    records = res.get("formulation_records") or []
+    assert records and all(r["provenance"] == "TEMPLATE_REWRITE" for r in records)
+    assert all(r["text_identity"] == "REWORDED" and r["origin"] == "AUXILIARY_MODEL" for r in records)
+    assert res.get("auxiliary_wording_dependency") is True
 
 
 # ==============================================================================

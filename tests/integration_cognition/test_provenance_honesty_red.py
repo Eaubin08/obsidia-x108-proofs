@@ -129,3 +129,41 @@ def test_honesty_public_reuse_records_realizer_call(monkeypatch):
     recs = res["true_voice_snapshot"]["formulation_records"]
     assert calls and recs[0]["realizer_called"] is True and recs[0]["realizer_regeneration_matched"] is True
     assert res["true_voice_snapshot"]["formulation_provenance"] == ["AUXILIARY_WORDING_REUSED"]
+
+
+# Aggregate level: exact per-operation labels, MIXED, never an unproven reconstruction ----
+
+@pytest.mark.parametrize("reply,language,expected_level,expected_prov", [
+    ("Les opérateurs ne vérifiaient pas la vanne principale.", "fr", "AUXILIARY_WORDING_REUSED",
+     ["AUXILIARY_WORDING_REUSED"]),
+    ("La pression est de 3 bars.", "fr", "TEMPLATE_REWRITE", ["TEMPLATE_REWRITE"]),
+    ("The operator checks the valve.", "en", "AUXILIARY_WORDING_PRESERVED", ["AUXILIARY_WORDING_PRESERVED"]),
+    ("Le technicien vérifient la vanne.", "fr", "AUXILIARY_WORDING_PRESERVED", ["AUXILIARY_WORDING_PRESERVED"]),
+    ("Les opérateurs ne vérifiaient pas la vanne principale. La pression est de 3 bars.", "fr", "MIXED",
+     ["AUXILIARY_WORDING_REUSED", "TEMPLATE_REWRITE"]),
+    ("Les opérateurs ne vérifiaient pas la vanne principale. Le technicien vérifient la vanne.", "fr", "MIXED",
+     ["AUXILIARY_WORDING_REUSED", "AUXILIARY_WORDING_PRESERVED"]),
+])
+def test_honesty_public_aggregate_level(reply, language, expected_level, expected_prov, monkeypatch):
+    res, _ = _chat(reply, monkeypatch, language)
+    snap = res["true_voice_snapshot"]
+    assert snap["formulation_provenance"] == expected_prov
+    assert [r["provenance"] for r in snap["formulation_records"]] == expected_prov
+    assert snap["native_linguistic_level"] == expected_level
+    assert snap["auxiliary_wording_dependency"] is True
+    assert "REAL_SEMANTIC_RECONSTRUCTION" not in json.dumps(res, ensure_ascii=False, default=str)
+
+
+def test_honesty_template_rewrite_record_is_reworded_and_unverified(monkeypatch):
+    res, calls = _chat("La pression est de 3 bars.", monkeypatch)
+    rec = res["true_voice_snapshot"]["formulation_records"][0]
+    assert rec["applied"] == "TEMPLATE_REWRITE" and rec["text_identity"] == "REWORDED"
+    assert rec["realizer_called"] is False and calls == []
+    assert rec["checks_performed"] == [] and set(rec["not_evaluated"]) >= NOT_EVALUATED
+
+
+def test_honesty_adapter_never_assigns_unproven_semantic_reconstruction():
+    from apps.obsidia_api import brody_true_voice_adapter as adapter
+
+    src = open(adapter.__file__, encoding="utf-8").read()
+    assert '"REAL_SEMANTIC_RECONSTRUCTION"' not in src
