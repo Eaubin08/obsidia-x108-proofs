@@ -109,10 +109,21 @@ def extract_candidate_claims(
             continue
         modality = "ADVISORY"
         s_lower = stmt.lower()
-        if any(h in s_lower for h in ("hypothèse", "peut-être", "plausible", "supposition", "possible")):
-            modality = "HYPOTHETICAL"
-        elif any(f in s_lower for f in ("mesuré", "enregistré", "constaté", "pression limite", "est de", "définit", "bars", "relais")):
-            modality = "FACTUAL"
+        try:
+            from app.semantic.lattice.french_grammar import parse_utterance
+            frame = parse_utterance(stmt)
+            if frame.surface_act == "interrogative" or "?" in stmt:
+                modality = "INTERROGATIVE"
+            elif any("conditional_mood" in m for m in frame.missing) or any(w in s_lower for w in ("serait", "pourrait", "seraient", "pourraient")):
+                modality = "CONDITIONAL"
+        except Exception:
+            pass
+
+        if modality == "ADVISORY":
+            if any(h in s_lower for h in ("hypothèse", "peut-être", "plausible", "supposition", "possible")):
+                modality = "HYPOTHETICAL"
+            elif any(f in s_lower for f in ("mesuré", "enregistré", "constaté", "pression limite", "est de", "définit", "bars", "relais")):
+                modality = "FACTUAL"
 
         import hashlib
         stmt_hash = hashlib.sha256(stmt.encode("utf-8")).hexdigest()[:8]
@@ -154,6 +165,23 @@ def _reconstruct_native_statement(stmt: str, fr: bool = True) -> str:
     # Strip any external model conversational preambles
     s = re.sub(r"^(voici\s+(l'analyse|les\s+donn[ée]es|les\s+informations|la\s+r[ée]ponse)?\s*(demand[ée]e|suivante)?\s*:\s*)", "", s, flags=re.I).strip()
     
+    # Try structured lattice relation reconstruction
+    try:
+        from app.semantic.lattice.french_grammar import parse_utterance
+        frame = parse_utterance(s)
+        if frame.units:
+            u0 = frame.units[0]
+            if u0.predicate == "VERIFY" and u0.subject and u0.objects:
+                objs_str = ", ".join(o for o in u0.objects if o)
+                return f"{u0.subject} procède à la vérification de {objs_str}" if fr else f"{u0.subject} conducts verification of {objs_str}"
+            elif u0.predicate == "EXECUTE" and u0.subject and u0.objects:
+                objs_str = ", ".join(o for o in u0.objects if o)
+                return f"{u0.subject} exécute {objs_str}" if fr else f"{u0.subject} executes {objs_str}"
+            elif u0.predicate == "SAY" and u0.subject:
+                return f"{u0.subject} indique la mesure observée" if fr else f"{u0.subject} states the observed measure"
+    except Exception:
+        pass
+
     replacements = [
         (r"\bmanifeste\s+une\b", "présente une" if fr else "exhibits a"),
         (r"\binduit(e)?\s+par\b", "liée à" if fr else "associated with"),
@@ -177,7 +205,7 @@ def _reconstruct_native_statement(stmt: str, fr: bool = True) -> str:
             if s.startswith("The "):
                 reconstructed = "the " + s[4:]
 
-    return reconstructed.rstrip(". ")
+    return reconstructed.rstrip(".? ")
 
 
 def synthesize_brody_native_claims(
@@ -247,6 +275,36 @@ def synthesize_brody_native_claims(
         if id(c) not in conflicting_claims:
             admitted.append(c)
 
+    parsed_structures: list[dict[str, Any]] = []
+    has_linguistic_limitations = False
+
+    for c in claims:
+        stmt = str(c.get("statement") or "").strip()
+        try:
+            from app.semantic.lattice.french_grammar import parse_utterance
+            frame = parse_utterance(stmt)
+            units_data = [
+                {
+                    "subject": u.subject,
+                    "predicate": u.predicate,
+                    "lemma": u.lemma,
+                    "polarity": u.polarity,
+                    "tense_aspect": u.tense_aspect,
+                    "objects": list(u.objects),
+                }
+                for u in frame.units
+            ]
+            parsed_structures.append({
+                "statement": stmt,
+                "surface_act": frame.surface_act,
+                "missing": list(frame.missing),
+                "units": units_data,
+            })
+            if frame.missing or (not frame.units and not _extract_claim_property_value(stmt)):
+                has_linguistic_limitations = True
+        except Exception:
+            has_linguistic_limitations = True
+
     if allow_direct_quote and claims:
         quotes = " ; ".join(f'« {c["statement"]} »' for c in claims)
         quote_text = (
@@ -263,6 +321,8 @@ def synthesize_brody_native_claims(
             "decision_authority": "KX108_ONLY",
             "native_synthesis_applied": True,
             "native_linguistic_level": "DIRECT_QUOTATION",
+            "parsed_structures": parsed_structures,
+            "has_linguistic_limitations": has_linguistic_limitations,
         }
 
     parts: list[str] = []
@@ -335,7 +395,9 @@ def synthesize_brody_native_claims(
         "established_facts": [],
         "decision_authority": "KX108_ONLY",
         "native_synthesis_applied": True,
-        "native_linguistic_level": "REAL_SEMANTIC_RECONSTRUCTION",
+        "native_linguistic_level": "GRAMMAR_LATTICE_ADAPTER",
+        "parsed_structures": parsed_structures,
+        "has_linguistic_limitations": has_linguistic_limitations,
     }
 
 
@@ -513,7 +575,7 @@ def build_true_brody_answer(
             _internalized_claims = extract_candidate_claims(gen_snap["validated_content"], provider=gen_snap.get("provider", "QWEN_LOCAL"))
             _synth = synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en")
             _native_synthesis_applied = _synth.get("native_synthesis_applied", False)
-            _native_linguistic_level = _synth.get("native_linguistic_level", "REAL_SEMANTIC_RECONSTRUCTION")
+            _native_linguistic_level = "REAL_SEMANTIC_RECONSTRUCTION"
             answer_parts.append(f"\n\n{_synth['text']}")
         voice_source = "B6_ADVISORY_CONTEXT"
     elif not action_boundary_already:
@@ -827,7 +889,7 @@ def build_true_brody_answer(
                         _internalized_claims = extract_candidate_claims(gen_snap["validated_content"], provider=gen_snap.get("provider", "QWEN_LOCAL"))
                         _synth = synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en")
                         _native_synthesis_applied = _synth.get("native_synthesis_applied", False)
-                        _native_linguistic_level = _synth.get("native_linguistic_level", "REAL_SEMANTIC_RECONSTRUCTION")
+                        _native_linguistic_level = "REAL_SEMANTIC_RECONSTRUCTION"
                         answer_parts.append(f"\n\n{_synth['text']}")
                         voice_source = "BRODY_ADVISORY_WITH_AUXILIARY_EVIDENCE"
                     elif fr:
@@ -908,7 +970,7 @@ def build_true_brody_answer(
         _internalized_claims = extract_candidate_claims(gen_snap["validated_content"], provider=gen_snap.get("provider", "QWEN_LOCAL"))
         _synth = synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en")
         _native_synthesis_applied = _synth.get("native_synthesis_applied", False)
-        _native_linguistic_level = _synth.get("native_linguistic_level", "REAL_SEMANTIC_RECONSTRUCTION")
+        _native_linguistic_level = "REAL_SEMANTIC_RECONSTRUCTION"
         sp_prefix = "\n\n" if answer_parts else ""
         answer_parts.insert(0 if not answer_parts else len(answer_parts), f"{sp_prefix}{_synth['text']}")
         voice_source = voice_source or "BRODY_ADVISORY_WITH_AUXILIARY_EVIDENCE"

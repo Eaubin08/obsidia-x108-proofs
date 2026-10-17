@@ -269,18 +269,38 @@ def reassess_cognitive_evidence_delta(
     residual_unknowns = []
     addressed_unknowns = []
 
-    import re
+    from app.semantic.lattice.french_grammar import parse_utterance
 
     def _is_unknown_addressed(u_str: str, text: str) -> bool:
         u_key = _strip_accents(u_str.replace("_", " "))
         tokens = [t for t in u_key.split() if len(t) > 2]
         if not tokens:
             return False
-        clauses = re.split(r"[.;!?\n]+", text or "")
+        # Split into clauses including connectives like 'bien que', 'alors que', 'mais'
+        clauses = re.split(r"(?:[.;!?\n]+|\b(?:bien que|alors que|quoique|mais)\b)", text or "", flags=re.I)
         for clause in clauses:
-            c_norm = _strip_accents(clause)
+            clause_str = clause.strip()
+            if not clause_str:
+                continue
+            c_norm = _strip_accents(clause_str)
             if all(t in c_norm for t in tokens) or u_key in c_norm:
-                # Found mentioning clause - check negation / unresolved markers
+                # 1. Deterministic linguistic parser evaluation
+                try:
+                    frame = parse_utterance(clause_str)
+                    if frame.surface_act == "interrogative" or "?" in clause_str:
+                        return False
+                    if any("conditional_mood" in m for m in frame.missing) or any(w in c_norm for w in ("serait", "pourrait")):
+                        return False
+                    if any("ops=neg" in m for m in frame.missing) or any(u.polarity == "negative" for u in frame.units):
+                        return False
+                except Exception:
+                    pass
+
+                # 2. Additional surface interrogative & conditional guards
+                if "?" in clause_str or any(w in c_norm for w in ("serait", "pourrait", "seraient", "pourraient")):
+                    return False
+
+                # 3. Negation & unresolved markers
                 neg_markers = [
                     "inconnu", "inconnue", "non resolu", "non resolue",
                     "non mesurable", "ignore", "ignoree", "indetermine", "indeterminee",
@@ -288,14 +308,17 @@ def reassess_cognitive_evidence_delta(
                     "pas connu", "non defini", "reste inconnu", "reste inconnue",
                     "demeure inconnu", "demeure inconnue", "non etabli", "non etablie",
                 ]
-                if any(m in c_norm for m in neg_markers):
+                if any(m in c_norm for m in neg_markers) or re.search(r"\bn['e]?\s+.*?\bpas\b", c_norm):
                     return False
-                # Must have positive predicate or value or factual assertion
-                pos_markers = ["est de", "vaut", "=", "mesure", "fixe", "atteint", "definie", "defini", "identifie"]
+
+                # 4. Must have positive predicate or value or factual assertion
+                pos_markers = [
+                    "est de", "vaut", "=", "mesure", "fixe", "atteint", "definie", "defini",
+                    "identifie", "fonctionne", "active", "maintient", "maintenu", "regule",
+                    "stabilise", "assure", "confirme", "etabli", "presente", "opere",
+                ]
                 has_pos = any(p in c_norm for p in pos_markers) or bool(re.search(r"\d+", c_norm))
                 if has_pos:
-                    return True
-                if len(c_norm.split()) >= 4:
                     return True
         return False
 
