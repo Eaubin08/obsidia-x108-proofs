@@ -203,7 +203,7 @@ def realize_inflection(
 
     # Exact query
     cursor.execute("""
-    SELECT surface_form
+    SELECT surface_form, lemma, lang, pos, mood, tense, person, number, gender, morpho_tag, source_id
     FROM inflections
     WHERE lemma = ? AND lang = ? AND pos = ?
       AND (? = '' OR mood = ?)
@@ -214,7 +214,7 @@ def realize_inflection(
     ORDER BY (source_id = 'morphalou_3_1' OR source_id = 'wordnet_exc' OR source_id = 'unimorph_eng') DESC,
              (person != '') DESC, (number != '') DESC,
              (length(surface_form) >= 3) DESC, length(surface_form) ASC
-    LIMIT 1
+    LIMIT 10
     """, (
         clean_lemma, target_lang, pos,
         mood, mood,
@@ -223,9 +223,9 @@ def realize_inflection(
         number, number,
         gender, gender,
     ))
-    row = cursor.fetchone()
-    if row:
-        return row["surface_form"]
+    for row in cursor.fetchall():
+        if not is_defective_analysis(LinguisticAnalysis(**{k: row[k] or "" for k in row.keys()})):
+            return row["surface_form"]
 
     # Relaxed person/number for infinitives/participles or irregular tense mapping
     if mood in ("infinitive", "participle") or pos != "verb":
@@ -353,8 +353,15 @@ def is_known_lexical_item(word: str, lang: str | None = None) -> bool:
     clean = (word or "").strip()
     if not clean:
         return False
+    target = (lang or "").lower()
 
-    analyses = lookup_surface_form(clean, lang=lang)
+    if target == "en":
+        low = clean.lower()
+        if low in _EN_FUNCTION_WORDS or _in_oewn(low):
+            return True
+        return any(_in_oewn(a.lemma) for a in lookup_surface_form(clean, lang="en") if not is_defective_analysis(a))
+
+    analyses = [a for a in lookup_surface_form(clean, lang=lang) if not is_defective_analysis(a)]
     if analyses:
         return True
 
@@ -364,10 +371,56 @@ def is_known_lexical_item(word: str, lang: str | None = None) -> bool:
 
     cursor = conn.cursor()
     if lang:
-        cursor.execute("SELECT 1 FROM lemmas WHERE lemma = ? AND lang = ? LIMIT 1", (clean, lang.lower()))
+        cursor.execute("SELECT 1 FROM lemmas WHERE lemma = ? AND lang = ? LIMIT 1", (clean, target))
     else:
         cursor.execute("SELECT 1 FROM lemmas WHERE lemma = ? LIMIT 1", (clean,))
     return bool(cursor.fetchone())
+
+
+# Rows of the imported sources that are demonstrably wrong (found by the independent
+# certification of 787a74fb). They stay in the database for provenance but are never
+# treated as attested knowledge: (source_id, surface_form, lemma, morpho_tag or "*").
+_KNOWN_SOURCE_DEFECTS = frozenset({
+    ("morphalou_3_1", "st", "être", "*"),            # truncated "sont" in the indicative present 3pl cell
+    ("wordnet_exc", "has", "have", "V;IRREG;PAST"),   # "has" is present 3sg, not a past form
+    ("wordnet_exc", "goes", "go", "N;PL;IRREG"),      # verb form listed as an irregular noun plural
+})
+# UniMorph English fills the plural cell of mass nouns with these placeholders.
+_UNIMORPH_PLACEHOLDER_PLURALS = frozenset({"countable", "uncountable"})
+
+# Closed-class English words absent from WordNet (which covers only open classes).
+_EN_FUNCTION_WORDS = frozenset({
+    "the", "a", "an", "this", "that", "these", "those", "and", "or", "but", "nor", "of", "to", "in",
+    "on", "at", "by", "for", "with", "from", "into", "onto", "over", "under", "about", "after",
+    "before", "between", "through", "during", "without", "within", "against", "among", "i", "you",
+    "he", "she", "it", "we", "they", "me", "him", "her", "us", "them", "my", "your", "his", "its",
+    "our", "their", "who", "whom", "whose", "which", "what", "not", "no", "if", "than", "then",
+    "because", "while", "although", "will", "would", "shall", "should", "can", "could", "may",
+    "might", "must", "is", "am", "are", "was", "were", "been", "being", "be", "has", "have", "had",
+    "does", "do", "did",
+})
+
+
+def is_defective_analysis(a: LinguisticAnalysis) -> bool:
+    """True for imported rows known to be wrong; they are kept for provenance only."""
+    if (a.source_id, a.surface_form, a.lemma, a.morpho_tag) in _KNOWN_SOURCE_DEFECTS:
+        return True
+    if (a.source_id, a.surface_form, a.lemma, "*") in _KNOWN_SOURCE_DEFECTS:
+        return True
+    return (a.source_id == "unimorph_eng" and a.pos == "noun" and a.number == "pl"
+            and a.surface_form.lower() in _UNIMORPH_PLACEHOLDER_PLURALS)
+
+
+@lru_cache(maxsize=16384)
+def _in_oewn(lemma: str) -> bool:
+    """English open-class lemma attested by Open English WordNet (UniMorph alone is not enough)."""
+    conn = _get_connection()
+    if conn is None or not lemma:
+        return False
+    row = conn.execute(
+        "SELECT 1 FROM senses WHERE lemma = ? AND lang = 'en' AND source_id = 'oewn_2025' LIMIT 1", (lemma,)
+    ).fetchone()
+    return bool(row)
 
 
 def get_corpus_statistics() -> dict[str, Any]:

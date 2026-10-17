@@ -66,6 +66,20 @@ def _head_noun_number(head: str, lang: str) -> str:
     return numbers.pop() if len(numbers) == 1 else ""
 
 
+def _bare_or_head_number(text: str, tokens: list[str], lang: str) -> str:
+    """Number of a determinerless or determined nominal subject.
+
+    A capitalized single token that the corpus does not know and that does not end
+    like a plural is treated as a proper noun (singular); anything else unknown is "".
+    """
+    attested = _head_noun_number(tokens[-1], lang)
+    if attested or len(tokens) > 1:
+        return attested
+    if text[:1].isupper() and not tokens[0].endswith(("s", "x")):
+        return "sg"
+    return ""
+
+
 def _infer_subject_features(subject: str, is_fr: bool) -> tuple[str, str, str]:
     """Derive (person, number, gender) from the subject phrase.
 
@@ -93,14 +107,14 @@ def _infer_subject_features(subject: str, is_fr: bool) -> tuple[str, str, str]:
             return "3", "sg", "masc"
         if first in _FR_FEM_SG_DETERMINERS:
             return "3", "sg", "fem"
-        return "3", (_head_noun_number(tokens[-1], "fr") if len(tokens) > 1 else "sg"), ""
+        return "3", _bare_or_head_number(text, tokens, "fr"), ""
     if len(tokens) == 1 and first in _EN_PRONOUNS:
         return (*_EN_PRONOUNS[first], "")
     if first in _EN_PLURAL_DETERMINERS:
         return "3", "pl", ""
     if first in ("a", "an", "this", "that", "each", "every"):
         return "3", "sg", ""
-    return "3", (_head_noun_number(tokens[-1], "en") if len(tokens) > 1 else "sg"), ""
+    return "3", _bare_or_head_number(text, tokens, "en"), ""
 
 
 def _is_attested(form: str | None, lemma: str, lang: str) -> bool:
@@ -167,6 +181,43 @@ def _apply_french_elision(prefix: str, following_word: str) -> str:
     return prefix + " "
 
 
+def _join(*parts: str) -> str:
+    """Join tokens with single spaces, never after an elided clitic (l', n', s', j', qu')."""
+    out = ""
+    for part in parts:
+        part = (part or "").strip()
+        if not part:
+            continue
+        if not out:
+            out = part
+        elif out.endswith(("'", "’")):
+            out += part
+        else:
+            out += " " + part
+    return out
+
+
+def _elide_subject_je(subject: str, following: str) -> tuple[str, bool]:
+    """French "je" elides before a vowel; before "h" the onset may be aspirated (uncertain)."""
+    if subject.lower() != "je" or not following:
+        return subject, False
+    onset = following[0].lower()
+    if onset in "aeiouyàâäéèêëîïôöùûü":
+        return subject[0] + "'", False
+    if onset == "h":
+        return subject[0] + "'", True
+    return subject, False
+
+
+_FR_SIMPLE_TENSES = {
+    ("indicative", "present"), ("indicative", "imperfect"), ("indicative", "simple_past"),
+    ("indicative", "future"), ("conditional", "present"), ("subjunctive", "present"),
+    ("subjunctive", "imperfect"), ("imperative", "present"),
+}
+_FR_IMPERATIVE_PERSONS = {("2", "sg"), ("1", "pl"), ("2", "pl")}
+_EN_TENSES = {"present", "past", "simple_past", "future"}
+
+
 def realize_semantic_relation(
     subject: str,
     verb_lemma: str,
@@ -188,7 +239,7 @@ def realize_semantic_relation(
     Parameters:
       subject: Grammatical subject (e.g. "L'opérateur", "The operator")
       verb_lemma: Canonical verb lemma (e.g. "vérifier", "prendre", "check", "run")
-      obj: Complement or object (e.g. "la vanne", "the valve", "300 K")
+      obj: Complement or object, kept verbatim (e.g. "la vanne", "to school", "300 K")
       mood: "indicative", "conditional", "subjunctive", "imperative", "interrogative"
       tense: "present", "past", "future", "imperfect", "simple_past", "compound_past", "passé_composé"
       aspect: "simple", "progressive", "continuous", "perfect"
@@ -200,8 +251,8 @@ def realize_semantic_relation(
               with a participle agreement is declared as a limitation)
       lang: "fr" or "en"
 
-    Returns:
-      Dict with realized text, metadata, and limitation flags.
+    Any cell that cannot be established from attested forms or from the given
+    structure is realized best-effort and declared in has_linguistic_limitations.
     """
     clean_subj = (subject or "").strip()
     clean_verb = (verb_lemma or "").strip()
@@ -215,16 +266,16 @@ def realize_semantic_relation(
             "verb_lemma": "",
             "has_linguistic_limitations": True,
             "limitation_reason": "EMPTY_VERB_LEMMA",
+            "decision_authority": "KX108_ONLY",
+            "is_world_fact_established": False,
         }
 
-    # Interrogative mood maps to indicative verb with interrogative sentence structure
-    actual_mood = mood.lower()
-    is_question = False
-    if actual_mood in ("interrogative", "question"):
+    actual_mood = (mood or "indicative").lower()
+    is_question = actual_mood in ("interrogative", "question")
+    if is_question:
         actual_mood = "indicative"
-        is_question = True
+    is_imperative = actual_mood == "imperative"
 
-    # Check if verb is pronominal
     refl = is_pronominal or clean_verb.lower().startswith("se ") or clean_verb.lower().startswith("s'")
     if clean_verb.lower().startswith("se "):
         clean_verb = clean_verb[3:].strip()
@@ -238,12 +289,14 @@ def realize_semantic_relation(
     gender_known = bool(gender or inf_gender)
     gender = (gender or inf_gender or "masc").lower()
 
+    tense = (tense or "present").lower()
+    aspect = (aspect or "simple").lower()
     # French generic "past" is the passé composé; imperfect / simple_past stay explicit.
-    if is_fr and tense.lower() == "past" and aspect.lower() not in ("progressive", "continuous"):
+    if is_fr and tense == "past" and aspect not in ("progressive", "continuous"):
         tense = "compound_past"
 
-    is_compound = tense.lower() in ("compound_past", "passé_composé", "perfect") or aspect.lower() == "perfect"
-    is_progressive = aspect.lower() in ("progressive", "continuous")
+    is_compound = tense in ("compound_past", "passé_composé", "perfect") or aspect == "perfect"
+    is_progressive = aspect in ("progressive", "continuous")
     is_neg = (polarity or "").lower() in ("negative", "negated")
 
     has_limitation = False
@@ -257,126 +310,122 @@ def realize_semantic_relation(
 
     if not number_known:
         _limit(f"SUBJECT_AGREEMENT_UNCERTAIN:{clean_subj}")
+    if is_imperative and is_question:
+        _limit("UNSUPPORTED_STRUCTURE:imperative_question")
 
     if is_fr:
-        # Reflexive pronoun resolution
         refl_pron_map = {
             ("1", "sg"): "me", ("2", "sg"): "te", ("3", "sg"): "se",
             ("1", "pl"): "nous", ("2", "pl"): "vous", ("3", "pl"): "se",
         }
-        refl_pron = refl_pron_map.get((str(person), number.lower()), "se") if refl else ""
+        refl_pron = refl_pron_map.get((person, number), "se") if refl else ""
 
-        if is_compound:
-            # Compound tense (passé composé)
-            aux_lemma = "être" if (refl or clean_verb.lower() in _ETRE_VERBS) else "avoir"
-            aux_form = realize_inflection(aux_lemma, pos="verb", mood="indicative", tense="present", person=person, number=number, lang="fr")
-            if not _is_attested(aux_form, aux_lemma, "fr"):
-                _limit(f"UNRESOLVED_AUXILIARY:{aux_lemma}:{person}:{number}")
-                aux_form = aux_form or aux_lemma
-            if aux_lemma == "être":
-                pp_gender, pp_number = gender, number
-                if not gender_known:
-                    _limit(f"PARTICIPLE_AGREEMENT_UNCERTAIN:{clean_verb}:gender")
-            else:
-                pp_gender, pp_number = "masc", "sg"
-            pp_form = _french_past_participle(clean_verb, pp_gender, pp_number)
-            if not pp_form:
-                _limit(f"UNKNOWN_PARTICIPLE:{clean_verb}")
-                pp_form = clean_verb
+        def _clitics_and_negation(verb_form: str, tail: str = "") -> str:
+            """[ne] [reflexive] verb [pas] [tail], with elision on each clitic."""
+            refl_part = _apply_french_elision(refl_pron, verb_form).strip() if refl else ""
+            first = refl_part or verb_form
+            neg_part = _apply_french_elision("ne", first).strip() if is_neg else ""
+            return _join(neg_part, refl_part, verb_form, "pas" if is_neg else "", tail)
 
-            if refl:
-                refl_elided = _apply_french_elision(refl_pron, aux_form)
-                if is_neg:
-                    ne_elided = _apply_french_elision("ne", refl_elided)
-                    vp = f"{ne_elided}{refl_elided.strip()} {aux_form} pas {pp_form}"
-                else:
-                    vp = f"{refl_elided}{aux_form} {pp_form}"
-            else:
-                if is_neg:
-                    ne_elided = _apply_french_elision("ne", aux_form)
-                    vp = f"{ne_elided}{aux_form} pas {pp_form}"
-                else:
-                    vp = f"{aux_form} {pp_form}"
+        if is_imperative:
+            if (person, number) not in _FR_IMPERATIVE_PERSONS:
+                _limit(f"UNSUPPORTED_IMPERATIVE_PERSON:{person}:{number}")
+            if refl or is_compound or is_progressive:
+                _limit("UNSUPPORTED_STRUCTURE:imperative_clitic_or_compound")
+            imp = realize_inflection(clean_verb, pos="verb", mood="imperative", tense="present",
+                                     person=person, number=number, gender="", lang="fr")
+            if not _is_attested(imp, clean_verb, "fr"):
+                _limit(f"UNSUPPORTED_CONJUGATION_CELL:{clean_verb}:imperative:{person}:{number}")
+                imp = imp or clean_verb
+            vp = _join(_apply_french_elision("ne", imp).strip() if is_neg else "", imp, "pas" if is_neg else "")
             realized_v = vp
-
-        elif is_progressive:
-            # Progressive aspect: être en train de + INF
-            aux_be = realize_inflection("être", pos="verb", mood="indicative", tense=tense.lower(), person=person, number=number, lang="fr")
-            if not _is_attested(aux_be, "être", "fr"):
-                _limit(f"UNRESOLVED_AUXILIARY:être:{tense}:{person}:{number}")
-                aux_be = aux_be or "être"
-            if not is_known_lexical_item(clean_verb, lang="fr"):
-                _limit(f"UNKNOWN_LEXICAL_ITEM:{clean_verb}")
-            de_elided = _apply_french_elision("de", clean_verb)
-            if is_neg:
-                ne_elided = _apply_french_elision("ne", aux_be)
-                vp = f"{ne_elided}{aux_be} pas en train {de_elided}{clean_verb}"
-            else:
-                vp = f"{aux_be} en train {de_elided}{clean_verb}"
-            realized_v = vp
-
-        else:
-            # Simple tenses
-            simple_v = realize_inflection(
-                clean_verb,
-                pos="verb",
-                mood=actual_mood,
-                tense=tense.lower(),
-                person=person,
-                number=number,
-                gender="",
-                lang="fr",
-            )
-            if not _is_attested(simple_v, clean_verb, "fr"):
-                simple_v = None
-            if not simple_v:
-                if not is_known_lexical_item(clean_verb, lang="fr"):
-                    has_limitation = True
-                    limitation_reason = f"UNKNOWN_LEXICAL_ITEM:{clean_verb}"
-                    simple_v = clean_verb
-                else:
-                    has_limitation = True
-                    limitation_reason = f"UNSUPPORTED_CONJUGATION_CELL:{clean_verb}:{actual_mood}:{tense}:{person}:{number}"
-                    simple_v = clean_verb
-
-            if refl:
-                refl_elided = _apply_french_elision(refl_pron, simple_v)
-                if is_neg:
-                    ne_elided = _apply_french_elision("ne", refl_elided)
-                    vp = f"{ne_elided}{refl_elided.strip()} {simple_v} pas"
-                else:
-                    vp = f"{refl_elided}{simple_v}"
-            else:
-                if is_neg:
-                    ne_elided = _apply_french_elision("ne", simple_v)
-                    vp = f"{ne_elided}{simple_v} pas"
-                else:
-                    vp = simple_v
-            realized_v = vp
-
-        if clean_subj:
-            clause = f"{clean_subj} {vp}".strip()
-        else:
-            clause = vp
-
-        if clean_obj:
-            clause = f"{clause} {clean_obj}".strip()
-
-        if is_question:
-            inner = f"{_inner_subject(clean_subj, True)} {vp}".strip() if clean_subj else vp
-            if clean_obj:
-                inner = f"{inner} {clean_obj}"
-            text = f"Est-ce {_apply_french_elision('que', inner)}{inner} ?"
-        else:
+            clause = _join(vp, clean_obj)
             text = clause[0].upper() + clause[1:] + "."
+        else:
+            if is_compound:
+                if tense not in ("compound_past", "passé_composé", "perfect", "present"):
+                    _limit(f"UNSUPPORTED_TENSE:{tense}:{aspect}")
+                aux_lemma = "être" if (refl or clean_verb.lower() in _ETRE_VERBS) else "avoir"
+                aux_form = realize_inflection(aux_lemma, pos="verb", mood="indicative", tense="present",
+                                              person=person, number=number, lang="fr")
+                if not _is_attested(aux_form, aux_lemma, "fr"):
+                    _limit(f"UNRESOLVED_AUXILIARY:{aux_lemma}:{person}:{number}")
+                    aux_form = aux_form or aux_lemma
+                if aux_lemma == "être":
+                    pp_gender, pp_number = gender, number
+                    if not gender_known:
+                        _limit(f"PARTICIPLE_AGREEMENT_UNCERTAIN:{clean_verb}:gender")
+                else:
+                    pp_gender, pp_number = "masc", "sg"
+                pp_form = _french_past_participle(clean_verb, pp_gender, pp_number)
+                if not pp_form:
+                    _limit(f"UNKNOWN_PARTICIPLE:{clean_verb}")
+                    pp_form = clean_verb
+                vp = _clitics_and_negation(aux_form, pp_form)
+
+            elif is_progressive:
+                if tense not in ("present", "imperfect", "future"):
+                    _limit(f"UNSUPPORTED_TENSE:{tense}:{aspect}")
+                aux_be = realize_inflection("être", pos="verb", mood="indicative", tense=tense,
+                                            person=person, number=number, lang="fr")
+                if not _is_attested(aux_be, "être", "fr"):
+                    _limit(f"UNRESOLVED_AUXILIARY:être:{tense}:{person}:{number}")
+                    aux_be = aux_be or "être"
+                if not is_known_lexical_item(clean_verb, lang="fr"):
+                    _limit(f"UNKNOWN_LEXICAL_ITEM:{clean_verb}")
+                if refl:
+                    _limit("UNSUPPORTED_STRUCTURE:pronominal_progressive")
+                de_elided = _apply_french_elision("de", clean_verb).strip()
+                vp = _join(_apply_french_elision("ne", aux_be).strip() if is_neg else "", aux_be,
+                           "pas" if is_neg else "", "en train", de_elided, clean_verb)
+
+            else:
+                cell_mood, cell_tense = actual_mood, tense
+                if tense == "subjunctive":
+                    cell_mood, cell_tense = "subjunctive", "present"
+                if (cell_mood, cell_tense) not in _FR_SIMPLE_TENSES:
+                    _limit(f"UNSUPPORTED_TENSE:{cell_mood}:{cell_tense}")
+                simple_v = realize_inflection(clean_verb, pos="verb", mood=cell_mood, tense=cell_tense,
+                                              person=person, number=number, gender="", lang="fr")
+                if not _is_attested(simple_v, clean_verb, "fr"):
+                    simple_v = None
+                if not simple_v:
+                    if not is_known_lexical_item(clean_verb, lang="fr"):
+                        _limit(f"UNKNOWN_LEXICAL_ITEM:{clean_verb}")
+                    else:
+                        _limit(f"UNSUPPORTED_CONJUGATION_CELL:{clean_verb}:{cell_mood}:{cell_tense}:{person}:{number}")
+                    simple_v = clean_verb
+                vp = _clitics_and_negation(simple_v)
+            realized_v = vp
+
+            subj, h_uncertain = _elide_subject_je(clean_subj, vp)
+            if h_uncertain:
+                _limit("ELISION_UNCERTAIN:h_onset")
+            if is_question:
+                inner = _join(_inner_subject(subj, True) if subj else "", vp, clean_obj)
+                text = _join(_join("Est-ce", _apply_french_elision("que", inner).strip()), inner) + " ?"
+            else:
+                clause = _join(subj, vp, clean_obj)
+                text = clause[0].upper() + clause[1:] + "."
 
     else:
-        # English realization
-        en_past = tense.lower() in ("past", "simple_past")
+        en_past = tense in ("past", "simple_past")
+        en_future = tense == "future"
+        modal = "would" if actual_mood == "conditional" else ("will" if en_future else "")
+        if tense not in _EN_TENSES and not is_compound:
+            _limit(f"UNSUPPORTED_TENSE:{tense}")
+        if actual_mood == "subjunctive":
+            _limit("UNSUPPORTED_MOOD:subjunctive")
+        if modal and (is_compound or is_progressive):
+            _limit(f"UNSUPPORTED_STRUCTURE:{modal}_{aspect}")
+        if refl:
+            _limit("UNSUPPORTED_STRUCTURE:pronominal_en")
         en_tense = "past" if en_past else "present"
-        verb_known = clean_verb.lower() == "be" or is_known_lexical_item(clean_verb, lang="en")
+        is_be = clean_verb.lower() == "be"
+        verb_known = is_be or is_known_lexical_item(clean_verb, lang="en")
         if not verb_known:
             _limit(f"UNKNOWN_LEXICAL_ITEM:{clean_verb}")
+        base = clean_verb.lower()
 
         def _be_form() -> str:
             return _EN_BE.get((en_tense, person, number), "were" if en_past else "are")
@@ -388,68 +437,56 @@ def realize_semantic_relation(
                 return form or clean_verb
             return form
 
-        if is_compound:
-            aux_have = "had" if en_past else ("has" if person == "3" and number == "sg" else "have")
-            pp_form = _en_participle("past")
-            if is_neg:
-                vp = f"{aux_have} not {pp_form}"
-            else:
-                vp = f"{aux_have} {pp_form}"
-            realized_v = vp
-
-        elif is_progressive:
-            aux_be = _be_form()
-            prp_form = _en_participle("present")
-            if is_neg:
-                vp = f"{aux_be} not {prp_form}"
-            else:
-                vp = f"{aux_be} {prp_form}"
-            realized_v = vp
-
-        else:
-            if clean_verb.lower() == "be":
-                simple_v = _be_form()
-            elif en_past:
-                simple_v = realize_inflection(clean_verb, pos="verb", mood="indicative", tense="past", lang="en")
-                if not _is_attested(simple_v, clean_verb, "en"):
-                    if verb_known:
-                        _limit(f"UNATTESTED_FORM:{clean_verb}:past")
-                    simple_v = simple_v or clean_verb
+        def _finite(form_tense: str) -> str:
+            if is_be:
+                return _be_form()
+            if form_tense == "past":
+                form = realize_inflection(clean_verb, pos="verb", mood="indicative", tense="past", lang="en")
+                cell = "past"
             elif person == "3" and number == "sg":
-                simple_v = realize_inflection(clean_verb, pos="verb", mood="indicative", tense="present", person="3", number="sg", lang="en")
-                if not _is_attested(simple_v, clean_verb, "en"):
-                    if verb_known:
-                        _limit(f"UNATTESTED_FORM:{clean_verb}:present:3:sg")
-                    simple_v = simple_v or clean_verb
+                form = realize_inflection(clean_verb, pos="verb", mood="indicative", tense="present",
+                                          person="3", number="sg", lang="en")
+                cell = "present:3:sg"
             else:
-                simple_v = clean_verb.lower()
+                return base
+            if not _is_attested(form, clean_verb, "en"):
+                if verb_known:
+                    _limit(f"UNATTESTED_FORM:{clean_verb}:{cell}")
+                return form or base
+            return form
 
-            if is_neg:
-                if clean_verb.lower() == "be":
-                    vp = f"{simple_v} not"
-                else:
-                    aux_do = "did" if tense.lower() in ("past", "simple_past") else ("does" if person == "3" and number.lower() == "sg" else "do")
-                    vp = f"{aux_do} not {clean_verb.lower()}"
-            else:
-                vp = simple_v
+        not_ = "not" if is_neg else ""
+
+        if is_imperative:
+            if clean_subj and clean_subj.lower() != "you":
+                _limit(f"UNSUPPORTED_IMPERATIVE_SUBJECT:{clean_subj}")
+            vp = _join("do" if is_neg else "", not_, base)
             realized_v = vp
-
-        if is_question:
-            if is_compound:
-                aux_have = "had" if tense.lower() in ("past", "simple_past") else ("has" if person == "3" and number.lower() == "sg" else "have")
-                pp_form = realize_inflection(clean_verb, pos="verb", mood="participle", tense="past", lang="en") or clean_verb
-                text = f"{aux_have.capitalize()} {_inner_subject(clean_subj, False)} {pp_form} {clean_obj}".strip() + "?"
-            elif clean_verb.lower() == "be":
-                be_form = _be_form()
-                text = f"{be_form.capitalize()} {_inner_subject(clean_subj, False)} {clean_obj}".strip() + "?"
-            else:
-                aux_do = "did" if tense.lower() in ("past", "simple_past") else ("does" if person == "3" and number.lower() == "sg" else "do")
-                infinitive = clean_verb.lower()
-                clause = f"{aux_do.capitalize()} {_inner_subject(clean_subj, False)} {infinitive} {clean_obj}".strip()
-                text = f"{clause}?"
-        else:
-            clause = f"{clean_subj} {vp} {clean_obj}".strip()
+            clause = _join(vp, clean_obj)
             text = clause[0].upper() + clause[1:] + "."
+        else:
+            if modal:
+                aux, main = modal, base
+            elif is_compound:
+                aux = "had" if en_past else ("has" if person == "3" and number == "sg" else "have")
+                main = _en_participle("past")
+            elif is_progressive:
+                aux, main = _be_form(), _en_participle("present")
+            elif is_be:
+                aux, main = _be_form(), ""
+            elif is_neg or is_question:
+                aux = "did" if en_past else ("does" if person == "3" and number == "sg" else "do")
+                main = base
+            else:
+                aux, main = "", _finite(en_tense)
+
+            vp = _join(aux, not_, main)
+            realized_v = vp
+            if is_question:
+                text = _join(aux.capitalize(), _inner_subject(clean_subj, False), not_, main, clean_obj) + "?"
+            else:
+                clause = _join(clean_subj, vp, clean_obj)
+                text = clause[0].upper() + clause[1:] + "."
 
     return {
         "text": text,

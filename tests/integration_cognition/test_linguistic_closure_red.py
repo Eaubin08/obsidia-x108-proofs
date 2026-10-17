@@ -128,10 +128,21 @@ def test_close_unsupported_tense_is_limited():
     ("countable", "en", True),   # genuine adjective, must stay known
     ("house", "en", True),
     ("maison", "fr", True),
-    ("st", "fr", False),
 ])
 def test_close_is_known_filters_cross_language_noise(word, lang, expected):
     assert is_known_lexical_item(word, lang=lang) is expected
+
+
+def test_close_defective_rows_are_never_attested_analyses():
+    from periphery.language.lexical_corpus import is_defective_analysis, lookup_surface_form
+
+    # "st" is a genuine noun (stère abbreviation) but not a form of "être".
+    st = lookup_surface_form("st", lang="fr")
+    assert any(a.lemma == "st" and not is_defective_analysis(a) for a in st)
+    assert all(is_defective_analysis(a) for a in st if a.lemma == "être")
+    has = [a for a in lookup_surface_form("has", lang="en") if a.tense == "past"]
+    assert has and all(is_defective_analysis(a) for a in has)
+    assert all(is_defective_analysis(a) for a in lookup_surface_form("countable", lang="en") if a.pos == "noun")
 
 
 # Adapter temporal mapping ------------------------------------------------------

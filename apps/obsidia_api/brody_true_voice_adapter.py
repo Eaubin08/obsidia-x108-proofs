@@ -158,6 +158,36 @@ def _extract_claim_property_value(stmt: str) -> dict[str, str] | None:
     return None
 
 
+def _sens_tense_to_realization(tense_aspect: str, verb_form: str, surface: str, lemma: str) -> dict[str, str] | None:
+    """Map a SENS tense_aspect onto realization parameters, or None when it cannot be decided.
+
+    SENS "PAST" covers both the passé composé (PARTICIPLE) and finite past forms; a finite
+    past is resolved from the attested analyses of the surface verb (imperfect vs simple past).
+    Tenses the realizer does not support (pluperfect, near future, ...) are never collapsed.
+    """
+    if tense_aspect == "PRESENT":
+        return {"mood": "indicative", "tense": "present", "aspect": "simple"}
+    if tense_aspect == "FUTURE":
+        return {"mood": "indicative", "tense": "future", "aspect": "simple"}
+    if tense_aspect == "CONDITIONAL":
+        return {"mood": "conditional", "tense": "present", "aspect": "simple"}
+    if tense_aspect == "PROGRESSIVE":
+        return {"mood": "indicative", "tense": "present", "aspect": "progressive"}
+    if tense_aspect == "PAST" and verb_form == "PARTICIPLE":
+        return {"mood": "indicative", "tense": "compound_past", "aspect": "simple"}
+    if tense_aspect == "PAST" and verb_form == "FINITE":
+        from periphery.language.lexical_corpus import is_defective_analysis, lookup_surface_form
+
+        tenses = {
+            a.tense for a in lookup_surface_form(surface, lang="fr")
+            if a.lemma == lemma and a.mood == "indicative" and a.tense in ("imperfect", "simple_past")
+            and not is_defective_analysis(a)
+        }
+        if len(tenses) == 1:
+            return {"mood": "indicative", "tense": tenses.pop(), "aspect": "simple"}
+    return None
+
+
 def _reconstruct_native_statement(stmt: str, fr: bool = True) -> str:
     s = stmt.strip()
     if not s:
@@ -180,19 +210,20 @@ def _reconstruct_native_statement(stmt: str, fr: bool = True) -> str:
             elif u0.predicate == "SAY" and u0.subject:
                 return f"{u0.subject} indique la mesure observée" if fr else f"{u0.subject} states the observed measure"
             elif u0.subject and u0.lemma and u0.objects and not _extract_claim_property_value(stmt):
-                from periphery.language.native_realization import realize_semantic_relation
-                objs_str = ", ".join(o for o in u0.objects if o)
-                realized = realize_semantic_relation(
-                    subject=u0.subject,
-                    verb_lemma=u0.lemma,
-                    obj=objs_str,
-                    mood="indicative",
-                    tense="present" if u0.tense_aspect == "PRESENT" else "past",
-                    polarity=u0.polarity,
-                    lang="fr" if fr else "en",
-                )
-                if realized["text"] and not realized["has_linguistic_limitations"]:
-                    return realized["text"].rstrip(". ")
+                cell = _sens_tense_to_realization(u0.tense_aspect, u0.verb_form, u0.surface, u0.lemma)
+                if cell is not None:
+                    from periphery.language.native_realization import realize_semantic_relation
+                    objs_str = ", ".join(o.text for o in u0.objects if o.text)
+                    realized = realize_semantic_relation(
+                        subject=u0.subject,
+                        verb_lemma=u0.lemma,
+                        obj=objs_str,
+                        polarity=u0.polarity,
+                        lang="fr" if fr else "en",
+                        **cell,
+                    )
+                    if realized["text"] and not realized["has_linguistic_limitations"]:
+                        return realized["text"].rstrip(". ")
     except Exception:
         pass
 
