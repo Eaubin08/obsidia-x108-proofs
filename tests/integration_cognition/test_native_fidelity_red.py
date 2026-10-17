@@ -225,3 +225,47 @@ def test_fidelity_ungrammatical_statement_is_never_a_verified_echo(stmt):
     from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
 
     assert _reconstruct_with_provenance(stmt, fr=True)[1] != "NATIVE_VERIFIED_ECHO"
+
+
+# Closure audit (15239e1c): positive noun-phrase verification ---------------------
+
+@pytest.mark.parametrize("stmt", [
+    "Le homme vérifie la vanne.", "La heure passe.", "L'haie pousse.", "Les opérateur vérifient la vanne.",
+    "Des opérateur vérifient la vanne.", "L'opérateur vérifie les vanne.", "L'opérateur vérifie la hélice.",
+    "L'opérateur vérifie le homme.", "L'opérateur ne vérifie pas aucune vanne.", "Quel opérateur vérifie la vanne.",
+    "Ce vanne fuit.", "Cette chat mange.", "Mon vanne fuit.",
+])
+def test_closure_ungrammatical_statements_are_never_verified_echoes(stmt):
+    from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
+
+    assert _reconstruct_with_provenance(stmt, fr=True)[1] != "NATIVE_VERIFIED_ECHO"
+
+
+@pytest.mark.parametrize("subject,verb,obj,kw", [
+    ("Le homme", "tomber", "", {"lang": "fr"}), ("Le hôpital", "fermer", "", {"lang": "fr"}),
+    ("L'héros", "arriver", "", {"lang": "fr"}), ("Les opérateur", "vérifier", "la vanne", {"lang": "fr"}),
+    ("Ces chat", "manger", "", {"lang": "fr"}), ("Ce vanne", "fuir", "", {"lang": "fr"}),
+    ("Cet chat", "manger", "", {"lang": "fr"}), ("Ma chat", "manger", "", {"lang": "fr"}),
+    ("A operator", "check", "the valve", {"lang": "en"}), ("These operator", "check", "the valve", {"lang": "en"}),
+    ("The operator", "check", "no valve", {"lang": "en", "polarity": "negative"}),
+    ("L'opérateur", "vérifier", "aucune vanne", {"lang": "fr", "polarity": "negative"}),
+    ("Quel opérateur", "vérifier", "la vanne", {"lang": "fr"}), ("Whose operator", "check", "the valve", {"lang": "en"}),
+    ("L'opérateur", "vérifier", "la hélice", {"lang": "fr"}),
+])
+def test_closure_unverifiable_phrases_are_limited(subject, verb, obj, kw):
+    assert realize(subject=subject, verb_lemma=verb, obj=obj, **kw)["has_linguistic_limitations"] is True
+
+
+@pytest.mark.parametrize("subject,verb,obj,kw,expected", [
+    ("Le chat", "manger", "la souris", {"lang": "fr"}, "Le chat mange la souris."),
+    ("Le yaourt", "tomber", "", {"lang": "fr"}, "Le yaourt tombe."),
+    ("Le chat", "manger", "le yaourt", {"lang": "fr"}, "Le chat mange le yaourt."),
+    ("L'opérateur", "vérifier", "la vanne", {"lang": "fr"}, "L'opérateur vérifie la vanne."),
+    ("Les opérateurs", "vérifier", "la vanne", {"lang": "fr"}, "Les opérateurs vérifient la vanne."),
+    ("Cet arbre", "tomber", "", {"lang": "fr"}, "Cet arbre tombe."),
+    ("Ma voiture", "rouler", "", {"lang": "fr"}, "Ma voiture roule."),
+    ("The pumps", "need", "maintenance", {"lang": "en"}, "The pumps need maintenance."),
+])
+def test_closure_correct_simple_sentences_are_not_over_limited(subject, verb, obj, kw, expected):
+    res = realize(subject=subject, verb_lemma=verb, obj=obj, **kw)
+    assert res["text"] == expected and res["has_linguistic_limitations"] is False
