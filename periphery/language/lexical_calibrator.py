@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 import re
@@ -220,5 +220,34 @@ def calibrate_lexical_knownness(
         ),
         "readonly": True,
         "decision_authority": "KX108_ONLY",
+    }
+
+
+def calibrate_lexical_with_corpus(text: str, language: str = "fr") -> dict[str, Any]:
+    """
+    Validates tokens against the real Morphalou / WordNet corpus database.
+    Distinguishes legitimate natural language vocabulary from opaque token noise.
+    """
+    base = calibrate_lexical_knownness(text, language=language)
+    unknowns = base.get("unknowns", [])
+
+    recognized_vocabulary: list[str] = []
+    unrecognized_tokens: list[str] = []
+
+    try:
+        from app.semantic.lattice.lexical_corpus import is_known_lexical_item
+        for u in unknowns:
+            if is_known_lexical_item(u, lang=language):
+                recognized_vocabulary.append(u)
+            else:
+                unrecognized_tokens.append(u)
+    except Exception:
+        unrecognized_tokens = list(unknowns)
+
+    return {
+        **base,
+        "corpus_recognized_vocabulary": recognized_vocabulary,
+        "corpus_unrecognized_tokens": unrecognized_tokens,
+        "corpus_coverage_ratio": len(recognized_vocabulary) / len(unknowns) if unknowns else 1.0,
     }
 

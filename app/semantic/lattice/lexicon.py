@@ -431,6 +431,44 @@ def lookup(low: str) -> tuple[list[Analysis], bool]:
         return exact, False
     if typed_without_accents and low not in _FOLD_STOPLIST and low in _FOLDED:
         return _FOLDED[low], True
+
+    # Real corpus fallback (Morphalou 3.1 & UniMorph)
+    try:
+        from app.semantic.lattice.lexical_corpus import lookup_surface_form
+        analyses = lookup_surface_form(low, lang="fr")
+        corpus_results: dict[str, set[str]] = {}
+        for a in analyses:
+            if a.pos == "verb" and a.source_id == "morphalou_3_1":
+                feats = set()
+                if a.mood == "infinitive":
+                    feats.add("INF")
+                elif a.mood == "participle":
+                    feats.add("PP")
+                elif a.mood == "conditional":
+                    feats.add("COND")
+                elif a.mood == "subjunctive":
+                    feats.add("SUBJ")
+                elif a.mood == "imperative":
+                    feats.add("IMP")
+                elif a.tense == "present":
+                    feats.add("PRES")
+                elif a.tense == "future":
+                    feats.add("FUT")
+                elif a.tense in ("imperfect", "past", "simple_past"):
+                    feats.add("PST")
+
+                if a.person and a.number:
+                    num_tag = "S" if a.number == "sg" else "P"
+                    feats.add(f"P{a.person}{num_tag}")
+
+                if feats:
+                    corpus_results.setdefault(a.lemma, set()).update(feats)
+
+        if corpus_results:
+            return [(lem, frozenset(fts)) for lem, fts in corpus_results.items()], False
+    except Exception:
+        pass
+
     return [], False
 
 

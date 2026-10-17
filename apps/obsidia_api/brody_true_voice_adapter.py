@@ -179,6 +179,20 @@ def _reconstruct_native_statement(stmt: str, fr: bool = True) -> str:
                 return f"{u0.subject} exécute {objs_str}" if fr else f"{u0.subject} executes {objs_str}"
             elif u0.predicate == "SAY" and u0.subject:
                 return f"{u0.subject} indique la mesure observée" if fr else f"{u0.subject} states the observed measure"
+            elif u0.subject and u0.lemma and u0.objects and not _extract_claim_property_value(stmt):
+                from app.semantic.lattice.native_realization import realize_semantic_relation
+                objs_str = ", ".join(o for o in u0.objects if o)
+                realized = realize_semantic_relation(
+                    subject=u0.subject,
+                    verb_lemma=u0.lemma,
+                    obj=objs_str,
+                    mood="indicative",
+                    tense="present" if u0.tense_aspect == "PRESENT" else "past",
+                    polarity=u0.polarity,
+                    lang="fr" if fr else "en",
+                )
+                if realized["text"] and not realized["has_linguistic_limitations"]:
+                    return realized["text"].rstrip(". ")
     except Exception:
         pass
 
@@ -302,6 +316,13 @@ def synthesize_brody_native_claims(
             })
             if frame.missing or (not frame.units and not _extract_claim_property_value(stmt)):
                 has_linguistic_limitations = True
+            else:
+                from app.semantic.lattice.lexical_corpus import is_known_lexical_item
+                words = [w for w in re.findall(r"\b[A-Za-zÀ-ÿ\-]+\b", stmt) if len(w) > 2]
+                if words:
+                    known_count = sum(1 for w in words if is_known_lexical_item(w, lang="fr" if fr else "en"))
+                    if (known_count / len(words)) < 0.4:
+                        has_linguistic_limitations = True
         except Exception:
             has_linguistic_limitations = True
 
