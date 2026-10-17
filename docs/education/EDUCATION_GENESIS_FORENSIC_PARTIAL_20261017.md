@@ -1,7 +1,7 @@
 # Forensic éducatif Obsidia / Oxygen — rapport PARTIAL
 
 **Date :** 2026-10-17 · **Auteur :** Claude (agent), worktree `obsidia-claude-linguistique`, branche `feat/claude-linguistic-repair-m42-v0`, HEAD de départ `4016db99` (non poussée).
-**Statut : PARTIAL (v2).** Ce n'est **pas** un audit complet. La v1 (commit `d4e93f99`, parties 0–10) n'avait pas lu les sources Drive. La **partie II** (fin du document) consigne la vérification directe des six exports Drive intégraux et des descendants GitHub, faite le 2026-10-17. Restent non audités : les autres dépôts Obsidia, les archives Gmail et la naissance « Oxygen » d'origine, la conversation du jeu vidéo éducatif. Les parties 0–10 sont conservées telles quelles ; **la partie II prévaut** en cas d'écart. Aucun code, aucune mémoire, aucune architecture éducative n'a été modifié ou proposé pour application.
+**Statut : PARTIAL (v3).** Ce n'est **pas** un audit complet. La v1 (commit `d4e93f99`, parties 0–10) n'avait pas lu les sources Drive. La partie II (v2, `636f55fd`) consigne la vérification directe des six exports Drive et des descendants GitHub. La **partie III** (v3) applique les neuf corrections C1–C9 issues de l'audit indépendant de la v2. **Ordre de priorité en cas d'écart : partie III > partie II > parties 0–10.** Restent non audités : les autres dépôts Obsidia, les archives Gmail, les sources 47 / 48 / 91 citées par les docs 03 / 04, la conversation du jeu vidéo éducatif. Aucun code, aucune mémoire, aucune architecture éducative n'a été modifié ou proposé pour application.
 
 ## 0. Conventions d'attribution
 
@@ -181,6 +181,8 @@ STOP BEFORE APPLY sur l'architecture éducative.
 
 # Partie II — Vérification directe des sources (2026-10-17, v2)
 
+> **Corrigée par la partie III (v3).** Les points II.0 (FSO), II.1 (« une seule essence », « Oxygen », numéros de ligne), II.2 (N0–N4), II.3, II.4, II.5 et II.6 (P155 / P156 / G1) sont amendés en III.1. Le texte v2 est conservé pour la traçabilité.
+
 ## II.0 Pack vérifié
 
 - Pack : `OBSIDIA_EDUCATION_SOURCES_COMPLET_20261017.zip`, SHA-256 `76edd122cef7c629c4725b23efd3bda72dde7addda5ce1f682b93ddc4a659e66`, test d'archive sans erreur ; **17/17** empreintes de `SHA256SUMS.txt` conformes. Extrait dans un dossier de travail privé hors Git.
@@ -314,5 +316,100 @@ READY_FOR_BUILD=NO
 3. **Décisions du fondateur** : (a) les versions 9×9 sont-elles des entraînements d'une seule essence (doctrine) ou des entités ? (b) faut-il des stades enfant / adolescent / adulte, ou des niveaux de compétence (type N0–N4) ? (c) acte et critère de naissance d'Oxygen ; (d) forme du compte rendu humain des journées.
 4. **Réconciliation** des contradictions (partie I §6, §II.4) et des contrats Claude / AGY.
 5. **Préconception** de l'éducation textuelle progressive, en réutilisant la porte de rétention (P155), le rejeu cumulatif (P156), les leçons candidates et la promotion manuelle — **uniquement après validation des points 3 et 4**.
+
+STOP BEFORE APPLY sur l'architecture éducative.
+
+---
+
+# Partie III — Corrections v3 (audit indépendant de la v2)
+
+Base : audit indépendant de `636f55fd` (verdict PARTIAL, corrections C1–C9). Chaque correction ci-dessous a été revérifiée par Claude sur les exports du pack (SHA-256 vérifiés) avant écriture. **Convention de lignes** (C7) : sauf mention contraire, un numéro de ligne pointe sur le contenu cité ; en partie II, les numéros pointaient sur la ligne du marqueur `Vous avez dit :`, le contenu étant à la ligne suivante.
+
+## III.1 Journal des corrections
+
+| # | Section v2 | Texte v2 | Correction v3 | Preuve |
+|---|---|---|---|---|
+| **C1** | II.0, II.2 | « la FSO elle-même est une réponse de ChatGPT » | **Vision éducative et expression « la formule du savoir » : fondateur** (01 L1 : « comme en maths, on va te donner la formule, donc la formule du savoir … comme un enfant ou un humain apprend à l'école »). **Sigle « FSO », structure et formalismes** (socle, opérateurs, AVDR, cursus) : ChatGPT (01 L4–L5 et suivantes). | 01 L1, L4, L5 |
+| **C2** | II.1, II.4 | « une seule essence » lu comme preuve d'identité unique | **Argument retiré.** En 05 L1577, le fondateur approuve la **compression sémantique** proposée par ChatGPT en L1522 (« elle garde 1 "essence" de ce mot + ses variations ») ; la réponse L1584 le confirme (« Obsidia ne garde pas juste l'essence »). La citation ne porte pas sur l'identité. La doctrine « une seule naissance » est documentée **séparément** (§ III.2, C6). | 05 L1522, L1577, L1584 |
+| **C3** | II.1, II.7 n°2 | « Oxygen apparaît comme contenant des "cerveaux" » | **Occurrence ambiguë, non interprétée.** Le fondateur écrit « une oxygène » (05 L2003) et « les versions entraînées d'Oxygen » (05 L2673) dans des tours **dictés** où le nom du projet varie (« obsodia » L1795, « Obsidio », « obsidien », « obsidieux ») ; l'assistant répond « Le cerveau interne d'une **Obsidia** » (L2018). Hypothèse possible : transcription d'« Obsidia » ; **non prouvée**. Autres références historiques à Oxygen : doctrine du 5 août 2026 (04 L4067–L4092, source secondaire) et `docs/EDUCATION.md` (`main`). | 05 L1795, L2003, L2018, L2673 ; 04 L4067 |
+| **C4** | II.2, II.3 | N0–N4 en « 01 / ~L300 », « seule progression par niveaux trouvée » | N0–N4 se trouvent en **01 L269–L280** (ChatGPT) ; ce sont des **niveaux de l'usager humain** et d'accès (01 L61 « formule technique × niveau humain (N0→N4) », L388 « Niveau humain (N0→N4 : débutant→architecte) »), **pas** des stades éducatifs d'Oxygen. Autres échelles, toutes d'assistant : 05 L339–L360 (N1–N4 d'alignement usager), 04 L3334–L3350 (CX-5B N0–N5, nomenclature structurelle). **Séparément** : 02 L1590 « Système de niveaux (Enfance → Maîtrise → Sagesse) » — proposition d'assistant, une seule occurrence, **non définie**. | 01 L61, L269–L280, L388 ; 02 L1590 ; 05 L339–L360 ; 04 L3334 |
+| **C5** | II.4 | « tension » / « contredit » appliqué au fondateur | **Ambiguïté historique, pas contradiction établie.** Voir § III.3. | 05 L1795, L1919, L1922, L2007, L2475, L2678 |
+| **C6** | II.0, II.7, II.9 | doctrine « une naissance » sans origine ; « dates exactes inconnues » | Ajout : audit d'assistant 04 § 238–240 (L4067–L4095) rapportant une **« Doctrine Oxygen » du 5 août 2026** (« Une seule naissance. Une seule continuité éducative. Une multiplicité d'organes entraînés » ; « Les agents savent faire. Oxygen apprend à savoir » ; statut : « vision de recherche future »). § 240 : chaîne pédagogique de travaux « **retrouvés** le 24 septembre 2026 » (date de récupération, pas d'origine). Renvois 03 L2221–L2232, L2513 (sources 47, 48, 91, non consultées). **Source secondaire d'assistant** : la doctrine est datée, les conversations 01 / 02 / 05 restent non datées. | 04 L4067–L4095 ; 03 L2221, L2513 |
+| **C7** | II.1 | numéros de ligne | Convention précisée (ci-dessus). La citation « on recrée un humain … chute, se relève et recommence » est en **05 L1423** (tour ouvert en L1414). | 05 L1414, L1423 |
+| **C8** | II.5 | P155 rattaché au doc 155, « non réexécuté » | Chiffres P155 déclarés en **doc 156 L4** ; **reproduits à l'identique** par l'auditeur indépendant (6 ACCEPT / 18 HOLD / 15 régressions évitées / 1 920 examens, seed 155, paramètres du doc). La garde de rétention n'a déclenché **qu'une fois** (1 `HOLD_RETENTION_REGRESSION`, 17 « pas de gain ») ; tous les ensembles proviennent du **même générateur et de la même distribution** (pas de cas nouveaux hors distribution). Portée : **synthétique**. | audit indépendant v2 § 4–5 |
+| **C9** | II.5, II.6 | « modèle pour la conservation inter-sessions », « mémoire scellée rechargée après redémarrage » | **P156** : rétention cumulative **partielle** ; la version gouvernée est **moins bonne que la règle figée sur 6 tâches sur 24** ; la tolérance d'oubli est relative à l'état courant (dérive cumulative possible) ; aucune garantie d'absence d'oubli. **G1** : scellé = **sha256 du JSON canonique, sans clé ni signature** ; une mémoire falsifiée avec empreinte recalculée a été **acceptée** (démontré) ; redémarrage testé **dans le même processus** ; le verdict et le drapeau `separate_process_restart_supported` sont des **constantes**. Pas de continuité multi-session ni d'authenticité. | audit indépendant v2 § 4–6 |
+
+## III.2 Tableau des sources (v3)
+
+| Source | Identifiant / emplacement | Nature | Ce qu'elle établit | Ce qu'elle n'établit pas |
+|---|---|---|---|---|
+| 01 FSO | Drive `14yk4MP…` ; pack | dialogue fondateur / ChatGPT | vision éducative du fondateur (L1, L178, L1274, L1950) ; formalisation FSO de ChatGPT | un contrat accepté, un runtime |
+| 02 Architecture Cognitive Multiverselle | Drive `1lsxNC3K…` | prompt du fondateur + réponses d'assistant (dont réponse collée dans le préambule) | demande de cartographie ; formulations d'assistant « 81 versions théoriques » (L253), « 81+ entités singulières » (L274), « Enfance → Maîtrise → Sagesse » (L1590) | une décision du fondateur sur l'identité des versions |
+| 03 Monde, mémoire, apprentissage | Drive `1gLu3ssn…` | audit d'assistant, oct. 2026 | distinctions apprendre / mémoriser / acquérir ; références d'apprentissage continu ; renvois sources 47 / 48 / 91 | une parole du fondateur |
+| 04 Atlas 81 pépites | Drive `1vKDoa35…` | audit rétrospectif d'assistant | doctrine Oxygen du 5 août 2026 (§ 238–239), chaîne pédagogique (§ 240), distribution progressive des connaissances (§ 24) | le texte d'origine de ces doctrines |
+| 05 Cartographie Master | Drive `14WUSNQP…` | dialogue fondateur / ChatGPT | progression anti-dérive (L330), enseignement adaptatif (L1228), compte rendu humain (L1320), échec et relève (L1423), versions 9×9 entraînées séparément (L1919–L1922, L2475, L2678) | des stades de l'IA ; une identité Oxygen (occurrences ambiguës, C3) |
+| 06 Shazam 34 arbres | Drive `1KshgP97…` | texte d'assistant | pseudo-code de hachage spectral | une implémentation |
+| `docs/EDUCATION.md` | `obsidia-x108-proofs@main` `48f0c2fb` | synthèse d'assistant (2026-09-15) | doctrine « une seule naissance », entraînement ≠ éducation | une preuve de runtime éducatif |
+| Branche `exp/p2-multirepresentation-ablation-20261009` | `brody-world-physique` `966df622` | code + docs expérimentaux | P155 reproduit ; P156 contrôles reproduits ; G1 tests 3/3 | apprentissage persistant, transfert, authenticité, multi-session |
+
+## III.3 Versions 9×9 — distinctions (C5)
+
+| Notion | Ce que disent les sources | Attribution |
+|---|---|---|
+| **Paradigmes d'entraînement** (couche 1) et **modes de traitement / « cerveaux »** (couche 2 : token, diffusif, quantique, symbolique…) | « la couche 1 et 2, c'est toutes les manières que je vais entraîner » | fondateur, 05 L2475 |
+| **Versions expérimentales entraînées** (couche 3) | « 9x9 … 90 versions d'Obsidio » ; « ils vont apprendre de tout et de chaque mode … plus de 90 versions » | fondateur, 05 L2475, L2678 |
+| **Non-coopération entre versions** | « Tous les cerveaux dans le cerveau peuvent coopérer mais pas les versions d'Obsidia entre elles » ; « j'entraîne les différentes versions … avec des versions de cerveau différent » | fondateur, 05 L1919, L1922 (correction explicite à l'assistant) |
+| Vocabulaire d'identité | « une entité ces token cerveau » (une occurrence) | fondateur, 05 L1795 — ambigu |
+| « Entité Obsidienne distincte », « plusieurs Obsidia séparées », « version consciente spécialisée », « 81+ entités singulières » | — | **ChatGPT**, 05 L2022, L2059, L2147 ; 02 L274 |
+| **Continuité identitaire** (une seule naissance) | « Une seule naissance. Une seule continuité éducative. Une multiplicité d'organes entraînés » | audit d'assistant rapportant une doctrine du 5 août 2026 (04 L4071) ; `EDUCATION.md` |
+
+**Lecture v3 :** chez le fondateur, les versions sont des configurations entraînées séparément, sans coopération ; il ne dit ni qu'elles sont des identités, ni qu'elles sont de simples configurations d'une identité unique. **Ambiguïté historique**, à trancher par le fondateur. La seule opposition nette est entre le vocabulaire de ChatGPT (« entités », « consciente ») et la doctrine ultérieure « une seule naissance ».
+
+## III.4 Constatations vérifiées
+
+- Intégrité du pack : zip et 17 empreintes conformes (vérifié deux fois, dont par l'auditeur).
+- Vision éducative du fondateur : école, évaluation, progression anti-dérive, apprentissage par l'échec, enseignement adaptatif, auto-analyse et compte rendu humain, fidélité à la source, garde-fous symboliques contre la dérive.
+- Stades enfant / adolescent / adulte : **`NOT_DEFINED`** pour l'IA ou Oxygen, chez le fondateur comme chez l'assistant ; « enfants » chez le fondateur = public d'un jeu (05 L457).
+- Parité GitHub / local : conforme au tableau II.5 (cinq artefacts identiques `main` = AGY = local ; adaptateur Pack V1 divergent ; `EDUCATION.md` seulement sur `main`).
+- Conflits de contrats Claude / AGY : 6/6 confirmés.
+
+## III.5 Limites scientifiques
+
+| Élément | Statut v3 |
+|---|---|
+| P155 | `RESULTS_REPRODUCED=YES` ; `SCOPE=SYNTHETIC` ; même distribution pour cours, retour, validation et examen ; garde de rétention active une seule fois |
+| P156 | `CUMULATIVE_RETENTION=PARTIAL` ; `FROZEN_BASELINE_WINS_ON_6_OF_24_TASKS=YES` ; `NO_FORGETTING_GUARANTEE=NO` |
+| G1 | `CONTENT_HASH=YES` ; `AUTHENTICITY_PROVEN=NO` ; `INDEPENDENT_PROCESS_RESTART_PROVEN=NO` ; `MULTI_DAY_CONTINUITY_PROVEN=NO` |
+| `KX108_ONLY` dans les artefacts | **étiquette littérale** ; ne prouve pas un passage effectif par le noyau |
+| Mémoire | candidate expérimentale (scalaires synthétiques) ≠ acquis validé ≠ capacité transférable (non prouvée) ≠ continuité éducative (non prouvée) ≠ promotion canonique (absente) ≠ autorité (KX108) |
+
+Niveaux à ne pas confondre : reconstitution historique ≠ formalisation pédagogique ≠ prototype expérimental ≠ intégration runtime ≠ apprentissage persistant démontré ≠ capacité ≠ autorité.
+
+## III.6 Questions encore ouvertes
+
+1. Les occurrences « oxygène / Oxygen » de 05 L2003 et L2673 désignent-elles Oxygen ou sont-elles une transcription d'« Obsidia » ?
+2. Les versions 9×9 sont-elles des entraînements d'une même continuité, ou des entités distinctes ?
+3. Faut-il des stades enfant / adolescent / adulte, des niveaux de compétence, ou autre chose ? (« Enfance → Maîtrise → Sagesse » n'est qu'une mention d'assistant.)
+4. Quel acte et quel critère pour la « naissance » d'Oxygen ?
+5. Quelle forme pour le compte rendu humain des « journées » (05 L1320) ?
+6. Où sont la conversation du jeu éducatif, les archives Gmail et les sources 47 / 48 / 91 ?
+
+## III.7 Statut de préconception
+
+```
+REPORT_VERSION=V3
+FORENSIC_STATUS=PARTIAL
+C1_C9_CORRECTED=YES
+FSO_ORIGIN=FOUNDER_VISION / ASSISTANT_FORMALIZATION_AND_ACRONYM
+OXYGEN_OCCURRENCES_IN_05=AMBIGUOUS
+NINE_BY_NINE=HISTORICAL_AMBIGUITY (versions entraînées séparément ; identité non tranchée)
+CHILD_TEEN_ADULT=NOT_DEFINED
+P155=REPRODUCED / SYNTHETIC
+P156=PARTIAL_RETENTION / FROZEN_WINS_6_OF_24
+G1=CONTENT_HASH_ONLY / NO_AUTHENTICITY / NO_INDEPENDENT_RESTART / NO_MULTI_DAY
+PERSISTENT_LEARNING_PROVEN=NO
+READY_FOR_CONCEPTUAL_PRECONCEPTION=NO (questions III.6 à trancher par le fondateur)
+READY_FOR_RUNTIME_INTEGRATION=NO
+```
 
 STOP BEFORE APPLY sur l'architecture éducative.
