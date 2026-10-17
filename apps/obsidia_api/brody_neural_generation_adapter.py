@@ -268,13 +268,40 @@ def reassess_cognitive_evidence_delta(
     # 1. Identify which unknowns were actually addressed in Round 1
     residual_unknowns = []
     addressed_unknowns = []
-    for u in unknowns:
-        u_str = str(u).strip()
+
+    import re
+
+    def _is_unknown_addressed(u_str: str, text: str) -> bool:
         u_key = _strip_accents(u_str.replace("_", " "))
         tokens = [t for t in u_key.split() if len(t) > 2]
-        if tokens and all(t in r1_norm for t in tokens):
-            addressed_unknowns.append(u_str)
-        elif u_key in r1_norm:
+        if not tokens:
+            return False
+        clauses = re.split(r"[.;!?\n]+", text or "")
+        for clause in clauses:
+            c_norm = _strip_accents(clause)
+            if all(t in c_norm for t in tokens) or u_key in c_norm:
+                # Found mentioning clause - check negation / unresolved markers
+                neg_markers = [
+                    "inconnu", "inconnue", "non resolu", "non resolue",
+                    "non mesurable", "ignore", "ignoree", "indetermine", "indeterminee",
+                    "pas d'information", "pas mesurable", "non disponible", "n'est pas",
+                    "pas connu", "non defini", "reste inconnu", "reste inconnue",
+                    "demeure inconnu", "demeure inconnue", "non etabli", "non etablie",
+                ]
+                if any(m in c_norm for m in neg_markers):
+                    return False
+                # Must have positive predicate or value or factual assertion
+                pos_markers = ["est de", "vaut", "=", "mesure", "fixe", "atteint", "definie", "defini", "identifie"]
+                has_pos = any(p in c_norm for p in pos_markers) or bool(re.search(r"\d+", c_norm))
+                if has_pos:
+                    return True
+                if len(c_norm.split()) >= 4:
+                    return True
+        return False
+
+    for u in unknowns:
+        u_str = str(u).strip()
+        if _is_unknown_addressed(u_str, round1_content):
             addressed_unknowns.append(u_str)
         else:
             residual_unknowns.append(u_str)

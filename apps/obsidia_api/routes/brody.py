@@ -265,9 +265,18 @@ def evaluate_memory_sufficiency(
         if not content_tokens:
             question_sufficiently_answerable = True
         else:
-            question_sufficiently_answerable = len(matched_all) > 0 and any(
-                len(str(it.get("excerpt") or it.get("content") or "")) >= 20 for it in relevant_items
-            )
+            target_markers = {"limite", "valeur", "seuil", "cible", "statut", "etat", "etat_actuel", "max", "min", "taux", "temperature", "pression", "debit"}
+            is_targeted_inquiry = bool(re.search(r"\b(quelle?s?|combien|pourquoi|comment|qu'|quoi|\?)\b", (user_message or "").lower()))
+            has_target_token_unmatched = any(t in content_tokens and t not in matched_all for t in target_markers)
+
+            if is_targeted_inquiry and has_target_token_unmatched:
+                question_sufficiently_answerable = False
+            elif is_targeted_inquiry and len(content_tokens) >= 2 and len(matched_all) < len(content_tokens):
+                question_sufficiently_answerable = False
+            else:
+                question_sufficiently_answerable = len(matched_all) > 0 and any(
+                    len(str(it.get("excerpt") or it.get("content") or "")) >= 20 for it in relevant_items
+                )
 
     if question_sufficiently_answerable:
         state = "QUESTION_SUFFICIENTLY_ANSWERABLE"

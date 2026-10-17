@@ -35,8 +35,14 @@ FORBIDDEN_KEYS = [
 
 
 @pytest.mark.parametrize("flow_module", FLOW_NAMES)
-def test_flow_no_real_act(flow_module):
+def test_flow_no_real_act(flow_module, tmp_path, monkeypatch):
     """No flow result should contain any key indicating a forbidden action."""
+    test_bus_file = str(tmp_path / "isolated_world_action_bus.jsonl")
+    try:
+        import periphery.world_calls.world_action_bus as wab
+        monkeypatch.setattr(wab, "_DEFAULT_BUS_PATH", test_bus_file)
+    except Exception:
+        pass
     mod = importlib.import_module(flow_module)
     result = mod.run()
 

@@ -25,6 +25,8 @@ Rules:
 """
 from __future__ import annotations
 
+import hashlib
+import re
 from datetime import datetime, timezone
 from typing import Any
 
@@ -112,8 +114,10 @@ def extract_candidate_claims(
         elif any(f in s_lower for f in ("mesuré", "enregistré", "constaté", "pression limite", "est de", "définit", "bars", "relais")):
             modality = "FACTUAL"
 
+        import hashlib
+        stmt_hash = hashlib.sha256(stmt.encode("utf-8")).hexdigest()[:8]
         claims.append({
-            "claim_id": f"claim_{idx}_{abs(hash(stmt)) % 1000000}",
+            "claim_id": f"claim_{idx}_{stmt_hash}",
             "statement": stmt,
             "modality": modality,
             "provenance": {"source": provider, "role": "AUXILIARY_EVIDENCE"},
@@ -121,6 +125,59 @@ def extract_candidate_claims(
             "contradiction_status": "NONE",
         })
     return claims
+
+
+def _extract_claim_property_value(stmt: str) -> dict[str, str] | None:
+    m = re.search(
+        r"(?:la\s+|le\s+|l')?(?P<property>pression(?:\s+limite)?|temp[ée]rature(?:\s+cible)?|d[ée]bit(?:\s+fluide)?|seuil(?:\s+d'alerte)?|gradient(?:\s+thermique)?)\s+(?:de\s+(?P<subject>[A-Za-z0-9_\-]+)\s+)?(?:est\s+de|vaut|=|mesure)\s+(?P<value>[0-9]+(?:[\.,][0-9]+)?)\s*(?P<unit>[a-zA-Z%°]+)?",
+        stmt,
+        re.I,
+    )
+    if m:
+        prop = m.group("property").lower()
+        subj = (m.group("subject") or "").lower()
+        val = m.group("value")
+        unit = (m.group("unit") or "").lower()
+        val_str = f"{val} {unit}".strip()
+        return {
+            "property": prop,
+            "subject": subj,
+            "value": val_str,
+        }
+    return None
+
+
+def _reconstruct_native_statement(stmt: str, fr: bool = True) -> str:
+    s = stmt.strip()
+    if not s:
+        return ""
+    # Strip any external model conversational preambles
+    s = re.sub(r"^(voici\s+(l'analyse|les\s+donn[ée]es|les\s+informations|la\s+r[ée]ponse)?\s*(demand[ée]e|suivante)?\s*:\s*)", "", s, flags=re.I).strip()
+    
+    replacements = [
+        (r"\bmanifeste\s+une\b", "présente une" if fr else "exhibits a"),
+        (r"\binduit(e)?\s+par\b", "liée à" if fr else "associated with"),
+        (r"\bactive\s+les\b", "opère l'activation des" if fr else "operates the activation of"),
+        (r"\best\s+de\s+([0-9\.]+)\s*(bars?|K|°C|m/s|ms)?\b", r"ressort à \1 \2" if fr else r"measures at \1 \2"),
+        (r"\bmesur[ée]e?\s+est\s+de\b", "mesurée ressort à" if fr else "measured comes to"),
+        (r"\bconstate\s+que\b", "relève que" if fr else "notes that"),
+        (r"\bindique\s+que\b", "note que" if fr else "identifies that"),
+        (r"\bmontre\s+que\b", "fait ressortir que" if fr else "shows that"),
+    ]
+    reconstructed = s
+    for pat, rep in replacements:
+        reconstructed = re.sub(pat, rep, reconstructed, flags=re.I)
+
+    if reconstructed == s:
+        if fr:
+            if s.startswith("Le ") or s.startswith("La ") or s.startswith("Les "):
+                first_word, rest = s.split(" ", 1)
+                reconstructed = f"{first_word.lower()} {rest}"
+        else:
+            if s.startswith("The "):
+                reconstructed = "the " + s[4:]
+
+    return reconstructed.rstrip(". ")
 
 
 def synthesize_brody_native_claims(
@@ -150,6 +207,7 @@ def synthesize_brody_native_claims(
     ]
     contradiction_patterns.extend(axiom_contradictions)
 
+    potential_admitted: list[dict[str, Any]] = []
     for c in claims:
         stmt = str(c.get("statement") or "").strip()
         stmt_lower = stmt.lower()
@@ -158,6 +216,35 @@ def synthesize_brody_native_claims(
             c["contradiction_status"] = "CONTRADICTS_LOCAL_AXIOM"
             contradictions.append(c)
         else:
+            potential_admitted.append(c)
+
+    # Inter-claim contradiction check (incompatible values for same subject/property)
+    prop_val_map: dict[tuple[str, str], list[tuple[dict[str, Any], str]]] = {}
+    conflicting_claims = set()
+    conflicts_found: list[tuple[str, str, str, str]] = []
+
+    for c in potential_admitted:
+        stmt = str(c.get("statement") or "").strip()
+        pv = _extract_claim_property_value(stmt)
+        if pv:
+            key = (pv["subject"], pv["property"])
+            val = pv["value"]
+            if key in prop_val_map:
+                for prev_c, prev_val in prop_val_map[key]:
+                    if prev_val != val:
+                        conflicting_claims.add(id(c))
+                        conflicting_claims.add(id(prev_c))
+                        c["contradiction_status"] = "VALUE_CONFLICT"
+                        prev_c["contradiction_status"] = "VALUE_CONFLICT"
+                        if c not in contradictions:
+                            contradictions.append(c)
+                        if prev_c not in contradictions:
+                            contradictions.append(prev_c)
+                        conflicts_found.append((pv["subject"], pv["property"], prev_val, val))
+            prop_val_map.setdefault(key, []).append((c, val))
+
+    for c in potential_admitted:
+        if id(c) not in conflicting_claims:
             admitted.append(c)
 
     if allow_direct_quote and claims:
@@ -171,28 +258,46 @@ def synthesize_brody_native_claims(
             "text": quote_text,
             "internalized_claims": claims,
             "admitted_claims": admitted,
-            "has_contradictions": bool(contradictions),
+            "has_contradictions": bool(contradictions or conflicts_found),
             "established_facts": [],
             "decision_authority": "KX108_ONLY",
             "native_synthesis_applied": True,
+            "native_linguistic_level": "DIRECT_QUOTATION",
         }
 
     parts: list[str] = []
+    if conflicts_found:
+        for subj, prop, val1, val2 in conflicts_found:
+            subj_str = f" de {subj.upper()}" if subj else ""
+            if fr:
+                parts.append(
+                    f"Éléments contradictoires relevés : pour la {prop}{subj_str}, deux valeurs incompatibles sont mentionnées ({val1} vs {val2}). "
+                    "Brody ne tranche pas unilatéralement cette contradiction et préserve l'incertitude locale."
+                )
+            else:
+                parts.append(
+                    f"Contradictory elements detected: for {prop}{subj_str}, diverging values are indicated ({val1} vs {val2}). "
+                    "Brody does not unilaterally resolve this conflict and preserves local uncertainty."
+                )
+
     if admitted:
-        statements_text = " ".join(c["statement"] for c in admitted)
+        reconstructed_statements = [_reconstruct_native_statement(c["statement"], fr=fr) for c in admitted]
+        statements_text = ". ".join(s for s in reconstructed_statements if s)
         if fr:
             parts.append(
-                f"Analyse consultative Brody : selon les éléments auxiliaires recueillis, {statements_text} "
+                f"Analyse consultative Brody : selon les éléments auxiliaires recueillis, {statements_text}. "
                 "Cette indication demeure consultative et soumise à vérification locale."
             )
         else:
             parts.append(
-                f"Brody advisory analysis: according to retrieved auxiliary elements, {statements_text} "
+                f"Brody advisory analysis: according to retrieved auxiliary elements, {statements_text}. "
                 "This indication remains consultative and subject to local verification."
             )
 
     if contradictions:
         for c in contradictions:
+            if c.get("contradiction_status") == "VALUE_CONFLICT":
+                continue
             contra_stmt = c["statement"]
             stmt_lower = contra_stmt.lower()
             if any(p in stmt_lower for p in ("intelligence souveraine", "je suis brody", "certitude absolue", "autorite", "autorité")):
@@ -226,10 +331,11 @@ def synthesize_brody_native_claims(
         "text": "\n\n".join(parts),
         "internalized_claims": claims,
         "admitted_claims": admitted,
-        "has_contradictions": bool(contradictions),
+        "has_contradictions": bool(contradictions or conflicts_found),
         "established_facts": [],
         "decision_authority": "KX108_ONLY",
         "native_synthesis_applied": True,
+        "native_linguistic_level": "REAL_SEMANTIC_RECONSTRUCTION",
     }
 
 
@@ -291,6 +397,7 @@ def build_true_brody_answer(
     answer_parts: list[str] = []
     _internalized_claims: list[dict[str, Any]] = []
     _native_synthesis_applied = False
+    _native_linguistic_level = "NOT_APPLIED"
     voice_source = ""
     action_boundary_already = request_type in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST)
 
@@ -406,6 +513,7 @@ def build_true_brody_answer(
             _internalized_claims = extract_candidate_claims(gen_snap["validated_content"], provider=gen_snap.get("provider", "QWEN_LOCAL"))
             _synth = synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en")
             _native_synthesis_applied = _synth.get("native_synthesis_applied", False)
+            _native_linguistic_level = _synth.get("native_linguistic_level", "REAL_SEMANTIC_RECONSTRUCTION")
             answer_parts.append(f"\n\n{_synth['text']}")
         voice_source = "B6_ADVISORY_CONTEXT"
     elif not action_boundary_already:
@@ -719,6 +827,7 @@ def build_true_brody_answer(
                         _internalized_claims = extract_candidate_claims(gen_snap["validated_content"], provider=gen_snap.get("provider", "QWEN_LOCAL"))
                         _synth = synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en")
                         _native_synthesis_applied = _synth.get("native_synthesis_applied", False)
+                        _native_linguistic_level = _synth.get("native_linguistic_level", "REAL_SEMANTIC_RECONSTRUCTION")
                         answer_parts.append(f"\n\n{_synth['text']}")
                         voice_source = "BRODY_ADVISORY_WITH_AUXILIARY_EVIDENCE"
                     elif fr:
@@ -799,6 +908,7 @@ def build_true_brody_answer(
         _internalized_claims = extract_candidate_claims(gen_snap["validated_content"], provider=gen_snap.get("provider", "QWEN_LOCAL"))
         _synth = synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en")
         _native_synthesis_applied = _synth.get("native_synthesis_applied", False)
+        _native_linguistic_level = _synth.get("native_linguistic_level", "REAL_SEMANTIC_RECONSTRUCTION")
         sp_prefix = "\n\n" if answer_parts else ""
         answer_parts.insert(0 if not answer_parts else len(answer_parts), f"{sp_prefix}{_synth['text']}")
         voice_source = voice_source or "BRODY_ADVISORY_WITH_AUXILIARY_EVIDENCE"
@@ -949,6 +1059,7 @@ def build_true_brody_answer(
         "decision_authority": "KX108_ONLY",
         "internalized_claims": _internalized_claims,
         "native_synthesis_applied": _native_synthesis_applied,
+        "native_linguistic_level": _native_linguistic_level,
     }
 
 
