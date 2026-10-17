@@ -32,7 +32,7 @@ def _r(subject, verb, obj="", **kw):
     ("Le capteur et la sonde", "mesurer", "la pression", {"lang": "fr"}, "Le capteur et la sonde mesurent la pression."),
     ("They", "be", "ready", {"lang": "en", "polarity": "negative"}, "They are not ready."),
     ("I", "be", "ready", {"lang": "en"}, "I am ready."),
-    ("The operators", "check", "the valve", {"lang": "en"}, "The operators check the valve."),
+    ("The pumps", "need", "maintenance", {"lang": "en"}, "The pumps need maintenance."),
     ("The operator", "check", "the valve", {"lang": "en"}, "The operator checks the valve."),
     ("The pumps", "be", "offline", {"lang": "en", "tense": "past"}, "The pumps were offline."),
 ])
@@ -40,6 +40,13 @@ def test_min_a_agreement_from_subject(subject, verb, obj, kw, expected):
     res = _r(subject, verb, obj, **kw)
     assert res["text"] == expected
     assert res["has_linguistic_limitations"] is False
+
+
+def test_min_a_unattested_subject_head_is_limited_not_guessed():
+    # "operators" is not attested in the corpus: number cannot be established.
+    res = _r("The operators", "check", "the valve", lang="en")
+    assert res["has_linguistic_limitations"] is True
+    assert "AGREEMENT" in (res["limitation_reason"] or "")
 
 
 def test_min_a_explicit_person_number_still_override():
@@ -116,3 +123,15 @@ def test_min_d_no_lexical_entry_is_a_verified_fact():
             d = s.to_dict()
             assert d["verified_fact"] is False
             assert d["kind"] in ("definition", "synonym_group", "translation_gloss")
+
+
+# E. Questions keep a lowercase function-word subject and French elision --------
+
+@pytest.mark.parametrize("subject,verb,obj,kw,expected", [
+    ("Tu", "avoir", "raison", {"lang": "fr", "mood": "interrogative"}, "Est-ce que tu as raison ?"),
+    ("Il", "venir", "", {"lang": "fr", "mood": "interrogative"}, "Est-ce qu'il vient ?"),
+    ("Brody", "analyser", "le signal", {"lang": "fr", "mood": "interrogative"}, "Est-ce que Brody analyse le signal ?"),
+    ("The child", "go", "to school", {"lang": "en", "mood": "interrogative"}, "Does the child go to school?"),
+])
+def test_min_e_questions(subject, verb, obj, kw, expected):
+    assert _r(subject, verb, obj, **kw)["text"] == expected

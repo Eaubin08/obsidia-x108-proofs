@@ -84,6 +84,11 @@ class SenseDefinition:
     synonyms: list[str] = field(default_factory=list)
     antonyms: list[str] = field(default_factory=list)
     source_id: str = ""
+    # "definition" (Littré, OEWN), "synonym_group" (thesaurus) or "translation_gloss" (bilingual).
+    kind: str = "definition"
+    gloss: str = ""
+    # External lexical resources are reference material, never verified world knowledge.
+    verified_fact: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -95,7 +100,15 @@ class SenseDefinition:
             "synonyms": list(self.synonyms),
             "antonyms": list(self.antonyms),
             "source_id": self.source_id,
+            "kind": self.kind,
+            "gloss": self.gloss,
+            "verified_fact": self.verified_fact,
         }
+
+
+_SYNONYM_GROUP_SOURCES = frozenset({"thes_fr"})
+_TRANSLATION_GLOSS_SOURCES = frozenset({"freedict_fra_eng"})
+_GLOSS_PREFIX = "Anglais: "
 
 
 @lru_cache(maxsize=16384)
@@ -307,15 +320,27 @@ def get_senses_and_synonyms(lemma: str, lang: str = "fr") -> tuple[SenseDefiniti
     for r in rows:
         syns = json.loads(r["synonyms"]) if r["synonyms"] else []
         ants = json.loads(r["antonyms"]) if r["antonyms"] else []
+        source_id = r["source_id"] or ""
+        text = r["definition"] or ""
+        kind, gloss = "definition", ""
+        if source_id in _SYNONYM_GROUP_SOURCES:
+            # The stored text is a placeholder label ("Synonymes français (nom)"), not a definition.
+            kind, text = "synonym_group", ""
+        elif source_id in _TRANSLATION_GLOSS_SOURCES:
+            kind = "translation_gloss"
+            gloss = text[len(_GLOSS_PREFIX):] if text.startswith(_GLOSS_PREFIX) else text
+            text = ""
         defs.append(SenseDefinition(
             lemma=r["lemma"],
             lang=r["lang"],
             pos=r["pos"],
             sense_id=r["sense_id"] or "",
-            definition=r["definition"] or "",
+            definition=text,
             synonyms=syns,
             antonyms=ants,
-            source_id=r["source_id"] or "",
+            source_id=source_id,
+            kind=kind,
+            gloss=gloss,
         ))
     return tuple(defs)
 

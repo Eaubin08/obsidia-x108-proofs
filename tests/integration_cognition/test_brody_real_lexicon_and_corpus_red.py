@@ -345,7 +345,8 @@ def test_corpus_11_genuine_definitions_vs_synonyms():
     # Bilingual gloss from FreeDict
     freedict_senses = [s for s in pression_senses if s.source_id == "freedict_fra_eng"]
     assert len(freedict_senses) >= 1
-    assert "pressure" in freedict_senses[0].definition.lower()
+    assert freedict_senses[0].kind == "translation_gloss" and freedict_senses[0].definition == ""
+    assert "pressure" in freedict_senses[0].gloss.lower()
 
     # English genuine definition from Open English WordNet
     move_senses = get_senses_and_synonyms("move", lang="en")
