@@ -13,27 +13,27 @@ Invariants transversaux (non négociables dans tout ce document) : **KX108_ONLY*
 
 ## A. Carte de l'organisme éducatif
 
-Statuts : **BRANCHÉ** = importé par le chemin public `apps/obsidia_api/routes/brody.py` ; **ISOLÉ** = code et tests présents, aucun import runtime ; **PROTOTYPE** = laboratoire hors dépôt principal ; **DOC** = concept documentaire seulement.
+Statuts : **BRANCHÉ** = importé par le chemin public `apps/obsidia_api/routes/brody.py` (y compris import paresseux) ; **HORS CHEMIN BRODY** = importé par une autre route API seulement ; **ISOLÉ** = code et tests présents, aucun import runtime ; **PROTOTYPE** = laboratoire hors dépôt principal ; **DOC** = concept documentaire seulement.
 
-| Composant | Emplacement (worktree `b859d5bf` sauf mention) | Statut | Rôle éducatif possible | Étiquette |
+| Composant | Emplacement (code identique à `b859d5bf` et `48b650f8`, sauf mention) | Statut | Rôle éducatif possible | Étiquette |
 |---|---|---|---|---|
 | SENS / treillis sémantique | `app/semantic/lattice/` (scellé) via `app/harness/state_explicit/sens_adapter` | BRANCHÉ | représentation du sens d'un énoncé ; ~55 verbes, français seul | [EC] |
 | Corpus lexical FR/EN | `periphery/language/lexical_corpus.py`, `native_realization.py` | BRANCHÉ (provenance publique fermée à `4016db99`) | vocabulaire, définitions, synonymes, gloses, polysémie | [EC][TE] |
-| OS Trad | `periphery/language/language_router.py` | ISOLÉ du chemin Brody (non importé par `routes/brody.py`) | traduction / normalisation | [EC] |
+| OS Trad | `periphery/language/language_router.py` | HORS CHEMIN BRODY (`os_trad_ir_reverse.py`, `periphery_ops.py`) | traduction / normalisation | [EC] |
 | Brody (organe d'intégration) | `apps/obsidia_api/brody_*` (≈ 50 adaptateurs importés) | BRANCHÉ | contexte, réponse, enseignant/élève textuel | [EC] |
 | B7 cognition (détection d'inconnues) | `app/cognition/b7/` | BRANCHÉ (findings sentinel historiques) | marquer ce qui n'est pas résolu → HOLD | [EC][TE] |
 | B9 chemin cognitif | `app/cognition/b9/contracts.py` | ISOLÉ | tracer le chemin d'un raisonnement | [EC] |
 | B8 promotion de connaissance | `app/knowledge/b8/` (affirmation, preuve, vérification, attestation humaine, états, porte T1–T12) | ISOLÉ, sans persistance | **acquis validé** : passer de candidat à connaissance par une porte typée | [EC][TE] |
 | B10 mémoire durable | `app/knowledge/b10/persistence.py` (SQLite, historique de révisions par slot, `recover_after_restart`, chaîne d'autorisation d'écriture, empreinte sha256 sans signature) | ISOLÉ | **conservation** et **reprise après interruption** des acquis | [EC][TE] |
-| M41 modèle du monde | `app/world_model/` | ISOLÉ, transitoire | hypothèses sur le monde, non souveraines | [EC] |
+| M41 modèle du monde | `app/world_model/` | BRANCHÉ (import paresseux conditionnel, `routes/brody.py` L966, ombre B7/M41), transitoire, non souverain | hypothèses sur le monde, non souveraines | [EC] |
 | Native Memory | `apps/obsidia_api/brody_obsidia_native_memory.py`, index V1 | BRANCHÉ, lecture seule, statique | contexte de projet ; **pas** d'écriture d'expérience | [EC] |
 | Mémoire de session | `brody_session_memory_adapter.py` + ledger `_local_audits/brody_sessions` | BRANCHÉ | continuité de conversation (pas d'acquis) | [EC] |
-| Ledger de candidats | `periphery/memory/memory_candidate_ledger.py` | BRANCHÉ (route x108) | mémoire candidate append-only | [EC][TE] |
+| Ledger de candidats | `periphery/memory/memory_candidate_ledger.py` | HORS CHEMIN BRODY (route `apps/obsidia_api/routes/x108.py`) | mémoire candidate append-only | [EC][TE] |
 | Leçons candidates | `brody_memory_education_packet.py` | BRANCHÉ (lecture) | candidat → leçon typée (8 types) | [EC][TE] |
 | Garde de promotion mémoire | `brody_memory_promotion_guard.py` | BRANCHÉ | interdit la promotion implicite | [EC] |
 | Pack éducatif V1 | `brody_education_pack_v1_readonly_adapter.py` | BRANCHÉ mais `PACK_MISSING` localement | contexte éducatif figé | [EC] |
-| Score éducatif | `periphery/education/education_score.py` | ISOLÉ du chemin Brody (route périphérique) | indicateur, **pas** une preuve | [EC] |
-| AVDR | `periphery/avdr.py` | ISOLÉ du chemin Brody (route périphérique) | boucle Analyse → Validation → Diffusion → Réciprocité | [EC][AF] |
+| Score éducatif | `periphery/education/education_score.py` | HORS CHEMIN BRODY (`routes/periphery_ops.py`) | indicateur, **pas** une preuve | [EC] |
+| AVDR | `periphery/avdr.py` | HORS CHEMIN BRODY (`routes/periphery_ops.py`) | boucle Analyse → Validation → Diffusion → Réciprocité | [EC][AF] |
 | ARM (M33) | `docs/architecture/M33_ARM_*` | DOC | reconstruction | [AF] |
 | FSO | Drive (doc 01) | DOC | cadre scolaire (cours, exercices, évaluation) | [FV] vision / [AF] formalisation |
 | Agents spécialisés / versions 9×9 | Drive (docs 02, 05) | DOC | exploration de compétences ; **pas** d'identités | [FV][AF] |
@@ -41,7 +41,7 @@ Statuts : **BRANCHÉ** = importé par le chemin public `apps/obsidia_api/routes/
 | Brody World Physique | `brody-world-physique` `exp/p2…` `966df622` | PROTOTYPE | porte de rétention P155, rejeu P156, mémoire scellée G1 | [ER] |
 | GuardX108 / KX108 | `scripts/kernel/kx108_*`, preuves Lean | autorité (hors éducation) | frontière : aucune action issue de l'éducation | [EC] |
 
-**Constat :** les briques d'un apprentissage gouverné existent (candidat → B8 → B10), mais elles ne sont **pas raccordées** entre elles ni au chemin public. Aucun nouveau composant n'est nécessaire pour un premier cycle ; il manque des **raccords** et un **protocole**.
+**Constat :** le noyau d'un apprentissage gouverné existe (candidat → B8 → B10), mais il n'est **pas raccordé** entre ses parties ni au chemin public. Un premier cycle exige des **raccords**, un **protocole**, et quelques **composants nouveaux limités** (section G : générateur d'items et d'examens disjoints, exécution en processus séparés, signature si l'authenticité est exigée).
 
 ---
 

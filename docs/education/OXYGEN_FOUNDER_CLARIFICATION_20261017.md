@@ -29,7 +29,7 @@
 
 - Les versions 9×9, « 81+ » et autres configurations **ne sont pas 81 identités Oxygen**.
 - La règle historique de **non-coopération directe entre versions expérimentales** (fondateur, doc 05 L1919–L1922) est préservée là où elle s'applique.
-- Elle ne s'applique **pas** à la coopération autorisée entre **organes** d'un même organisme (fondateur, doc 05 : « Tous les cerveaux dans le cerveau peuvent coopérer »).
+- Elle ne s'applique **pas** à la coopération autorisée entre **organes** d'un même organisme (fondateur, doc 05 L1922, verbatim : « Tous les cerveau dans le cerveau peuvent coopérer mais pas les version d'obsodia entre elle »).
 - [UNRESOLVED_DECISION] Le mécanisme qui sélectionne, valide, conserve et intègre les acquis des versions dans la continuité commune reste à concevoir.
 
 ## 4. Maturation
