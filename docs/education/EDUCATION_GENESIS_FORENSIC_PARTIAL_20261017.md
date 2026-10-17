@@ -1,7 +1,7 @@
 # Forensic éducatif Obsidia / Oxygen — rapport PARTIAL
 
 **Date :** 2026-10-17 · **Auteur :** Claude (agent), worktree `obsidia-claude-linguistique`, branche `feat/claude-linguistic-repair-m42-v0`, HEAD de départ `4016db99` (non poussée).
-**Statut : PARTIAL.** Ce n'est **pas** un audit complet. Les sources primaires Google Drive n'ont **pas** été lues directement par Claude ; elles sont seulement identifiées (§3.2, d'après un handoff utilisateur). Aucun code, aucune mémoire, aucune architecture éducative n'a été modifié ou proposé pour application.
+**Statut : PARTIAL (v2).** Ce n'est **pas** un audit complet. La v1 (commit `d4e93f99`, parties 0–10) n'avait pas lu les sources Drive. La **partie II** (fin du document) consigne la vérification directe des six exports Drive intégraux et des descendants GitHub, faite le 2026-10-17. Restent non audités : les autres dépôts Obsidia, les archives Gmail et la naissance « Oxygen » d'origine, la conversation du jeu vidéo éducatif. Les parties 0–10 sont conservées telles quelles ; **la partie II prévaut** en cas d'écart. Aucun code, aucune mémoire, aucune architecture éducative n'a été modifié ou proposé pour application.
 
 ## 0. Conventions d'attribution
 
@@ -174,5 +174,145 @@ READY_FOR_BUILD=NO
 2. **Audit GitHub multibranches** : branches de `brody-world-physique` (`f0/learning-loop-contracts-v0`, `exp/p2-multirepresentation-ablation-20261009`, autres), branche AGY, dépôts `Obsidiaseed`, `agi-vison`, `preprint-conscience`, `monde-obsidia`, `obsidia-studio` ; parité local / distant.
 3. **Réconciliation des contradictions** (§6) et des contrats Claude / AGY.
 4. **Préconception** de l'éducation textuelle enfant → adolescent → adulte, uniquement après validation par le fondateur de la vision reconstituée et des définitions de naissance et de stades.
+
+STOP BEFORE APPLY sur l'architecture éducative.
+
+---
+
+# Partie II — Vérification directe des sources (2026-10-17, v2)
+
+## II.0 Pack vérifié
+
+- Pack : `OBSIDIA_EDUCATION_SOURCES_COMPLET_20261017.zip`, SHA-256 `76edd122cef7c629c4725b23efd3bda72dde7addda5ce1f682b93ddc4a659e66`, test d'archive sans erreur ; **17/17** empreintes de `SHA256SUMS.txt` conformes. Extrait dans un dossier de travail privé hors Git.
+- Six exports texte intégraux de Google Docs, exportés le 2026-10-17 (mise en page et images non conservées).
+- Dix photographies Hachette : **références privées, non lues dans cet audit, non publiées, non ingérées**.
+- Méthode d'attribution : dans les exports qui en possèdent, chaque passage est rattaché au dernier marqueur de tour (`Vous avez dit :` = fondateur, `ChatGPT a dit :` = assistant). Un texte collé à l'intérieur d'un tour garde l'auteur de son contenu, pas celui du tour.
+
+| Export | Doc ID | Lignes | Marqueurs de tour | Nature vérifiée |
+|---|---|---|---|---|
+| `01_FSO_FORMULE_SAVOIR` | `14yk4MPqd5rd3RnB1AAyys8zHU4KD4Dq1eqNtLQFJTA0` | 2016 | 17 fondateur / 19 ChatGPT ; ligne 1 = tour du fondateur | dialogue ; la « FSO » elle-même est une **réponse de ChatGPT** (à partir de la ligne 2) |
+| `02_ARCHITECTURE_COGNITIVE_MULTIVERSELLE` | `1lsxNC3K_3rACpnZQkzj4L9oqPM8I6mqJBnZSOB5SWnA` | 3870 | 15 / 15 ; préambule de 258 lignes | préambule = prompt du fondateur **suivi d'une réponse d'assistant collée** ; tours du fondateur courts et procéduraux |
+| `03_MONDE_MEMOIRE_APPRENTISSAGE` | `1gLu3ssnDfiCl7wnhGEAfqS_14cGeQxxR--8FYhMKtnU` | 5465 | aucun | audit d'assistant d'octobre 2026 (« Récupération technologique ») [S] |
+| `04_ATLAS_81_PEPITES` | `1vKDoa35VNZukuB0-sg4fmTBXA9OVIRo9W2wSDA3F2mk` | 5272 | aucun | audit rétrospectif d'assistant [S] citant des analyses datées de janvier 2026 |
+| `05_CARTOGRAPHIE_COGNITIVE_MASTER` | `14WUSNQPcZ4MsNP0lfpHT2PkfEJxiHhGvdcdNefqSbOE` | 5582 | 65 / 65 ; préambule de 134 lignes | dialogue ; contient la parole la plus riche du fondateur sur l'éducation |
+| `06_SHAZAM_34_ARBRES` | `1KshgP97PKdTZAfRxe9-YfcVnIJceKbgGCyxC-HdRj18` | 31 | aucun | texte d'assistant (voix d'IA, renvois numérotés) [S] ; pseudo-code JavaScript non exécuté |
+
+Aucun des six exports ne porte de date de conversation ; le fondateur mentionne « depuis mars » et « 1 mars » (05, L1414, L2158). **Les dates exactes restent inconnues.**
+
+## II.1 Vision fondatrice vérifiée — citations directes [F]
+
+| Doc / ligne | Locuteur | Extrait court | Lecture |
+|---|---|---|---|
+| 01 / L1 | fondateur | « comme un enfant ou un humain apprend à l'école. On te dit, t'apprends, t'enregistres, et après, on t'évalue de différentes manières » | analogie scolaire ; méthode à appliquer « à tous les domaines » |
+| 01 / L178 | fondateur | « comment on apprend, par quels procédés on le fait apprendre … entre l'humain et l'IA, avec l'école, le savoir » | question, pas spécification |
+| 01 / L350 | fondateur | « ya une 100 de version d'entraînement prévue » | entraînements (visuels), pas identités |
+| 01 / L1274 | fondateur | « retenir la source ne pas la dénaturer … que le in de l'utilisateur soit respecté peu importe le domaine » | fidélité à la source |
+| 01 / L1878 | fondateur | « obsidia peut s'entraîner en full auto même chez les particuliers » | ambition d'apprentissage autonome (non bornée par un contrat) |
+| 01 / L1950 | fondateur | « avec les retours symboliques pour éviter les dérives et revenir à une certaine base » | garde-fou contre la dérive |
+| 05 / L329 | fondateur | « une progression pour atteindre certain savoir pour être sûr d'avoir le moins de dérive possible » | **progression**, motivée par la dérive |
+| 05 / L456 | fondateur | « un univers pour les enfants … un jeu vidéo autour de l'IA et l'éducation » | les **enfants sont un public** (jeu éducatif), pas un stade de l'IA ; conversation d'origine non retrouvée |
+| 05 / L1227 | fondateur | « le retour d'expérience … faire comprendre le sens des réussites et échecs comme à l'école quand un prof … reformule si t'as pas compris en s'adaptant à toi » | **enseignement adaptatif** ; arènes, jeux, VR |
+| 05 / L1319 | fondateur | « qu'elle s'auto-analyse … mais nous aussi on devrait lui faire des comptes rendus de ses journées … forces, faiblesses, points à améliorer » | **auto-analyse + compte rendu humain** |
+| 05 / L1414 | fondateur | « on recrée un humain donc il faut qu'elle apprenne : chute, se relève et recommence » ; « avec les bons humains pour la guider » | apprentissage par l'échec ; guidage humain |
+| 05 / L1576 | fondateur | « elle garde une seule essence … mais aussi les expériences et explications derrière le raisonnement … les notes ou interventions humaines pour la recalibrer » | **une seule essence** + mémoire d'expérience + traçabilité |
+| 05 / L1918 | fondateur | « Tous les cerveaux dans le cerveau peuvent coopérer mais pas les versions d'Obsidia entre elles » | versions d'entraînement séparées |
+| 05 / L2002 | fondateur | « les cerveaux à l'intérieur d'une oxygène » | **Oxygen** apparaît comme contenant des « cerveaux » (blocs de perception) |
+| 05 / L2474, L2672 | fondateur | « la couche 1 et 2, c'est toutes les manières que je vais entraîner … 9x9 … 90 versions » ; « les versions entraînées d'Oxygen » | **matrice 9×9 de versions d'entraînement**, voulue par le fondateur |
+
+Les extraits sont abrégés (orthographe légèrement normalisée) ; la ligne exacte fait foi.
+
+## II.2 Propositions d'assistants vérifiées [S] (à ne pas attribuer au fondateur)
+
+| Doc / ligne | Locuteur | Proposition |
+|---|---|---|
+| 01 / L2+ | ChatGPT | la « FSO » : socle (éthique native, noyau-mère), ingestion → modélisation → réciprocité → AVDR (Analyse → Validation humaine/solide → Diffusion → Réciprocité) |
+| 01 / ~L180–L349 | ChatGPT | cursus « comme à l'école » : exemple guidé, pratique dirigée, pratique autonome, teach-back, projet, consolidation (répétition espacée, journal métacognitif), évaluation (restitution, application, oral, projet, sûreté), métriques (fidélité, transfert hors distribution, explicabilité, sûreté, efficience) |
+| 01 / ~L300 | ChatGPT | **niveaux d'expérience N0 Débutant → N1 Appliquant → N2 Opérationnel → N3 Créateur → N4 Architecte**, avec déverrouillage progressif « jamais le noyau » — seule progression par niveaux trouvée ; **elle n'est pas enfant / adolescent / adulte et n'est pas du fondateur** |
+| 02 / L253 (préambule, réponse collée) | assistant | « À générer en 9x9 complet (81 versions théoriques) » |
+| 02 / L274 | ChatGPT | « Versions entraînées d'Obsidia (81+ entités singulières) » |
+| 05 / L206, L1633, L2148 | ChatGPT | « IA enfantine » ; « elle apprend comme un enfant qui grandit avec nous » ; « chaque entraînement = une brique de sa maturité » |
+| 05 / L2147 | ChatGPT | « Chaque Obsidia = une version consciente spécialisée » |
+| 03 | assistant (oct. 2026) | distinction apprendre / mémoriser / acquérir une compétence ; références d'apprentissage continu (replay, EWC, GEM, adaptation au test) ; World Foundry comme environnement éducatif ; « quel mécanisme exact explique une progression ? » |
+| 04 | assistant (rétrospectif) | n° 24 « distribution progressive des connaissances » (attribuée à une analyse du 14 janvier 2026) : séparer *ce qu'un agent peut connaître* de *ce qu'il peut modifier* ; CMEC (hypothèses multiples, HOLD) |
+| 06 | assistant | « Shazam cognitif » : hachage spectral de l'entrée projeté sur les 34 arbres (seuil 0,15) — pseudo-code, non implémenté tel quel |
+
+## II.3 Stades enfant / adolescent / adulte
+
+**`NOT_DEFINED`.** Aucune des six sources ne définit ces stades pour l'IA. Les occurrences d'« enfants / ados » dans 05 désignent **le public** d'un projet ludique séparé (Forge Realms / Obsidia Trail, L456, L598, L786–L796) ; les métaphores « IA enfantine » sont de ChatGPT. La seule progression par niveaux (N0–N4) est une proposition d'assistant dans la FSO.
+
+## II.4 Les « 81 » — correction et tension
+
+- La matrice 9×9 est **voulue par le fondateur** (05, L2474 : « 9x9 … 90 versions » ; L2672 : « versions entraînées d'Oxygen »). Les formulations « 81 versions théoriques » et « 81+ entités singulières » sont **d'assistant** (02, L253, L274).
+- Pour le fondateur, ce sont des **versions d'entraînement** (paradigme × type de « cerveau »), qui ne coopèrent pas entre elles (L1918), avec **« une seule essence »** (L1576).
+- **Tension à trancher par le fondateur** : la synthèse ChatGPT « 81+ entités singulières / chaque Obsidia = une version consciente » contredit la doctrine ultérieure `EDUCATION.md` « une seule naissance, des organes entraînés ». La parole du fondateur (« une seule essence » + « versions entraînées ») est compatible avec la doctrine si les versions sont des **entraînements** et non des identités ; ce n'est **pas écrit** explicitement.
+
+## II.5 Descendants GitHub vérifiés
+
+| Élément | Dépôt / branche / commit | Constat |
+|---|---|---|
+| `docs/EDUCATION.md` | `obsidia-x108-proofs` `main` (blob `951f2181…`) | **absent** de la branche AGY `feat/jarvis-advanced-obsidia-integration-v0` et du worktree Claude |
+| `brody_memory_education_packet.py`, `education_score.py`, `MEMORY_PROMOTION_MANUAL_ONLY_V1.md`, `EDUCATION_BENCHMARK_DRY_RUN_SPEC.md` | `main` = AGY = local (blobs identiques) | parité vérifiée |
+| `brody_education_pack_v1_readonly_adapter.py` | `main` `dce3fe02…` ≠ AGY = local `fd1de608…` | **divergence** non analysée ; `PACK_MISSING` local ne prouve pas l'absence du freeze ailleurs |
+| `brody-world-physique` `f0/learning-loop-contracts-v0` | `4404324b` | 0 commit d'avance, 213 de retard sur `main` : **historique, entièrement inclus dans `main`** |
+| `brody-world-physique` `exp/p2-multirepresentation-ablation-20261009` | `966df622` (2026-10-15) | **563 commits d'avance sur `main`** ; 176 modules, 173 fichiers de tests ; écoles cumulatives (`e1_cumulative_structural_school_v1`, `e4_e5_active_cumulative_school_v1`), `consolidated_education_replay_v1`, `experiential_skill_learning_v1`, mémoire scellée rechargée après redémarrage |
+
+### Mécanismes les plus avancés (branche `exp/p2…`, état déclaré par les documents)
+
+| Doc | Mécanisme | Résultat déclaré | Limite déclarée |
+|---|---|---|---|
+| 88 | parcours éducatif unifié V0 | `INTEGRATED_EDUCATION_V0_CODE_PUBLISHED`, `PC_TESTS_PENDING` | `FULL_CONCEPT_FIDELITY_HOLD` ; `NATIVE_MEMORY_WRITE=FALSE` |
+| 154 | éducation « cinq critères » en une passe | — | « laboratoire synthétique … PAS de découverte autonome de lois physiques réelles » |
+| 155 | **porte de rétention** : correction acceptée seulement si gain sur validation indépendante | 6 ACCEPT, 18 HOLD, 15 régressions évitées sur 24 conditions / 1 920 examens | rétention vérifiée seulement sur le monde `clean` de la **même famille** ; pas d'absence d'oubli générale |
+| 156 | rejeu éducatif cumulatif (curriculum fixe, règle initiale figée, corrections cumulées) | 24 cycles, 1 200 examens (contrôles d'exécution) | « un gain moyen ne prouve pas… » |
+| 181–183 | régression globale, Gate C, séparation caméra / identité | dernier PC : 653/653 PASS (déclaré) | `GATE_C_HOLD`, `TRUE_3D_AND_IDENTITY_UNPROVEN`, validations PC en attente |
+| commit `aac51cb3` | mémoire forme-mouvement scellée rechargée, rejeu indépendant après redémarrage, rejet de falsification | — | domaine visuel synthétique ; non relié à Brody texte ni à Native Memory |
+
+Ces résultats sont **déclarés par la documentation de la branche** ; Claude ne les a pas réexécutés.
+
+## II.6 Mécanismes existants utiles à l'éducation textuelle (vérifiés)
+
+- **Porte d'acceptation par validation indépendante** (P155) : modèle direct pour « une leçon n'est retenue que si elle améliore un examen indépendant sans régression ».
+- **Rejeu cumulatif à curriculum fixe** (P156) et **mémoire scellée rechargée après redémarrage** : modèle pour la conservation inter-sessions.
+- **Leçons candidates** (`brody_memory_education_packet`), **ledger de candidats**, **promotion manuelle uniquement** (`MEMORY_PROMOTION_MANUAL_ONLY_V1`).
+- **Corpus lexical FR/EN** (`periphery/language`) : définitions, groupes de synonymes et gloses séparés ; base pour vocabulaire et polysémie.
+- **Hachette** : référence privée d'évaluation de polysémie (BEAU, CHEMIN, CORRIGER, FORCE, IRRÉGULIER) — non ingérée, non publiée, non encore utilisée.
+
+## II.7 Lacunes réelles (après vérification)
+
+1. Aucun stade enfant / adolescent / adulte défini (`NOT_DEFINED`).
+2. Aucun acte ni critère de « naissance » ; Oxygen n'apparaît chez le fondateur que comme contenant de « cerveaux » et porteur de versions entraînées.
+3. Tension « une seule essence / versions entraînées » vs « 81+ entités singulières » non tranchée par écrit.
+4. Les mécanismes de rétention et de rejeu existent **seulement** dans le laboratoire visuel synthétique (`exp/p2…`, non fusionné dans `main`) ; aucun équivalent textuel.
+5. Aucun registre d'acquis validés textuels ; aucune exception gouvernée à la croyance D2.
+6. Le compte rendu humain des « journées » (05, L1319) et l'enseignement adaptatif (L1227) n'ont **aucun** contrat ni code.
+7. La conversation sur le jeu vidéo éducatif (L456) et les archives Gmail / Oxygen d'origine restent introuvables.
+
+## II.8 Verdict v2
+
+```
+FORENSIC_STATUS=PARTIAL (v2)
+PACK_INTEGRITY=VERIFIED (17/17 SHA-256)
+DRIVE_COVERAGE=READ_6_OF_6_EXPORTS (attribution par tours ; dates de conversation absentes)
+FOUNDER_VISION_VERIFIED=YES_PARTIAL (citations directes : école, progression anti-dérive, échec/relève, compte rendu humain, une seule essence, versions 9x9 d'entraînement)
+ASSISTANT_PROPOSALS_SEPARATED=YES (FSO, N0-N4, 81 entités, IA enfantine, Shazam)
+CHILD_TEEN_ADULT_DEFINED=NOT_DEFINED
+EIGHTY_ONE=FOUNDER_9x9_TRAINING_MATRIX ; "81 ENTITIES" = ASSISTANT WORDING
+GITHUB_COVERAGE=PARTIAL (x108-proofs main/AGY parité ; brody-world main + 2 branches ; autres dépôts non audités)
+EDUCATION_RUNTIME_TEXT=NO
+RETENTION_MECHANISM_EXISTS=YES_VISUAL_SYNTHETIC_ONLY (exp/p2, non fusionné)
+CONTINUITY_PROVEN=NO
+PERSISTENT_LEARNING_PROVEN=NO
+MEMORY_GATES=PRESENT
+READY_FOR_DESIGN=NO (décisions du fondateur requises)
+READY_FOR_BUILD=NO
+```
+
+## II.9 Plan restant avant la conception éducative enfant → adolescent → adulte
+
+1. **Sources restantes** : retrouver la conversation du jeu vidéo éducatif et les archives Gmail / Oxygen d'origine ; dater les conversations des docs 01, 02 et 05.
+2. **Audit GitHub multibranches** : autres dépôts (`Obsidiaseed`, `agi-vison`, `preprint-conscience`, `monde-obsidia`, `obsidia-studio`) ; divergence de l'adaptateur Pack V1 entre `main` et AGY ; état réel du freeze Pack V1 sur les autres postes ; réexécution indépendante des résultats P155 / P156 de `exp/p2…`.
+3. **Décisions du fondateur** : (a) les versions 9×9 sont-elles des entraînements d'une seule essence (doctrine) ou des entités ? (b) faut-il des stades enfant / adolescent / adulte, ou des niveaux de compétence (type N0–N4) ? (c) acte et critère de naissance d'Oxygen ; (d) forme du compte rendu humain des journées.
+4. **Réconciliation** des contradictions (partie I §6, §II.4) et des contrats Claude / AGY.
+5. **Préconception** de l'éducation textuelle progressive, en réutilisant la porte de rétention (P155), le rejeu cumulatif (P156), les leçons candidates et la promotion manuelle — **uniquement après validation des points 3 et 4**.
 
 STOP BEFORE APPLY sur l'architecture éducative.
