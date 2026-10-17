@@ -101,3 +101,50 @@ def test_fidelity_noun_complement_outside_object_is_not_dropped():
 
     text, provenance = _reconstruct_with_provenance("L'opérateur vérifie la température du circuit.", fr=True)
     assert provenance != "NATIVE_REALIZATION" or "du circuit" in text
+
+
+# Third audit (1970d041): set-based coverage and punctuation --------------------
+
+@pytest.mark.parametrize("stmt", [
+    "Le technicien vérifie la vanne A.",
+    "Le technicien vérifie la vanne a.",
+    "Le technicien vérifie la vanne « A ».",
+    "Le technicien vérifie la vanne ont.",
+    "Le technicien a vérifié la vanne a.",
+    "Le technicien vérifie -3 vannes.",
+    "Le technicien vérifie 3,5 vannes.",
+    "Le technicien vérifie la vanne + pompe.",
+    "Le technicien vérifie la vanne : non.",
+    "Le technicien vérifie la vanne (principale).",
+    "Le technicien vérifie la vanne V-12.",
+    "Le technicien vérifie la vanne n° 3.",
+    "Le technicien vérifie la vanne #2.",
+])
+def test_fidelity_identifiers_and_symbols_are_never_lost(stmt):
+    from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
+
+    text, provenance = _reconstruct_with_provenance(stmt, fr=True)
+    assert provenance != "NATIVE_REALIZATION", text
+
+
+@pytest.mark.parametrize("subject,verb,obj,kw", [
+    ("People", "arrive", "", {"lang": "en"}),
+    ("The people", "arrive", "", {"lang": "en"}),
+    ("Fish", "swim", "", {"lang": "en"}),
+    ("Fish", "swim", "", {"lang": "en", "tense": "past", "aspect": "progressive"}),
+    ("La plupart", "manger", "", {"lang": "fr"}),
+    ("Le technicien", "vérifier", "la vanne", {"lang": "fr", "mood": "conditional", "aspect": "progressive"}),
+    ("Elle", "se laver", "les mains", {"lang": "fr", "tense": "past"}),
+])
+def test_fidelity_third_audit_false_confidence_is_limited_or_correct(subject, verb, obj, kw):
+    expected = {
+        ("La plupart", "manger"): "La plupart mangent.",
+        ("Elle", "se laver"): "Elle s'est lavé les mains.",
+    }.get((subject, verb))
+    res = realize(subject=subject, verb_lemma=verb, obj=obj, **kw)
+    assert res["has_linguistic_limitations"] is True or (expected and res["text"] == expected), res["text"]
+
+
+@pytest.mark.parametrize("word", ["when", "how", "where", "don’t", "I'll", "let's", "he's", "you've"])
+def test_fidelity_more_english_closed_class_words_are_known(word):
+    assert is_known_lexical_item(word, lang="en") is True
