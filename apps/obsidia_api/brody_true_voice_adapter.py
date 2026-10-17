@@ -194,6 +194,7 @@ def _sens_tense_to_realization(tense_aspect: str, verb_form: str, surface: str, 
 _NEGATION_CLITICS = frozenset({"ne", "n'"})
 _AVOIR_AUX = frozenset({"a", "ont", "ai", "as", "avons", "avez"})
 _ETRE_AUX = frozenset({"est", "sont", "es", "suis", "sommes", "êtes"})
+_IMPERSONAL_VERBS = frozenset({"pleuvoir", "neiger", "grêler", "venter", "bruiner", "falloir", "geler", "tonner"})
 _OBJECT_PREPOSITIONS = frozenset({"à", "au", "aux", "du", "de", "en", "dans", "sur", "sous", "avec", "pour", "par", "vers", "chez", "sans"})
 _WORD_RE = r"[0-9a-zàâäéèêëîïôöùûüç]+'?"
 _PLAIN_STATEMENT_RE = re.compile(
@@ -268,11 +269,27 @@ def _native_realization_for(s: str, fr: bool) -> str | None:
         return None
     if not u0.lemma or _extract_claim_property_value(s):
         return None
-    # Only plain direct objects: a prepositional or partitive object depends on the verb's
-    # valency, which nothing here can check ("vérifie au chat").
+    # Narrow echo policy. A verified echo is only claimed for the shapes the checks can
+    # actually vouch for; anything else keeps the auxiliary wording (declared as such).
+    # - no capital letter after the first character (case anomalies, capitalized common
+    #   nouns passed off as proper names, identifiers)
+    # - no impersonal verb (no subject/object structure to verify: "Il pleut la vanne")
+    # - every object is a determiner/numeral-led noun phrase verified by the realizer
+    #   (no bare adjective, proper name, prepositional or partitive object)
+    if any(ch.isupper() for ch in s[1:]):
+        return None
+    if u0.lemma in _IMPERSONAL_VERBS:
+        return None
+    from periphery.language import native_realization as _nr
+
     for o in u0.objects:
         head = (o.text or "").lower().replace("’", "'").split()
-        if head and (head[0] in _OBJECT_PREPOSITIONS or head[0].startswith("d'")):
+        if not head or head[0] in _OBJECT_PREPOSITIONS or head[0].startswith("d'"):
+            return None
+        first = "l'" if head[0].startswith("l'") else head[0]
+        if first not in _nr._FR_DETERMINERS and first not in _nr._FR_NUMERALS and first not in ("chaque", "tous", "toutes"):
+            return None
+        if _nr._phrase_form_problem(o.text, True, "object", u0.lemma):
             return None
     subject = _subject_phrase(frame.raw, u0)
     if subject is None:
