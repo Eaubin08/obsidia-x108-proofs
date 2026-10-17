@@ -189,3 +189,39 @@ def test_fidelity_native_provenance_is_named_as_verified_echo():
 ])
 def test_fidelity_fourth_audit_cases_are_limited(subject, verb, obj, kw):
     assert realize(subject=subject, verb_lemma=verb, obj=obj, **kw)["has_linguistic_limitations"] is True
+
+
+# Fifth audit (acb6396d): ungrammatical subjects never verified -------------------
+
+@pytest.mark.parametrize("subject,verb,obj,kw", [
+    ("The operators", "check", "the valve", {"lang": "en", "number": "sg"}),
+    ("Elle", "venir", "", {"lang": "fr", "tense": "past", "gender": "masc"}),
+    ("Le opérateur", "vérifier", "la vanne", {"lang": "fr"}),
+    ("Le opérateur", "arriver", "", {"lang": "fr", "tense": "past"}),
+    ("Le arbre", "tomber", "", {"lang": "fr"}),
+    ("Ce", "être", "vrai", {"lang": "fr"}),
+    ("La homme", "tomber", "", {"lang": "fr"}),
+    ("Les", "vérifier", "la vanne", {"lang": "fr"}),
+    ("The", "check", "the valve", {"lang": "en"}),
+    ("Who", "check", "the valve", {"lang": "en"}),
+    ("L'opérateur", "vérifier", "aucune vanne", {"lang": "fr"}),
+])
+def test_fidelity_fifth_audit_cases_are_limited(subject, verb, obj, kw):
+    assert realize(subject=subject, verb_lemma=verb, obj=obj, **kw)["has_linguistic_limitations"] is True
+
+
+@pytest.mark.parametrize("subject,expected", [
+    ("The pump B", "The pump B runs."),
+    ("Pump B", "Pump B runs."),
+])
+def test_fidelity_trailing_identifier_does_not_hide_the_head_noun(subject, expected):
+    res = realize(subject=subject, verb_lemma="run", obj="", lang="en")
+    assert res["text"] == expected or res["has_linguistic_limitations"] is True
+
+
+@pytest.mark.parametrize("stmt", ["Le opérateur vérifie la vanne.", "La opérateur vérifie la vanne.",
+                                  "L'opérateur vérifie aucune vanne."])
+def test_fidelity_ungrammatical_statement_is_never_a_verified_echo(stmt):
+    from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
+
+    assert _reconstruct_with_provenance(stmt, fr=True)[1] != "NATIVE_VERIFIED_ECHO"
