@@ -1,0 +1,5 @@
+# Ignore generated SQLite database files
+*.db
+*.sqlite
+*.db-journal
+*.db-wal

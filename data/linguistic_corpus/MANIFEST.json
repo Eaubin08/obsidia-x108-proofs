@@ -1,0 +1,92 @@
+{
+  "manifest_version": "1.0.0",
+  "name": "Obsidia Brody Real FR/EN Linguistic Corpus",
+  "generated_at": "2026-10-17T08:53:00Z",
+  "database_path": "data/linguistic_corpus/lexicon.db",
+  "datasets": [
+    {
+      "id": "morphalou_3_1",
+      "name": "Morphalou 3.1",
+      "version": "3.1 (06/2016)",
+      "language": "fr",
+      "license": "LGPL-LR (Lesser General Public License For Linguistic Resources)",
+      "commercial_use": true,
+      "attribution": "ATILF CNRS / ORTOLANG (Marie Tonnelier, ANR-11-EQPX-0032)",
+      "url": "https://www.ortolang.fr/market/lexicons/morphalou/v3.1",
+      "description": "Exhaustive morphological lexicon of French verbs, nouns, adjectives, and adverbs. Full conjugation tables across all moods, tenses, persons, and numbers.",
+      "sha256": "4fc815cbf17aecdf1b47f6bbc263489a460fd8d11ae17e6b522336c72bd0e333",
+      "lemmas_count": 159182,
+      "forms_count": 976570
+    },
+    {
+      "id": "unimorph_eng",
+      "name": "UniMorph English",
+      "version": "UniMorph 4.0 / Master",
+      "language": "en",
+      "license": "CC-BY-SA 4.0",
+      "commercial_use": true,
+      "attribution": "UniMorph Consortium (Universal Morphological Ant)",
+      "url": "https://github.com/unimorph/eng",
+      "description": "Standardized morphological paradigms for English regular and irregular verbs (be, have, do, go, see, write, read, run, take), noun plurals, and adjectives.",
+      "sha256": "20a191cefdc7cad6fa74b00f49d6f658684f17b14541aae372e5a3d5a8c15c67",
+      "lemmas_count": 427464,
+      "forms_count": 652477
+    },
+    {
+      "id": "oewn_2025",
+      "name": "Open English WordNet 2025",
+      "version": "2025-edition",
+      "language": "en",
+      "license": "CC-BY 4.0",
+      "commercial_use": true,
+      "attribution": "Global WordNet Association / Princeton University WordNet",
+      "url": "https://github.com/globalwordnet/english-wordnet/releases/tag/2025-edition",
+      "description": "English lexical semantic network providing definitions, synsets, synonyms, antonyms, and sense relations.",
+      "sha256": "7d749f6e2c39e6970e4997839dcf6e42fd281f3c2fae0171d2192bae8cfa4b51",
+      "lemmas_count": 135909,
+      "senses_count": 185129
+    },
+    {
+      "id": "thes_fr",
+      "name": "French Thesaurus (Dicollecte)",
+      "version": "7.0",
+      "language": "fr",
+      "license": "MPL 2.0 / LGPL 3.0 / GPL 3.0",
+      "commercial_use": true,
+      "attribution": "Dicollecte (Olivier R.) / LibreOffice Dictionaries",
+      "url": "https://github.com/LibreOffice/dictionaries/tree/master/fr_FR",
+      "description": "French synonyms and semantic clusters for verbs, nouns, adjectives, adverbs.",
+      "sha256": "52efa736c37f98d7f0abfe5dd4345b6f712880ca0ca664c15a8168d9475a0b46",
+      "lemmas_count": 36452,
+      "senses_count": 37205
+    },
+    {
+      "id": "xmlittre_fr",
+      "name": "XMLittré (Dictionnaire de la langue française par Émile Littré)",
+      "version": "XMLittré (Gannaz / Littre.org)",
+      "language": "fr",
+      "license": "CC-BY-SA 3.0 / Public Domain",
+      "commercial_use": true,
+      "attribution": "François Gannaz / Émile Littré (www.littre.org)",
+      "url": "https://bitbucket.org/Mytskine/xmlittre-data",
+      "description": "Authoritative historical and general French dictionary providing full definitions, grammatical categories, and etymological usage for French words.",
+      "sha256": "7d2f4205b70b49d0d6503cb0f9b70b16ee428350be8f8c3260ad1d5876274448",
+      "lemmas_count": 78599,
+      "senses_count": 77053
+    },
+    {
+      "id": "freedict_fra_eng",
+      "name": "FreeDict French-English Dictionary",
+      "version": "FreeDict fra-eng TEI",
+      "language": "fr",
+      "license": "GPL v2+",
+      "commercial_use": true,
+      "attribution": "FreeDict Project (Vincent Ramos / Horst Eyermann)",
+      "url": "https://github.com/freedict/fd-dictionaries",
+      "description": "Bilingual French-to-English translation glosses and lexical mappings.",
+      "sha256": "de9eb6e5756d994bca9bdb2a91bfc2bb8d8822d3387f5a3b586acc8d42133114",
+      "lemmas_count": 8505,
+      "senses_count": 8505
+    }
+  ]
+}
