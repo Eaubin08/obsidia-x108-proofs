@@ -33,7 +33,7 @@ def test_fidelity_lossy_statements_are_not_native(stmt):
     from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
 
     _text, provenance = _reconstruct_with_provenance(stmt, fr=True)
-    assert provenance != "NATIVE_REALIZATION"
+    assert provenance != "NATIVE_VERIFIED_ECHO"
 
 
 @pytest.mark.parametrize("stmt", [
@@ -46,7 +46,7 @@ def test_fidelity_native_output_covers_every_input_token(stmt):
     from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
 
     text, provenance = _reconstruct_with_provenance(stmt, fr=True)
-    if provenance == "NATIVE_REALIZATION":
+    if provenance == "NATIVE_VERIFIED_ECHO":
         assert text.lower() == stmt.rstrip(".").lower()
 
 
@@ -100,7 +100,7 @@ def test_fidelity_noun_complement_outside_object_is_not_dropped():
     from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
 
     text, provenance = _reconstruct_with_provenance("L'opérateur vérifie la température du circuit.", fr=True)
-    assert provenance != "NATIVE_REALIZATION" or "du circuit" in text
+    assert provenance != "NATIVE_VERIFIED_ECHO" or "du circuit" in text
 
 
 # Third audit (1970d041): set-based coverage and punctuation --------------------
@@ -124,7 +124,7 @@ def test_fidelity_identifiers_and_symbols_are_never_lost(stmt):
     from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
 
     text, provenance = _reconstruct_with_provenance(stmt, fr=True)
-    assert provenance != "NATIVE_REALIZATION", text
+    assert provenance != "NATIVE_VERIFIED_ECHO", text
 
 
 @pytest.mark.parametrize("subject,verb,obj,kw", [
@@ -148,3 +148,44 @@ def test_fidelity_third_audit_false_confidence_is_limited_or_correct(subject, ve
 @pytest.mark.parametrize("word", ["when", "how", "where", "don’t", "I'll", "let's", "he's", "you've"])
 def test_fidelity_more_english_closed_class_words_are_known(word):
     assert is_known_lexical_item(word, lang="en") is True
+
+
+# Fourth audit (53b40359): case of identifiers, honest label, residual limits ----
+
+@pytest.mark.parametrize("stmt", [
+    "Le technicien vérifie la pompe B.",
+    "Le technicien vérifie le réseau Alpha.",
+    "Le technicien vérifie la vanne ALPHA.",
+])
+def test_fidelity_identifier_case_is_preserved_exactly(stmt):
+    from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
+
+    text, provenance = _reconstruct_with_provenance(stmt, fr=True)
+    if provenance == "NATIVE_VERIFIED_ECHO":
+        assert text == stmt.rstrip(".")
+
+
+def test_fidelity_native_provenance_is_named_as_verified_echo():
+    from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
+
+    _text, provenance = _reconstruct_with_provenance("L'opérateur vérifiera la vanne.", fr=True)
+    assert provenance == "NATIVE_VERIFIED_ECHO"
+
+
+@pytest.mark.parametrize("subject,verb,obj,kw", [
+    ("Le technicien", "vérifier", "la vanne", {"lang": "fr", "polarity": "question"}),
+    ("Le technicien", "vérifier", "la vanne", {"lang": "fr", "polarity": "maybe"}),
+    ("Le technicien", "vérifier", "la vanne", {"lang": "fr", "aspect": "foo"}),
+    ("Personne", "vérifier", "la vanne", {"lang": "fr"}),
+    ("Aucun technicien", "vérifier", "la vanne", {"lang": "fr", "polarity": "negative"}),
+    ("Rien", "arriver", "", {"lang": "fr"}),
+    ("Nobody", "check", "the valve", {"lang": "en", "polarity": "negative"}),
+    ("Ils", "se parler", "", {"lang": "fr", "tense": "past"}),
+    ("Le technicien", "monter", "la valise", {"lang": "fr", "tense": "past"}),
+    ("Le technicien", "sortir", "la poubelle", {"lang": "fr", "tense": "past"}),
+    ("The United States", "be", "large", {"lang": "en"}),
+    ("Le technicien", "vérifier", "la vanne", {"lang": "fr", "number": "pl"}),
+    ("I", "check", "the valve", {"lang": "en", "person": "3"}),
+])
+def test_fidelity_fourth_audit_cases_are_limited(subject, verb, obj, kw):
+    assert realize(subject=subject, verb_lemma=verb, obj=obj, **kw)["has_linguistic_limitations"] is True

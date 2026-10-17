@@ -30,7 +30,7 @@ def test_wiring_admissible_statements_are_realized_natively(stmt, expected):
     from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
 
     text, provenance = _reconstruct_with_provenance(stmt, fr=True)
-    assert provenance == "NATIVE_REALIZATION"
+    assert provenance == "NATIVE_VERIFIED_ECHO"
     assert text == expected
 
 
@@ -48,7 +48,7 @@ def test_wiring_inadmissible_statements_are_not_realized(stmt):
     from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
 
     _text, provenance = _reconstruct_with_provenance(stmt, fr=not stmt.startswith("The "))
-    assert provenance != "NATIVE_REALIZATION"
+    assert provenance != "NATIVE_VERIFIED_ECHO"
 
 
 # Public entry point ------------------------------------------------------------
@@ -92,7 +92,7 @@ def test_wiring_public_brody_chat_reaches_native_realization(monkeypatch):
     assert any(c["text"] == "Les opérateurs ne vérifiaient pas la vanne principale." for c in calls)
     assert "les opérateurs ne vérifiaient pas la vanne principale" in res["final_answer"].lower()
     snap = res["true_voice_snapshot"]
-    assert "NATIVE_REALIZATION" in snap["formulation_provenance"]
+    assert "NATIVE_VERIFIED_ECHO" in snap["formulation_provenance"]
     assert res["decision_authority"] == "KX108_ONLY"
     assert res["cognitive_runtime_receipt"]["neural_generation_snapshot"]["qwen_authority"] == "NONE"
 
@@ -104,7 +104,7 @@ def test_wiring_public_english_declares_auxiliary_wording_dependency(monkeypatch
     assert calls == []
     snap = res["true_voice_snapshot"]
     assert snap["formulation_provenance"]
-    assert "NATIVE_REALIZATION" not in snap["formulation_provenance"]
+    assert "NATIVE_VERIFIED_ECHO" not in snap["formulation_provenance"]
     assert snap["auxiliary_wording_dependency"] is True
 
 
