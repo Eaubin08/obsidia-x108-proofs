@@ -269,3 +269,43 @@ def test_closure_unverifiable_phrases_are_limited(subject, verb, obj, kw):
 def test_closure_correct_simple_sentences_are_not_over_limited(subject, verb, obj, kw, expected):
     res = realize(subject=subject, verb_lemma=verb, obj=obj, **kw)
     assert res["text"] == expected and res["has_linguistic_limitations"] is False
+
+
+# Closure audit 2 (571d9007): closed-world phrase verification -------------------
+
+@pytest.mark.parametrize("stmt", [
+    "L'opérateur vérifie au chat.", "L'opérateur vérifie deux vanne.", "Opérateur vérifie la vanne.",
+    "L'opérateur vérifie vanne.", "L'opérateur vérifie pierre.",
+])
+def test_closure2_ungrammatical_statements_are_never_verified_echoes(stmt):
+    from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
+
+    assert _reconstruct_with_provenance(stmt, fr=True)[1] != "NATIVE_VERIFIED_ECHO"
+
+
+@pytest.mark.parametrize("subject,verb,obj,kw", [
+    ("De le vanne", "tomber", "", {"lang": "fr"}), ("De la eau", "tomber", "", {"lang": "fr"}),
+    ("Au chat", "tomber", "", {"lang": "fr"}), ("Aux chats", "tomber", "", {"lang": "fr"}),
+    ("Deux chat", "tomber", "", {"lang": "fr"}), ("Chaque chats", "tomber", "", {"lang": "fr"}),
+    ("Tous les vannes", "tomber", "", {"lang": "fr"}), ("Plusieurs chat", "tomber", "", {"lang": "fr"}),
+    ("Chat", "tomber", "", {"lang": "fr"}), ("Opérateur", "tomber", "", {"lang": "fr"}),
+    ("L'opérateur", "vérifier", "de la eau", {"lang": "fr"}), ("L'opérateur", "vérifier", "de le pain", {"lang": "fr"}),
+    ("L'opérateur", "vérifier", "deux vanne", {"lang": "fr"}), ("L'opérateur", "vérifier", "pierre", {"lang": "fr"}),
+    ("Two valve", "fail", "", {"lang": "en"}), ("Many valve", "fail", "", {"lang": "en"}),
+])
+def test_closure2_unverified_phrases_are_limited(subject, verb, obj, kw):
+    assert realize(subject=subject, verb_lemma=verb, obj=obj, **kw)["has_linguistic_limitations"] is True
+
+
+@pytest.mark.parametrize("subject,verb,obj,kw,expected", [
+    ("Deux chats", "tomber", "", {"lang": "fr"}, "Deux chats tombent."),
+    ("Tous les chats", "tomber", "", {"lang": "fr"}, "Tous les chats tombent."),
+    ("Chaque chat", "tomber", "", {"lang": "fr"}, "Chaque chat tombe."),
+    ("L'opérateur", "vérifier", "deux vannes", {"lang": "fr"}, "L'opérateur vérifie deux vannes."),
+    ("Je", "s'occuper", "du dossier", {"lang": "fr"}, "Je m'occupe du dossier."),
+    ("Two valves", "fail", "", {"lang": "en"}, "Two valves fail."),
+    ("Brody", "analyser", "le signal", {"lang": "fr"}, "Brody analyse le signal."),
+])
+def test_closure2_verified_phrases_stay_confident(subject, verb, obj, kw, expected):
+    res = realize(subject=subject, verb_lemma=verb, obj=obj, **kw)
+    assert res["text"] == expected and res["has_linguistic_limitations"] is False
