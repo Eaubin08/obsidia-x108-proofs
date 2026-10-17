@@ -81,41 +81,155 @@ _NEGATIVE_QUANTIFIERS = frozenset({
 # French verbs conjugated with être intransitively but with avoir when they take an object.
 _ETRE_OR_AVOIR_VERBS = frozenset({"monter", "descendre", "sortir", "rentrer", "passer", "retourner"})
 
-_FR_ELIDING_WORDS = frozenset({"le", "la", "ce", "de", "que", "ne", "se", "je", "me", "te"})
-_VOWEL_ONSET = "aeiouyàâäéèêëîïôöùûü"
-_WH_SUBJECTS = frozenset({"who", "what", "which", "qui", "que", "quoi", "lequel", "laquelle"})
-_ALL_DETERMINERS = frozenset({
-    "le", "la", "les", "l'", "un", "une", "des", "du", "ce", "cet", "cette", "ces", "mon", "ma",
-    "mes", "ton", "ta", "tes", "son", "sa", "ses", "notre", "nos", "votre", "vos", "leur", "leurs",
-    "the", "a", "an", "this", "that", "these", "those",
+_VOWEL_ONSET = "aeiouàâäéèêëîïôöùûü"
+_WH_SUBJECTS = frozenset({
+    "who", "what", "which", "whose", "qui", "que", "quoi", "lequel", "laquelle", "lesquels",
+    "lesquelles", "quel", "quelle", "quels", "quelles",
 })
+
+# French determiners: category and the (gender, number) cell they encode ("" = any gender).
+_FR_DETERMINERS: dict[str, tuple[str, str, str]] = {
+    "le": ("def", "masc", "sg"), "la": ("def", "fem", "sg"), "l'": ("def", "", "sg"), "les": ("def", "", "pl"),
+    "un": ("indef", "masc", "sg"), "une": ("indef", "fem", "sg"), "des": ("indef", "", "pl"),
+    "du": ("partitive", "masc", "sg"), "au": ("contracted", "masc", "sg"), "aux": ("contracted", "", "pl"),
+    "ce": ("dem", "masc", "sg"), "cet": ("dem", "masc", "sg"), "cette": ("dem", "fem", "sg"), "ces": ("dem", "", "pl"),
+    "mon": ("poss1", "masc", "sg"), "ma": ("poss1", "fem", "sg"), "mes": ("poss1", "", "pl"),
+    "ton": ("poss2", "masc", "sg"), "ta": ("poss2", "fem", "sg"), "tes": ("poss2", "", "pl"),
+    "son": ("poss3", "masc", "sg"), "sa": ("poss3", "fem", "sg"), "ses": ("poss3", "", "pl"),
+    "notre": ("poss4", "", "sg"), "nos": ("poss4", "", "pl"), "votre": ("poss5", "", "sg"),
+    "vos": ("poss5", "", "pl"), "leur": ("poss6", "", "sg"), "leurs": ("poss6", "", "pl"),
+}
+_EN_DETERMINERS: dict[str, str] = {
+    "the": "", "a": "sg", "an": "sg", "this": "sg", "that": "sg", "these": "pl", "those": "pl",
+    "each": "sg", "every": "sg",
+}
+_ALL_DETERMINERS = frozenset(_FR_DETERMINERS) | frozenset(_EN_DETERMINERS)
+
+
+def _expected_fr_determiner(category: str, gender: str, number: str, onset: str) -> str | None:
+    """The determiner French requires for a noun of this gender/number/onset, or None."""
+    vowel = onset in _VOWEL_ONSET
+    if number == "pl":
+        return {"def": "les", "indef": "des", "contracted": "aux", "dem": "ces", "poss1": "mes", "poss2": "tes",
+                "poss3": "ses", "poss4": "nos", "poss5": "vos", "poss6": "leurs"}.get(category)
+    if category in ("poss4", "poss5", "poss6"):
+        return {"poss4": "notre", "poss5": "votre", "poss6": "leur"}[category]
+    if category == "def":
+        return "l'" if vowel else ("le" if gender == "masc" else "la")
+    if category == "indef":
+        return "un" if gender == "masc" else "une"
+    if category in ("partitive", "contracted"):
+        return None if vowel else ({"partitive": "du", "contracted": "au"}[category] if gender == "masc" else None)
+    if category == "dem":
+        return ("cet" if vowel else "ce") if gender == "masc" else "cette"
+    if category.startswith("poss"):
+        stem = {"poss1": "m", "poss2": "t", "poss3": "s"}[category]
+        return stem + ("on" if gender == "masc" or vowel else "a")
+    return None
+
+
+def _noun_cells(noun: str, lang: str) -> set[tuple[str, str]]:
+    from periphery.language.lexical_corpus import is_defective_analysis
+
+    return {
+        (a.gender, a.number) for a in lookup_surface_form(noun, lang=lang)
+        if a.pos == "noun" and a.surface_form == noun and a.number in ("sg", "pl", "inv")
+        and not is_defective_analysis(a)
+    }
+
+
+def _adjective_agrees(adj: str, gender: str, number: str, lang: str) -> bool:
+    from periphery.language.lexical_corpus import is_defective_analysis
+
+    return any(
+        a.pos == "adj" and a.surface_form == adj and not is_defective_analysis(a)
+        and a.number in (number, "", "inv") and (lang != "fr" or a.gender in (gender, ""))
+        for a in lookup_surface_form(adj, lang=lang)
+    )
+
+
+def _verify_fr_noun_phrase(words: list[str]) -> str | None:
+    """Regenerate "det noun [adj]" from the attested noun and compare; None when verified."""
+    first = words[0]
+    if first.startswith("l'") and len(first) > 2:
+        words = ["l'", first[2:]] + words[1:]
+    det, rest = words[0], words[1:]
+    if not rest:
+        return "DETERMINER_ONLY"
+    if len(rest) > 2:
+        return "NOUN_PHRASE_TOO_COMPLEX"
+    noun, adj = rest[0], (rest[1] if len(rest) == 2 else "")
+    onset = noun[:1]
+    if onset == "h":
+        return "H_ONSET_UNDECIDABLE"  # h muet vs h aspiré is not recorded in the corpus
+    cells = _noun_cells(noun, "fr")
+    if not cells:
+        return f"NOUN_NOT_ATTESTED:{noun}"
+    category, _, det_number = _FR_DETERMINERS[det]
+    for gender, number in cells:
+        if number not in (det_number, "inv"):
+            continue
+        if _expected_fr_determiner(category, gender, det_number, onset) != det:
+            continue
+        if adj and not _adjective_agrees(adj, gender, det_number, "fr"):
+            continue
+        return None
+    return f"DETERMINER_NOUN_MISMATCH:{det} {noun}{(' ' + adj) if adj else ''}"
+
+
+def _verify_en_noun_phrase(words: list[str]) -> str | None:
+    det, rest = words[0], words[1:]
+    if not rest:
+        return "DETERMINER_ONLY"
+    if len(rest) > 2:
+        return "NOUN_PHRASE_TOO_COMPLEX"
+    noun = rest[-1]
+    adj = rest[0] if len(rest) == 2 else ""
+    if adj and not _adjective_agrees(adj, "", "", "en"):
+        return f"ADJECTIVE_NOT_ATTESTED:{adj}"
+    numbers = {n for _, n in _noun_cells(noun, "en")}
+    if not numbers:
+        return f"NOUN_NOT_ATTESTED:{noun}"
+    wanted = _EN_DETERMINERS[det]
+    if wanted and wanted not in numbers and "inv" not in numbers:
+        return f"DETERMINER_NOUN_MISMATCH:{det} {noun}"
+    if det in ("a", "an"):
+        head = (adj or noun).lower()
+        if head[:1] in "hu" or head.startswith(("eu", "one", "once")):
+            return f"ARTICLE_ONSET_UNDECIDABLE:{head}"
+        if (det == "an") != (head[:1] in "aeio"):
+            return f"ARTICLE_ONSET_MISMATCH:{det} {head}"
+    return None
 
 
 def _phrase_form_problem(phrase: str, is_fr: bool) -> str | None:
-    """Surface defects of a noun phrase copied verbatim into the sentence, or None.
+    """Why a noun phrase copied verbatim into the sentence cannot be vouched for, or None.
 
-    The realizer does not rebuild noun phrases; it can only refuse to vouch for one that
-    misses an elision, contradicts its noun's gender, or is a bare function word.
+    Phrases opening with a determiner are verified positively: the determiner French or
+    English requires for the attested noun (gender, number, onset) is regenerated and must
+    equal the one written. Each coordinated member is checked. Phrases without a determiner
+    (pronouns, proper names, bare nouns) are handled by the subject agreement logic.
     """
-    words = phrase.replace("’", "'").split()
-    if not words:
+    text = phrase.replace("’", "'").strip()
+    if not text:
         return None
-    low = [w.lower() for w in words]
-    if len(low) == 1 and (low[0] in _ALL_DETERMINERS or low[0] in _WH_SUBJECTS):
-        return f"FUNCTION_WORD_ONLY:{phrase}"
-    if low[0] in _WH_SUBJECTS:
-        return f"INTERROGATIVE_PHRASE:{phrase}"
-    if not is_fr:
-        return None
-    for w, nxt in zip(low, low[1:]):
-        if w in _FR_ELIDING_WORDS and nxt[:1] in _VOWEL_ONSET:
-            return f"ELISION_MISSING:{w} {nxt}"
-    if len(low) >= 2 and low[0] in ("le", "la", "un", "une"):
-        det_gender = "masc" if low[0] in ("le", "un") else "fem"
-        genders = {a.gender for a in lookup_surface_form(low[1], lang="fr")
-                   if a.pos == "noun" and a.gender in ("masc", "fem")}
-        if genders and det_gender not in genders:
-            return f"DETERMINER_GENDER_MISMATCH:{low[0]} {low[1]}"
+    members = re.split(r"\s+(?:et|ou|and|or)\s+", text)
+    for member in members:
+        original = member.split()
+        while len(original) > 1 and len(original[-1]) <= 2 and original[-1].isupper():
+            original = original[:-1]  # trailing identifier ("pompe B")
+        words = [w.lower() for w in original]
+        if not words:
+            continue
+        if words[0] in _WH_SUBJECTS:
+            return f"INTERROGATIVE_PHRASE:{member}"
+        first = words[0]
+        det = "l'" if is_fr and first.startswith("l'") else first
+        if det not in (_FR_DETERMINERS if is_fr else _EN_DETERMINERS):
+            continue
+        problem = _verify_fr_noun_phrase(words) if is_fr else _verify_en_noun_phrase(words)
+        if problem:
+            return problem
     return None
 
 
@@ -365,7 +479,6 @@ def realize_semantic_relation(
 
     inf_person, inf_number, inf_gender = _infer_subject_features(clean_subj, is_fr)
     person_given, number_given, gender_given = person, number, gender
-    is_neg_requested = (polarity or "").lower() in ("negative", "negated")
     person = str(person) if person else inf_person
     number_known = bool(number) or bool(inf_number and not inf_number.endswith("?"))
     number = (number or inf_number.rstrip("?") or "sg").lower()
@@ -403,19 +516,23 @@ def realize_semantic_relation(
         _limit(f"UNSUPPORTED_STRUCTURE:negative_quantifier_subject:{clean_subj}")
     if clean_subj and (person_given or number_given):
         # An imposed person/number is only trusted when the subject itself confirms it.
-        if (not inf_number or inf_number.endswith("?")
+        tentative_confirmed = (inf_number.endswith("?") and number_given
+                               and number_given.lower() == inf_number.rstrip("?"))
+        if ((not inf_number or (inf_number.endswith("?") and not tentative_confirmed))
                 or (person_given and str(person_given) != inf_person)
                 or (number_given and number_given.lower() != inf_number.rstrip("?"))):
             _limit(f"AGREEMENT_OVERRIDE_CONFLICT:{clean_subj}:{person}:{number}")
     if clean_subj and gender_given and inf_gender and gender_given.lower() != inf_gender:
         _limit(f"GENDER_OVERRIDE_CONFLICT:{clean_subj}:{gender_given}")
+    if clean_subj.lower().split()[0] in _ALL_DETERMINERS | _WH_SUBJECTS if clean_subj else False:
+        if len(clean_subj.split()) == 1:
+            _limit(f"UNVERIFIED_SUBJECT_PHRASE:FUNCTION_WORD_ONLY:{clean_subj}")
     for label, phrase in (("subject", clean_subj), ("object", clean_obj)):
-        problem = _phrase_form_problem(phrase, is_fr) if label == "subject" else (
-            _phrase_form_problem(phrase, is_fr) if is_fr and phrase else None)
-        if problem and not (label == "object" and problem.startswith(("FUNCTION_WORD_ONLY", "INTERROGATIVE"))):
+        problem = _phrase_form_problem(phrase, is_fr)
+        if problem:
             _limit(f"UNVERIFIED_{label.upper()}_PHRASE:{problem}")
     obj_first = clean_obj.lower().split()[0] if clean_obj else ""
-    if obj_first in _NEGATIVE_QUANTIFIERS and not is_neg_requested:
+    if obj_first in _NEGATIVE_QUANTIFIERS:
         # "vérifie aucune vanne": a negative quantifier needs "ne" (FR) or carries the negation (EN).
         _limit(f"UNSUPPORTED_STRUCTURE:negative_quantifier_object:{obj_first}")
     if is_imperative and is_question:
