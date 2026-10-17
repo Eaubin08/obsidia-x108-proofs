@@ -240,7 +240,7 @@ def _subject_phrase(raw: str, unit: Any) -> str | None:
     return phrase
 
 
-def _native_realization_for(s: str, fr: bool) -> str | None:
+def _native_realization_for(s: str, fr: bool, trace: dict[str, Any] | None = None) -> str | None:
     """Realize a statement natively from its SENS frame, only when nothing would be lost.
 
     The frame must hold exactly one asserted declarative unit whose subject, verb, tense,
@@ -311,6 +311,8 @@ def _native_realization_for(s: str, fr: bool) -> str | None:
         return None
     from periphery.language import native_realization
 
+    if trace is not None:
+        trace["realizer_called"] = True
     realized = native_realization.realize_semantic_relation(
         subject=subject,
         verb_lemma=u0.lemma,
@@ -325,23 +327,73 @@ def _native_realization_for(s: str, fr: bool) -> str | None:
     # case and final punctuation). Any difference means something was lost or changed.
     if _normalized_statement(realized["text"]) != _normalized_statement(s):
         return None
-    # The regeneration only verifies the statement; the statement itself is returned so
-    # identifiers and proper nouns keep their exact case and typography.
+    if trace is not None:
+        trace["realizer_regeneration_matched"] = True
+    # The regeneration only reproduced the statement; the auxiliary statement itself is
+    # reused, so identifiers and proper nouns keep their exact case and typography.
     return s.strip().rstrip(".!").strip()
+
+
+def _text_identity(original: str, applied: str) -> str:
+    """How the text actually inserted in the answer relates to the auxiliary statement."""
+    o, a = original.strip(), applied.strip()
+    if a == o:
+        return "EXACT"
+    if a == o.rstrip(".").rstrip():
+        return "EXACT_EXCEPT_FINAL_PERIOD"
+    if re.sub(r"[^\w']", "", a.lower()) == re.sub(r"[^\w']", "", o.lower()):
+        return "CASE_OR_PUNCTUATION_CHANGED"
+    return "REWORDED"
 
 
 def _reconstruct_native_statement(stmt: str, fr: bool = True) -> str:
     return _reconstruct_with_provenance(stmt, fr=fr)[0]
 
 
-def _reconstruct_with_provenance(stmt: str, fr: bool = True) -> tuple[str, str]:
-    """Reformulate an admitted auxiliary statement and declare who formulated it.
+# What is never evaluated for an admitted auxiliary statement, whatever its provenance.
+_NOT_EVALUATED = (
+    "GRAMMAR_GENERAL", "VALENCY", "SELECTIONAL_RESTRICTIONS", "SEMANTIC_FIDELITY",
+    "CROSS_STATEMENT_CONSISTENCY", "FACTUAL_TRUTH",
+)
+# What the realizer check actually performs when its regeneration reproduces the statement.
+_REUSE_CHECKS = (
+    "SINGLE_DECLARATIVE_UNIT", "FULL_TOKEN_COVERAGE", "VERB_MORPHOLOGY_REGENERATED", "NOUN_PHRASE_AGREEMENT",
+)
 
-    Provenance is NATIVE_VERIFIED_ECHO (Brody regenerated the sentence from its SENS frame and
-    the regeneration reproduced it exactly, so the statement is kept as verified),
-    TEMPLATE_REWRITE (pattern-based rewording of the auxiliary text) or
-    AUXILIARY_WORDING_PRESERVED (the auxiliary model's wording is kept).
+
+def _reconstruct_with_provenance(stmt: str, fr: bool = True) -> tuple[str, str]:
+    rec = _reconstruct_with_record(stmt, fr=fr)
+    return rec["text"], rec["provenance"]
+
+
+def _reconstruct_with_record(stmt: str, fr: bool = True) -> dict[str, Any]:
+    """Process an admitted auxiliary statement and record exactly what was done to it.
+
+    provenance:
+      AUXILIARY_WORDING_REUSED     the auxiliary wording is reused; the realizer regenerated
+                                   the statement from its SENS frame and reproduced it. This
+                                   checks verb morphology and noun-phrase agreement only: it
+                                   is not a verification of grammar, meaning or truth.
+      TEMPLATE_REWRITE             the auxiliary wording was rewritten by a fixed pattern.
+      AUXILIARY_WORDING_PRESERVED  the auxiliary wording is kept without any check passing.
+    The statement always originates from the auxiliary model (origin AUXILIARY_MODEL).
     """
+    trace: dict[str, Any] = {"realizer_called": False, "realizer_regeneration_matched": False}
+    text, provenance = _reconstruct_text(stmt, fr, trace)
+    reused = provenance == "AUXILIARY_WORDING_REUSED"
+    return {
+        "text": text,
+        "provenance": provenance,
+        "origin": "AUXILIARY_MODEL",
+        "realizer_called": trace["realizer_called"],
+        "realizer_regeneration_matched": trace["realizer_regeneration_matched"],
+        "applied": "TEMPLATE_REWRITE" if provenance == "TEMPLATE_REWRITE" else "AUXILIARY_TEXT",
+        "checks_performed": list(_REUSE_CHECKS) if reused else [],
+        "not_evaluated": list(_NOT_EVALUATED),
+    }
+
+
+def _reconstruct_text(stmt: str, fr: bool, trace: dict[str, Any]) -> tuple[str, str]:
     s = stmt.strip()
     if not s:
         return "", "AUXILIARY_WORDING_PRESERVED"
@@ -349,9 +401,9 @@ def _reconstruct_with_provenance(stmt: str, fr: bool = True) -> tuple[str, str]:
     s = re.sub(r"^(voici\s+(l'analyse|les\s+donn[ée]es|les\s+informations|la\s+r[ée]ponse)?\s*(demand[ée]e|suivante)?\s*:\s*)", "", s, flags=re.I).strip()
 
     try:
-        native = _native_realization_for(s, fr)
-        if native:
-            return native, "NATIVE_VERIFIED_ECHO"
+        reused = _native_realization_for(s, fr, trace)
+        if reused:
+            return reused, "AUXILIARY_WORDING_REUSED"
         from app.semantic.lattice.french_grammar import parse_utterance
         frame = parse_utterance(s) if fr else None
         if frame is not None and frame.units:
@@ -509,6 +561,13 @@ def synthesize_brody_native_claims(
             "native_synthesis_applied": True,
             "native_linguistic_level": "DIRECT_QUOTATION",
             "formulation_provenance": ["AUXILIARY_WORDING_PRESERVED"] * len(claims),
+            "formulation_records": [
+                {"text": c.get("statement", ""), "provenance": "AUXILIARY_WORDING_PRESERVED",
+                 "origin": "AUXILIARY_MODEL", "realizer_called": False, "realizer_regeneration_matched": False,
+                 "applied": "AUXILIARY_TEXT", "checks_performed": [], "not_evaluated": list(_NOT_EVALUATED),
+                 "inserted_text": c.get("statement", ""), "text_identity": "EXACT"}
+                for c in claims
+            ],
             "auxiliary_wording_dependency": True,
             "parsed_structures": parsed_structures,
             "has_linguistic_limitations": has_linguistic_limitations,
@@ -530,14 +589,18 @@ def synthesize_brody_native_claims(
                 )
 
     formulation_provenance: list[str] = []
+    formulation_records: list[dict[str, Any]] = []
     if admitted:
         from periphery.language.native_realization import _inner_subject
 
-        reconstructed = [_reconstruct_with_provenance(c["statement"], fr=fr) for c in admitted]
-        formulation_provenance = [prov for _, prov in reconstructed]
-        reconstructed_statements = [
-            _inner_subject(text, fr) if prov == "NATIVE_VERIFIED_ECHO" else text for text, prov in reconstructed
-        ]
+        formulation_records = [_reconstruct_with_record(c["statement"], fr=fr) for c in admitted]
+        formulation_provenance = [r["provenance"] for r in formulation_records]
+        reconstructed_statements = []
+        for c, r in zip(admitted, formulation_records):
+            inserted = _inner_subject(r["text"], fr) if r["provenance"] == "AUXILIARY_WORDING_REUSED" else r["text"]
+            r["inserted_text"] = inserted
+            r["text_identity"] = _text_identity(c["statement"], inserted)
+            reconstructed_statements.append(inserted)
         statements_text = ". ".join(s for s in reconstructed_statements if s)
         if fr:
             parts.append(
@@ -595,7 +658,10 @@ def synthesize_brody_native_claims(
         # reported separately in formulation_provenance.
         "native_linguistic_level": "GRAMMAR_LATTICE_ADAPTER",
         "formulation_provenance": formulation_provenance,
-        "auxiliary_wording_dependency": any(p != "NATIVE_VERIFIED_ECHO" for p in formulation_provenance),
+        "formulation_records": formulation_records,
+        # Every admitted statement originates from the auxiliary model; reusing or keeping its
+        # wording is a dependency on that wording.
+        "auxiliary_wording_dependency": any(r["origin"] == "AUXILIARY_MODEL" for r in formulation_records),
         "parsed_structures": parsed_structures,
         "has_linguistic_limitations": has_linguistic_limitations,
     }
@@ -661,9 +727,11 @@ def build_true_brody_answer(
     _native_synthesis_applied = False
     _native_linguistic_level = "NOT_APPLIED"
     _formulation_provenance: list[str] = []
+    _formulation_records: list[dict[str, Any]] = []
 
     def _record_synth(synth: dict[str, Any]) -> dict[str, Any]:
         _formulation_provenance.extend(synth.get("formulation_provenance", []))
+        _formulation_records.extend(synth.get("formulation_records", []))
         return synth
     voice_source = ""
     action_boundary_already = request_type in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST)
@@ -1329,14 +1397,16 @@ def build_true_brody_answer(
         "native_linguistic_level": (
             "AUXILIARY_WORDING_PRESERVED"
             if _formulation_provenance and all(p == "AUXILIARY_WORDING_PRESERVED" for p in _formulation_provenance)
-            else "NATIVE_VERIFIED_ECHO"
-            if _formulation_provenance and all(p == "NATIVE_VERIFIED_ECHO" for p in _formulation_provenance)
+            else "AUXILIARY_WORDING_REUSED"
+            if _formulation_provenance and all(
+                p in ("AUXILIARY_WORDING_REUSED", "AUXILIARY_WORDING_PRESERVED") for p in _formulation_provenance)
             else _native_linguistic_level
         ),
         # Who formulated each admitted auxiliary statement: Brody's native realization,
         # a template rewrite, or the auxiliary model's own wording.
         "formulation_provenance": list(_formulation_provenance),
-        "auxiliary_wording_dependency": any(p != "NATIVE_VERIFIED_ECHO" for p in _formulation_provenance),
+        "formulation_records": list(_formulation_records),
+        "auxiliary_wording_dependency": any(r.get("origin") == "AUXILIARY_MODEL" for r in _formulation_records),
     }
 
 
