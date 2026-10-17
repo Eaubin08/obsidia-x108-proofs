@@ -195,6 +195,16 @@ _NEGATION_CLITICS = frozenset({"ne", "n'"})
 _AVOIR_AUX = frozenset({"a", "ont", "ai", "as", "avons", "avez"})
 _ETRE_AUX = frozenset({"est", "sont", "es", "suis", "sommes", "êtes"})
 _WORD_RE = r"[0-9a-zàâäéèêëîïôöùûüç]+'?"
+_PLAIN_STATEMENT_RE = re.compile(
+    r"^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[-'’][A-Za-zÀ-ÖØ-öø-ÿ]+)*['’]?"
+    r"(?:\s+[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[-'’][A-Za-zÀ-ÖØ-öø-ÿ]+)*['’]?)*\s*[.!]?$"
+)
+
+
+def _normalized_statement(text: str) -> str:
+    t = text.replace("’", "'").strip().rstrip(".!").strip().lower()
+    t = re.sub(r"'\s+", "'", t)
+    return re.sub(r"\s+", " ", t)
 
 
 def _allowed_gap_tokens(lemma: str) -> frozenset[str]:
@@ -237,6 +247,10 @@ def _native_realization_for(s: str, fr: bool) -> str | None:
     """
     if not fr:
         return None  # the SENS grammar is French-only; no English frame exists yet
+    # Only plain words: digits, signs, quotes, brackets, symbols and inner punctuation carry
+    # content (identifiers, quantities, operators) that SENS objects do not preserve.
+    if not _PLAIN_STATEMENT_RE.match(s):
+        return None
     from app.semantic.lattice.french_grammar import parse_utterance
 
     frame = parse_utterance(s)
@@ -282,6 +296,10 @@ def _native_realization_for(s: str, fr: bool) -> str | None:
         **cell,
     )
     if not realized["text"] or realized["has_linguistic_limitations"]:
+        return None
+    # Final identity guard: Brody's regeneration must reproduce the statement exactly (up to
+    # case and final punctuation). Any difference means something was lost or changed.
+    if _normalized_statement(realized["text"]) != _normalized_statement(s):
         return None
     return realized["text"].rstrip(". ")
 

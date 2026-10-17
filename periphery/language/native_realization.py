@@ -72,6 +72,14 @@ def _head_noun_number(head: str, lang: str) -> str:
     return numbers.pop() if numbers else ""
 
 
+# English nouns whose number is not marked (or is plural without -s): agreement cannot be
+# read from the form, so the number proposed for them is only tentative.
+_EN_NUMBER_AMBIGUOUS_NOUNS = frozenset({
+    "people", "police", "fish", "deer", "sheep", "cattle", "staff", "crew", "team", "data",
+    "series", "species", "aircraft", "offspring", "salmon", "trout", "moose", "swine",
+})
+
+
 def _bare_or_head_number(text: str, tokens: list[str], lang: str) -> str:
     """Number of a determinerless or determined nominal subject.
 
@@ -79,6 +87,8 @@ def _bare_or_head_number(text: str, tokens: list[str], lang: str) -> str:
     is not established (ambiguous noun, or a capitalized word that may be a proper noun).
     "" means no number can be proposed at all.
     """
+    if lang == "en" and tokens[-1] in _EN_NUMBER_AMBIGUOUS_NOUNS:
+        return "sg?"
     attested = _head_noun_number(tokens[-1], lang)
     if attested == "?":
         return "sg?"
@@ -109,6 +119,8 @@ def _infer_subject_features(subject: str, is_fr: bool) -> tuple[str, str, str]:
     first = tokens[0].replace("’", "'") if tokens else ""
     if first.startswith("l'"):
         return "3", "sg", ""
+    if is_fr and low.startswith(("la plupart", "beaucoup", "la majorité des", "nombre de")):
+        return "3", "pl", ""
     if is_fr:
         if len(tokens) == 1 and first in _FR_PRONOUNS:
             return _FR_PRONOUNS[first]
@@ -377,6 +389,10 @@ def realize_semantic_relation(
                     pp_gender, pp_number = gender, number
                     if not gender_known:
                         _limit(f"PARTICIPLE_AGREEMENT_UNCERTAIN:{clean_verb}:gender")
+                    if refl and clean_obj:
+                        # "Elle s'est lavé les mains": with a following direct object the
+                        # participle does not agree with the subject; not decided here.
+                        _limit(f"PARTICIPLE_AGREEMENT_UNCERTAIN:{clean_verb}:pronominal_with_object")
                 else:
                     pp_gender, pp_number = "masc", "sg"
                 pp_form = _french_past_participle(clean_verb, pp_gender, pp_number)
@@ -388,6 +404,8 @@ def realize_semantic_relation(
             elif is_progressive:
                 if tense not in ("present", "imperfect", "future"):
                     _limit(f"UNSUPPORTED_TENSE:{tense}:{aspect}")
+                if actual_mood != "indicative":
+                    _limit(f"UNSUPPORTED_STRUCTURE:{actual_mood}_progressive")
                 aux_be = realize_inflection("être", pos="verb", mood="indicative", tense=tense,
                                             person=person, number=number, lang="fr")
                 if not _is_attested(aux_be, "être", "fr"):

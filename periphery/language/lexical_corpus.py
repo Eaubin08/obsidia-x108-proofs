@@ -356,6 +356,7 @@ def is_known_lexical_item(word: str, lang: str | None = None) -> bool:
     target = (lang or "").lower()
 
     if target == "en":
+        clean = clean.replace("’", "'")
         low = clean.lower()
         if low in _EN_FUNCTION_WORDS or _in_oewn(low):
             return True
@@ -399,7 +400,10 @@ _EN_FUNCTION_WORDS = frozenset({
     "might", "must", "is", "am", "are", "was", "were", "been", "being", "be", "has", "have", "had",
     "does", "do", "did", "cannot", "don't", "doesn't", "didn't", "can't", "won't", "wouldn't",
     "isn't", "aren't", "wasn't", "weren't", "haven't", "hasn't", "hadn't", "shouldn't", "couldn't",
-    "mustn't", "i'm", "you're", "we're", "they're", "it's", "that's", "there's",
+    "mustn't", "i'm", "you're", "we're", "they're", "it's", "that's", "there's", "shan't",
+    "let's", "i'll", "you'll", "he'll", "she'll", "we'll", "they'll", "it'll", "i've", "you've",
+    "we've", "they've", "he's", "she's", "i'd", "you'd", "he'd", "she'd", "we'd", "they'd",
+    "when", "how", "where", "why", "there", "here", "so", "as", "also", "just", "very",
 })
 
 
