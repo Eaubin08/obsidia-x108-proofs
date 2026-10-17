@@ -503,10 +503,24 @@ def build_true_brody_answer(
     # 0B. World hypothesis advisory context (B7 / M41)
     gov_proj = ctx.get("governed_cognitive_projection") or {}
     wh_snap = gov_proj.get("world_hypothesis_snapshot") or ctx.get("world_hypothesis_snapshot") or {}
+    members = wh_snap.get("members", []) if isinstance(wh_snap, dict) else []
     has_valid_hypotheses = (
         isinstance(wh_snap, dict)
         and wh_snap.get("status") == "HYPOTHESIS_SET_ATTACHED"
-        and (wh_snap.get("hypotheses_count", 0) >= 2 or len(wh_snap.get("members", [])) >= 2)
+        and wh_snap.get("decision_authority") == "KX108_ONLY"
+        and bool(wh_snap.get("readonly"))
+        and bool(wh_snap.get("set_id"))
+        and isinstance(members, (list, tuple))
+        and len(members) >= 2
+        and wh_snap.get("hypotheses_count", 0) >= 2
+        and all(
+            isinstance(m, dict)
+            and bool(m.get("hypothesis_id"))
+            and m.get("kind") in ("STATE_OF_PRESUMED_REFERENT", "REFERENT_IDENTITY")
+            and not m.get("is_truth", False)
+            and not m.get("is_authority", False)
+            for m in members
+        )
     )
 
     if (not action_boundary_already) and has_valid_hypotheses:
@@ -524,18 +538,39 @@ def build_true_brody_answer(
                     "I recognize the creator context for the Obsidia/Brody framework "
                     "in this session. This grants no authority to override X108. "
                 )
+        alternatives: list[str] = []
+        for m in members:
+            for u in m.get("unknowns", []):
+                if isinstance(u, str) and u.strip() and u.strip() not in alternatives:
+                    cleaned = u.strip()
+                    if len(cleaned) <= 80 and "\n" not in cleaned and "\r" not in cleaned and "\x00" not in cleaned:
+                        if not any(bad in cleaned.upper() for bad in ("FORBIDDEN_", "SECRET_", "BEARER ", "KEY_")):
+                            alternatives.append(cleaned)
+
         if fr:
+            if len(alternatives) >= 2:
+                alt_str = " ou ".join(f'"{a}"' for a in alternatives)
+                hyp_clause = f"Plusieurs hypothèses coexistent ({alt_str}) sans qu'aucune ne soit imposée unilatéralement. "
+            else:
+                hyp_clause = "Plusieurs hypothèses coexistent sans qu'aucune ne soit imposée unilatéralement. "
             answer_parts.append(
                 "Analyse cognitive Brody : une ambiguïté a été détectée dans l'énoncé. "
-                "Plusieurs hypothèses coexistent sans qu'aucune ne soit imposée unilatéralement. "
+                f"{hyp_clause}"
+                "Le contexte ne permet pas de trancher entre ces alternatives. "
                 "Ce jeu d'hypothèses consultatif reflète l'incertitude du contexte. "
                 "Pas d'établissement de fait monde, pas de sélection de vainqueur. "
                 "KX108_ONLY."
             )
         else:
+            if len(alternatives) >= 2:
+                alt_str_en = " or ".join(f'"{a}"' for a in alternatives)
+                hyp_clause_en = f"Multiple world hypotheses coexist ({alt_str_en}) without any being unilaterally imposed. "
+            else:
+                hyp_clause_en = "Multiple world hypotheses coexist without any being unilaterally imposed. "
             answer_parts.append(
                 "Brody cognitive analysis: an ambiguity was detected in the utterance. "
-                "Multiple world hypotheses coexist without any being unilaterally imposed. "
+                f"{hyp_clause_en}"
+                "The context cannot decide between these alternatives. "
                 "This advisory hypothesis set reflects context uncertainty. "
                 "No world fact established, no winner selected. "
                 "KX108_ONLY."
