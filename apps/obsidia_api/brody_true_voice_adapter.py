@@ -848,7 +848,7 @@ def build_true_brody_answer(
             _internalized_claims = extract_candidate_claims(gen_snap["validated_content"], provider=gen_snap.get("provider", "QWEN_LOCAL"))
             _synth = _record_synth(synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en"))
             _native_synthesis_applied = _synth.get("native_synthesis_applied", False)
-            _native_linguistic_level = "REAL_SEMANTIC_RECONSTRUCTION"
+            _native_linguistic_level = "SYNTHESIS_APPLIED"
             answer_parts.append(f"\n\n{_synth['text']}")
         voice_source = "B6_ADVISORY_CONTEXT"
     elif not action_boundary_already:
@@ -1162,7 +1162,7 @@ def build_true_brody_answer(
                         _internalized_claims = extract_candidate_claims(gen_snap["validated_content"], provider=gen_snap.get("provider", "QWEN_LOCAL"))
                         _synth = _record_synth(synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en"))
                         _native_synthesis_applied = _synth.get("native_synthesis_applied", False)
-                        _native_linguistic_level = "REAL_SEMANTIC_RECONSTRUCTION"
+                        _native_linguistic_level = "SYNTHESIS_APPLIED"
                         answer_parts.append(f"\n\n{_synth['text']}")
                         voice_source = "BRODY_ADVISORY_WITH_AUXILIARY_EVIDENCE"
                     elif fr:
@@ -1243,7 +1243,7 @@ def build_true_brody_answer(
         _internalized_claims = extract_candidate_claims(gen_snap["validated_content"], provider=gen_snap.get("provider", "QWEN_LOCAL"))
         _synth = _record_synth(synthesize_brody_native_claims(_internalized_claims, user_message=user_message, language="fr" if fr else "en"))
         _native_synthesis_applied = _synth.get("native_synthesis_applied", False)
-        _native_linguistic_level = "REAL_SEMANTIC_RECONSTRUCTION"
+        _native_linguistic_level = "SYNTHESIS_APPLIED"
         sp_prefix = "\n\n" if answer_parts else ""
         answer_parts.insert(0 if not answer_parts else len(answer_parts), f"{sp_prefix}{_synth['text']}")
         voice_source = voice_source or "BRODY_ADVISORY_WITH_AUXILIARY_EVIDENCE"
@@ -1394,16 +1394,16 @@ def build_true_brody_answer(
         "decision_authority": "KX108_ONLY",
         "internalized_claims": _internalized_claims,
         "native_synthesis_applied": _native_synthesis_applied,
+        # Exact aggregate of the per-statement provenance: the single operation when all
+        # statements share it, MIXED otherwise. No semantic reconstruction is ever claimed:
+        # none is performed (reuse, pattern rewrite and preservation only).
         "native_linguistic_level": (
-            "AUXILIARY_WORDING_PRESERVED"
-            if _formulation_provenance and all(p == "AUXILIARY_WORDING_PRESERVED" for p in _formulation_provenance)
-            else "AUXILIARY_WORDING_REUSED"
-            if _formulation_provenance and all(
-                p in ("AUXILIARY_WORDING_REUSED", "AUXILIARY_WORDING_PRESERVED") for p in _formulation_provenance)
+            _formulation_provenance[0] if len(set(_formulation_provenance)) == 1
+            else "MIXED" if _formulation_provenance
             else _native_linguistic_level
         ),
-        # Who formulated each admitted auxiliary statement: Brody's native realization,
-        # a template rewrite, or the auxiliary model's own wording.
+        # What was done to each admitted auxiliary statement (reused after a regeneration
+        # check, pattern rewrite, or preserved); details in formulation_records.
         "formulation_provenance": list(_formulation_provenance),
         "formulation_records": list(_formulation_records),
         "auxiliary_wording_dependency": any(r.get("origin") == "AUXILIARY_MODEL" for r in _formulation_records),
