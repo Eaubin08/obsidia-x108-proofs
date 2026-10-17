@@ -1,5 +1,5 @@
 """
-app/semantic/lattice/native_realization.py
+periphery/language/native_realization.py
 
 Brody Native Realization Layer.
 Transforms structured semantic relations (subject, predicate, object, polarity, modality, tense, aspect)
@@ -21,7 +21,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from app.semantic.lattice.lexical_corpus import (
+from periphery.language.lexical_corpus import (
     lookup_surface_form,
     realize_inflection,
     is_known_lexical_item,

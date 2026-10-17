@@ -235,7 +235,7 @@ def calibrate_lexical_with_corpus(text: str, language: str = "fr") -> dict[str, 
     unrecognized_tokens: list[str] = []
 
     try:
-        from app.semantic.lattice.lexical_corpus import is_known_lexical_item
+        from periphery.language.lexical_corpus import is_known_lexical_item
         for u in unknowns:
             if is_known_lexical_item(u, lang=language):
                 recognized_vocabulary.append(u)

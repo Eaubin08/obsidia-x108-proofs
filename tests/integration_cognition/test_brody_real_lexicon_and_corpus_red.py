@@ -19,7 +19,7 @@ from __future__ import annotations
 import time
 import pytest
 
-from app.semantic.lattice.lexical_corpus import (
+from periphery.language.lexical_corpus import (
     lookup_surface_form,
     realize_inflection,
     get_verb_paradigm,
@@ -28,7 +28,7 @@ from app.semantic.lattice.lexical_corpus import (
     get_corpus_statistics,
 )
 from app.semantic.lattice.french_grammar import parse_utterance
-from app.semantic.lattice.native_realization import realize_semantic_relation
+from periphery.language.native_realization import realize_semantic_relation
 from periphery.language.lexical_calibrator import calibrate_lexical_with_corpus
 
 
@@ -226,6 +226,11 @@ def test_corpus_6b_unsupported_structure_produces_limitation():
 # ==============================================================================
 # 7. Runtime Grammar Lattice Integration
 # ==============================================================================
+@pytest.mark.xfail(
+    strict=True,
+    reason="HOLD: requires a corpus fallback inside sealed app/semantic/lattice/lexicon.py "
+    "(no extension point exists); needs an explicit reseal decision",
+)
 def test_corpus_7_french_grammar_parses_arbitrary_corpus_verbs():
     """
     Verify that parse_utterance natively parses verbs outside the hardcoded 50 verbs
@@ -384,8 +389,8 @@ def test_corpus_13_clean_installation_graceful_fallback():
     """Verify that when database is absent, the system degrades gracefully with explicit limitations."""
     from pathlib import Path
     from unittest.mock import patch
-    with patch("app.semantic.lattice.lexical_corpus.DB_PATH", Path("nonexistent_path/lexicon.db")):
-        from app.semantic.lattice.lexical_corpus import (
+    with patch("periphery.language.lexical_corpus.DB_PATH", Path("nonexistent_path/lexicon.db")):
+        from periphery.language.lexical_corpus import (
             _get_connection,
             realize_inflection,
             is_known_lexical_item,
@@ -399,7 +404,7 @@ def test_corpus_13_clean_installation_graceful_fallback():
         _local.conn = None
         try:
             assert _get_connection() is None
-            from app.semantic.lattice.native_realization import realize_semantic_relation
+            from periphery.language.native_realization import realize_semantic_relation
             res = realize_semantic_relation("L'opérateur", "vérifier", "le circuit", lang="fr")
             assert res["has_linguistic_limitations"] is True
             assert res["decision_authority"] == "KX108_ONLY"

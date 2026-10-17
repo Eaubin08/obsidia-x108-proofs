@@ -1,5 +1,5 @@
 """
-app/semantic/lattice/lexical_corpus.py
+periphery/language/lexical_corpus.py
 
 High-performance runtime interface to Brody's real French and English lexical,
 morphological, and semantic corpora.
@@ -27,7 +27,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[2]
 DB_PATH = ROOT / "data" / "linguistic_corpus" / "lexicon.db"
 
 _local = threading.local()
