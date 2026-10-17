@@ -19,7 +19,7 @@ Statuts : **BRANCHÉ** = importé par le chemin public `apps/obsidia_api/routes/
 |---|---|---|---|---|
 | SENS / treillis sémantique | `app/semantic/lattice/` (scellé) via `app/harness/state_explicit/sens_adapter` | BRANCHÉ | représentation du sens d'un énoncé ; ~55 verbes, français seul | [EC] |
 | Corpus lexical FR/EN | `periphery/language/lexical_corpus.py`, `native_realization.py` | BRANCHÉ (provenance publique fermée à `4016db99`) | vocabulaire, définitions, synonymes, gloses, polysémie | [EC][TE] |
-| OS Trad | `periphery/language/language_router.py` | HORS CHEMIN BRODY (`os_trad_ir_reverse.py`, `periphery_ops.py`) | traduction / normalisation | [EC] |
+| OS Trad | `periphery/language/language_router.py` | BRANCHÉ (import dynamique de `detect_language` et `has_authority_claim` via `apps/obsidia_api/runtime_loader.py` L38–L39, chargé par `routes/brody.py` L38) ; aussi routes `os_trad_ir_reverse.py`, `periphery_ops.py` | détection de langue, signal de revendication d'autorité ; traduction / normalisation | [EC] |
 | Brody (organe d'intégration) | `apps/obsidia_api/brody_*` (≈ 50 adaptateurs importés) | BRANCHÉ | contexte, réponse, enseignant/élève textuel | [EC] |
 | B7 cognition (détection d'inconnues) | `app/cognition/b7/` | BRANCHÉ (findings sentinel historiques) | marquer ce qui n'est pas résolu → HOLD | [EC][TE] |
 | B9 chemin cognitif | `app/cognition/b9/contracts.py` | ISOLÉ | tracer le chemin d'un raisonnement | [EC] |
