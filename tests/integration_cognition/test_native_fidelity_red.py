@@ -78,12 +78,26 @@ def test_fidelity_english_contractions_are_known(word):
     assert is_known_lexical_item(word, lang="en") is True
 
 
-def test_fidelity_level_label_is_not_native_when_wording_is_auxiliary():
-    from apps.obsidia_api.brody_true_voice_adapter import synthesize_brody_native_claims
+def test_fidelity_answer_level_is_not_reconstruction_when_wording_is_auxiliary():
+    from apps.obsidia_api.brody_true_voice_adapter import build_true_brody_answer
 
-    claims = [{"statement": "The operator checks the valve.", "provider": "QWEN_LOCAL"}]
-    synth = synthesize_brody_native_claims(claims, user_message="status?", language="en")
-    if synth.get("formulation_provenance") and all(
-        p == "AUXILIARY_WORDING_PRESERVED" for p in synth["formulation_provenance"]
-    ):
-        assert synth["native_linguistic_level"] == "AUXILIARY_WORDING_PRESERVED"
+    ctx = {
+        "neural_generation_snapshot": {
+            "status": "GENERATION_SUCCESS",
+            "validated_content": "The operator checks the valve.",
+            "evidence_only": True,
+            "provider": "QWEN_LOCAL",
+        },
+        "rights_action_snapshot": {"request_type": "PURE_RESPONSE"},
+    }
+    res = build_true_brody_answer(user_message="What does the operator do?", language="en", brody_full_context=ctx)
+    prov = res["formulation_provenance"]
+    assert prov and all(p == "AUXILIARY_WORDING_PRESERVED" for p in prov)
+    assert res["native_linguistic_level"] == "AUXILIARY_WORDING_PRESERVED"
+
+
+def test_fidelity_noun_complement_outside_object_is_not_dropped():
+    from apps.obsidia_api.brody_true_voice_adapter import _reconstruct_with_provenance
+
+    text, provenance = _reconstruct_with_provenance("L'opérateur vérifie la température du circuit.", fr=True)
+    assert provenance != "NATIVE_REALIZATION" or "du circuit" in text

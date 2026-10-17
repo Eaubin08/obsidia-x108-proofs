@@ -397,7 +397,9 @@ _EN_FUNCTION_WORDS = frozenset({
     "our", "their", "who", "whom", "whose", "which", "what", "not", "no", "if", "than", "then",
     "because", "while", "although", "will", "would", "shall", "should", "can", "could", "may",
     "might", "must", "is", "am", "are", "was", "were", "been", "being", "be", "has", "have", "had",
-    "does", "do", "did",
+    "does", "do", "did", "cannot", "don't", "doesn't", "didn't", "can't", "won't", "wouldn't",
+    "isn't", "aren't", "wasn't", "weren't", "haven't", "hasn't", "hadn't", "shouldn't", "couldn't",
+    "mustn't", "i'm", "you're", "we're", "they're", "it's", "that's", "there's",
 })
 
 

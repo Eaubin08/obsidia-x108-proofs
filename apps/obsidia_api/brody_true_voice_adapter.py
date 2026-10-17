@@ -188,12 +188,21 @@ def _sens_tense_to_realization(tense_aspect: str, verb_form: str, surface: str, 
     return None
 
 
-# Tokens that may legitimately sit between a sentence-initial subject and the verb span
-# (negation clitic, reflexive clitics, passé-composé auxiliaries).
-_PRE_VERB_TOKENS = frozenset({
-    "ne", "n'", "se", "s'", "a", "ont", "ai", "as", "avons", "avez", "est", "sont", "es", "suis",
-    "sommes", "êtes",
-})
+# Tokens that may legitimately sit between a sentence-initial subject and the verb span:
+# the negation clitic and the passé-composé auxiliaries. Reflexive clitics are excluded on
+# purpose: the SENS unit does not carry them, so a native realization would drop them.
+_NEGATION_CLITICS = frozenset({"ne", "n'"})
+_AVOIR_AUX = frozenset({"a", "ont", "ai", "as", "avons", "avez"})
+_ETRE_AUX = frozenset({"est", "sont", "es", "suis", "sommes", "êtes"})
+_WORD_RE = r"[0-9a-zàâäéèêëîïôöùûüç]+'?"
+
+
+def _allowed_gap_tokens(lemma: str) -> frozenset[str]:
+    """Clitics allowed before the verb; "être" is an auxiliary only for verbs that take it
+    (otherwise être + participle is a passive or a resultative state, not a passé composé)."""
+    from periphery.language.native_realization import _ETRE_VERBS
+
+    return _NEGATION_CLITICS | _AVOIR_AUX | (_ETRE_AUX if lemma in _ETRE_VERBS else frozenset())
 
 
 def _subject_phrase(raw: str, unit: Any) -> str | None:
@@ -210,8 +219,9 @@ def _subject_phrase(raw: str, unit: Any) -> str | None:
         return None
     phrase = raw[: idx + len(head)].strip()
     gap = raw[idx + len(head): unit.span[0]].lower().replace("’", "'")
-    gap_tokens = re.findall(r"[a-zàâäéèêëîïôöùûüç]+'?", gap)
-    if any(t not in _PRE_VERB_TOKENS for t in gap_tokens):
+    gap_tokens = re.findall(_WORD_RE, gap)
+    allowed = _allowed_gap_tokens(unit.lemma)
+    if any(t not in allowed for t in gap_tokens):
         return None
     if len(phrase.split()) > 4 or "," in phrase:
         return None
@@ -245,6 +255,18 @@ def _native_realization_for(s: str, fr: bool) -> str | None:
         return None
     subject = _subject_phrase(frame.raw, u0)
     if subject is None:
+        return None
+    # Full token coverage: every word of the statement must be carried by the realization
+    # (subject, allowed clitics, verb, negation, objects). Adverbs, restrictions ("ne ... que"),
+    # epistemic markers or any other word make the statement inadmissible.
+    covered = set(re.findall(_WORD_RE, subject.lower().replace("’", "'")))
+    covered |= _allowed_gap_tokens(u0.lemma) | {u0.surface.lower()}
+    if u0.polarity == "negative":
+        covered.add("pas")
+    for o in u0.objects:
+        covered |= set(re.findall(_WORD_RE, (o.text or "").lower()))
+    raw_tokens = re.findall(_WORD_RE, frame.raw.lower().replace("’", "'"))
+    if any(t not in covered for t in raw_tokens):
         return None
     cell = _sens_tense_to_realization(u0.tense_aspect, u0.verb_form, u0.surface, u0.lemma)
     if cell is None:
@@ -524,6 +546,8 @@ def synthesize_brody_native_claims(
         "established_facts": [],
         "decision_authority": "KX108_ONLY",
         "native_synthesis_applied": True,
+        # Stage label: the grammar lattice was consulted. Who formulated each statement is
+        # reported separately in formulation_provenance.
         "native_linguistic_level": "GRAMMAR_LATTICE_ADAPTER",
         "formulation_provenance": formulation_provenance,
         "auxiliary_wording_dependency": any(p != "NATIVE_REALIZATION" for p in formulation_provenance),
@@ -1257,7 +1281,11 @@ def build_true_brody_answer(
         "decision_authority": "KX108_ONLY",
         "internalized_claims": _internalized_claims,
         "native_synthesis_applied": _native_synthesis_applied,
-        "native_linguistic_level": _native_linguistic_level,
+        "native_linguistic_level": (
+            "AUXILIARY_WORDING_PRESERVED"
+            if _formulation_provenance and all(p == "AUXILIARY_WORDING_PRESERVED" for p in _formulation_provenance)
+            else _native_linguistic_level
+        ),
         # Who formulated each admitted auxiliary statement: Brody's native realization,
         # a template rewrite, or the auxiliary model's own wording.
         "formulation_provenance": list(_formulation_provenance),

@@ -61,23 +61,36 @@ _EN_BE = {
 
 
 def _head_noun_number(head: str, lang: str) -> str:
-    """Number of a noun head from attested corpus analyses; "" when absent or ambiguous."""
+    """Number of a noun head from attested corpus analyses.
+
+    "" when the head is not attested as a noun, "?" when it is attested as both
+    singular and plural (fils, sheep), else "sg" / "pl".
+    """
     numbers = {a.number for a in lookup_surface_form(head, lang=lang) if a.pos == "noun" and a.number in ("sg", "pl")}
-    return numbers.pop() if len(numbers) == 1 else ""
+    if len(numbers) > 1:
+        return "?"
+    return numbers.pop() if numbers else ""
 
 
 def _bare_or_head_number(text: str, tokens: list[str], lang: str) -> str:
     """Number of a determinerless or determined nominal subject.
 
-    A capitalized single token that the corpus does not know and that does not end
-    like a plural is treated as a proper noun (singular); anything else unknown is "".
+    A trailing "?" marks a tentative number: the form to realize is known but agreement
+    is not established (ambiguous noun, or a capitalized word that may be a proper noun).
+    "" means no number can be proposed at all.
     """
     attested = _head_noun_number(tokens[-1], lang)
-    if attested or len(tokens) > 1:
+    if attested == "?":
+        return "sg?"
+    if len(tokens) > 1:
         return attested
-    if text[:1].isupper() and not tokens[0].endswith(("s", "x")):
-        return "sg"
-    return ""
+    if text[:1].isupper():
+        # A capitalized bare word may be a proper noun ("Paris", "Wales") whatever the
+        # corpus says about its lowercase homograph.
+        if attested == "sg" or (not attested and not tokens[0].endswith(("s", "x"))):
+            return "sg"
+        return f"{attested or 'sg'}?"
+    return attested
 
 
 def _infer_subject_features(subject: str, is_fr: bool) -> tuple[str, str, str]:
@@ -284,8 +297,8 @@ def realize_semantic_relation(
 
     inf_person, inf_number, inf_gender = _infer_subject_features(clean_subj, is_fr)
     person = str(person) if person else inf_person
-    number_known = bool(number or inf_number)
-    number = (number or inf_number or "sg").lower()
+    number_known = bool(number) or bool(inf_number and not inf_number.endswith("?"))
+    number = (number or inf_number.rstrip("?") or "sg").lower()
     gender_known = bool(gender or inf_gender)
     gender = (gender or inf_gender or "masc").lower()
 
@@ -312,6 +325,15 @@ def realize_semantic_relation(
         _limit(f"SUBJECT_AGREEMENT_UNCERTAIN:{clean_subj}")
     if is_imperative and is_question:
         _limit("UNSUPPORTED_STRUCTURE:imperative_question")
+    if is_imperative and (tense != "present" or aspect != "simple"):
+        _limit(f"UNSUPPORTED_STRUCTURE:imperative_{tense}_{aspect}")
+    if is_compound and is_progressive:
+        _limit("UNSUPPORTED_STRUCTURE:compound_progressive")
+    if is_compound and actual_mood not in ("indicative", "imperative"):
+        _limit(f"UNSUPPORTED_STRUCTURE:{actual_mood}_compound")
+    is_subjunctive = actual_mood == "subjunctive" or tense == "subjunctive"
+    if is_fr and is_subjunctive and not clean_subj.lower().replace("’", "'").startswith(("que ", "qu'")):
+        _limit("UNSUPPORTED_STRUCTURE:subjunctive_without_que")
 
     if is_fr:
         refl_pron_map = {
