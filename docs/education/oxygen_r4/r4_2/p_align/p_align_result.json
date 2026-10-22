@@ -1,0 +1,230 @@
+{
+ "thresholds": {
+  "min_support": 6,
+  "min_precision": 0.5
+ },
+ "gate_population": "18 labelled force teaching items (E_LESSONS + E_EXERCISES)",
+ "force_rows": [
+  {
+   "item": "E-F1-1",
+   "label": "F1",
+   "evoked_groups": 0,
+   "linked_groups": 0,
+   "ambiguous_groups": 0,
+   "prediction": null,
+   "ambiguous_forms_in_item": 7,
+   "outcome": "MUTE"
+  },
+  {
+   "item": "E-F1-2",
+   "label": "F1",
+   "evoked_groups": 0,
+   "linked_groups": 0,
+   "ambiguous_groups": 0,
+   "prediction": null,
+   "ambiguous_forms_in_item": 3,
+   "outcome": "MUTE"
+  },
+  {
+   "item": "E-F2-1",
+   "label": "F2",
+   "evoked_groups": 0,
+   "linked_groups": 0,
+   "ambiguous_groups": 0,
+   "prediction": null,
+   "ambiguous_forms_in_item": 5,
+   "outcome": "MUTE"
+  },
+  {
+   "item": "E-F2-2",
+   "label": "F2",
+   "evoked_groups": 0,
+   "linked_groups": 0,
+   "ambiguous_groups": 0,
+   "prediction": null,
+   "ambiguous_forms_in_item": 4,
+   "outcome": "MUTE"
+  },
+  {
+   "item": "E-F3-1",
+   "label": "F3",
+   "evoked_groups": 0,
+   "linked_groups": 0,
+   "ambiguous_groups": 0,
+   "prediction": null,
+   "ambiguous_forms_in_item": 5,
+   "outcome": "MUTE"
+  },
+  {
+   "item": "E-F3-2",
+   "label": "F3",
+   "evoked_groups": 0,
+   "linked_groups": 0,
+   "ambiguous_groups": 0,
+   "prediction": null,
+   "ambiguous_forms_in_item": 5,
+   "outcome": "MUTE"
+  },
+  {
+   "item": "E-F4-1",
+   "label": "F4",
+   "evoked_groups": 0,
+   "linked_groups": 0,
+   "ambiguous_groups": 0,
+   "prediction": null,
+   "ambiguous_forms_in_item": 4,
+   "outcome": "MUTE"
+  },
+  {
+   "item": "E-F4-2",
+   "label": "F4",
+   "evoked_groups": 0,
+   "linked_groups": 0,
+   "ambiguous_groups": 0,
+   "prediction": null,
+   "ambiguous_forms_in_item": 3,
+   "outcome": "MUTE"
+  },
+  {
+   "item": "E-F5-1",
+   "label": "F5",
+   "evoked_groups": 2,
+   "linked_groups": 2,
+   "ambiguous_groups": 0,
+   "prediction": "F1",
+   "ambiguous_forms_in_item": 4,
+   "outcome": "FP"
+  },
+  {
+   "item": "E-F5-2",
+   "label": "F5",
+   "evoked_groups": 0,
+   "linked_groups": 0,
+   "ambiguous_groups": 0,
+   "prediction": null,
+   "ambiguous_forms_in_item": 7,
+   "outcome": "MUTE"
+  },
+  {
+   "item": "E-F6-1",
+   "label": "F6",
+   "evoked_groups": 0,
+   "linked_groups": 0,
+   "ambiguous_groups": 0,
+   "prediction": null,
+   "ambiguous_forms_in_item": 7,
+   "outcome": "MUTE"
+  },
+  {
+   "item": "E-F6-2",
+   "label": "F6",
+   "evoked_groups": 0,
+   "linked_groups": 0,
+   "ambiguous_groups": 0,
+   "prediction": null,
+   "ambiguous_forms_in_item": 4,
+   "outcome": "MUTE"
+  },
+  {
+   "item": "E-F7-1",
+   "label": "F7",
+   "evoked_groups": 0,
+   "linked_groups": 0,
+   "ambiguous_groups": 0,
+   "prediction": null,
+   "ambiguous_forms_in_item": 5,
+   "outcome": "MUTE"
+  },
+  {
+   "item": "E-F7-2",
+   "label": "F7",
+   "evoked_groups": 0,
+   "linked_groups": 0,
+   "ambiguous_groups": 0,
+   "prediction": null,
+   "ambiguous_forms_in_item": 3,
+   "outcome": "MUTE"
+  },
+  {
+   "item": "EX-F1",
+   "label": "F1",
+   "evoked_groups": 0,
+   "linked_groups": 0,
+   "ambiguous_groups": 0,
+   "prediction": null,
+   "ambiguous_forms_in_item": 4,
+   "outcome": "MUTE"
+  },
+  {
+   "item": "EX-F3",
+   "label": "F3",
+   "evoked_groups": 1,
+   "linked_groups": 0,
+   "ambiguous_groups": 0,
+   "prediction": null,
+   "ambiguous_forms_in_item": 4,
+   "outcome": "MUTE"
+  },
+  {
+   "item": "EX-F4",
+   "label": "F4",
+   "evoked_groups": 0,
+   "linked_groups": 0,
+   "ambiguous_groups": 0,
+   "prediction": null,
+   "ambiguous_forms_in_item": 4,
+   "outcome": "MUTE"
+  },
+  {
+   "item": "EX-F6",
+   "label": "F6",
+   "evoked_groups": 0,
+   "linked_groups": 0,
+   "ambiguous_groups": 0,
+   "prediction": null,
+   "ambiguous_forms_in_item": 5,
+   "outcome": "MUTE"
+  }
+ ],
+ "by_lemma": {
+  "force": {
+   "items": 18,
+   "non_mute_support": 1,
+   "TP": 0,
+   "FP": 1,
+   "FN_mute": 17,
+   "TN": "undefined",
+   "precision": 0.0,
+   "recall": 0.0,
+   "coverage": 0.056
+  },
+  "chemin": {
+   "items": 2,
+   "non_mute_support": 0,
+   "TP": 0,
+   "FP": 0,
+   "FN_mute": 2,
+   "TN": "undefined",
+   "precision": null,
+   "recall": 0.0,
+   "coverage": 0.0,
+   "groups_in_export": 1,
+   "note": "descriptive only, not part of the gate"
+  },
+  "corriger": {
+   "items": 2,
+   "non_mute_support": 0,
+   "TP": 0,
+   "FP": 0,
+   "FN_mute": 2,
+   "TN": "undefined",
+   "precision": null,
+   "recall": 0.0,
+   "coverage": 0.0,
+   "groups_in_export": 1,
+   "note": "descriptive only, not part of the gate"
+  }
+ },
+ "P_ALIGN": "HOLD",
+ "script_sha256": "4d9be4773e8eace7893e50771374708d19a0017afd3ba824a4938a18cb62e4df"
+}
