@@ -124,6 +124,20 @@ L'élève répond HOLD quand : plusieurs sens restent compatibles avec la phrase
 
 Le journal **ne décide rien**, **ne promeut rien** et n'est jamais lu comme une connaissance vraie.
 
+## 8b. Exigences de récupération (ajout V0.2, d'après `OXYGEN_MEMORY_SEMANTIC_CROSSWALK_V0.md`) [NP]
+
+Après enseignement, l'élève doit pouvoir **retrouver** ses acquis candidats, avec leur provenance :
+
+| Clé | Exigence |
+|---|---|
+| par **sens** | `retrieve(word, sense)` ne renvoie que des acquis de ce sens |
+| par **domaine** | `retrieve(word, domain)` renvoie les sens de ce domaine (ex. physique → F5) |
+| par **contexte** | `retrieve(word, context)` classe en tête le sens compatible avec le contexte |
+| par **temporalité** | `retrieve(..., as_of_revision=n)` renvoie ce qui était enregistré à la révision *n*, inchangé après une révision ultérieure (axe « révision », distinct de la validité dans le monde) |
+| par **provenance** | `retrieve(word, provenance=id)` renvoie les acquis issus de cette leçon ou correction |
+
+**Portée :** ces exigences concernent la récupération locale du pilote. Elles **ne** démontrent **pas** la mémoire multidimensionnelle (34 arbres, nuages de points, graphes, causalité, analogies), la frise du monde humain ni la chronologie éducative globale d'Oxygen (crosswalk §4).
+
 ## 9. Décisions réellement nécessaires du fondateur
 
 1. Autoriser l'écriture de **tests RED isolés** du pilote (sans code de production) ; cela tranche **partiellement** la décision ouverte n° 1 de la préconception (réutiliser B8 / B10 en **banc isolé**, sans raccord runtime).
