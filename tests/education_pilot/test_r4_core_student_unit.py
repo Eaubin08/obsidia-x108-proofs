@@ -120,7 +120,7 @@ def test_negation_rule_builds_a_contrast_and_contestation_suspends_it(mod):
     assert snap["contrasts"] == [] and snap["statuses"]["K-1"] == ("OK", True)
     assert snap["statuses"]["K-X"] == ("CONTESTE", False) and "S-EX" in snap["contested"]
     hit = next(h for h in s.retrieve(word="mot") if h["id"] == "S-EX")
-    assert hit["status"] == "CONTESTE" and "K-X" in hit["corrections"]          # traces kept, nothing erased
+    assert hit["status"] == "CONTESTE" and any(c["id"] == "K-X" for c in hit["corrections"])  # traces kept, nothing erased
 
 
 def test_t_ordre_1_and_2_order_of_corrections_is_irrelevant(mod):
@@ -222,3 +222,107 @@ def test_ambiguous_forms_contribute_every_candidate_lemma(mod):
     s = new(mod, lexicon=True)
     lemmas = s._lemma_set("mot", "Le mot ressort du lot.")
     assert {"ressort", "ressortir"} <= lemmas
+
+
+
+# --- G1 / G5 conformance tests (T-NEG-MARK, T-RETRIEVE-STATUS, T-JOURNAL, T-GLOSE, T-K9) --------
+
+def test_t_neg_mark_ne_pas_cuts_at_ne(mod):
+    s = new(mod)
+    s.learn(SYN + [EX])
+    c_ne_pas = ("K-NEG1", "S-EX", "vol (L1), ne vole pas du tout (L2).")
+    s.apply_correction(c_ne_pas, EX)
+    snap = s.derived_snapshot("mot")
+    assert ("K-NEG1", "L1", "L2") in snap["contrasts"]
+
+
+def test_t_neg_mark_ne_plus_cuts_at_ne(mod):
+    s = new(mod)
+    s.learn(SYN + [EX])
+    c_ne_plus = ("K-NEG2", "S-EX", "vol (L1), ne vole plus jamais (L2).")
+    s.apply_correction(c_ne_plus, EX)
+    snap = s.derived_snapshot("mot")
+    assert ("K-NEG2", "L1", "L2") in snap["contrasts"]
+
+
+def test_t_neg_mark_isolated_ne_does_not_cut(mod):
+    m, _ = mod
+    result = m.R4CoreStudent._parse("ne signifie rien ici (L1).", "L1", ["L1", "L2"])
+    assert result["contrasts"] == []
+
+
+def test_t_retrieve_status_corrections_expose_suspendu(mod):
+    s = new(mod)
+    s.learn(SYN + [EX])
+    s.apply_correction(OKC, EX)
+    s.apply_correction(CONTEST, EX)
+    hit = next(h for h in s.retrieve(word="mot") if h["id"] == "S-EX")
+    corr_by_id = {c["id"]: c["status"] for c in hit["corrections"]}
+    assert corr_by_id["K-1"] == "SUSPENDU"
+    assert corr_by_id["K-X"] == "CONTESTE"
+
+
+def test_t_retrieve_status_before_contest_k1_is_ok(mod):
+    s = new(mod)
+    s.learn(SYN + [EX])
+    s.apply_correction(OKC, EX)
+    hit = next(h for h in s.retrieve(word="mot") if h["id"] == "S-EX")
+    corr_by_id = {c["id"]: c["status"] for c in hit["corrections"]}
+    assert corr_by_id["K-1"] == "OK"
+
+
+def test_t_journal_records_status_transitions(mod):
+    s = new(mod)
+    lessons_l1 = [x for x in SYN if x[3] == "L1"] + [EX]
+    s.learn(lessons_l1)
+    s.apply_correction(OKC, EX)           # K-1 -> OK
+    s.apply_correction(CONTEST, EX)       # K-X -> NON_RECONNU (L2 not yet in labels)
+    lessons_l2 = [x for x in SYN if x[3] == "L2"]
+    s.learn(lessons_l2)                   # L2 now known: K-X -> CONTESTE, K-1 -> SUSPENDU
+    journal = s.reinterpretation_journal()
+    all_changes = {(ch["correction"], ch["previous_status"], ch["new_status"])
+                   for entry in journal for ch in entry["changes"]}
+    assert ("K-X", "NON_RECONNU", "CONTESTE") in all_changes
+    assert ("K-1", "OK", "SUSPENDU") in all_changes
+
+
+def test_t_journal_entries_are_never_erased(mod):
+    s = new(mod)
+    s.learn(SYN + [EX])
+    s.apply_correction(OKC, EX)
+    s.apply_correction(CONTEST, EX)
+    j1 = s.reinterpretation_journal()
+    s.learn([("S-5", "mot", "Le mot file vite.", "L1", "a", "x")])
+    j2 = s.reinterpretation_journal()
+    assert len(j2) >= len(j1)
+    for entry in j1:
+        assert entry in j2
+
+
+def test_t_glose_excludes_labels_and_cue_segment(mod):
+    m, _ = mod
+    labels = ["L1", "L2"]
+    result = m.R4CoreStudent._parse(
+        "\u00ab vole haut \u00bb marque le sens (L1), pas du tout (L2).",
+        "L1", labels)
+    lab_folded = {"l1", "l2"}
+    cue_tokens = {"vole", "haut"}
+    all_gloss_tokens = {g for glist in result["glosses"].values() for g in glist}
+    assert not any(g in lab_folded for glist in result["glosses"].values() for g in glist)
+    assert not (cue_tokens & all_gloss_tokens), f"cue tokens leaked: {cue_tokens & all_gloss_tokens}"
+
+
+def test_t_k9_2_mot_inconnu(mod):
+    s = new(mod)
+    s.learn(SYN)
+    a = s.answer("zorp", "Le zorp surgit sans prevenir.")
+    assert a["sense"] == "HOLD" and a["reason"] == "MOT_INCONNU"
+
+
+def test_t_k9_3_preuve_insuffisante(mod):
+    items = [("K9-3", "zorp", "Le zorp surgit.", "L1", "a", "x"),
+             ("K9-4", "zorp", "Un zorp passe.", "L2", "b", "x")]
+    s = new(mod)
+    s.learn(items)
+    a = s.answer("zorp", "Le zorp arrive doucement ici.")
+    assert a["sense"] == "HOLD" and a["reason"] in {"PREUVE_INSUFFISANTE", "CONFLIT"}

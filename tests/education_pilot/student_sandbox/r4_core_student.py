@@ -150,6 +150,10 @@ class R4CoreStudent:
         t = toks(body)
         lab = {fold(x): x for x in labels}
         cut = len(t)
+        # G1 (K2 R4.2.0): ne...pas and ne...plus -- cut at the "ne", not the marker
+        for i, tok in enumerate(t):
+            if tok == "ne" and any(x in ("pas", "plus") for x in t[i + 1:i + 5]):
+                cut = min(cut, i)
         for i in range(len(t)):
             for m in NEGATION_MARKERS:
                 if tuple(t[i:i + len(m)]) == m:
@@ -182,6 +186,7 @@ class R4CoreStudent:
 
     def _content(self, word, sentence):
         s = stem(word)
+        # G2 (K5 / R4.2): content word = not a function word AND length >= 3 (contracted, not a tuning parameter)
         return [x for x in toks(sentence) if x not in FUNCTION_WORDS and len(x) > 2 and not x.startswith(s)]
 
     def _lemma_set(self, word, sentence):
@@ -283,6 +288,12 @@ class R4CoreStudent:
 
     # --- memory interface ------------------------------------------------------------------------
 
+    @staticmethod
+    def _eff_status(parsed: dict) -> str:
+        """G3 (F-A §2): effective correction status, exposing SUSPENDU.""";
+        s = parsed["status"]
+        return "SUSPENDU" if s == "OK" and parsed.get("suspended", False) else s
+
     def _hits(self, d, word):
         hits = []
         for k, v in sorted(d["items"].items()):
@@ -293,7 +304,8 @@ class R4CoreStudent:
                         if c["exercise"][0] == k and d["parsed"][cid]["status"] == "OK" and not d["parsed"][cid]["suspended"])
             hits.append({"id": k, "sense": it[3], "domain": it[4], "provenance": ok + [k],
                          "status": "CONTESTE" if k in d["contested"] else "ACTIF",
-                         "corrections": sorted(cid for cid, c in d["corrections"].items() if c["exercise"][0] == k),
+                         "corrections": [{"id": cid, "status": R4CoreStudent._eff_status(d["parsed"][cid])}
+                                          for cid in sorted(cid for cid, c in d["corrections"].items() if c["exercise"][0] == k)],
                          "revision": v["revision"], "content": it[2]})
         return hits
 
@@ -322,6 +334,28 @@ class R4CoreStudent:
         return {"statuses": {cid: (p["status"], p.get("suspended", False)) for cid, p in sorted(d["parsed"].items())},
                 "contested": d["contested"], "contrasts": sorted((c["id"], c["positive"], c["negative"]) for c in d["contrasts"]),
                 "hits": [{k: v for k, v in h.items() if k != "revision"} for h in self._hits(d, word)]}
+
+    def reinterpretation_journal(self):
+        """G4 (NB-F R4.2.2): append-only log of correction status changes across revisions."""
+        journal, prev = [], {}
+        for ev in self.state["events"]:
+            r = ev["revision"]
+            d = self._derive(r)
+            curr = {cid: self._eff_status(p) for cid, p in d["parsed"].items()}
+            changes, suspended, reactivated = [], [], []
+            for cid in sorted(curr):
+                old_s, new_s = prev.get(cid), curr[cid]
+                if old_s != new_s:
+                    changes.append({"correction": cid, "previous_status": old_s, "new_status": new_s})
+                    if new_s == "SUSPENDU":
+                        suspended.append(cid)
+                    elif old_s == "SUSPENDU":
+                        reactivated.append(cid)
+            if changes:
+                journal.append({"revision": r, "event": ev["kind"],
+                                 "changes": changes, "suspended": suspended, "reactivated": reactivated})
+            prev = curr
+        return journal
 
     # --- persistence -----------------------------------------------------------------------------
 
