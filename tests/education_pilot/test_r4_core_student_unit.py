@@ -171,7 +171,7 @@ def test_b4_contested_sentence_never_feeds_any_evidence_class(mod):
     s = new(mod)
     s.learn(SYN + [EX]); s.apply_correction(CONTEST, EX)
     assert all(h["id"] != "S-EX" or h["status"] == "CONTESTE" for h in s.retrieve(word="mot"))
-    classes, labels, active = s._evidence("mot", EX[2])
+    classes, labels, active, _event_classes = s._evidence("mot", EX[2])
     assert "S-EX" not in {it[0] for it in active}
     assert all("S-EX" not in p for _, (v, prov) in classes.items() for p in prov.values())
 
@@ -326,3 +326,111 @@ def test_t_k9_3_preuve_insuffisante(mod):
     s.learn(items)
     a = s.answer("zorp", "Le zorp arrive doucement ici.")
     assert a["sense"] == "HOLD" and a["reason"] in {"PREUVE_INSUFFISANTE", "CONFLIT"}
+
+# --- P5-L2 first increment: event-level provenance, device pair corroboration ----------------------
+#
+# Scenario sentences (construction argmax vs exemplaires argmax):
+#   PA1 = "Le mot vole souvent dans les nuages lointains."  -- construction argmax for L1 (event 1)
+#   PA2 = "Un mot bondit depuis la branche haute."          -- L1 filler (event 1)
+#   PA3 = "Ce mot plonge sous la surface froide."           -- L1 filler (event 1)
+#   PB1 = "Ce mot vole souvent sur des arbres immenses aussi." -- exemplaires argmax for L1 (event 2)
+#   PE1 = "La route du mot longe toute la colline."         -- L2 (event 1 or 2)
+#   PE2 = "Quelle colline prend ce mot fragile."            -- L2 (event 1 or 2)
+#   PQUERY = "Le mot vole souvent sur les arbres immenses." -- test query
+#
+# With n[L1]=4: voices_constr(PA1)=0.545>=TAU, voices_exem(PB1)=0.533>=TAU (verified analytically).
+# PA1 and PB1 have disjoint prov sets; if different events -> P5-L2 fires; same event -> HOLD.
+
+PA1 = ("PA1", "mot", "Le mot vole souvent dans les nuages lointains.", "L1", "d", "x")
+PA2 = ("PA2", "mot", "Un mot bondit depuis la branche haute.", "L1", "d", "x")
+PA3 = ("PA3", "mot", "Ce mot plonge sous la surface froide.", "L1", "d", "x")
+PB1 = ("PB1", "mot", "Ce mot vole souvent sur des arbres immenses aussi.", "L1", "d", "x")
+PE1 = ("PE1", "mot", "La route du mot longe toute la colline.", "L2", "e", "x")
+PE2 = ("PE2", "mot", "Quelle colline prend ce mot fragile.", "L2", "e", "x")
+PQUERY = "Le mot vole souvent sur les arbres immenses."
+
+
+def test_p5l2_source_event_tracks_item_revision(mod):
+    s = new(mod)
+    s.learn([PA1, PA2])
+    s.learn([PB1])
+    d = s._derive()
+    assert d["items"]["PA1"]["revision"] == 1
+    assert d["items"]["PA2"]["revision"] == 1
+    assert d["items"]["PB1"]["revision"] == 2
+    m, _ = mod
+    assert m.R4CoreStudent._source_event(d, "PA1") == 1
+    assert m.R4CoreStudent._source_event(d, "PB1") == 2
+    assert m.R4CoreStudent._source_event(d, "MISSING") is None
+
+
+def test_p5l2_evidence_returns_event_classes(mod):
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PE1, PE2])
+    s.learn([PB1])
+    classes, labels, active, event_classes = s._evidence("mot", PQUERY)
+    assert "constructions" in event_classes and "exemplaires" in event_classes
+    assert "L1" in event_classes["constructions"] and "L1" in event_classes["exemplaires"]
+    assert isinstance(event_classes["constructions"]["L1"], frozenset)
+
+
+def test_p5l2_independent_pair_rejects_same_event(mod):
+    m, _ = mod
+    entries = [("constructions", {"PA1"}), ("exemplaires", {"PB1"})]
+    event_of_same = {"constructions": frozenset({1}), "exemplaires": frozenset({1})}
+    assert not m.R4CoreStudent._independent_pair(entries, event_of=event_of_same)
+
+
+def test_p5l2_independent_pair_accepts_different_events(mod):
+    m, _ = mod
+    entries = [("constructions", {"PA1"}), ("exemplaires", {"PB1"})]
+    event_of_diff = {"constructions": frozenset({1}), "exemplaires": frozenset({2})}
+    assert m.R4CoreStudent._independent_pair(entries, event_of=event_of_diff)
+
+
+def test_p5l2_independent_pair_no_event_of_uses_item_level(mod):
+    m, _ = mod
+    entries_disjoint = [("constructions", {"PA1"}), ("exemplaires", {"PB1"})]
+    entries_overlap = [("constructions", {"PA1"}), ("exemplaires", {"PA1"})]
+    assert m.R4CoreStudent._independent_pair(entries_disjoint, event_of=None)
+    assert not m.R4CoreStudent._independent_pair(entries_overlap, event_of=None)
+
+
+def test_p5l2_different_events_yield_corroboration_niveau_2(mod):
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PE1, PE2])   # event 1: PA1/PA2/PA3 for L1, PE1/PE2 for L2
+    s.learn([PB1])                        # event 2: PB1 for L1
+    a = s.answer("mot", PQUERY)
+    assert a["sense"] == "L1", f"expected L1, got {a}"
+    assert a["origin"] == "CORROBORATION_NIVEAU_2"
+    assert a.get("exploratory") is True
+    assert "PA1" in a["provenance"] and "PB1" in a["provenance"]
+
+
+def test_p5l2_same_event_returns_hold(mod):
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PB1, PE1, PE2])  # all in event 1 including PB1
+    a = s.answer("mot", PQUERY)
+    assert a["sense"] == "HOLD", f"expected HOLD (same event), got {a}"
+    assert a["reason"] == "PREUVE_INSUFFISANTE"
+
+
+def test_p5l2_suspended_item_not_in_active_does_not_contribute(mod):
+    # Re-use EX and CONTEST from the existing corpus to verify contested exclusion.
+    # EX is ("S-EX", "mot", ..., "L1") and CONTEST re-labels it L2 -> status CONTESTE.
+    s = new(mod)
+    s.learn(SYN + [EX])
+    s.apply_correction(CONTEST, EX)
+    d = s._derive()
+    assert "S-EX" in d["contested"]
+    _, _, active, _ = s._evidence("mot", EX[2])
+    assert not any(it[0] == "S-EX" for it in active)
+
+
+def test_p5l2_single_item_per_label_cannot_satisfy_p5l2(mod):
+    s = new(mod)
+    s.learn([PA1])
+    s.learn([PB1])
+    a = s.answer("mot", PQUERY)
+    assert a["sense"] == "HOLD"
+

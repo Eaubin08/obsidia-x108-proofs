@@ -221,13 +221,16 @@ class R4CoreStudent:
         shrink = lambda L, v: v * n[L] / (n[L] + 2)
         qc, ql = self._construction(word, sentence), self._lemma_set(word, sentence)
         classes = {}
+        event_classes = {}
         for name, sim in (("constructions", lambda it: jaccard(qc, self._construction(word, it[2]))),
                           ("exemplaires", lambda it: jaccard(ql, self._lemma_set(word, it[2])))):
-            voices, prov = {}, {}
+            voices, prov, ev_cls = {}, {}, {}
             for L in labels:
                 neg_sim, best_id = min((-sim(it), it[0]) for it in active if it[3] == L)   # highest, then smallest id
                 voices[L], prov[L] = shrink(L, -neg_sim), {best_id}
+                ev_cls[L] = frozenset({self._source_event(d, best_id)})
             classes[name] = (voices, prov)
+            event_classes[name] = ev_cls
         voices, prov = {L: 0.0 for L in labels}, {L: set() for L in labels}
         for c in d["contrasts"]:
             if c["exercise"][1] != word or c["positive"] not in voices:
@@ -237,7 +240,8 @@ class R4CoreStudent:
                 voices[c["positive"]] = shrink(c["positive"], s)
                 prov[c["positive"]] = {c["id"], c["exercise"][0]}
         classes["contrastes"] = (voices, prov)
-        return {k: v for k, v in classes.items() if any(x > 0 for x in v[0].values())}, labels, active
+        filtered = {k: v for k, v in classes.items() if any(x > 0 for x in v[0].values())}
+        return filtered, labels, active, event_classes
 
     @staticmethod
     def _concordant(classes):
@@ -249,8 +253,41 @@ class R4CoreStudent:
         return out
 
     @staticmethod
-    def _independent_pair(entries) -> bool:
-        return any(not (a[1] & b[1]) for i, a in enumerate(entries) for b in entries[i + 1:])
+    def _source_event(d: dict, item_id: str):
+        entry = d["items"].get(item_id)
+        return entry["revision"] if entry else None
+
+    @staticmethod
+    def _independent_pair(entries, event_of: dict | None = None) -> bool:
+        for i, (na, pa) in enumerate(entries):
+            for nb, pb in entries[i + 1:]:
+                if pa & pb:
+                    continue
+                if event_of is not None:
+                    ea = event_of.get(na, frozenset())
+                    eb = event_of.get(nb, frozenset())
+                    if ea & eb:
+                        continue
+                return True
+        return False
+
+    @staticmethod
+    def _p5l2_satisfied(conc, classes, event_classes):
+        """P5-L2: constructions+exemplaires concordant, different argmax items, different source events."""
+        for L, entries in conc.items():
+            names = {n for n, _ in entries}
+            if "constructions" not in names or "exemplaires" not in names:
+                continue
+            prov_c = next(p for n, p in entries if n == "constructions")
+            prov_e = next(p for n, p in entries if n == "exemplaires")
+            if prov_c & prov_e:
+                continue
+            ev_c = event_classes.get("constructions", {}).get(L, frozenset())
+            ev_e = event_classes.get("exemplaires", {}).get(L, frozenset())
+            if ev_c & ev_e:
+                continue
+            return L, [e for e in entries if e[0] in ("constructions", "exemplaires")]
+        return None, []
 
     def answer(self, word, sentence):
         hold = lambda reason: {"sense": HOLD, "provenance": [], "reason": reason, "origin": "INCERTAIN",
@@ -260,7 +297,7 @@ class R4CoreStudent:
             return hold("MOT_INCONNU")
         if self._determinant_unknown(word, sentence):
             return hold("MOT_INCONNU")
-        classes, labels, active = self._evidence(word, sentence)
+        classes, labels, active, event_classes = self._evidence(word, sentence)
         if not classes:
             return hold("PREUVE_INSUFFISANTE")
         score = {L: sum(c[0][L] for c in classes.values()) / len(classes) for L in labels}
@@ -268,12 +305,20 @@ class R4CoreStudent:
         top, s1 = ranked[0]
         s2 = ranked[1][1] if len(ranked) > 1 else 0.0
         conc = self._concordant(classes)
-        indep = {L: e for L, e in conc.items() if self._independent_pair(e)}
+        event_of_conc = {L: {n: event_classes.get(n, {}).get(L, frozenset()) for n, _ in e}
+                         for L, e in conc.items()}
+        indep = {L: e for L, e in conc.items()
+                 if self._independent_pair(e, event_of_conc.get(L))}
         prov_of = {L: set().union(*[p for _, p in e]) for L, e in conc.items()}
         rivals = sorted(prov_of)
         disjoint_rivals = any(not (prov_of[a] & prov_of[b]) for i, a in enumerate(rivals) for b in rivals[i + 1:])
         if disjoint_rivals or (s1 >= TAU and s2 >= TAU and s1 - s2 < DELTA):
             return hold("CONFLIT")                                # K9 precedence 2
+        p5l2_label, p5l2_entries = self._p5l2_satisfied(conc, classes, event_classes)
+        if p5l2_label is not None:
+            provenance = sorted(set().union(*[p for _, p in p5l2_entries]))
+            return {"sense": p5l2_label, "provenance": provenance, "reason": None,
+                    "origin": "CORROBORATION_NIVEAU_2", "corpus_hypotheses": [], "exploratory": True}
         if top not in indep or s1 < TAU or s1 - s2 < DELTA:
             return hold("PREUVE_INSUFFISANTE")
         provenance = sorted(set().union(*[p for _, p in indep[top]]))
