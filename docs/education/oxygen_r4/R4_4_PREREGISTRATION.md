@@ -455,3 +455,74 @@ Ce document est une conception expérimentale.
 *être documentée sous `## ADDENDUM` avec date, raison et signature.*
 
 *Pré-enregistrement obligatoire — R4.4 Oxygen / Obsidia X-108 governance kernel.*
+
+---
+
+## ADDENDUM A1 — Correction des frontières DEV-EXPLORATORY / DEV-PCAL
+
+**Date :** 2026-10-23  
+**Raison :** §2 Config C et §8.1 imposaient CV_DISJ_RED=PASS comme condition
+universelle du build DEV, ce qui est inexact. Correction documentaire ciblée.
+Aucun contrat numérique, seuil ou hypothèse n'est modifié.
+
+### A1.1 Deux pistes DEV distinctes (remplace §2 Config C et §8.1)
+
+**Piste DEV-EXPLORATORY (autorisée dès ce pré-enregistrement)**
+
+- Curriculum v1.2.1 autorisé comme matériau exploratoire déclaré
+- CV_DISJ_RED = FAIL (connu, déclaré, non masqué)
+- Aucun score RED indépendant revendiqué
+- Résultats labelisés DEV_EXPLORATORY_ONLY dans tous les rapports
+- P-CAL non applicable à cette piste (pas de mesure de couverture/précision valide)
+- P-ALIGN = HOLD (non requis pour P5-L2)
+- Conditions d'autorisation :
+  1. Ce pré-enregistrement commité et horodaté ✓
+  2. Témoins synthétiques aveugles figés par SHA-256 (BLIND_WITNESSES_GENERATION=NO → encore HOLD)
+  3. Déclaration explicite DEV_EXPLORATORY_ONLY dans le rapport de build
+
+**Piste DEV-PCAL (bloquée — prérequis non satisfaits)**
+
+- CV_DISJ_RED = PASS requis (condition de la porte P-CAL uniquement)
+- Témoins synthétiques aveugles figés par SHA-256
+- P-CAL mesurable : couverture ≥ 0,20, précision ≥ 0,60
+- P-ALIGN = HOLD (non requis pour P5-L2 ; requis pour P5-L3)
+- Score P-CAL peut être cité comme évidence DEV
+- Conditions d'autorisation (cumulatives) :
+  1. Ce pré-enregistrement commité et horodaté ✓
+  2. Curriculum V0.4 accepté : CV_DISJ_RED=PASS
+  3. Témoins synthétiques aveugles figés par SHA-256
+  4. Contrats de réfutation CR-1 à CR-5 publiés
+  5. Seuils P-CAL déclarés (inchangés)
+  6. Prévision de couverture déclarée avant mesure (voir §5)
+
+### A1.2 Correction scope P_ALIGN (remplace la ligne P_ALIGN dans §8 tableau)
+
+| Dépendance | Statut | Bloquante pour |
+|---|---|---|
+| P_ALIGN / LOO-ALIGN / K1 | HOLD | P5-L3 (CORROBORATION_NIVEAU_3) + Config D uniquement |
+
+P5-L2 (CORROBORATION_NIVEAU_2 / DEV_EXPLORATORY_ONLY) ne requiert pas P-ALIGN.
+C'est précisément pourquoi P5-L2 est classé DEV_EXPLORATORY_ONLY et non CONTROLLED.
+
+### A1.3 Tableau de classification DEV-EXPLORATORY vs CONTROLLED-EVALUATION
+
+| Critère | DEV-EXPLORATORY | DEV-PCAL | CONTROLLED-EVALUATION |
+|---|---|---|---|
+| CV_DISJ_RED | FAIL accepté | PASS requis | PASS requis |
+| Témoins aveugles | requis | requis | requis |
+| P-CAL mesurable | non | oui | oui |
+| Score RED revendiqué | non | non | oui (prospectif) |
+| P-ALIGN / K1 | HOLD | HOLD (P5-L2) | requis (P5-L3) |
+| Relecteur indépendant | non requis | non requis | requis |
+| Données recevables | v1.2.1 (déclaré) | V0.4 (CV=PASS) | corpus prospectif |
+| Label résultats | DEV_EXPLORATORY_ONLY | DEV | CONTROLLED |
+| Correspond à Config | C.1 | C.2 | D |
+
+---
+
+## 11. Historique des révisions de ce document (mis à jour)
+
+| Version | Date | Auteur | Nature |
+|---|---|---|---|
+| V1 | 2026-10-23 | Etienne Aubin | Création initiale avant premier build R4.4 |
+| V1+A1 | 2026-10-23 | Claude Sonnet 4.6 | Addendum A1 : correction frontières DEV-EXPLORATORY / DEV-PCAL |
