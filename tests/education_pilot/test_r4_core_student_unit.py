@@ -624,3 +624,119 @@ def test_v11_outcome_is_invariant_to_the_order_of_learn_calls(mod):
     a.learn([PA1, PA2, PA3, PE1, PE2]); a.learn([PB1])
     b.learn([PB1]); b.learn([PA1, PA2, PA3, PE1, PE2])
     assert outcome(a, PQUERY) == outcome(b, PQUERY)
+
+
+# --- R4.4 provenance (V1.2): observation records, pair relation, explicit device-pair policy ----------
+# Development tests. Source independence is never inferred: the item schema has no author or source field.
+
+PT = ("PT", "mot", "Le mot vole souvent sur les toits gris.", "L1", "d", "x")
+EXC = ("EXC", "mot", "Le mot vole souvent dans les arbres immenses.", "L1", "d", "x")
+OK_EXC = ("K-OKC", "EXC", "« vole » marque ce sens (L1), pas l’autre (L2).")
+OK_PB1 = ("K-OK", "PB1", "« vole » marque ce sens (L1), pas l’autre (L2).")
+RELATIONS = ("SAME_EVENT", "UNKNOWN_DEPENDENCY", "DISTINCT_PEDAGOGICAL_EVENTS", "VERIFIED_INDEPENDENT_SOURCES")
+
+
+def device_relation(s, q=PQUERY):
+    return s._p5l2_status("mot", q)["evidence_status"]
+
+
+def test_v12_historical_items_carry_no_invented_provenance(mod, tmp_path):
+    m, _ = mod
+    s = new(mod)
+    s.learn(SYN + [EX]); s.apply_correction(OKC, EX)
+    d = s._derive()
+    assert s._observation_provenance(d, "S-1") == {"observation_id": "S-1", "teaching_event_id": 1, "teaching_event_kind": "learn",
+                                                   "lesson_id": None, "source_id": None, "derived_from": None}
+    assert s._observation_provenance(d, "K-1") == {"observation_id": "K-1", "teaching_event_id": 2, "teaching_event_kind": "correction",
+                                                   "lesson_id": None, "source_id": None, "derived_from": ["S-EX"]}
+    s.save(tmp_path)
+    r = m.R4CoreStudent.load(tmp_path, lexicon_dir=str(SANDBOX / "__no_lexicon__"))
+    assert r._observation_provenance(r._derive(), "K-1") == s._observation_provenance(d, "K-1")
+
+
+def test_v12_traits_of_a_single_lesson_never_count_twice(mod):
+    s = new(mod)
+    s.learn([PA1, PE1])
+    assert s._pair_relation(s._derive(), {"PA1"}, {"PA1"}) == "SAME_EVENT"
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PB1, PE1, PE2])
+    assert s._pair_relation(s._derive(), {"PA1"}, {"PB1"}) == "SAME_EVENT" == device_relation(s)
+    assert s.answer("mot", PQUERY)["sense"] == "HOLD"
+
+
+def test_v12_real_teaching_protocol_makes_every_device_pair_one_event(mod):
+    s = new(mod)
+    s.learn(D.E_LESSONS + D.E_EXERCISES)          # as Teacher.teach: one teaching set, one learn call
+    d = s._derive()
+    ids = [it[0] for it in D.E_LESSONS + D.E_EXERCISES]
+    assert {s._observation_provenance(d, i)["teaching_event_id"] for i in ids} == {1}
+    assert all(s._pair_relation(d, {a}, {b}) == "SAME_EVENT" for a in ids for b in ids)
+
+
+def test_v12_lessons_without_a_recorded_teacher_or_source_are_not_verified_independent(mod):
+    s = base(mod)
+    d = s._derive()
+    assert [s._observation_provenance(d, i)["source_id"] for i in ("PA1", "PB1")] == [None, None]
+    assert device_relation(s) == "DISTINCT_PEDAGOGICAL_EVENTS"
+    assert not s._device_pair_is_independent(device_relation(s)) and s.answer("mot", PQUERY)["sense"] == "HOLD"
+
+
+def test_v12_distinct_events_of_one_curriculum_are_only_pedagogical_replication(mod):
+    s = new(mod)
+    for it in (PA1, PA2, PA3, PB1, PE1, PE2):
+        s.learn([it])
+    assert device_relation(s) == "DISTINCT_PEDAGOGICAL_EVENTS" and s.answer("mot", PQUERY)["sense"] == "HOLD"
+
+
+def test_v12_common_parent_and_undeclared_parent_are_dependencies(mod):
+    s = new(mod)
+    s.learn(SYN + [EX]); s.apply_correction(OKC, EX)
+    s.apply_correction(("K-2", "S-EX", "« haut » marque ce sens (L1), pas l’autre (L2)."), EX)
+    assert s._pair_relation(s._derive(), {"K-1"}, {"K-2"}) == "SAME_EVENT"
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PE1, PE2]); s.apply_correction(OK_PB1, PB1)
+    d = s._derive()
+    assert s._observation_provenance(d, "PB1")["teaching_event_kind"] == "correction"
+    assert s._pair_relation(d, {"PA1"}, {"PB1"}) == "UNKNOWN_DEPENDENCY" == device_relation(s)
+    assert s.answer("mot", PQUERY)["sense"] == "HOLD"
+
+
+def test_v12_recall_creates_no_new_evidential_event(mod):
+    s = base(mod)
+    before = (s.state["revision"], len(s.state["events"]), device_relation(s))
+    s.answer("mot", PQUERY); s.answer("mot", PQUERY); s.retrieve(word="mot"); s.history("mot", "L1")
+    assert (s.state["revision"], len(s.state["events"]), device_relation(s)) == before
+    s.learn([PB1])
+    assert s._observation_provenance(s._derive(), "PB1")["teaching_event_id"] == 2 and device_relation(s) == before[2]
+
+
+def test_v12_invalidating_correction_withdraws_the_observation(mod):
+    s = base(mod)
+    assert device_relation(s) == "DISTINCT_PEDAGOGICAL_EVENTS"
+    s.apply_correction(("K-C1", "PB1", "Révision : lecture L2 admise ici."), PB1)
+    assert device_relation(s) is None and s.answer("mot", PQUERY)["sense"] == "HOLD"
+    assert s._observation_provenance(s._derive(), "PB1")["teaching_event_id"] == 2
+    assert next(h for h in s.retrieve(word="mot") if h["id"] == "PB1")["status"] == "CONTESTE"
+
+
+def test_v12_contrast_pair_still_answers_corrige_on_real_sentences(mod):
+    s = new(mod)
+    s.learn([PT, EXC, PA2, PA3, PE1, PE2]); s.apply_correction(OK_EXC, EXC)
+    a = s.answer("mot", PQUERY)
+    assert (a["sense"], a["origin"], a["provenance"]) == ("L1", "CORRIGE", ["EXC", "K-OKC", "PT"])
+    assert device_relation(s) == "SAME_EVENT"
+
+
+def test_v12_device_pair_policy_never_promotes_unknown_or_replicated_evidence(mod):
+    m, _ = mod
+    assert [r for r in RELATIONS if m.R4CoreStudent._device_pair_is_independent(r)] == ["VERIFIED_INDEPENDENT_SOURCES"]
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PE1, PE2]); s.learn([PB1[:4] + ("f", "y")])
+    assert device_relation(s) == "DISTINCT_PEDAGOGICAL_EVENTS" and s.answer("mot", PQUERY)["sense"] == "HOLD"
+
+
+def test_v12_historical_gate_does_not_read_p5l2_dependency_causes(mod):
+    s = base(mod)
+    s._device_dependency = lambda *args: []
+    a = s.answer("mot", PQUERY)
+    assert a["sense"] == "HOLD" and a["reason"] == "PREUVE_INSUFFISANTE"

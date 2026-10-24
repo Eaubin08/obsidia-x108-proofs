@@ -173,3 +173,72 @@ Le texte V1 ci-dessus est conservé tel quel ; cet addendum le corrige.
 - V1.1 : 50 tests = 27 historiques inchangés depuis V1 + 6 tests V1 inchangés + 2 tests V1 corrigés et renommés + 15 tests V1.1 ; 1 test V1 retiré (il encodait comme attendue une configuration interdite par STOP_CORROBORATION).
 - RED sur le moteur V1 : 15 échecs (10 comportementaux, 5 dus à l’API absente). GREEN après correctif : 50/50.
 - Ces tests sont des tests de développement dérivés de scénarios consommés ; ils ne démontrent ni la conformité P5-L2 ni une calibration.
+
+---
+
+## ADDENDUM V1.2 — 2026-10-24 (provenance pédagogique et périmètre de M3)
+
+**Base :** `da78b5c7`. **Décision :** PEDAGOGICAL_PROVENANCE = GO ; NEW_RESPONSE_AUTHORITY = NO ; M3 = correction de périmètre.
+
+### B.1 Cause des 228 réponses historiques perdues (injection graine 108, sans vérité terrain)
+
+| Condition appliquée à la voie historique | Introduite par | ACQUIS_LECON | TRANSFERE | Nature |
+|---|---|---|---|---|
+| même appel `learn()` (EVENEMENT_COMMUN) | V1 `796cf371` | 98 | 82 | règle de sécurité intentionnelle (V1 §2.2), plus stricte que K3 |
+| `SOURCE_AUTEUR_INCONNUS` | V1.1 `da78b5c7` | 23 | 25 | changement de contrat : condition d’indépendance de source absente de K3 |
+
+- Dans les 228 cas, l’ancien moteur répondait par la seule paire constructions/exemplaires, à items disjoints : K3 était satisfait au sens de R4.2.2.
+- CORRIGE : 1 637 réponses identiques tirage par tirage, car les paires avec contraste ne sont jugées que par K3 (disjonction d’identifiants).
+- La justesse des réponses perdues n’est pas établie (injection synthétique). Sur les données V0, aucune version ne répond : aucune perte réelle.
+
+### B.2 Contrats relus
+
+- K3 (R4.2.2) : indépendance = ensembles de provenance (items, corrections, groupes) disjoints ; aucune clause d’événement ni de source. Son exemple admet une provenance à plusieurs items, ce qui est cohérent avec M2.
+- R4.4, contrat d’évidence §2.3 : le biais commun (même registre, auteur, domaine) est « impossible à détecter par la règle seule » ; il relève du contrôle de diversité à la rédaction du curriculum.
+- R4.4 Niveau 2 (proposition C.6) déclare « même curriculum, même auteur » comme limite admise, alors que STOP_CORROBORATION (§7) en fait un arrêt : ambiguïté non tranchée.
+- `it[4]` (domaine) est le domaine thématique du sens (constant par sens dans V0) et `it[5]` un registre de langue : aucun n’identifie une source.
+
+### B.3 Carte des données de provenance
+
+| Notion | Donnée réelle | Statut |
+|---|---|---|
+| observation | item `(id, mot, phrase, étiquette, domaine, registre)` ou correction `(id, exercice, texte)` | présente |
+| événement d’enseignement | révision d’un appel `learn()` ou `apply_correction()` ; le banc livre un ensemble entier en un seul `learn()` | présente |
+| trait dérivé | traits POS/NG/DET/SURF et lemmes, recalculés à la demande depuis la phrase | présente (non stockée) |
+| dérivation explicite | correction → exercice ; contraste → {correction, exercice} | présente |
+| leçon (regroupement) | aucun identifiant distinct de l’appel `learn()` | absente |
+| source, auteur, enseignant, curriculum | aucun champ ; les ensembles `E` / `CONC` n’existent que côté banc | absente |
+| leçon d’origine d’un exercice | non déclarée | absente |
+| rappel (RAPPEL §3.8) | non implémenté ; `answer`, `retrieve` et `history` n’écrivent aucun événement | absent |
+
+### B.4 Représentation interne V1.2 (aucune autorité nouvelle)
+
+- `_observation_provenance` : observation_id, teaching_event_id, teaching_event_kind, lesson_id (`None`), source_id (`None`), derived_from (l’exercice pour une correction, `None` sinon). Aucune valeur n’est inventée.
+- `_pair_relation` :
+  - SAME_EVENT : item, événement ou parent connu partagés ;
+  - UNKNOWN_DEPENDENCY : exercice reçu avec une correction, dont la leçon d’origine n’est pas déclarée ;
+  - VERIFIED_INDEPENDENT_SOURCES : sources connues et disjointes ; jamais atteint, aucun source_id n’existe ;
+  - DISTINCT_PEDAGOGICAL_EVENTS sinon : réplication pédagogique interne, pas indépendance.
+- `_device_pair_is_independent` : prédicat unique de la porte historique pour la paire constructions/exemplaires ; politique active = VERIFIED_INDEPENDENT_SOURCES seulement.
+- `_p5l2_status` expose `evidence_status`. Les causes STOP_CORROBORATION (`_device_dependency`) restent des diagnostics P5-L2 : la porte historique ne les lit plus.
+- Réponses : identiques à V1.1 (20 000/20 000 tirages sur deux campagnes, 16 scénarios, données V0).
+
+### B.5 Deux comportements côte à côte — décision HOLD
+
+| | S (actif) | H (compatible K3, HOLD, simulé hors dépôt) |
+|---|---|---|
+| paire constructions/exemplaires | jamais indépendante sans source vérifiée | indépendante si DISTINCT_PEDAGOGICAL_EVENTS |
+| paires avec contraste | K3 | K3 |
+| injection cohérente (graine 108) | 3 503 réponses | 3 718 réponses = `bde60c37` (0 nouvelle, 0 différente) |
+| ACQUIS_LECON | inatteignable | atteignable |
+| scénarios réels qui répondent de nouveau | — | A2, C, C2, D, G2 (fausses corroborations relevées par l’audit V1) |
+| scénarios qui restent HOLD | A, B, B2, H3, F, I, J, G-TAU, observation dérivée | idem |
+| CORRIGE réel (paire avec contraste) | répond | répond |
+
+H revient à accepter la réplication pédagogique interne comme indépendance K3. C’est une dérogation au contrat de sécurité V1.1 : elle n’est pas appliquée.
+
+### B.6 Tests
+
+- Les 50 tests V1.1 sont conservés sans modification ; 11 tests V1.2 ajoutés → 61/61.
+- RED sur V1.1 : 11 échecs (10 dus à l’API absente ; 1 comportemental : la porte historique de V1.1 lisait les causes P5-L2).
+- Régressions locales sans examens : 22/22.

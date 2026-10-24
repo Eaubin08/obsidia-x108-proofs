@@ -275,6 +275,37 @@ class R4CoreStudent:
                 return True
         return False
 
+    def _observation_provenance(self, d, oid) -> dict:
+        """Provenance read from the recorded events only; what the data does not carry stays None."""
+        if oid in d["items"]:
+            revision, derived_from = d["items"][oid]["revision"], None
+        else:
+            c = d["corrections"][oid]
+            revision, derived_from = c["revision"], [c["exercise"][0]]
+        kind = next(ev["kind"] for ev in self.state["events"] if ev["revision"] == revision)
+        return {"observation_id": oid, "teaching_event_id": revision, "teaching_event_kind": kind,
+                "lesson_id": None, "source_id": None, "derived_from": derived_from}
+
+    def _pair_relation(self, d, a, b) -> str:
+        """Dependency of two evidence sets from recorded provenance; an unknown is never promoted to independent."""
+        recs = {i: self._observation_provenance(d, i) for i in a | b}
+        linked = lambda ids: set(ids) | {p for i in ids for p in recs[i]["derived_from"] or ()}
+        events = lambda ids: {recs[i]["teaching_event_id"] for i in ids}
+        if linked(a) & linked(b) or events(a) & events(b):
+            return "SAME_EVENT"
+        observed = [i for i in linked(a) | linked(b) if i in d["items"]]
+        if any(self._observation_provenance(d, i)["teaching_event_kind"] != "learn" for i in observed):
+            return "UNKNOWN_DEPENDENCY"          # an exercise received with a correction comes from an undeclared lesson
+        sources = lambda ids: {recs[i]["source_id"] for i in ids}
+        if None not in sources(a) | sources(b) and not sources(a) & sources(b):
+            return "VERIFIED_INDEPENDENT_SOURCES"
+        return "DISTINCT_PEDAGOGICAL_EVENTS"
+
+    @staticmethod
+    def _device_pair_is_independent(relation: str) -> bool:
+        # active safety policy; accepting DISTINCT_PEDAGOGICAL_EVENTS (K3-compatible legacy reading) is on HOLD
+        return relation == "VERIFIED_INDEPENDENT_SOURCES"
+
     def _device_dependency(self, d, L, pc, pe, event_classes) -> list[str]:
         """Why the constructions/exemplaires pair cannot count as independent (STOP_CORROBORATION, fail-closed)."""
         items = d["items"]
@@ -298,8 +329,9 @@ class R4CoreStudent:
         """Provisional P5-L2 view (hypothesis, candidate, admissibility). Informational: never authorises an answer."""
         d = self._derive()
         classes, _, _, event_classes = self._evidence(word, sentence)
-        out = {"hypothesis": None, "candidate": False, "argmax": {}, "dependency": [], "shared_cue_tokens": [],
-               "missing_conditions": list(P5L2_MISSING_CONDITIONS), "admissible": False, "response_authority": False}
+        out = {"hypothesis": None, "candidate": False, "argmax": {}, "dependency": [], "evidence_status": None,
+               "shared_cue_tokens": [], "missing_conditions": list(P5L2_MISSING_CONDITIONS), "admissible": False,
+               "response_authority": False}
         for L, entries in self._concordant(classes).items():
             prov = dict(entries)
             if not DEVICE_PAIR <= prov.keys():
@@ -312,7 +344,7 @@ class R4CoreStudent:
             e_tok = {t for i in pe for t in ql & self._lemma_set(word, d["items"][i]["item"][2])}
             out.update(hypothesis=L, argmax={"constructions": sorted(pc), "exemplaires": sorted(pe)}, dependency=dep,
                        candidate=not {"ITEM_COMMUN", "EVENEMENT_COMMUN"} & set(dep),
-                       shared_cue_tokens=sorted(c_tok & e_tok))
+                       evidence_status=self._pair_relation(d, pc, pe), shared_cue_tokens=sorted(c_tok & e_tok))
             out["admissible"] = out["candidate"] and not dep and not out["missing_conditions"]
         return out
 
@@ -337,8 +369,8 @@ class R4CoreStudent:
         indep = {}
         for L, e in conc.items():
             prov = dict(e)
-            dependent = ({DEVICE_PAIR} if DEVICE_PAIR <= prov.keys() and self._device_dependency(
-                d, L, prov["constructions"], prov["exemplaires"], event_classes) else frozenset())
+            dependent = ({DEVICE_PAIR} if DEVICE_PAIR <= prov.keys() and not self._device_pair_is_independent(
+                self._pair_relation(d, prov["constructions"], prov["exemplaires"])) else frozenset())
             if self._independent_pair(e, event_of_conc[L], dependent):
                 indep[L] = e
         prov_of = {L: set().union(*[p for _, p in e]) for L, e in conc.items()}
