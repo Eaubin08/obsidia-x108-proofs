@@ -63,6 +63,34 @@ def lexical_relevance(traits: dict) -> dict:
             "kept": sorted(set(freq) - set(excluded)), "excluded": excluded}
 
 
+def filtered_voices(question, exemplars: dict) -> dict:
+    """P3 (preregistration §3.7) and raw filtered voices of one class over one LOO-CAL training set.
+    exemplars: item id -> (label, unit, traits); items sharing a unit (word, label, RAPPEL fingerprint) are ONE exemplar.
+    F(t, e) = units of e carrying t; t is active for e iff F(t, e) >= 2. The voice of e is the max over its items of the
+    Jaccard of the question and the item, both restricted to the active traits of e (no K4, no s_min / DELTA)."""
+    labels = {}
+    for e in sorted({lab for lab, _, _ in exemplars.values()}):
+        ids = sorted(i for i, (lab, _, _) in exemplars.items() if lab == e)
+        units = {}
+        for i in ids:
+            units.setdefault(exemplars[i][1], []).append(i)
+        freq = {}
+        for members in units.values():
+            for t in set().union(*(exemplars[i][2] for i in members)):
+                freq[t] = freq.get(t, 0) + 1
+        active = {t for t, f in freq.items() if f >= 2}
+        q = set(question) & active
+        sims = {i: jaccard(q, set(exemplars[i][2]) & active) for i in ids}
+        voice = max(sims.values())
+        argmax = sorted(i for i, v in sims.items() if v == voice) if voice > 0 else []
+        labels[e] = {"units": sorted(units.values()), "frequencies": dict(sorted(freq.items())), "active": sorted(active),
+                     "voice": voice, "argmax": argmax,
+                     "contributing": sorted(q & set().union(*(exemplars[i][2] for i in argmax)))}
+    top = max((v["voice"] for v in labels.values()), default=0.0)
+    return {"labels": labels, "silent": top == 0, "top": top,
+            "max_labels": [e for e, v in labels.items() if v["voice"] == top] if top > 0 else []}
+
+
 def canonical(obj) -> bytes:
     return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
 
@@ -344,6 +372,33 @@ class R4CoreStudent:
                           for k, v in sorted(traits.items())},
                 "corrections": records, "units": units, "excluded": plan["excluded"],
                 "votes": "NOT_COMPUTED", "missing": ["P3_FILTER"]}
+
+    def _loo_cal_votes(self, word, as_of=None) -> dict:
+        """P3 and raw filtered voices of every LOO-CAL unit: exemplaires on the lemmas kept by the relevance filter of the
+        unit, constructions without it. Informative input of P2 only: no N_c / TP_c / r_c and no answer depends on it."""
+        d = self._derive(as_of)
+        rel = self._loo_cal_relevance(word, as_of)
+        text = {k: d["items"][k]["item"][2] for k in rel["items"]}
+        lemmas = {k: frozenset(v["sentence"]) for k, v in rel["items"].items()}
+        constructions = {k: frozenset(self._construction(word, s)) for k, s in text.items()}
+        unit = {k: (v["label"], recall_key(text[k])) for k, v in rel["items"].items()}    # U2: one per RAPPEL fingerprint
+        units = []
+        for u in rel["units"]:
+            k, kept = u["observation_id"], set(u["relevance"]["kept"])
+            lexical = {j: (*unit[j], lemmas[j] & kept) for j in u["training"]}            # relevance filter, then P3
+            construction = {j: (*unit[j], constructions[j]) for j in u["training"]}       # P3 alone
+            units.append({"observation_id": k, "label": unit[k][0], "removed": u["removed"], "training": u["training"],
+                          "classes": {"exemplaires": filtered_voices(lemmas[k], lexical),
+                                      "constructions": filtered_voices(constructions[k], construction)},
+                          "descendants_in_training": u["descendants_in_training"]})
+        by_text = {}
+        for k, (label, fingerprint) in sorted(unit.items()):
+            by_text.setdefault(fingerprint, {}).setdefault(label, []).append(k)
+        conflicts = [{"labels": sorted(v), "observations": sorted(i for ids in v.values() for i in ids)}
+                     for _, v in sorted(by_text.items()) if len(v) > 1]                   # both labels kept, never merged
+        return {"units": units, "excluded": rel["excluded"], "conflicting_fingerprints": conflicts,
+                "score": "RAW_FILTERED_JACCARD", "metrics": "NOT_COMPUTED", "missing": ["P2_NC_TPC"],
+                "not_covered": ["DECLARED_DESCENDANTS"]}
 
     def _evidence(self, word, sentence):
         d = self._derive()

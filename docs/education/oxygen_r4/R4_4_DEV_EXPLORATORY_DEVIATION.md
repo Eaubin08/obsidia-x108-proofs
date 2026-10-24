@@ -609,3 +609,59 @@ Les traits par item ne dépendent que de l’item et de ses propres corrections 
 - Phrases identiques sous des identifiants distincts : comptées séparément (l’unité est l’item).
 - K5 hérité tel quel : la liste des mots-outils n’est pas repliée, si bien que « tres », « ete » et « etre » passent comme traits lexicaux.
 - Classe contrastes et impact sur les campagnes RED : non traités.
+
+## ADDENDUM V1.9 — 2026-10-24 (P3 : traits discriminants et voix brutes filtrées pour LOO-CAL)
+
+**Base :** `2665e4f7`. **Décision fondateur :** P3_DISTINCT_UNIT = FINGERPRINT (U2) ; P3_IMPLEMENTATION = GO ; seuil F(t,e) ≥ 2 ; score = Jaccard brut filtré ; égalité non muette ; C1 V1.8 inchangé ; N_c, TP_c et r_c non calculés ; S strict actif ; aucune autorité de réponse P5-L2.
+
+Cet addendum consigne l’arbitrage U2. Il ne modifie ni le pré-enregistrement figé (V1+A1, inchangé depuis `bde60c37`), ni les sources du Workbench (empreintes de son §1 vérifiées).
+
+### I.1 Arbitrage U2 : exemplaire distinct pour P3
+
+- Une unité par (mot cible, étiquette, empreinte RAPPEL du §3.8) : deux identifiants de même empreinte sous la même étiquette comptent une fois.
+- Deux textes différents restent deux exemplaires, même avec une source ou un auteur déclarés communs.
+- `derived_from` ne regroupe rien : la filiation reste signalée (`descendants_in_training`).
+- Une même phrase sous deux étiquettes contradictoires : chaque étiquette garde son unité, aucune ne compte pour l’autre, et le conflit est restitué (`conflicting_fingerprints`). Il n’en résulte aucune confirmation implicite.
+- La politique d’indépendance des sources (S strict) est inchangée : P3 est un seuil de répétition, pas une preuve d’indépendance.
+
+### I.2 Règle implémentée
+
+`filtered_voices(question, exemplars)` est une fonction pure ; ses entrées sont les exemplaires d’entraînement d’une unité LOO-CAL, pour une classe.
+
+- F(t, e) = nombre d’unités U2 de l’étiquette e portant t ; t est actif pour e si et seulement si F(t, e) ≥ 2 (seuil fixe, §3.1).
+- Voix de e = maximum, sur les items de e, du Jaccard entre la question et l’item, tous deux restreints aux traits actifs de e ; union filtrée au dénominateur ; aucun trait actif → voix nulle.
+- Ni K4 (Option C, §3.4 : le rétrécissement porte sur les comptes), ni s_min, ni DELTA (§3.4 et lacune 1, décision V1.9).
+- Sortie par étiquette : `units`, `frequencies`, `active`, `voice`, `argmax`, `contributing` ; par classe : `silent`, `top`, `max_labels` (toutes les étiquettes ex æquo, sans départage).
+
+### I.3 Chemin LOO-CAL
+
+`_loo_cal_votes(word, as_of=None)` s’appuie sur `_loo_cal_relevance` (V1.8). Pour chaque unité, après le retrait B2 :
+
+- classe exemplaires : lemmes K5 des phrases, restreints aux traits conservés par C1′ de l’unité, puis P3 ;
+- classe constructions : traits POS, NG, DET et SURF des phrases, P3 seul ;
+- gloses : jamais exemplaires ni voix (elles ne comptent que dans C1).
+
+F′ est recalculé de zéro pour chaque unité ; les ensembles de traits par item sont immuables et ne dépendent que de l’item. Un test vérifie que chaque itération est identique au calcul d’un élève qui n’a jamais reçu le retrait B2.
+
+### I.4 Sensibilité de C1 aux doublons (diagnostic)
+
+C1 (V1.8, inchangé) compte les items ; P3 compte les unités U2. Un doublon exact d’un item porteur de t augmente F′(t) et M′ dans C1 et peut faire exclure t avant P3 : dans TC-N2′ augmenté d’une copie de GA, « vole » passe à F′ = 3 pour M′ = 5, il est exclu, et l’égalité devient un maximum L2. Un doublon d’un item non porteur n’augmente que M′ et peut au contraire faire conserver t. P3 compte le doublon une fois mais ne peut pas restaurer un trait exclu par C1. Limite documentée ; C1 n’est pas modifié.
+
+### I.5 Frontières
+
+Inchangés : `answer`, `_evidence`, `_concordant`, `_p5l2_status`, RAPPEL, CORRIGE, S strict, K4 historique, seuils, `_loo_cal_plan`, `_loo_cal_relevance`, banc, runner, curriculum V0, manifeste, pré-enregistrement. Des tests AST vérifient que le chemin de réponse n’appelle pas P3 et que P3 n’utilise ni TAU, ni DELTA, ni CONTRAST_MIN, ni la porte historique. Sortie : `metrics = NOT_COMPUTED`, `missing = [P2_NC_TPC]`, `not_covered = [DECLARED_DESCENDANTS]`.
+
+### I.6 Tests et non-régression
+
+- Tests de développement : les fixtures sont écrites par l’implémenteur, qui connaît le moteur. Ce n’est pas une validation indépendante ; aucun témoin aveugle n’existe encore.
+- 158 tests de base inchangés et 19 tests V1.9 ajoutés, soit 177/177. RED sur V1.8 : 19 échecs (API absente). Les valeurs attendues, calculées à la main depuis le contrat, sont retrouvées au premier passage.
+- Différentiel V1.8 → V1.9 : 24/24 sondes V0 et vues identiques ; LOO V0 36/36 ; états sauvegardés identiques ; seuils inchangés ; 300 tirages synthétiques (graine 108) sans différence ; P3 inerte et recalculable sur chaque tirage.
+- T-P3-13 et T-P3-16 (N_c, TP_c, qualification) sont réservés à P2.
+
+### I.7 NOT_COVERED
+
+- Descendants déclarés de l’item retenu restés dans l’entraînement (B2 non étendu).
+- Sensibilité de C1 aux doublons (I.4).
+- Classe constructions : sous une même empreinte, `SURF:capital` peut différer selon la casse du mot cible ; l’unité prend l’union pour F, chaque item garde sa voix.
+- Inventaire des étiquettes de l’analyse des corrections ; ré-enseignement sous le même identifiant avec un contenu différent ; mots-outils accentués de K5 ; classe contrastes ; impact RED.
+- Couche de réponse P5-L2 (seuil de concordance) : non tranchée, autorité NO.

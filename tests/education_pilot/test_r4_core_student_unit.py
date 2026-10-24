@@ -1330,3 +1330,227 @@ def test_v18_v0_teaching_data_gives_sixteen_training_items_per_unit(mod):
     assert {u["relevance"]["m"] for u in out["units"]} == {16} and not any(u["relevance"]["bypass"] for u in out["units"])
     assert {r["id"]: (r["status"], r["counted"]) for r in out["corrections"]} == {
         "C-1": ("OK", True), "C-2": ("OK", True), "C-3": ("OK", True), "C-4": ("SUSPENDU", False), "C-X": ("CONTESTE", False)}
+
+
+# --- R4.4 V1.9: P3 discriminant traits and raw filtered voices for LOO-CAL (preregistration §3.7) ------------------
+# Development tests (fixtures written by the implementer: not an independent validation). Distinct exemplar U2: one
+# per (word, label, RAPPEL fingerprint). No N_c / TP_c / r_c, no K4, no s_min / DELTA. T-P3-13 and T-P3-16 wait for P2.
+
+H_L1 = ("H", "mot", "Le mot vole puis range la corde.", "L1", "a", "x")
+H_L2 = ("H", "mot", "Le mot vole puis range la corde.", "L2", "b", "x")
+GF = ("GF", "mot", "Ce mot dort dans la grange.", "L2", "b", "x")
+HR = ("HR", "mot", "Le mot vole sous la rafale.", "L1", "a", "x")
+HP = ("HP", "mot", "Le mot plonge vers la falaise.", "L1", "a", "x")
+K_GB = ("K-GB", "GB", "« vole » marque ce sens (L1) malgré la rafale, pas l’autre (L2).")
+ONE_PER_LABEL = [("T-1", "mot", "Le mot vole haut.", "L1", "a", "x"), ("T-2", "mot", "Elle range le mot.", "L2", "b", "x")]
+N2 = [H_L1, GA, GB, GC, GD]                                      # TC-N2 replacement (P3 contract review, arbitration D)
+
+
+def taught(mod, items, corrections=(), provenance=None):
+    s = new(mod)
+    s.learn(items, provenance=provenance)
+    for c, ex in corrections:
+        s.apply_correction(c, ex)
+    return s
+
+
+def p3_units(s):
+    return {u["observation_id"]: u for u in s._loo_cal_votes("mot")["units"]}
+
+
+def lex(u):
+    return u["classes"]["exemplaires"]
+
+
+def cons(u):
+    return u["classes"]["constructions"]
+
+
+def voices(cls):
+    return {L: v["voice"] for L, v in cls["labels"].items()}
+
+
+def test_v19_t_p3_01_a_trait_is_active_for_a_label_only_with_two_distinct_exemplars(mod):
+    m, _ = mod
+    ex = {"A1": ("L1", "a1", {"t", "u"}), "A2": ("L1", "a2", {"t", "w"}), "B1": ("L2", "b1", {"u", "w"}),
+          "B2": ("L2", "b2", {"u"}), "B3": ("L2", "b3", {"t", "w"})}
+    labels = m.filtered_voices({"t"}, ex)["labels"]
+    assert labels["L1"]["frequencies"] == {"t": 2, "u": 1, "w": 1} and labels["L1"]["active"] == ["t"]
+    assert labels["L2"]["frequencies"] == {"t": 1, "u": 2, "w": 2} and labels["L2"]["active"] == ["u", "w"]
+    both = m.filtered_voices({"s"}, {"A1": ("L1", "a1", {"s"}), "A2": ("L1", "a2", {"s"}),
+                                    "B1": ("L2", "b1", {"s"}), "B2": ("L2", "b2", {"s"})})
+    assert [both["labels"][L]["active"] for L in ("L1", "L2")] == [["s"], ["s"]] and both["max_labels"] == ["L1", "L2"]
+
+
+def test_v19_t_p3_02_the_relevance_filter_runs_before_p3_for_lemmas_only(mod):
+    s = taught(mod, N2)
+    rel = {u["observation_id"]: u for u in s._loo_cal_relevance("mot")["units"]}
+    ga = p3_units(s)["GA"]
+    assert rel["GA"]["relevance"]["excluded"] == ["range"] and all("range" in it[2] for it in (GC, GD))
+    assert "range" not in lex(ga)["labels"]["L2"]["frequencies"] and lex(ga)["labels"]["L2"]["active"] == []
+    assert "POS:P-2=range" in cons(ga)["labels"]["L2"]["active"]                    # constructions never pass the filter
+
+
+def test_v19_t_p3_03_constructions_take_p3_alone_without_the_relevance_filter(mod):
+    h = p3_units(taught(mod, N2))["H"]
+    assert all("SURF:singular" in cons(h)["labels"][L]["active"] for L in ("L1", "L2"))    # in 4/4 items: 2F > M
+    assert cons(h)["labels"]["L1"]["frequencies"]["DET:le"] == cons(h)["labels"]["L2"]["frequencies"]["DET:le"] == 1
+    assert "DET:le" not in cons(h)["labels"]["L1"]["active"] + cons(h)["labels"]["L2"]["active"]
+    assert voices(cons(h)) == {"L1": 0.5, "L2": 1 / 6} and cons(h)["max_labels"] == ["L1"]
+
+
+def test_v19_t_p3_04_glosses_count_for_the_relevance_filter_but_never_for_p3_or_voices(mod):
+    s = taught(mod, [HR, GA, GB, GC, GD], [(K_GA, GA), (K_GB, GB)])
+    rel = {u["observation_id"]: u for u in s._loo_cal_relevance("mot")["units"]}
+    hr = p3_units(s)["HR"]
+    assert rel["HR"]["relevance"]["frequencies"]["rafale"] == 2 and "rafale" in rel["HR"]["relevance"]["kept"]
+    assert "rafale" not in lex(hr)["labels"]["L1"]["frequencies"] and lex(hr)["labels"]["L1"]["contributing"] == ["vole"]
+
+
+def test_v19_t_p3_05_a_contested_item_and_a_suspended_correction_bring_nothing(mod):
+    out = gloss_student(mod)._loo_cal_votes("mot")
+    assert out["excluded"] == [{"observation_id": "GE", "reason": "CONTESTE"}]
+    for u in out["units"]:
+        assert "GE" not in u["training"]
+        traits = {t for c in u["classes"].values() for v in c["labels"].values() for t in v["frequencies"]}
+        assert not {t for t in traits if "table" in t or "quai" in t}
+
+
+def test_v19_t_p3_06_the_same_identifier_taught_twice_is_one_exemplar(mod):
+    s = taught(mod, [GA, GB, GC, GD])
+    s.learn([GA])
+    gc = p3_units(s)["GC"]
+    assert cons(gc)["labels"]["L1"]["units"] == [["GA"], ["GB"]] and cons(gc)["labels"]["L1"]["frequencies"]["NG:mot_vole"] == 2
+
+
+def test_v19_t_p3_07_different_texts_of_one_source_stay_distinct_and_lineage_is_not_collapsed(mod):
+    prov = {"GA": {"source_id": "S-1", "author_id": "A-1"}, "GB": {"source_id": "S-1", "author_id": "A-1", "derived_from": ["GA"]}}
+    s = taught(mod, [GA, GB], provenance=prov)
+    s.learn([GC, GD])
+    units = p3_units(s)
+    assert cons(units["GC"])["labels"]["L1"]["units"] == [["GA"], ["GB"]] and "NG:mot_vole" in cons(units["GC"])["labels"]["L1"]["active"]
+    assert units["GA"]["descendants_in_training"] == ["GB"]                         # reported, never merged (NOT_COVERED)
+
+
+def test_v19_t_p3_08_one_sentence_under_two_identifiers_is_one_exemplar(mod):
+    gc = p3_units(taught(mod, [GA, ("GA2",) + GA[1:], GB, GC, GD]))["GC"]
+    assert cons(gc)["labels"]["L1"]["units"] == [["GA", "GA2"], ["GB"]]
+    assert cons(gc)["labels"]["L1"]["frequencies"]["NG:le_mot"] == 1 and "NG:le_mot" not in cons(gc)["labels"]["L1"]["active"]
+    assert lex(gc)["labels"]["L1"]["frequencies"]["falaise"] == 1 and lex(gc)["labels"]["L1"]["active"] == []
+
+
+def test_v19_t_p3_08_one_sentence_under_contradictory_labels_keeps_both_and_confirms_nothing(mod):
+    out = taught(mod, [GA, ("GAX", "mot", GA[2], "L2", "b", "x"), GB, GC, GD])._loo_cal_votes("mot")
+    gc = {u["observation_id"]: u for u in out["units"]}["GC"]
+    assert out["conflicting_fingerprints"] == [{"labels": ["L1", "L2"], "observations": ["GA", "GAX"]}]
+    assert cons(gc)["labels"]["L1"]["units"] == [["GA"], ["GB"]] and cons(gc)["labels"]["L2"]["units"] == [["GAX"], ["GD"]]
+    assert [cons(gc)["labels"][L]["frequencies"]["NG:le_mot_vole"] for L in ("L1", "L2")] == [1, 1]
+    assert all("NG:le_mot_vole" not in cons(gc)["labels"][L]["active"] for L in ("L1", "L2"))
+
+
+def test_v19_t_p3_09_a_voice_is_the_jaccard_of_question_and_exemplar_restricted_to_active_traits(mod):
+    m, _ = mod
+    out = m.filtered_voices({"t", "x"}, {"A1": ("L1", "a1", {"t", "y"}), "A2": ("L1", "a2", {"t", "z"}),
+                                         "B1": ("L2", "b1", {"u"}), "B2": ("L2", "b2", {"u"})})
+    assert voices(out) == {"L1": 1.0, "L2": 0.0} and out["labels"]["L1"]["argmax"] == ["A1", "A2"]    # unfiltered: 1/3
+    assert out["labels"]["L1"]["contributing"] == ["t"] and out["max_labels"] == ["L1"]
+    other = m.filtered_voices({"u"}, {"A1": ("L1", "a1", {"u", "a"}), "A2": ("L1", "a2", {"b"}),
+                                      "B1": ("L2", "b1", {"u"}), "B2": ("L2", "b2", {"u", "c"})})
+    assert voices(other) == {"L1": 0.0, "L2": 1.0}                                   # F(u, L1) = 1: neither proof nor counter-proof
+
+
+def test_v19_t_p3_10_a_class_without_active_trait_is_silent_and_a_weak_voice_is_not(mod):
+    m, _ = mod
+    assert m.filtered_voices({"x"}, {"A1": ("L1", "a1", {"t"}), "A2": ("L1", "a2", {"t"})}) == {
+        "labels": {"L1": {"units": [["A1"], ["A2"]], "frequencies": {"t": 2}, "active": ["t"], "voice": 0.0,
+                          "argmax": [], "contributing": []}}, "silent": True, "top": 0.0, "max_labels": []}
+    many = {"t"} | {"a%d" % i for i in range(9)}
+    weak = m.filtered_voices({"t"}, {"A1": ("L1", "a1", many), "A2": ("L1", "a2", many)})
+    assert weak["top"] == 0.1 and not weak["silent"] and weak["max_labels"] == ["L1"]          # no s_min
+    for items in (ONE_PER_LABEL, ONE_PER_LABEL + [("T-3", "mot", "Un mot bondit.", "L3", "c", "x")]):    # TC-A9, TC-L4
+        assert all(c["silent"] for u in p3_units(taught(mod, items)).values() for c in u["classes"].values())
+
+
+def test_v19_t_p3_11_the_raw_filtered_score_is_used_never_k4(mod):
+    h = p3_units(taught(mod, [H_L2, GA, GB, GC, GD, GF]))["H"]
+    assert voices(lex(h)) == {"L1": 1.0, "L2": 1.0} and lex(h)["max_labels"] == ["L1", "L2"]    # K4: 0.5 against 0.6
+    assert lex(h)["labels"]["L2"]["argmax"] == ["GC", "GD"]
+
+
+def test_v19_t_p3_12_tc_n2_replacement_gives_a_non_silent_tie_and_the_historical_fixture_is_silent(mod):
+    units = p3_units(taught(mod, N2))
+    h = lex(units["H"])
+    assert voices(h) == {"L1": 1.0, "L2": 1.0} and h["max_labels"] == ["L1", "L2"] and not h["silent"]
+    assert (h["labels"]["L1"]["contributing"], h["labels"]["L2"]["contributing"]) == (["vole"], ["range"])
+    assert {k: lex(u)["max_labels"] for k, u in units.items()} == {"GA": ["L1"], "GB": ["L1"], "GC": [], "GD": [],
+                                                                  "H": ["L1", "L2"]}
+    assert all(lex(u)["silent"] for u in p3_units(taught(mod, ONE_PER_LABEL)).values())     # TC-N2-H: 2 ex. -> silent
+
+
+def test_v19_t_p3_14_the_held_out_item_never_counts_for_itself(mod):
+    hp = lex(p3_units(taught(mod, [HP, GA, GB, GC, GD]))["HP"])
+    assert hp["labels"]["L1"]["frequencies"]["falaise"] == 1 and "falaise" not in hp["labels"]["L1"]["active"]
+
+
+def test_v19_t_p3_14_each_iteration_equals_a_student_that_never_saw_its_b2_removal(mod):
+    m, _ = mod
+    text = {it[0]: it[2] for it in (GA, GB, GC, GD, GE)}
+    for u in gloss_student(mod)._loo_cal_votes("mot")["units"]:
+        alone = gloss_student(mod, drop=frozenset(u["removed"]))
+        rel = alone._loo_cal_relevance("mot")
+        kept = set(m.lexical_relevance(item_traits(rel))["kept"])
+        q = text[u["observation_id"]]
+        lexical = {k: (v["label"], m.recall_key(text[k]), set(v["sentence"]) & kept) for k, v in rel["items"].items()}
+        construction = {k: (v["label"], m.recall_key(text[k]), alone._construction("mot", text[k])) for k, v in rel["items"].items()}
+        assert m.filtered_voices(alone._lemma_set("mot", q), lexical) == lex(u)
+        assert m.filtered_voices(alone._construction("mot", q), construction) == cons(u)
+
+
+def test_v19_t_p3_15_p3_changes_no_answer_no_state_and_stays_off_the_answer_path(mod):
+    m, _ = mod
+    s = new(mod)
+    s.learn([PT, EXC, PA2, PA3, PE1, PE2]); s.apply_correction(OK_EXC, EXC)
+    state, plan, rel = m.canonical(s.state), s._loo_cal_plan("mot"), s._loo_cal_relevance("mot")
+    before = [s.answer("mot", q) for q in (PQUERY, PT[2])]
+    s._loo_cal_votes("mot")
+    assert m.canonical(s.state) == state and s._loo_cal_plan("mot") == plan and s._loo_cal_relevance("mot") == rel
+    assert [s.answer("mot", q) for q in (PQUERY, PT[2])] == before and [a["origin"] for a in before] == ["CORRIGE", "RAPPEL"]
+    for function in ("answer", "_evidence", "_concordant", "_p5l2_status", "_recall", "_loo_cal_plan", "_loo_cal_relevance"):
+        assert not names_in(function) & {"filtered_voices", "_loo_cal_votes"}, function
+    for function in ("filtered_voices", "_loo_cal_votes"):
+        assert not names_in(function) & {"TAU", "DELTA", "CONTRAST_MIN", "_evidence", "_concordant"}, function
+
+
+def test_v19_t_p3_15_voices_are_not_turned_into_metrics(mod):
+    out = gloss_student(mod)._loo_cal_votes("mot")
+    assert (out["score"], out["metrics"], out["missing"], out["not_covered"]) == (
+        "RAW_FILTERED_JACCARD", "NOT_COMPUTED", ["P2_NC_TPC"], ["DECLARED_DESCENDANTS"])
+    keys = set(out) | {k for u in out["units"] for k in [*u, *u["classes"]["exemplaires"], *u["classes"]["constructions"]]}
+    assert not keys & {"N_c", "TP_c", "r_c", "correct"}
+
+
+def test_v19_t_p3_15_voices_do_not_depend_on_order_and_survive_save_reload_and_replay(mod, tmp_path):
+    m, _ = mod
+    a = gloss_student(mod)
+    b = new(mod)
+    b.learn([GE, GD, GC, GB, GA])
+    for c, ex in ((X_GE, GE), (K_GA2, GA), (K_GE, GE), (K_GA, GA)):
+        b.apply_correction(c, ex)
+    out = a._loo_cal_votes("mot")
+    assert b._loo_cal_votes("mot") == out
+    a.save(tmp_path)
+    r = m.R4CoreStudent.load(tmp_path, lexicon_dir=str(SANDBOX / "__no_lexicon__"))
+    lessons = new(mod)
+    lessons.learn([GA, GB, GC, GD, GE])
+    assert r._loo_cal_votes("mot") == out and r._loo_cal_votes("mot", as_of=1) == lessons._loo_cal_votes("mot")
+
+
+def test_v19_diagnostic_the_relevance_filter_counts_an_identical_duplicate_twice(mod):
+    # Documented limit, C1 V1.8 unchanged (its unit is the item): the duplicate GA2 pushes "vole" over M'/2 in unit H, so
+    # P3, which counts GA and GA2 as one exemplar, never sees it and the TC-N2' tie becomes a single L2 maximum.
+    s = taught(mod, N2 + [("GA2",) + GA[1:]])
+    rel = {u["observation_id"]: u for u in s._loo_cal_relevance("mot")["units"]}
+    h = lex(p3_units(s)["H"])
+    assert rel["H"]["relevance"]["frequencies"]["vole"] == 3 and rel["H"]["relevance"]["excluded"] == ["vole"]
+    assert h["labels"]["L1"]["units"] == [["GA", "GA2"], ["GB"]] and h["labels"]["L1"]["voice"] == 0.0
+    assert h["max_labels"] == ["L2"]
