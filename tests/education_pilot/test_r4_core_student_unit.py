@@ -740,3 +740,143 @@ def test_v12_historical_gate_does_not_read_p5l2_dependency_causes(mod):
     s._device_dependency = lambda *args: []
     a = s.answer("mot", PQUERY)
     assert a["sense"] == "HOLD" and a["reason"] == "PREUVE_INSUFFISANTE"
+
+
+# --- R4.4 provenance (V1.3): optional teaching metadata, lesson identity, lineage --------------------
+# Development tests. Metadata below is synthetic and attested by the caller; nothing is inferred.
+
+def test_v13_several_items_of_one_lesson_are_one_pedagogical_source(mod):
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PE1, PE2], provenance={"PA1": {"lesson_id": "LEC-1"}})
+    s.learn([PB1], provenance={"PB1": {"lesson_id": "LEC-1"}})
+    assert device_relation(s) == "SAME_EVENT" and device_relation(base(mod)) == "DISTINCT_PEDAGOGICAL_EVENTS"
+    st = s._p5l2_status("mot", PQUERY)
+    assert not st["candidate"] and "MEME_LECON" in st["dependency"] and s.answer("mot", PQUERY)["sense"] == "HOLD"
+
+
+def test_v13_two_lessons_in_one_learn_call_are_not_presumed_one_lesson(mod):
+    batch = [PA1, PA2, PA3, PB1, PE1, PE2]
+    s = new(mod)
+    s.learn(batch, provenance={"PA1": {"lesson_id": "LEC-A"}, "PB1": {"lesson_id": "LEC-B"}})
+    assert device_relation(s) == "DISTINCT_PEDAGOGICAL_EVENTS" and s.answer("mot", PQUERY)["sense"] == "HOLD"
+    s = new(mod)
+    s.learn(batch, provenance={"PA1": {"lesson_id": "LEC-A"}})
+    # one lesson left undeclared: the shared delivery still counts as a dependency
+    assert device_relation(s) == "SAME_EVENT" and s.answer("mot", PQUERY)["sense"] == "HOLD"
+
+
+def test_v13_two_deliveries_of_the_same_lesson_create_no_new_source(mod):
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PE1, PE2])
+    s.learn([PB1], provenance={"PB1": {"lesson_id": "LEC-B", "source_id": "SRC-1"}})
+    s.learn([PB1], provenance={"PB1": {"lesson_id": "LEC-B", "source_id": "SRC-2"}})
+    rec = s._provenance_record(s._derive(), "PB1")
+    assert (rec["teaching_event_id"], rec["occurrences"], rec["source_id"]) == (2, [2, 3], "SRC-1")
+    s.learn([("PB2",) + PB1[1:]], provenance={"PB2": {"lesson_id": "LEC-B"}})
+    assert s._pair_relation(s._derive(), {"PB1"}, {"PB2"}) == "SAME_EVENT"
+    assert s.answer("mot", PQUERY)["sense"] == "HOLD"
+
+
+def test_v13_same_author_distinct_lessons_is_pedagogical_replication_only(mod):
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PE1, PE2], provenance={"PA1": {"lesson_id": "LEC-A", "author_id": "AUT-1"}})
+    s.learn([PB1], provenance={"PB1": {"lesson_id": "LEC-B", "author_id": "AUT-1"}})
+    st = s._p5l2_status("mot", PQUERY)
+    assert st["evidence_status"] == "DISTINCT_PEDAGOGICAL_EVENTS" and "MEME_AUTEUR" in st["dependency"]
+    assert st["admissible"] is False and s.answer("mot", PQUERY)["sense"] == "HOLD"
+
+
+def test_v13_unknown_sources_stay_unknown_and_are_reported(mod):
+    s = base(mod)
+    rec = s._provenance_record(s._derive(), "PB1")
+    assert (rec["lesson_id"], rec["source_id"], rec["author_id"]) == (None, None, None)
+    assert "SOURCE_AUTEUR_INCONNUS" in s._p5l2_status("mot", PQUERY)["dependency"]
+
+
+def test_v13_distinct_source_ids_never_prove_independence(mod):
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PE1, PE2], provenance={"PA1": {"lesson_id": "LEC-A", "source_id": "SRC-A", "author_id": "AUT-A"}})
+    s.learn([PB1], provenance={"PB1": {"lesson_id": "LEC-B", "source_id": "SRC-B", "author_id": "AUT-B"}})
+    st = s._p5l2_status("mot", PQUERY)
+    assert st["evidence_status"] == "DISTINCT_PEDAGOGICAL_EVENTS" and not s._device_pair_is_independent(st["evidence_status"])
+    assert "SOURCE_AUTEUR_INCONNUS" not in st["dependency"] and st["admissible"] is False and st["response_authority"] is False
+    assert s.answer("mot", PQUERY) == base(mod).answer("mot", PQUERY)
+
+
+def test_v13_correction_lineage_links_the_exercise_to_its_source_item(mod):
+    ok_pb1 = ("K-OK", "PB1", "« vole » marque ce sens (L1), pas l’autre (L2).")
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PE1, PE2]); s.apply_correction(ok_pb1, PB1, provenance={"PB1": {"derived_from": ["PA1"]}})
+    d = s._derive()
+    assert s._provenance_record(d, "PB1")["derived_from"] == ["PA1"] and s._lineage(d, {"K-OK"}) == {"K-OK", "PB1", "PA1"}
+    assert s._pair_relation(d, {"PA1"}, {"PB1"}) == "SAME_EVENT" == device_relation(s)
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PE1, PE2]); s.apply_correction(ok_pb1, PB1, provenance={"PB1": {"derived_from": ["E-SRC-9"]}})
+    # the origin lesson is declared and not shared: the exercise is no longer an UNKNOWN_DEPENDENCY
+    assert device_relation(s) == "DISTINCT_PEDAGOGICAL_EVENTS" and s.answer("mot", PQUERY)["sense"] == "HOLD"
+
+
+def test_v13_duplicated_event_adds_occurrences_but_no_observation(mod):
+    s = base(mod)
+    before = (s.answer("mot", PQUERY), device_relation(s), sorted(s._derive()["items"]))
+    s.learn([PA1, PA2, PA3, PE1, PE2])
+    rec = s._provenance_record(s._derive(), "PA1")
+    assert (rec["teaching_event_id"], rec["occurrences"]) == (1, [1, 3])
+    assert (s.answer("mot", PQUERY), device_relation(s), sorted(s._derive()["items"])) == before
+
+
+def test_v13_provenance_survives_save_reload_and_replay(mod, tmp_path):
+    m, st = mod
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PE1, PE2], provenance={"PA1": {"lesson_id": "LEC-A", "author_id": "AUT-1"}})
+    s.learn([PB1], provenance={"PB1": {"lesson_id": "LEC-B", "derived_from": ["PZZ", "PA9"]}})
+    s.save(tmp_path)
+    r = m.R4CoreStudent.load(tmp_path, lexicon_dir=str(SANDBOX / "__no_lexicon__"))
+    assert all(r._provenance_record(r._derive(), i) == s._provenance_record(s._derive(), i) for i in ("PA1", "PB1"))
+    assert r._provenance_record(r._derive(), "PB1")["derived_from"] == ["PA9", "PZZ"]
+    assert r._provenance_record(r._derive(1), "PA1")["occurrences"] == [1] and "PB1" not in r._derive(1)["items"]
+    f = tmp_path / m.STATE_FILE
+    f.write_bytes(f.read_bytes().replace(b"LEC-A", b"LEC-X"))
+    with pytest.raises(st.StateIntegrityError):
+        m.R4CoreStudent.load(tmp_path, lexicon_dir=str(SANDBOX / "__no_lexicon__"))
+
+
+def test_v13_historical_entries_keep_their_state_shape_and_unknown_metadata(mod):
+    s = new(mod)
+    s.learn(SYN + [EX]); s.apply_correction(OKC, EX)
+    assert all(set(ev) == {"revision", "kind", "payload"} for ev in s.state["events"])
+    d = s._derive()
+    assert s._provenance_record(d, "S-EX") == {"observation_id": "S-EX", "item_id": "S-EX", "teaching_event_id": 1,
+                                               "teaching_event_kind": "learn", "occurrences": [1, 2], "lesson_id": None,
+                                               "source_id": None, "author_id": None, "derived_from": None}
+    assert s._provenance_record(d, "K-1")["item_id"] == "S-EX"
+
+
+def test_v13_metadata_never_changes_an_answer_or_grants_authority(mod):
+    def full(batch):
+        return {it[0]: {"lesson_id": "LEC-" + it[0], "source_id": "SRC-" + it[0], "author_id": "AUT-" + it[0]} for it in batch}
+    cases = (([[PA1, PA2, PA3, PE1, PE2], [PB1]], None),
+             ([[PT, EXC, PA2, PA3, PE1, PE2]], (OK_EXC, EXC)),
+             ([[x] for x in (PA1, PA2, PA3, PB1, PE1, PE2)], None))
+    for batches, corr in cases:
+        plain, tagged = new(mod), new(mod)
+        for b in batches:
+            plain.learn(b); tagged.learn(b, provenance=full(b))
+        if corr:
+            plain.apply_correction(*corr); tagged.apply_correction(*corr)
+        assert tagged.answer("mot", PQUERY) == plain.answer("mot", PQUERY)
+        st = tagged._p5l2_status("mot", PQUERY)
+        assert st["admissible"] is False and st["response_authority"] is False
+
+
+def test_v13_provenance_is_validated_at_the_boundary(mod):
+    s = new(mod)
+    for bad in ({"ZZ": {"lesson_id": "LEC"}}, {"PA1": {"teacher": "T"}}, {"PA1": {"lesson_id": ""}},
+                {"PA1": {"derived_from": "PA2"}}, {"PA1": "LEC"}):
+        with pytest.raises(ValueError):
+            s.learn([PA1], provenance=bad)
+    assert s.state["revision"] == 0
+    with pytest.raises(ValueError):
+        s.apply_correction(OKC, EX, provenance={"S-1": {"lesson_id": "LEC"}})
+    s.learn([PA1], provenance={"PA1": {"lesson_id": None}})
+    assert set(s.state["events"][0]) == {"revision", "kind", "payload"}

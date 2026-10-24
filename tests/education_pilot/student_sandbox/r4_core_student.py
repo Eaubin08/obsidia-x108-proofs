@@ -29,6 +29,7 @@ CONSTRUCTION_CLASSES = ("POS", "NG", "DET", "SURF")
 NEGATION_MARKERS = (("pas",), ("non",), ("plutot", "que"), ("au", "lieu", "de"))
 DEVICE_PAIR = frozenset(("constructions", "exemplaires"))
 P5L2_MISSING_CONDITIONS = ("P2_NC_TPC", "CONTRE_PREUVE", "P3_FREQUENCE", "RAPPEL")
+PROVENANCE_FIELDS = ("lesson_id", "source_id", "author_id", "derived_from")
 
 
 def fold(text: str) -> str:
@@ -95,16 +96,46 @@ class R4CoreStudent:
 
     # --- events -------------------------------------------------------------------------------
 
-    def _add(self, kind: str, payload) -> None:
+    def _add(self, kind: str, payload, provenance=None) -> None:
         self.state["revision"] += 1
-        self.state["events"].append({"revision": self.state["revision"], "kind": kind, "payload": payload})
+        event = {"revision": self.state["revision"], "kind": kind, "payload": payload}
+        if provenance:
+            event["provenance"] = provenance              # optional key: events without it keep the historical shape
+        self.state["events"].append(event)
         self._cache = {}
 
-    def learn(self, items):
-        self._add("learn", [list(i) for i in items])
+    def learn(self, items, provenance=None):
+        items = [list(i) for i in items]
+        self._add("learn", items, self._checked_provenance(provenance, {it[0] for it in items}))
 
-    def apply_correction(self, correction, exercise):
-        self._add("correction", {"correction": list(correction), "exercise": list(exercise)})
+    def apply_correction(self, correction, exercise, provenance=None):
+        self._add("correction", {"correction": list(correction), "exercise": list(exercise)},
+                  self._checked_provenance(provenance, {correction[0], exercise[0]}))
+
+    @staticmethod
+    def _checked_provenance(provenance, ids) -> dict:
+        """Optional teaching metadata keyed by item or correction id, validated at the boundary."""
+        if provenance is not None and not isinstance(provenance, dict):
+            raise ValueError("provenance must be a mapping of observation id to metadata")
+        out = {}
+        for oid, meta in (provenance or {}).items():
+            if oid not in ids or not isinstance(meta, dict) or not set(meta) <= set(PROVENANCE_FIELDS):
+                raise ValueError(f"invalid provenance entry for {oid!r}")
+            entry = {}
+            for k, v in meta.items():
+                if v is None:
+                    continue
+                if k == "derived_from":
+                    if not (isinstance(v, (list, tuple)) and v and all(isinstance(x, str) and x for x in v)):
+                        raise ValueError(f"invalid derived_from for {oid!r}")
+                    entry[k] = sorted(set(v))
+                elif isinstance(v, str) and v:
+                    entry[k] = v
+                else:
+                    raise ValueError(f"invalid {k} for {oid!r}")
+            if entry:
+                out[oid] = entry
+        return out
 
     # --- derived state (function of the event SET up to a revision) -----------------------------
 
@@ -112,19 +143,28 @@ class R4CoreStudent:
         r = self.state["revision"] if as_of is None else as_of
         if r in self._cache:
             return self._cache[r]
-        items, corrections = {}, {}
+        items, corrections, occurrences = {}, {}, {}
+
+        def delivered(oid, revision):
+            occ = occurrences.setdefault(oid, [])
+            if revision not in occ:
+                occ.append(revision)
+
         for ev in self.state["events"]:
             if ev["revision"] > r:
                 continue
             if ev["kind"] == "learn":
                 for it in ev["payload"]:
                     items.setdefault(it[0], {"item": it, "revision": ev["revision"]})
+                    delivered(it[0], ev["revision"])
             else:
                 c = ev["payload"]["correction"]
                 corrections.setdefault(c[0], {"correction": c, "exercise": ev["payload"]["exercise"],
                                               "revision": ev["revision"]})
                 ex = ev["payload"]["exercise"]
                 items.setdefault(ex[0], {"item": ex, "revision": ev["revision"]})
+                delivered(c[0], ev["revision"])
+                delivered(ex[0], ev["revision"])
         labels = sorted({v["item"][3] for v in items.values()})
         parsed = {cid: self._parse(v["correction"][2], v["exercise"][3], labels)
                   for cid, v in sorted(corrections.items())}
@@ -141,8 +181,8 @@ class R4CoreStudent:
             if p["status"] == "OK" and not suspended:
                 for pos, neg in p["contrasts"]:
                     contrasts.append({"id": cid, "positive": pos, "negative": neg, "exercise": ex})
-        derived = {"items": items, "corrections": corrections, "parsed": parsed, "labels": labels,
-                   "contested": {k: sorted(v) for k, v in contested.items()}, "contrasts": contrasts}
+        derived = {"items": items, "corrections": corrections, "occurrences": occurrences, "parsed": parsed,
+                   "labels": labels, "contested": {k: sorted(v) for k, v in contested.items()}, "contrasts": contrasts}
         self._cache[r] = derived
         return derived
 
@@ -275,30 +315,54 @@ class R4CoreStudent:
                 return True
         return False
 
-    def _observation_provenance(self, d, oid) -> dict:
-        """Provenance read from the recorded events only; what the data does not carry stays None."""
+    def _provenance_record(self, d, oid) -> dict:
+        """Teaching provenance of an observation as attested at its first occurrence; unknown fields stay None."""
         if oid in d["items"]:
-            revision, derived_from = d["items"][oid]["revision"], None
+            revision, item_id, derived_from = d["items"][oid]["revision"], oid, None
         else:
             c = d["corrections"][oid]
-            revision, derived_from = c["revision"], [c["exercise"][0]]
-        kind = next(ev["kind"] for ev in self.state["events"] if ev["revision"] == revision)
-        return {"observation_id": oid, "teaching_event_id": revision, "teaching_event_kind": kind,
-                "lesson_id": None, "source_id": None, "derived_from": derived_from}
+            revision, item_id, derived_from = c["revision"], c["exercise"][0], [c["exercise"][0]]
+        event = next(ev for ev in self.state["events"] if ev["revision"] == revision)
+        meta = event.get("provenance", {}).get(oid, {})
+        if "derived_from" in meta:
+            derived_from = sorted(set(derived_from or ()) | set(meta["derived_from"]))
+        return {"observation_id": oid, "item_id": item_id, "teaching_event_id": revision,
+                "teaching_event_kind": event["kind"], "occurrences": list(d["occurrences"][oid]),
+                "lesson_id": meta.get("lesson_id"), "source_id": meta.get("source_id"),
+                "author_id": meta.get("author_id"), "derived_from": derived_from}
+
+    def _observation_provenance(self, d, oid) -> dict:
+        """Compact V1.2 view of the provenance record (stable keys)."""
+        r = self._provenance_record(d, oid)
+        return {k: r[k] for k in ("observation_id", "teaching_event_id", "teaching_event_kind",
+                                  "lesson_id", "source_id", "derived_from")}
+
+    def _lineage(self, d, ids) -> set:
+        """The observations plus every ancestor declared through derived_from."""
+        seen, todo = set(), list(ids)
+        while todo:
+            i = todo.pop()
+            if i not in seen:
+                seen.add(i)
+                if i in d["items"] or i in d["corrections"]:
+                    todo.extend(self._provenance_record(d, i)["derived_from"] or ())
+        return seen
 
     def _pair_relation(self, d, a, b) -> str:
-        """Dependency of two evidence sets from recorded provenance; an unknown is never promoted to independent."""
-        recs = {i: self._observation_provenance(d, i) for i in a | b}
-        linked = lambda ids: set(ids) | {p for i in ids for p in recs[i]["derived_from"] or ()}
-        events = lambda ids: {recs[i]["teaching_event_id"] for i in ids}
-        if linked(a) & linked(b) or events(a) & events(b):
+        """Pedagogical dependency of two evidence sets; distinct source ids never establish independence."""
+        la, lb = self._lineage(d, a), self._lineage(d, b)
+        records = lambda ids: [self._provenance_record(d, i) for i in sorted(ids) if i in d["items"] or i in d["corrections"]]
+        ra, rb = records(la), records(lb)
+        lessons = lambda rs: {r["lesson_id"] for r in rs} - {None}
+        # a shared delivery is a dependency unless both observations attest distinct lessons
+        same_delivery = any(x["teaching_event_id"] == y["teaching_event_id"]
+                            and not (x["lesson_id"] and y["lesson_id"] and x["lesson_id"] != y["lesson_id"])
+                            for x in ra for y in rb)
+        if la & lb or lessons(ra) & lessons(rb) or same_delivery:
             return "SAME_EVENT"
-        observed = [i for i in linked(a) | linked(b) if i in d["items"]]
-        if any(self._observation_provenance(d, i)["teaching_event_kind"] != "learn" for i in observed):
-            return "UNKNOWN_DEPENDENCY"          # an exercise received with a correction comes from an undeclared lesson
-        sources = lambda ids: {recs[i]["source_id"] for i in ids}
-        if None not in sources(a) | sources(b) and not sources(a) & sources(b):
-            return "VERIFIED_INDEPENDENT_SOURCES"
+        if any(r["teaching_event_kind"] != "learn" and r["derived_from"] is None for r in ra + rb):
+            return "UNKNOWN_DEPENDENCY"          # an exercise received with a correction, origin lesson undeclared
+        # VERIFIED_INDEPENDENT_SOURCES would need an independence attestation that the contract does not define
         return "DISTINCT_PEDAGOGICAL_EVENTS"
 
     @staticmethod
@@ -322,7 +386,12 @@ class R4CoreStudent:
                 causes.append(cause)
         if any(kinds[items[i]["revision"]] != "learn" for i in pc | pe):
             causes.append("OBSERVATION_DERIVEE")
-        causes.append("SOURCE_AUTEUR_INCONNUS")             # the item schema carries no author or source
+        attested = lambda ids, k: {self._provenance_record(d, i)[k] for i in ids}
+        for k, cause in (("lesson_id", "MEME_LECON"), ("source_id", "MEME_SOURCE"), ("author_id", "MEME_AUTEUR")):
+            if (attested(pc, k) & attested(pe, k)) - {None}:
+                causes.append(cause)
+        if None in attested(pc | pe, "source_id") | attested(pc | pe, "author_id"):
+            causes.append("SOURCE_AUTEUR_INCONNUS")         # source or author not attested for every observation
         return causes
 
     def _p5l2_status(self, word, sentence) -> dict:
@@ -342,9 +411,10 @@ class R4CoreStudent:
             c_tok = {t for i in pc for f in qc & self._construction(word, d["items"][i]["item"][2])
                      for t in re.split(r"[:=_]", f)}
             e_tok = {t for i in pe for t in ql & self._lemma_set(word, d["items"][i]["item"][2])}
+            relation = self._pair_relation(d, pc, pe)
             out.update(hypothesis=L, argmax={"constructions": sorted(pc), "exemplaires": sorted(pe)}, dependency=dep,
-                       candidate=not {"ITEM_COMMUN", "EVENEMENT_COMMUN"} & set(dep),
-                       evidence_status=self._pair_relation(d, pc, pe), shared_cue_tokens=sorted(c_tok & e_tok))
+                       candidate=relation in ("DISTINCT_PEDAGOGICAL_EVENTS", "VERIFIED_INDEPENDENT_SOURCES"),
+                       evidence_status=relation, shared_cue_tokens=sorted(c_tok & e_tok))
             out["admissible"] = out["candidate"] and not dep and not out["missing_conditions"]
         return out
 

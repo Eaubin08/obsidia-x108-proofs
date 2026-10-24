@@ -242,3 +242,71 @@ H revient à accepter la réplication pédagogique interne comme indépendance K
 - Les 50 tests V1.1 sont conservés sans modification ; 11 tests V1.2 ajoutés → 61/61.
 - RED sur V1.1 : 11 échecs (10 dus à l’API absente ; 1 comportemental : la porte historique de V1.1 lisait les causes P5-L2).
 - Régressions locales sans examens : 22/22.
+
+---
+
+## ADDENDUM V1.3 — 2026-10-24 (réception facultative de la provenance pédagogique)
+
+**Base :** `a70e0efb`. **Décision fondateur :** S_STRICT conservé comme politique de réponse provisoire ; H_HISTORICAL = référence seulement ; PEDAGOGICAL_PROVENANCE_INCREMENT = GO ; aucune autorité de réponse nouvelle.
+
+### C.1 Points d’entrée audités
+
+| Étape | Identifiants | Création, conservation, perte |
+|---|---|---|
+| curriculum (`_pilot_data`, côté hôte) | item, correction, exercice visé ; ensembles `E` / `CONC` | aucune leçon, source ni auteur |
+| banc (`Teacher.teach`, `Teacher.correct`) | items, corrections | un ensemble entier part en un seul `learn()` (14 leçons + 4 exercices) ; perte du nom d’ensemble et de tout regroupement en leçons |
+| protocole (`runner.py`, `SandboxStudent`) | items, correction, exercice | commun à tous les élèves ; aucune métadonnée transportée |
+| élève : `_add` | révision, type d’événement | la révision identifie une livraison, pas une leçon |
+| élève : `_derive` | items et corrections par id | la première occurrence gagne ; les livraisons suivantes d’un même id étaient invisibles (désormais listées dans `occurrences`) |
+| mémoire et inférence | ids d’items et de corrections, révisions | `retrieve`, `history`, journal et provenance de réponse inchangés |
+| persistance | état complet | JSON canonique + SHA-256 ; replay = rederivation depuis les événements |
+
+### C.2 Contrat de provenance pédagogique
+
+| Champ | Sens | Origine |
+|---|---|---|
+| item_id | contenu enseigné (`it[0]`) ; pour une correction, l’exercice visé | données |
+| observation_id | preuve : l’item (à sa première occurrence) ou la correction | données |
+| teaching_event_id | révision de la première occurrence | événements |
+| occurrences | toutes les livraisons de l’id ; une répétition n’ajoute ni observation ni source | événements |
+| lesson_id | leçon logique | attestée par l’appelant ; jamais déduite d’un appel `learn()` ni d’un identifiant |
+| source_id, author_id | source pédagogique, auteur | attestés seulement ; leur égalité est un diagnostic, leur différence ne prouve rien |
+| derived_from | filiation déclarée (exercice → item source) ; correction → exercice | attestée ou données ; parcourue de façon transitive |
+| evidence_status | relation entre deux ensembles de preuves | calculée |
+
+Statuts :
+- SAME_EVENT : identifiant, filiation ou leçon partagés ; ou même livraison sans que les deux côtés attestent des leçons distinctes ;
+- UNKNOWN_DEPENDENCY : exercice reçu avec une correction, sans origine déclarée ;
+- DISTINCT_PEDAGOGICAL_EVENTS : leçons attestées distinctes, ou livraisons distinctes sans lien connu (réplication pédagogique interne, pas indépendance) ;
+- VERIFIED_INDEPENDENT_SOURCES : exige une attestation d’indépendance que le contrat ne définit pas ; jamais retourné.
+
+Distinctions : l’identité d’une leçon est `lesson_id` ; une occurrence est la livraison d’un item ; une répétition est une nouvelle occurrence du même item (aucune observation nouvelle) ou un nouvel item de la même leçon (SAME_EVENT) ; une nouvelle leçon pédagogiquement distincte porte un `lesson_id` distinct attesté ; une source extérieure indépendante vérifiée n’est pas représentable aujourd’hui.
+
+### C.3 Interface et sérialisation
+
+- `learn(items, provenance=None)` et `apply_correction(correction, exercise, provenance=None)` : argument nommé facultatif, `provenance = {id: {lesson_id, source_id, author_id, derived_from}}`. Les clés sont limitées aux ids de l’événement ; la validation a lieu à la frontière (`ValueError`) ; `None` signifie inconnu.
+- Stockage : clé facultative `provenance` dans l’événement, absente quand rien n’est attesté. Les états historiques restent identiques octet pour octet ; un état V1.3 est relu par V1.2 sans écart d’observation (clé ignorée).
+- La provenance attestée à la première occurrence gouverne ; une attestation ultérieure pour un id déjà reçu reste dans le journal des événements sans être appliquée (même règle que pour le contenu).
+- `runner.py` et `SandboxStudent` sont inchangés : dans le chemin du banc, aucune métadonnée n’atteint l’élève et toutes les observations restent inconnues. L’extension du protocole est proposée, non appliquée : le runner est commun à tous les élèves et `EmptyStudent.learn(items)` n’accepte aucun argument supplémentaire.
+- Lecture interne : `_provenance_record` (contrat complet), `_observation_provenance` (vue V1.2 à clés stables), `_lineage`. La sortie publique de `retrieve` est inchangée.
+
+### C.4 Effets vérifiés
+
+- Réponses sous S : identiques à `a70e0efb` sur 16 scénarios (dont 7 avec métadonnées), sur 2 × 20 000 tirages à métadonnées synthétiques (graine 108) et sur les données V0. CORRIGE conservé.
+- La branche automatique VERIFIED de V1.2 (sources connues et disjointes) est retirée : avec la réception des métadonnées, deux `source_id` distincts seraient devenus une preuve d’indépendance et, par S, une autorité de réponse.
+- P5-L2 : `candidate` suit `evidence_status` (même leçon ⇒ non candidat). `SOURCE_AUTEUR_INCONNUS` est émis tant que source ou auteur manque ; MEME_LECON, MEME_SOURCE et MEME_AUTEUR le sont quand ces champs sont attestés et partagés. Toujours non admissible, sans autorité de réponse.
+- Référence H (inactive) : les métadonnées la rendent plus stricte pour une même leçon répétée (M1 ; injection en quatre `learn()` : −46 réponses) et plus permissive pour deux leçons attestées dans un même appel (injection en un seul `learn()` : +6). Résidu : la porte historique conserve la règle de livraison V1 (`event_of`), inactive sous S, qui bloque encore M2 sous H.
+
+### C.5 Restes NOT_COVERED
+
+- Transport des métadonnées par le protocole du banc.
+- Attestation d’indépendance des sources (qui vérifie, avec quel registre).
+- Conflit entre attestations successives pour un même id : non signalé.
+- Ré-enseignement sous le même id avec une autre étiquette (G2) : toujours ignoré.
+- RAPPEL, P2 et P3 : non traités dans cette passe.
+
+### C.6 Tests
+
+- Les 61 tests existants sont conservés sans modification ; 12 tests V1.3 ajoutés → 73/73.
+- RED sur V1.2 : 12 échecs, tous dus à l’API absente.
+- Régressions locales sans examens : 22/22.
