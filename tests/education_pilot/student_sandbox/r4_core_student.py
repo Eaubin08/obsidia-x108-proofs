@@ -271,6 +271,27 @@ class R4CoreStudent:
                 "memory": [h for h in self._hits(d, word) if h["id"] in ids],
                 "provenance": [self._provenance_record(d, i) for i in ids]}
 
+    def _loo_cal_plan(self, word, as_of=None) -> dict:
+        """LOO-CAL units and B2 removal sets; class votes need the P3 and relevance filters, not computed here."""
+        d = self._derive(as_of)
+        active = self._active(d, word)
+        units, excluded = [], []
+        for it in [v["item"] for _, v in sorted(d["items"].items()) if v["item"][1] == word]:
+            k = it[0]
+            if k in d["contested"]:
+                excluded.append({"observation_id": k, "reason": "CONTESTE"})
+                continue
+            rest = [x for x in active if x[0] != k]
+            if any(recall_key(x[2]) == recall_key(it[2]) for x in rest):
+                excluded.append({"observation_id": k, "reason": "RAPPEL"})      # the held-out question would be a recall
+                continue
+            removed = sorted({k} | {cid for cid, c in d["corrections"].items() if c["exercise"][0] == k})
+            others = [o for o in [*d["items"], *d["corrections"]] if o not in removed]
+            units.append({"observation_id": k, "label": it[3], "removed": removed,
+                          "remaining": {L: sum(x[3] == L for x in rest) for L in sorted({x[3] for x in rest})},
+                          "declared_descendants": sorted(o for o in others if k in self._lineage(d, {o}))})
+        return {"units": units, "excluded": excluded, "votes": "NOT_COMPUTED", "missing": ["P3_FILTER", "C1_FILTER"]}
+
     def _evidence(self, word, sentence):
         d = self._derive()
         active = self._active(d, word)

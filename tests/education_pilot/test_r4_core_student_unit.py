@@ -1006,3 +1006,121 @@ def test_v16_rappel_takes_precedence_over_an_unknown_determinant(mod):
     s.learn([("Z-1", "mot", "Le mot zorbulique vole haut.", "L1", "a", "x"), ("Z-2", "mot", "Elle range le mot.", "L2", "b", "x")])
     assert s.answer("mot", "Le mot zorbulique vole haut.")["origin"] == "RAPPEL"
     assert s.answer("mot", "Le mot zorbulique vole bas.")["reason"] == "MOT_INCONNU"
+
+
+# --- R4.4 P2 / LOO-CAL (V1.7): admissible LOO units only; class votes are blocked on P3 and C1 --------------
+# Development tests. N_c / TP_c need the P3 and C1 filters recomputed per iteration (preregistration §3.4).
+
+def plan_units(plan):
+    return {u["observation_id"]: u for u in plan["units"]}
+
+
+def test_v17_loo_cal_units_are_the_active_observations_with_their_b2_removal(mod):
+    s = new(mod)
+    s.learn(SYN + [EX]); s.apply_correction(OKC, EX)
+    plan = s._loo_cal_plan("mot")
+    units = plan_units(plan)
+    assert sorted(units) == ["S-1", "S-2", "S-3", "S-4", "S-EX"] and plan["excluded"] == []
+    assert units["S-EX"]["removed"] == ["K-1", "S-EX"] and units["S-1"]["removed"] == ["S-1"]
+    assert {k: u["label"] for k, u in units.items()} == {it[0]: it[3] for it in SYN + [EX]}
+    assert units["S-1"]["remaining"] == {"L1": 2, "L2": 2}
+
+
+def test_v17_class_votes_are_blocked_on_p3_and_the_relevance_filter(mod):
+    plan = base(mod)._loo_cal_plan("mot")
+    assert plan["votes"] == "NOT_COMPUTED" and plan["missing"] == ["P3_FILTER", "C1_FILTER"]
+    assert not any(k in plan for k in ("N_c", "TP_c", "r_c")) and not any(k in u for u in plan["units"] for k in ("N_c", "TP_c"))
+
+
+def test_v17_untaught_word_has_no_loo_unit(mod):
+    assert base(mod)._loo_cal_plan("zorp") == {"units": [], "excluded": [], "votes": "NOT_COMPUTED",
+                                               "missing": ["P3_FILTER", "C1_FILTER"]}
+
+
+def test_v17_label_with_a_single_observation_leaves_no_exemplar_of_its_label(mod):
+    s = new(mod)
+    s.learn([PA1, PA2, PE1])
+    units = plan_units(s._loo_cal_plan("mot"))
+    assert units["PE1"]["remaining"] == {"L1": 2} and units["PA1"]["remaining"] == {"L1": 1, "L2": 1}
+
+
+def test_v17_label_without_admissible_observation_is_entirely_excluded(mod):
+    ex2 = ("S-EX2", "mot", "Il range le mot ici.", "L2", "b", "x")
+    s = new(mod)
+    s.learn([EX, ex2]); s.apply_correction(CONTEST, EX)
+    s.apply_correction(("K-Y", "S-EX2", "Révision : lecture L1 admise ici."), ex2)
+    plan = s._loo_cal_plan("mot")
+    assert plan["units"] == [] and plan["excluded"] == [{"observation_id": "S-EX", "reason": "CONTESTE"},
+                                                        {"observation_id": "S-EX2", "reason": "CONTESTE"}]
+
+
+def test_v17_contested_and_suspended_observations_are_not_units(mod):
+    s = new(mod)
+    s.learn(SYN + [EX]); s.apply_correction(OKC, EX); s.apply_correction(CONTEST, EX)
+    assert s.derived_snapshot("mot")["statuses"]["K-1"] == ("OK", True)
+    plan = s._loo_cal_plan("mot")
+    assert "S-EX" not in plan_units(plan) and {"observation_id": "S-EX", "reason": "CONTESTE"} in plan["excluded"]
+    assert all("K-1" not in u["removed"] for u in plan["units"])
+
+
+def test_v17_a_duplicate_of_an_active_exemplar_is_excluded_as_rappel(mod):
+    s = new(mod)
+    s.learn([PA1, PA2, PE1, PE2]); s.learn([("PA1-B",) + PA1[1:]])
+    plan = s._loo_cal_plan("mot")
+    assert {"observation_id": "PA1", "reason": "RAPPEL"} in plan["excluded"]
+    assert {"observation_id": "PA1-B", "reason": "RAPPEL"} in plan["excluded"]
+    assert sorted(plan_units(plan)) == ["PA2", "PE1", "PE2"]
+
+
+def test_v17_repeated_delivery_is_one_unit(mod):
+    s = base(mod)
+    s.learn([PB1])
+    plan = s._loo_cal_plan("mot")
+    assert [u["observation_id"] for u in plan["units"]].count("PB1") == 1 and plan["excluded"] == []
+
+
+def test_v17_b2_removal_takes_every_correction_on_the_held_out_item(mod):
+    exercises = {e[0]: e for e in D.E_EXERCISES}
+    s = new(mod)
+    s.learn(D.E_LESSONS + D.E_EXERCISES)
+    for c in D.C_CORRECTIONS:
+        s.apply_correction(c, exercises[c[1]])
+    s.apply_correction(("C-Z", "EX-F1", "Phrase sans étiquette."), exercises["EX-F1"])     # NON_RECONNU: EX-F1 stays active
+    units = plan_units(s._loo_cal_plan("force"))
+    assert len(units) == 18 and units["EX-F1"]["removed"] == ["C-1", "C-Z", "EX-F1"]
+    assert units["E-F1-1"]["removed"] == ["E-F1-1"]
+
+
+def test_v17_declared_descendants_are_reported_not_silently_removed(mod):
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PE1, PE2]); s.apply_correction(OK_PB1, PB1, provenance={"PB1": {"derived_from": ["PA1"]}})
+    units = plan_units(s._loo_cal_plan("mot"))
+    assert units["PA1"]["declared_descendants"] == ["K-OK", "PB1"] and units["PA1"]["removed"] == ["PA1"]
+    assert units["PB1"]["removed"] == ["K-OK", "PB1"] and units["PB1"]["declared_descendants"] == []
+
+
+def test_v17_loo_cal_plan_survives_save_reload_and_replays_the_past(mod, tmp_path):
+    m, _ = mod
+    s = new(mod)
+    s.learn(SYN + [EX]); s.apply_correction(OKC, EX); s.apply_correction(CONTEST, EX)
+    plan = s._loo_cal_plan("mot")
+    s.save(tmp_path)
+    r = m.R4CoreStudent.load(tmp_path, lexicon_dir=str(SANDBOX / "__no_lexicon__"))
+    assert r._loo_cal_plan("mot") == plan and "S-EX" in plan_units(r._loo_cal_plan("mot", as_of=2))
+
+
+def test_v17_loo_cal_plan_does_not_depend_on_the_order_of_teaching(mod):
+    a, b = new(mod), new(mod)
+    a.learn(SYN + [EX]); a.apply_correction(OKC, EX); a.apply_correction(CONTEST, EX)
+    b.learn([EX] + SYN[::-1]); b.apply_correction(CONTEST, EX); b.apply_correction(OKC, EX)
+    assert a._loo_cal_plan("mot") == b._loo_cal_plan("mot")
+
+
+def test_v17_loo_cal_plan_changes_no_answer_and_no_state(mod):
+    m, _ = mod
+    s = new(mod)
+    s.learn([PT, EXC, PA2, PA3, PE1, PE2]); s.apply_correction(OK_EXC, EXC)
+    state, before = m.canonical(s.state), [s.answer("mot", q) for q in (PQUERY, PT[2])]
+    s._loo_cal_plan("mot")
+    assert m.canonical(s.state) == state and [s.answer("mot", q) for q in (PQUERY, PT[2])] == before
+    assert (before[0]["origin"], before[1]["origin"]) == ("CORRIGE", "RAPPEL")

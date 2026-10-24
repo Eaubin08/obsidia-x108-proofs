@@ -486,3 +486,59 @@ Constat de lecture : le RAPPEL émet une étiquette (TC-R1). C’est la seule é
 - Orthogonalité RAPPEL / LOO-CAL : LOO-CAL n’est pas implémenté (P2).
 - Lecture à confirmer : l’invariant 9 et « ne pas autoriser une nouvelle réponse » sont lus comme portant sur l’inférence. Si le RAPPEL devait rester purement informatif, ce serait une déviation de TC-R1 à décider.
 - L’addendum V1.5 (« 18 PREUVE_INSUFFISANTE ») décrit V1.5 : sous V1.6, ces sondes identiques aux phrases enseignées répondent RAPPEL.
+
+---
+
+## ADDENDUM V1.7 — 2026-10-24 (P2 / LOO-CAL : blocage contractuel ; précondition RAPPEL / unseen)
+
+**Base :** `fcaae848`. **Décision :** RAPPEL accepté (réponse de mémoire, exclue de P-CAL) ; P2 et LOO-CAL = GO ; LOO-ALIGN = HOLD ; P3 et C1 non autorisés ; S actif.
+
+### G.1 Contrats relus
+
+| Source | N_c / TP_c | Classe muette | Égalité | Voix |
+|---|---|---|---|---|
+| R4.3.1 NB1 / NB2 (calibration design) | items actifs non muets en LOO / étiquette juste | similarité < s_min 0,2 ou marge < δ 0,15, après filtre de pertinence | entre étiquettes différentes → muette | similarité brute (rétrécissement porté sur les comptes) |
+| R4.4, fermeture des lacunes, lacune 1 | items actifs non muets / argmax juste | aucune voix > 0 | comptée dans N_c, pas dans TP_c | voix de la classe |
+| R4.4, lacune 3 et pré-enregistrement §3.4 / §3.6 | itérations LOO non muettes / justes | aucun trait P3 actif ; C1 puis P3 recalculés à chaque itération | — | voix sur traits filtrés |
+
+### G.2 Point bloquant
+
+N_c et TP_c sont définis sur des voix filtrées par C1 puis P3, recalculées à chaque itération. P3 et C1 ne sont pas implémentés et ne sont pas autorisés dans cette passe. Sans eux :
+
+- TC-L4 (un exemplaire par étiquette, N_c = 0 attendu) donne N_c = 2 pour la classe constructions ;
+- sur V0, classe constructions : N/TP = 18/6 selon la lacune 1, 5/5 selon R4.3.1, soit r_c = 0,35 ou 0,86 ; classe exemplaires : 2/2 ou 0/0.
+
+Les lectures divergent jusqu’à la qualification même des classes (P2). Aucun N_c ni TP_c n’est donc calculé : ce serait choisir une formule non contractuelle. Sur les égalités, R4.3.1 (classe muette) et R4.4 (comptée dans N_c) divergent ; R4.4 étant postérieur, sa règle prime, à confirmer.
+
+### G.3 Ce qui est implémenté (indépendant de P3 et C1)
+
+`_loo_cal_plan(word, as_of=None)`, en lecture seule :
+
+- unité = exemplaire actif ; retrait B2 = l’item et toutes les corrections qui le visent, contradiction comprise ;
+- exclusions : CONTESTÉ ; RAPPEL (un autre exemplaire actif a la même empreinte, donc la question serait un rappel) ;
+- répétitions : un identifiant livré plusieurs fois = une seule unité ;
+- `remaining` : exemplaires actifs restants par étiquette ;
+- `declared_descendants` : observations dérivées déclarées, signalées et non retirées (B2 ne les couvre pas) ;
+- `votes = NOT_COMPUTED`, `missing = [P3_FILTER, C1_FILTER]`.
+
+Sur V0 : 17 unités ; EX-F6 exclu (contesté par la contradiction).
+
+### G.4 Précondition RAPPEL / unseen
+
+- Constat : `check_unseen` (minuscules et espaces seulement) déclarait inédites les variantes d’une phrase enseignée par les accents ou la ponctuation finale (3 variantes sur 5 dans le test), alors que l’élève y répond RAPPEL.
+- Correctif : `teaching_fingerprint`, identique à l’empreinte RAPPEL de l’élève, est enregistré par `ShownLog` ; `check_unseen` signale un item si son hachage ou son empreinte a déjà été montré. Le contrôle ne peut que signaler davantage d’items comme vus ; `sentence_hash` et la baseline memorizer sont inchangés ; aucune donnée et aucun examen ne sont touchés.
+- Effet sur les campagnes RED : un item d’examen qui serait une variante d’une leçon ferait désormais échouer les contrôles d’unseen ; ce n’est pas vérifiable ici (examens privés).
+
+### G.5 Non-régression et tests
+
+- V1.6 → V1.7 : réponses identiques (24 sondes V0 avec contradiction ; leave-one-out 36/36) ; états sauvegardés identiques ; seuils inchangés ; RAPPEL et CORRIGE inchangés.
+- Tests : 122 de base inchangés + 13 LOO-CAL + 4 unseen = 139/139.
+- RED sur V1.6 : 15 échecs (13 dus à l’API LOO-CAL absente, 1 comportemental sur `check_unseen`, 1 dû à l’empreinte absente du banc).
+
+### G.6 NOT_COVERED
+
+- Calcul de N_c, TP_c et r_c : bloqué sur P3 et C1.
+- Classe contrastes : la lacune 2 ne calibre que constructions et exemplaires.
+- Descendants déclarés : signalés, non retirés ; leur retrait relèverait d’une extension de B2.
+- Le contrôle de disjonction des ensembles de `test_pilot_force_controls` utilise encore `sentence_hash`.
+- Aucune métrique P-CAL n’existe encore pour en exclure RAPPEL.

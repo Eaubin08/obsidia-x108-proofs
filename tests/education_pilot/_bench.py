@@ -23,6 +23,7 @@ import random
 import secrets
 import shutil
 import subprocess
+import unicodedata
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -56,6 +57,12 @@ STOP = set("le la les l de d du des un une a à au aux il elle ils on en et sa s
 
 def sentence_hash(sentence: str) -> str:
     return hashlib.sha256(" ".join(sentence.lower().split()).encode("utf-8")).hexdigest()
+
+
+def teaching_fingerprint(sentence: str) -> str:
+    """RAPPEL identity (§3.8): lower case, folded accents, normalised spaces, final . ! ? removed."""
+    folded = "".join(c for c in unicodedata.normalize("NFD", sentence.lower()) if unicodedata.category(c) != "Mn")
+    return " ".join(folded.split()).rstrip(" .!?")
 
 
 def content_words(sentence: str, target: str = "") -> set[str]:
@@ -173,9 +180,11 @@ def load_private_exams() -> dict[str, Any]:
 @dataclass
 class ShownLog:
     hashes: set[str] = field(default_factory=set)
+    fingerprints: set[str] = field(default_factory=set)
 
     def record(self, sentence: str) -> None:
         self.hashes.add(sentence_hash(sentence))
+        self.fingerprints.add(teaching_fingerprint(sentence))
 
 
 class Teacher:
@@ -242,7 +251,9 @@ class Examiner:
         return self._rng.sample(list(exam), len(exam))
 
     def check_unseen(self, exam) -> list[str]:
-        return [it[0] for it in exam if sentence_hash(it[2]) in self.log.hashes]
+        """Exam items already shown, by exact hash or by the RAPPEL fingerprint: a recall is never unseen."""
+        return [it[0] for it in exam if sentence_hash(it[2]) in self.log.hashes
+                or teaching_fingerprint(it[2]) in self.log.fingerprints]
 
     def score(self, student, exam) -> Score:
         rows = []
