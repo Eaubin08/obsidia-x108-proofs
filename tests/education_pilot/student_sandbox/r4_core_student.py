@@ -50,6 +50,19 @@ def jaccard(a, b) -> float:
     return len(a & b) / len(a | b) if a | b else 0.0
 
 
+def lexical_relevance(traits: dict) -> dict:
+    """Lexical relevance filter (preregistration §3.6, D1/D2) over the training items given: item id -> lexical traits.
+    F(t) = number of items carrying t, each item once; M <= 1: bypass; otherwise t is excluded iff 2 * F(t) > M."""
+    m = len(traits)
+    freq = {}
+    for ts in traits.values():
+        for t in set(ts):
+            freq[t] = freq.get(t, 0) + 1
+    excluded = sorted(t for t, f in freq.items() if m > 1 and 2 * f > m)
+    return {"m": m, "bypass": m <= 1, "frequencies": dict(sorted(freq.items())),
+            "kept": sorted(set(freq) - set(excluded)), "excluded": excluded}
+
+
 def canonical(obj) -> bytes:
     return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
 
@@ -291,6 +304,46 @@ class R4CoreStudent:
                           "remaining": {L: sum(x[3] == L for x in rest) for L in sorted({x[3] for x in rest})},
                           "declared_descendants": sorted(o for o in others if k in self._lineage(d, {o}))})
         return {"units": units, "excluded": excluded, "votes": "NOT_COMPUTED", "missing": ["P3_FILTER", "C1_FILTER"]}
+
+    def _lexical_traits(self, d, word):
+        """Lexical traits of each active item: K5 lemmas of its sentence and of the glosses of its attached OK corrections.
+        Attached = the correction names the exercise and carries its recorded payload; no other correction counts."""
+        traits = {it[0]: {"label": it[3], "sentence": frozenset(self._lemma_set(word, it[2])), "glosses": {}}
+                  for it in self._active(d, word)}
+        records = []
+        for cid, c in sorted(d["corrections"].items()):
+            ex = d["items"][c["exercise"][0]]["item"]
+            if ex[1] != word:
+                continue
+            status = self._eff_status(d["parsed"][cid])
+            attached = c["correction"][1] == ex[0] and c["exercise"] == ex
+            counted = status == "OK" and attached and ex[0] in traits     # SUSPENDU, CONTESTE...: no frequency
+            if counted:                                                  # a correction adds traits, never an item
+                tokens = [x for segment in d["parsed"][cid]["glosses"].values() for x in segment]
+                traits[ex[0]]["glosses"][cid] = frozenset(self._lemma_set(word, " ".join(tokens)))
+            records.append({"id": cid, "exercise": ex[0], "status": status, "attached": attached, "counted": counted})
+        return traits, records
+
+    def _loo_cal_relevance(self, word, as_of=None) -> dict:
+        """Lexical relevance filter of every LOO-CAL unit, recomputed on its own training items after the B2 removal.
+        Informative input of P3 only: no vote, no N_c / TP_c and no answer depends on it."""
+        d = self._derive(as_of)
+        plan = self._loo_cal_plan(word, as_of)
+        traits, records = self._lexical_traits(d, word)
+        units = []
+        for u in plan["units"]:
+            cut = set(u["removed"])                                      # B2: the held-out item and its corrections
+            training = {k: v["sentence"].union(*(g for cid, g in v["glosses"].items() if cid not in cut))
+                        for k, v in traits.items() if k not in cut}
+            sources = set(training) | {cid for k in training for cid in traits[k]["glosses"]}
+            units.append({"observation_id": u["observation_id"], "removed": u["removed"], "training": sorted(training),
+                          "relevance": lexical_relevance(training),
+                          "descendants_in_training": sorted(set(u["declared_descendants"]) & sources)})   # NOT_COVERED by B2
+        return {"items": {k: {"label": v["label"], "sentence": sorted(v["sentence"]),
+                              "glosses": {cid: sorted(g) for cid, g in sorted(v["glosses"].items())}}
+                          for k, v in sorted(traits.items())},
+                "corrections": records, "units": units, "excluded": plan["excluded"],
+                "votes": "NOT_COMPUTED", "missing": ["P3_FILTER"]}
 
     def _evidence(self, word, sentence):
         d = self._derive()

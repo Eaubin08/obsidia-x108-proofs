@@ -1124,3 +1124,209 @@ def test_v17_loo_cal_plan_changes_no_answer_and_no_state(mod):
     s._loo_cal_plan("mot")
     assert m.canonical(s.state) == state and [s.answer("mot", q) for q in (PQUERY, PT[2])] == before
     assert (before[0]["origin"], before[1]["origin"]) == ("CORRIGE", "RAPPEL")
+
+
+# --- R4.4 V1.8: lexical relevance filter C1 (preregistration §3.6, D1/D2), informative input of LOO-CAL ----------
+# Development tests. Gloss scope SENTENCE_PLUS_OK_GLOSSES (founder arbitration). P3, N_c and TP_c are not built.
+
+GA = ("GA", "mot", "Le mot vole vers la falaise.", "L1", "a", "x")
+GB = ("GB", "mot", "Un mot vole vers la plage.", "L1", "a", "x")
+GC = ("GC", "mot", "Elle range le mot dans la barque.", "L2", "b", "x")
+GD = ("GD", "mot", "Il range un mot dans la caisse.", "L2", "b", "x")
+GE = ("GE", "mot", "On range ce mot sous la table.", "L2", "b", "x")
+K_GA = ("K-GA", "GA", "« vole » marque ce sens (L1) malgré la rafale, pas l’autre (L2).")
+K_GA2 = ("K-GA2", "GA", "« vole » garde ce sens (L1) sous la rafale et vers la falaise.")
+K_GE = ("K-GE", "GE", "« range » marque ce sens (L2) près du quai, pas l’autre (L1).")
+X_GE = ("X-GE", "GE", "Révision : lecture L1 admise ici.")
+
+
+def gloss_student(mod, extra=(), drop=frozenset()):
+    """GA carries two OK glosses; GE is contested, so its OK correction K-GE is SUSPENDU. drop = a B2 removal."""
+    s = new(mod)
+    s.learn([it for it in (GA, GB, GC, GD, GE) if it[0] not in drop])
+    for c, ex in [(K_GA, GA), (K_GA2, GA), (K_GE, GE), (X_GE, GE), *extra]:
+        if c[0] not in drop:
+            s.apply_correction(c, ex)
+    return s
+
+
+def relevance_units(out):
+    return {u["observation_id"]: u for u in out["units"]}
+
+
+def item_traits(out):
+    return {k: set(v["sentence"]).union(*map(set, v["glosses"].values())) for k, v in out["items"].items()}
+
+
+def carried(m, n, f):
+    """n training items, the first f of which carry the trait t; every item also carries a trait of its own."""
+    return m.lexical_relevance({"I%d" % i: {"u%d" % i} | ({"t"} if i < f else set()) for i in range(n)})
+
+
+def names_in(function):
+    tree = ast.parse(SOURCE.read_text(encoding="utf-8"))
+    fn = next(n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and n.name == function)
+    return {n.id for n in ast.walk(fn) if isinstance(n, ast.Name)} | {n.attr for n in ast.walk(fn) if isinstance(n, ast.Attribute)}
+
+
+def test_v18_threshold_is_strictly_greater_than_half(mod):
+    m, _ = mod
+    # TC-A1 (D1): M=6, F=3 is kept. TC-C4 (historical F >= M/2: excluded) is obsolete, kept in the deviation record.
+    expected = {(6, 3): "kept", (6, 4): "excluded", (4, 2): "kept", (5, 3): "excluded", (3, 2): "excluded",
+                (2, 2): "excluded", (2, 1): "kept"}
+    for (n, f), side in expected.items():
+        out = carried(m, n, f)
+        assert (out["m"], out["bypass"], out["frequencies"]["t"]) == (n, False, f) and "t" in out[side], (n, f)
+
+
+def test_v18_training_sets_of_at_most_one_item_bypass_the_filter(mod):
+    m, _ = mod
+    assert m.lexical_relevance({"I0": ["t", "u"]}) == {"m": 1, "bypass": True, "frequencies": {"t": 1, "u": 1},
+                                                       "kept": ["t", "u"], "excluded": []}
+    assert m.lexical_relevance({}) == {"m": 0, "bypass": True, "frequencies": {}, "kept": [], "excluded": []}
+
+
+def test_v18_a_trait_carried_by_every_training_item_is_excluded(mod):
+    m, _ = mod
+    out = m.lexical_relevance({"I%d" % i: {"t", "u%d" % i} for i in range(4)})
+    assert out["excluded"] == ["t"] and out["kept"] == ["u0", "u1", "u2", "u3"]
+
+
+def test_v18_filter_is_pure_and_counts_each_item_once(mod):
+    m, _ = mod
+    traits = {"I0": ["t", "t", "u"], "I1": ("u",), "I2": {"v"}}
+    out = m.lexical_relevance(traits)
+    assert out["frequencies"] == {"t": 1, "u": 2, "v": 1} and out["excluded"] == ["u"]
+    assert traits == {"I0": ["t", "t", "u"], "I1": ("u",), "I2": {"v"}}
+    assert m.lexical_relevance(dict(reversed(list(traits.items())))) == out
+
+
+def test_v18_item_traits_join_the_sentence_and_its_attached_ok_glosses(mod):
+    out = gloss_student(mod)._loo_cal_relevance("mot")
+    ga = out["items"]["GA"]
+    assert sorted(out["items"]) == ["GA", "GB", "GC", "GD"] and ga["label"] == "L1"
+    assert ga["sentence"] == ["falaise", "vole"] and sorted(ga["glosses"]) == ["K-GA", "K-GA2"]
+    assert "rafale" in ga["glosses"]["K-GA"] and {"rafale", "falaise"} <= set(ga["glosses"]["K-GA2"])
+    assert {r["id"]: (r["exercise"], r["status"], r["attached"], r["counted"]) for r in out["corrections"]} == {
+        "K-GA": ("GA", "OK", True, True), "K-GA2": ("GA", "OK", True, True),
+        "K-GE": ("GE", "SUSPENDU", True, False), "X-GE": ("GE", "CONTESTE", True, False)}
+
+
+def test_v18_a_trait_in_the_sentence_and_in_several_glosses_counts_once_for_its_item(mod):
+    freq = relevance_units(gloss_student(mod)._loo_cal_relevance("mot"))["GB"]["relevance"]["frequencies"]
+    assert freq["falaise"] == 1 and freq["rafale"] == 1 and freq["sens"] == 1       # GA: sentence, K-GA and K-GA2
+    assert not any("rafale" in it[2] for it in (GA, GB, GC, GD))                     # brought by the OK glosses alone
+
+
+def test_v18_suspended_correction_and_contested_observation_bring_no_frequency(mod):
+    out = gloss_student(mod)._loo_cal_relevance("mot")
+    assert out["excluded"] == [{"observation_id": "GE", "reason": "CONTESTE"}] and "GE" not in out["items"]
+    for u in out["units"]:
+        assert "GE" not in u["training"] and not {"quai", "table"} & set(u["relevance"]["frequencies"])
+
+
+def test_v18_an_unattachable_gloss_is_reported_and_never_assigned(mod):
+    ga_alt = ("GA", "mot", "Le mot vole près du phare.", "L1", "a", "x")
+    s = gloss_student(mod, extra=[(("K-U", "GB", "« vole » marque ce sens (L1) dans la tempête."), GA),
+                                  (("K-V", "GA", "« vole » marque ce sens (L1) près du phare."), ga_alt)])
+    out = s._loo_cal_relevance("mot")
+    records = {r["id"]: (r["status"], r["attached"], r["counted"]) for r in out["corrections"]}
+    assert records["K-U"] == records["K-V"] == ("OK", False, False)
+    assert sorted(out["items"]["GA"]["glosses"]) == ["K-GA", "K-GA2"]
+    assert not {"tempete", "phare"} & set().union(*item_traits(out).values())
+
+
+def test_v18_b2_removal_takes_the_held_out_item_with_its_glosses(mod):
+    ga = relevance_units(gloss_student(mod)._loo_cal_relevance("mot"))["GA"]
+    assert ga["removed"] == ["GA", "K-GA", "K-GA2"] and ga["training"] == ["GB", "GC", "GD"] and ga["relevance"]["m"] == 3
+    assert not {"falaise", "rafale", "marque", "malgre", "garde", "sens"} & set(ga["relevance"]["frequencies"])
+    assert ga["relevance"]["frequencies"]["vole"] == 1                                # GB only: GA never counts for itself
+
+
+def test_v18_filter_is_recomputed_on_each_iteration(mod):
+    m, _ = mod
+    out = gloss_student(mod)._loo_cal_relevance("mot")
+    whole = m.lexical_relevance(item_traits(out))
+    assert whole["m"] == 4 and {"vole", "range"} <= set(whole["kept"])                   # 2F = M: kept (D1)
+    units = relevance_units(out)
+    assert units["GC"]["relevance"]["excluded"] == units["GD"]["relevance"]["excluded"] == ["vole"]
+    assert units["GA"]["relevance"]["excluded"] == ["range"] and "vole" in units["GA"]["relevance"]["kept"]
+
+
+def test_v18_each_iteration_equals_a_student_that_never_saw_its_b2_removal(mod):
+    m, _ = mod
+    for u in gloss_student(mod)._loo_cal_relevance("mot")["units"]:
+        alone = gloss_student(mod, drop=frozenset(u["removed"]))._loo_cal_relevance("mot")
+        assert sorted(alone["items"]) == u["training"] and m.lexical_relevance(item_traits(alone)) == u["relevance"]
+
+
+def test_v18_constructions_never_enter_the_lexical_filter(mod):
+    s = gloss_student(mod)
+    out = s._loo_cal_relevance("mot")
+    traits = set().union(*item_traits(out).values(), *(u["relevance"]["frequencies"] for u in out["units"]))
+    constructions = set().union(*(s._construction("mot", it[2]) for it in (GA, GB, GC, GD)))
+    assert traits and constructions and not traits & constructions and not any(":" in t for t in traits)
+    for function in ("lexical_relevance", "_lexical_traits", "_loo_cal_relevance"):
+        assert not names_in(function) & {"_construction", "extract", "CONSTRUCTION_CLASSES"}, function
+
+
+def test_v18_answer_path_never_uses_the_lexical_filter():
+    for function in ("answer", "_evidence", "_concordant", "_p5l2_status", "_recall", "_loo_cal_plan"):
+        assert not names_in(function) & {"lexical_relevance", "_lexical_traits", "_loo_cal_relevance"}, function
+
+
+def test_v18_lexical_filter_changes_no_answer_no_plan_and_no_state(mod):
+    m, _ = mod
+    s = new(mod)
+    s.learn([PT, EXC, PA2, PA3, PE1, PE2]); s.apply_correction(OK_EXC, EXC)
+    state, plan, before = m.canonical(s.state), s._loo_cal_plan("mot"), [s.answer("mot", q) for q in (PQUERY, PT[2])]
+    s._loo_cal_relevance("mot")
+    assert m.canonical(s.state) == state and s._loo_cal_plan("mot") == plan
+    assert [s.answer("mot", q) for q in (PQUERY, PT[2])] == before and [a["origin"] for a in before] == ["CORRIGE", "RAPPEL"]
+
+
+def test_v18_no_vote_and_no_nc_tpc_is_computed(mod):
+    out = gloss_student(mod)._loo_cal_relevance("mot")
+    assert out["votes"] == "NOT_COMPUTED" and out["missing"] == ["P3_FILTER"]
+    keys = set(out) | {k for u in out["units"] for k in [*u, *u["relevance"]]}
+    assert not keys & {"N_c", "TP_c", "r_c"}
+
+
+def test_v18_declared_descendants_left_in_training_are_reported(mod):
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PE1, PE2]); s.apply_correction(OK_PB1, PB1, provenance={"PB1": {"derived_from": ["PA1"]}})
+    units = relevance_units(s._loo_cal_relevance("mot"))
+    assert units["PA1"]["descendants_in_training"] == ["K-OK", "PB1"] and "PB1" in units["PA1"]["training"]
+    assert units["PB1"]["descendants_in_training"] == [] and units["PB1"]["removed"] == ["K-OK", "PB1"]
+
+
+def test_v18_lexical_filter_does_not_depend_on_the_order_of_teaching(mod):
+    b = new(mod)
+    b.learn([GE, GD, GC, GB, GA])
+    for c, ex in ((X_GE, GE), (K_GA2, GA), (K_GE, GE), (K_GA, GA)):
+        b.apply_correction(c, ex)
+    assert b._loo_cal_relevance("mot") == gloss_student(mod)._loo_cal_relevance("mot")
+
+
+def test_v18_lexical_filter_survives_save_reload_and_replays_the_past(mod, tmp_path):
+    m, _ = mod
+    s = gloss_student(mod)
+    out = s._loo_cal_relevance("mot")
+    s.save(tmp_path)
+    r = m.R4CoreStudent.load(tmp_path, lexicon_dir=str(SANDBOX / "__no_lexicon__"))
+    lessons = new(mod)
+    lessons.learn([GA, GB, GC, GD, GE])
+    assert r._loo_cal_relevance("mot") == out and r._loo_cal_relevance("mot", as_of=1) == lessons._loo_cal_relevance("mot")
+
+
+def test_v18_v0_teaching_data_gives_sixteen_training_items_per_unit(mod):
+    exercises = {e[0]: e for e in D.E_EXERCISES}
+    s = new(mod)
+    s.learn(D.E_LESSONS + D.E_EXERCISES)
+    for c in D.C_CORRECTIONS + [D.CONTRADICTION]:
+        s.apply_correction(c, exercises[c[1]])
+    out = s._loo_cal_relevance("force")
+    assert len(out["units"]) == 17 and out["excluded"] == [{"observation_id": "EX-F6", "reason": "CONTESTE"}]
+    assert {u["relevance"]["m"] for u in out["units"]} == {16} and not any(u["relevance"]["bypass"] for u in out["units"])
+    assert {r["id"]: (r["status"], r["counted"]) for r in out["corrections"]} == {
+        "C-1": ("OK", True), "C-2": ("OK", True), "C-3": ("OK", True), "C-4": ("SUSPENDU", False), "C-X": ("CONTESTE", False)}

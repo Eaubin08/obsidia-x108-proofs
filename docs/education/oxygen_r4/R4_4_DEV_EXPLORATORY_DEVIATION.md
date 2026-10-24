@@ -542,3 +542,70 @@ Sur V0 : 17 unités ; EX-F6 exclu (contesté par la contradiction).
 - Descendants déclarés : signalés, non retirés ; leur retrait relèverait d’une extension de B2.
 - Le contrôle de disjonction des ensembles de `test_pilot_force_controls` utilise encore `sentence_hash`.
 - Aucune métrique P-CAL n’existe encore pour en exclure RAPPEL.
+
+## ADDENDUM V1.8 — 2026-10-24 (filtre lexical de pertinence, dit C1, pour LOO-CAL)
+
+**Base :** `36f117b0`. **Arbitrage fondateur :** C1_GLOSS_SCOPE = SENTENCE_PLUS_OK_GLOSSES ; C1_IMPLEMENTATION = GO ; D1 et D2 pré-enregistrées (§3.6) ; P3, N_c et TP_c non construits ; LOO-CAL = PLAN_ONLY ; S strict actif ; aucune autorité de réponse P5-L2.
+
+**Intégrité :** pré-enregistrement inchangé depuis `bde60c37` (V1+A1) ; les sept sources du Workbench, dont l’arbitrage C1 et la fermeture des lacunes, sont identiques aux empreintes SHA-256 de son §1.
+
+### H.1 Règle implémentée
+
+`lexical_relevance(traits)` est une fonction pure du module. Son entrée est l’ensemble d’entraînement de l’itération (identifiant d’item → traits lexicaux).
+
+- M = nombre d’items ; F(t) = nombre d’items portant t, chaque item compté une fois.
+- M ≤ 1 : bypass, aucun trait exclu, aucune autorité créée.
+- Sinon, t est exclu si et seulement si 2·F(t) > M ; à 2·F(t) = M, t est conservé (D1).
+- Sortie : `m`, `bypass`, `frequencies`, `kept`, `excluded`.
+
+Le nom évite le jeton C1, que l’invariant de source interdit (identifiants de sens V0).
+
+### H.2 Arbitrage sur les gloses (SENTENCE_PLUS_OK_GLOSSES)
+
+`_lexical_traits` forme, pour chaque item actif, l’union des lemmes K5 de sa phrase et des lemmes K5 des gloses de chaque correction OK rattachée.
+
+- **Gloses :** segments produits par l’analyse K2 (`_parse`), étiquettes et citation « … » exclues, tous segments confondus.
+- **Rattachement :** la correction nomme l’exercice (deuxième champ du triplet) et porte exactement la charge enregistrée de l’item. Sinon `attached = False` : la glose n’est affectée à aucun item.
+- **Statuts :** SUSPENDU, CONTESTE, NON_RECONNU et MALFORME n’apportent aucune fréquence ; une observation contestée est hors M.
+- **Unité :** une correction n’ajoute jamais d’item ; un trait présent dans la phrase et dans une ou plusieurs gloses compte une fois pour l’item.
+- **Filiation :** la sortie restitue, par item, les traits de la phrase et de chaque glose, et, par correction, l’exercice, le statut effectif, `attached` et `counted`. L’état n’est pas modifié.
+- **Effet connu :** le domaine de comptage (phrase et gloses) est plus large que celui des voix exemplaires (phrase seule), et les gloses portent le métalangage des corrections (« marque », « sens »…), compté comme trait lexical.
+
+Cet arbitrage tranche entre les deux lectures de l’arbitrage C1 (§4.2 et §4.5) sans réécrire ni ce document ni le pré-enregistrement.
+
+### H.3 Recalcul LOO-CAL
+
+`_loo_cal_relevance(word, as_of=None)` reprend chaque unité du plan V1.7 :
+
+1. retrait B2 (`removed`) : l’item retenu et toutes ses corrections, gloses comprises ;
+2. ensemble d’entraînement = items actifs restants ;
+3. M′ et F′(t) recalculés de zéro par `lexical_relevance`, avec bypass si M′ ≤ 1.
+
+Les traits par item ne dépendent que de l’item et de ses propres corrections (ensembles immuables) ; aucune fréquence n’est reprise d’une itération à l’autre. Un test vérifie que chaque itération est identique au calcul d’un élève qui n’a jamais reçu le retrait B2. Les descendants déclarés restés dans l’ensemble d’entraînement sont signalés (`descendants_in_training`, NOT_COVERED).
+
+### H.4 Frontières
+
+- Inchangés : `answer`, `_evidence`, `_concordant`, `_p5l2_status`, `_recall` (RAPPEL), `_loo_cal_plan`, seuils, transport V1.4, manifeste V0, pré-enregistrement.
+- `_loo_cal_plan` garde `missing = [P3_FILTER, C1_FILTER]` : la liste décrit ce que le plan seul ne calcule pas. La sortie du filtre déclare `votes = NOT_COMPUTED` et `missing = [P3_FILTER]`.
+- Des tests AST vérifient qu’aucune fonction du chemin de réponse n’appelle le filtre, et que le filtre ne lit aucun trait de construction (POS, NG, DET, SURF).
+
+### H.5 Généalogie des tests de seuil
+
+- TC-C4 (fermeture des lacunes : M = 6, F = 3 → EXCLU) applique le seuil historique F ≥ M/2. Règle OBSOLÈTE depuis D1, conservée dans le document source, inchangé, et rappelée ici.
+- TC-A1 (arbitrage C1 : M = 6, F = 3 → CONSERVÉ) est le test de conformité au seuil actuel.
+
+### H.6 Non-régression et tests
+
+- Tests : 139 de base inchangés et 19 tests V1.8 ajoutés, soit 158/158 ; tests Docker du transport et du manifeste V0 exécutés, sans examens privés.
+- RED sur V1.7 : 18 échecs (API absente) ; le garde-fou AST du chemin de réponse passe par construction.
+- Différentiel V1.7 → V1.8 : 24/24 sondes V0 et vues identiques (statut P5-L2, retrieve, snapshot, plan, état) ; LOO V0 36/36 ; états sauvegardés identiques ; seuils inchangés ; 300 tirages synthétiques (graine 108) sans différence ; filtre inerte et cohérent à chaque tirage.
+- Sur V0 : 17 unités, M′ = 16, aucun trait exclu ; C-1 à C-3 comptées, C-4 SUSPENDU, C-X CONTESTE.
+
+### H.7 NOT_COVERED / NOT_IMPLEMENTED
+
+- P3, N_c, TP_c et r_c : non construits (TC-A7, TC-C2, partie N_c de TC-A9, TC-N1 à TC-N5, N_c de TC-L4).
+- Descendants déclarés : signalés, non retirés (extension de B2 non décidée).
+- Analyse des corrections : l’inventaire des étiquettes vient de la dérivation complète ; une étiquette portée par le seul item retiré reste reconnue dans les gloses des autres items.
+- Phrases identiques sous des identifiants distincts : comptées séparément (l’unité est l’item).
+- K5 hérité tel quel : la liste des mots-outils n’est pas repliée, si bien que « tres », « ete » et « etre » passent comme traits lexicaux.
+- Classe contrastes et impact sur les campagnes RED : non traités.
