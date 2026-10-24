@@ -422,3 +422,67 @@ Aucun élève n’est modifié.
 - L’élève ignore de quel artefact viennent ses observations : la liaison artefact ↔ observations reste côté hôte (manifeste vérifié avant livraison) ; le contrat V1.3 n’a pas de champ d’artefact.
 - La contradiction `C-X` figure au manifeste, mais `Teacher.correct` ne l’enseigne pas.
 - Ni V0.4-DEV v1.2.1, ni RED V0.3, ni aucun examen n’ont été lus ou modifiés.
+
+---
+
+## ADDENDUM V1.6 — 2026-10-24 (RAPPEL)
+
+**Base :** `f1391e52`. **Décision :** RAPPEL_V16 = GO ; S actif ; P5-L2 sans autorité ; P2, P3, P_ALIGN en HOLD ; auteur et source de V0 = UNKNOWN.
+
+### F.1 Contrat appliqué
+
+Sources : Option C §5 (`OXYGEN_R4_3_CALIBRATION_DESIGN.md`), `R4_4_CONTRACT_GAPS_CLOSURE.md` lacune 4 (TC-R1 à TC-R7), pré-enregistrement §3.8 et H4.
+
+- Empreinte repliée : minuscules, accents repliés, espaces normalisés, ponctuation finale `. ! ?` retirée. La ponctuation interne est conservée (choix du contrat) ; aucune lemmatisation, donc la même empreinte en configurations B et D.
+- Exemplaire actif : non CONTESTÉ. Une correction SUSPENDUE n’existe que sur un exercice contesté, qui est donc déjà exclu.
+- Comportement : étiquette de l’exemplaire, origine `RAPPEL`, provenance = ids des exemplaires rappelés ; deux étiquettes pour la même empreinte → CONFLIT.
+- Priorité sur P1–P5 et K9 : le RAPPEL est placé après « mot jamais enseigné » (incompatible avec un exemplaire actif) et avant le contrôle du déterminant inconnu.
+- Non contributif : aucun événement, aucune observation, aucune voix modifiée (N_c et TP_c n’existent pas encore).
+
+Constat de lecture : le RAPPEL émet une étiquette (TC-R1). C’est la seule émission nouvelle, autorisée par le contrat. Elle porte l’origine `RAPPEL` (mémoire), jamais une origine d’inférence, et la porte d’inférence (S, M1) est inchangée pour toute question non identique.
+
+### F.2 Chemin de rappel
+
+| Notion | Réalisation |
+|---|---|
+| observation originale | première occurrence d’un item ou d’une correction (teaching_event_id) |
+| occurrence de lecture | `answer`, `retrieve`, `history`, `_recall` : aucun événement, aucun changement d’état |
+| rappel | question à empreinte identique à un exemplaire actif : réponse RAPPEL |
+| nouvel enseignement | appel `learn()` : observation nouvelle si l’id est nouveau, occurrence sinon |
+| correction | `apply_correction` : observation de correction, occurrence de l’exercice |
+| observation dérivée | exercice reçu avec une correction ; contraste issu d’une correction OK ; traits calculés |
+
+`_recall(word, sentence, as_of=None)` renvoie le statut (RAPPEL, CONFLIT ou aucun), les étiquettes, les observations, la vue mémoire (statut, corrections) et les enregistrements de provenance V1.3. Il est en lecture seule et rejouable au passé.
+
+### F.3 Invariants
+
+| # | Invariant | Vérification |
+|---|---|---|
+| 1, 2 | un rappel, même répété, ne crée ni observation ni preuve | état canonique et `_evidence` identiques après rappels répétés |
+| 3 | N_c / TP_c intacts | aucun état modifié ; N_c / TP_c non implémentés |
+| 4 | CONTESTÉ / SUSPENDU non rappelés | exercice contesté, correction suspendue : pas de RAPPEL, inférence normale |
+| 5 | filiation des corrections conservée | correction → exercice et exercice → item source déclaré inchangés |
+| 6 | contradiction conservée | après la contradiction pilote, EX-F6 n’est plus rappelé ; rappel au passé et journal conservés ; double étiquette → CONFLIT |
+| 7, 8 | UNKNOWN reste UNKNOWN ; aucune indépendance | provenance rappelée identique, relation inchangée |
+| 9 | pas de contournement de la porte | 0 question non identique modifiée ; origine RAPPEL distincte des origines d’inférence |
+| 10 | replay | rappel identique après sauvegarde / rechargement ; `as_of` reproduit le passé |
+
+### F.4 Différentiel V1.5 → V1.6
+
+- Questions non identiques : 0 changement sur 14 scénarios ; injection 2 × 20 000 tirages identiques ; leave-one-out V0 : 0 divergence sur 36.
+- Questions identiques à un exemplaire : 81 HOLD/PREUVE_INSUFFISANTE → RAPPEL avec l’étiquette enseignée ; 1 CONFLIT et 2 exemplaires contestés inchangés ; 1 réponse `L1/CORRIGE` d’inférence portant sur une phrase enseignée devient `L1/RAPPEL` (même sens, origine mémoire au lieu d’inférence, conformément à H4).
+- V0 complet : les 18 phrases enseignées répondent RAPPEL avec leur étiquette ; 4 MOT_INCONNU inchangés ; après la contradiction, EX-F6 n’est plus rappelé.
+- États sauvegardés identiques octet pour octet ; seuils inchangés.
+
+### F.5 Tests
+
+- Base de 108 tests : 107 inchangés ; 1 assertion mise à jour (`test_v11_recall_of_a_lesson_sentence_is_not_corroborated` : HOLD → RAPPEL ; son commentaire documentait le RAPPEL comme NOT_COVERED).
+- 14 tests RAPPEL ajoutés → 122/122.
+- RED sur V1.5 : 14 échecs (10 comportementaux, 4 dus à l’API absente) ; le test d’invariant sur le rappel répété passait déjà.
+
+### F.6 NOT_COVERED
+
+- TC-R2 (exclusion des métriques) : aucun calcul de métriques P-CAL n’existe, et le score du banc RED ne distingue pas RAPPEL. Les examens sont disjoints de l’enseignement par construction, mais le contrôle `check_unseen` du banc (minuscules et espaces) est plus faible que l’empreinte RAPPEL (accents, ponctuation finale).
+- Orthogonalité RAPPEL / LOO-CAL : LOO-CAL n’est pas implémenté (P2).
+- Lecture à confirmer : l’invariant 9 et « ne pas autoriser une nouvelle réponse » sont lus comme portant sur l’inférence. Si le RAPPEL devait rester purement informatif, ce serait une déviation de TC-R1 à décider.
+- L’addendum V1.5 (« 18 PREUVE_INSUFFISANTE ») décrit V1.5 : sous V1.6, ces sondes identiques aux phrases enseignées répondent RAPPEL.

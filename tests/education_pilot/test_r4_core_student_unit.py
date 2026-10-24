@@ -572,8 +572,8 @@ def test_v11_recall_of_a_lesson_sentence_is_not_corroborated(mod):
     s.learn([pa0, PA2, PA3, PE1, PE2]); s.learn([pz])
     r0 = s.state["revision"]
     a1, a2 = s.answer("mot", pz[2]), s.answer("mot", pz[2])
-    assert a1["sense"] == "HOLD" and a1 == a2 and s.state["revision"] == r0
-    # the RAPPEL code itself (§3.8) is NOT_COVERED: the engine only refuses to corroborate the recall
+    assert (a1["sense"], a1["origin"], a1["provenance"]) == ("L1", "RAPPEL", ["PZ"]) and a1 == a2 and s.state["revision"] == r0
+    # since V1.6 the recall is answered by RAPPEL (§3.8, TC-R1), never by inference corroboration
     st = s._p5l2_status("mot", pz[2])
     assert st["argmax"]["constructions"] == ["PA0", "PZ"] and not st["candidate"]
 
@@ -880,3 +880,129 @@ def test_v13_provenance_is_validated_at_the_boundary(mod):
         s.apply_correction(OKC, EX, provenance={"S-1": {"lesson_id": "LEC"}})
     s.learn([PA1], provenance={"PA1": {"lesson_id": None}})
     assert set(s.state["events"][0]) == {"revision", "kind", "payload"}
+
+
+# --- R4.4 RAPPEL (V1.6: preregistration §3.8, contract gaps closure, gap 4) -------------------------------
+# Development tests. RAPPEL answers the label of an identical active exemplar: memory, never new evidence.
+
+def test_v16_rappel_answers_the_label_of_the_identical_active_exemplar(mod):
+    a = base(mod).answer("mot", PB1[2])
+    assert (a["sense"], a["origin"], a["reason"], a["provenance"]) == ("L1", "RAPPEL", None, ["PB1"])
+
+
+def test_v16_rappel_fingerprint_folds_case_accents_final_punctuation_and_spaces(mod):
+    s = new(mod)
+    s.learn(SYN + [EX])
+    for q in ("LE MOT VOLE TRES HAUT !", "  Le  mot   vole très haut ?", "le mot vole très haut"):
+        assert s.answer("mot", q)["origin"] == "RAPPEL", q
+    # one extra word, an internal comma or one different word: not a recall, normal inference
+    for q in ("Le mot vole très haut ici.", "Le mot vole, très haut.", "Le mot vole très bas."):
+        assert s.answer("mot", q)["origin"] != "RAPPEL", q
+
+
+def test_v16_repeated_rappel_creates_no_event_and_no_new_evidence(mod):
+    m, _ = mod
+    s = base(mod)
+    state, evidence = m.canonical(s.state), s._evidence("mot", PQUERY)
+    first = s.answer("mot", PB1[2])
+    assert all(s.answer("mot", PB1[2]) == first for _ in range(3))
+    assert m.canonical(s.state) == state and s._evidence("mot", PQUERY) == evidence
+    assert s._provenance_record(s._derive(), "PB1")["occurrences"] == [2]
+
+
+def test_v16_two_recalls_of_one_teaching_event_stay_separate_observations(mod):
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PB1, PE1, PE2])
+    assert s.answer("mot", PA1[2])["provenance"] == ["PA1"] and s.answer("mot", PB1[2])["provenance"] == ["PB1"]
+    ra, rb = s._recall("mot", PA1[2]), s._recall("mot", PB1[2])
+    assert ra["provenance"][0]["teaching_event_id"] == rb["provenance"][0]["teaching_event_id"] == 1
+    assert s.state["revision"] == 1
+
+
+def test_v16_corrected_exercise_is_recalled_with_its_label_and_correction_filiation(mod):
+    s = new(mod)
+    s.learn(SYN + [EX]); s.apply_correction(OKC, EX)
+    a = s.answer("mot", EX[2])
+    assert (a["sense"], a["origin"], a["provenance"]) == ("L1", "RAPPEL", ["S-EX"])
+    assert s._recall("mot", EX[2])["memory"][0]["corrections"] == [{"id": "K-1", "status": "OK"}]
+    assert s._provenance_record(s._derive(), "K-1")["derived_from"] == ["S-EX"]
+
+
+def test_v16_contested_or_suspended_exemplar_is_not_recalled(mod):
+    s = new(mod)
+    s.learn(SYN + [EX]); s.apply_correction(OKC, EX); s.apply_correction(CONTEST, EX)
+    snap = s.derived_snapshot("mot")
+    assert snap["statuses"]["K-1"] == ("OK", True) and "S-EX" in snap["contested"]
+    assert s._recall("mot", EX[2])["status"] is None
+    a = s.answer("mot", EX[2])
+    assert a["origin"] != "RAPPEL" and a["sense"] == "HOLD"
+
+
+def test_v16_identical_sentence_with_two_labels_is_conflit(mod):
+    s = new(mod)
+    s.learn([("PI-1",) + PA1[1:], PA2, PA3, PE1, PE2]); s.learn([("PI-2", "mot", PA1[2], "L2", "e", "x")])
+    assert s._recall("mot", PA1[2])["status"] == "CONFLIT" and s.answer("mot", PA1[2])["reason"] == "CONFLIT"
+
+
+def test_v16_historical_contradiction_survives_memory_recall_and_replay(mod):
+    exercises = {e[0]: e for e in D.E_EXERCISES}
+    target = exercises[D.CONTRADICTION[1]]
+    s = new(mod)
+    s.learn(D.E_LESSONS + D.E_EXERCISES)
+    for c in D.C_CORRECTIONS:
+        s.apply_correction(c, exercises[c[1]])
+    assert (s.answer("force", target[2])["sense"], s.answer("force", target[2])["origin"]) == (target[3], "RAPPEL")
+    s.apply_correction(D.CONTRADICTION, target)
+    assert s._recall("force", target[2])["status"] is None and s.answer("force", target[2])["origin"] != "RAPPEL"
+    assert s._recall("force", target[2], as_of=s.state["revision"] - 1)["status"] == "RAPPEL"
+    assert any(entry["revision"] == s.state["revision"] for entry in s.reinterpretation_journal())
+
+
+def test_v16_rappel_keeps_unknown_and_declared_provenance_unchanged(mod):
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PE1, PE2], provenance={"PA1": {"lesson_id": "LEC-A", "source_id": "SRC-A"}})
+    s.learn([PB1])
+    ra, rb = s._recall("mot", PA1[2])["provenance"][0], s._recall("mot", PB1[2])["provenance"][0]
+    assert (ra["lesson_id"], ra["source_id"], ra["author_id"]) == ("LEC-A", "SRC-A", None)
+    assert (rb["lesson_id"], rb["source_id"], rb["author_id"]) == (None, None, None)
+    assert s._pair_relation(s._derive(), {"PA1"}, {"PB1"}) == "DISTINCT_PEDAGOGICAL_EVENTS"
+
+
+def test_v16_rappel_survives_save_and_reload(mod, tmp_path):
+    m, _ = mod
+    s = base(mod)
+    before = [s.answer("mot", it[2]) for it in (PA1, PB1, PE1)]
+    s.save(tmp_path)
+    r = m.R4CoreStudent.load(tmp_path, lexicon_dir=str(SANDBOX / "__no_lexicon__"))
+    assert [r.answer("mot", it[2]) for it in (PA1, PB1, PE1)] == before and all(a["origin"] == "RAPPEL" for a in before)
+
+
+def test_v16_exercise_received_with_a_correction_is_recalled_with_its_filiation(mod):
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PE1, PE2]); s.apply_correction(OK_PB1, PB1, provenance={"PB1": {"derived_from": ["PA1"]}})
+    r = s._recall("mot", PB1[2])
+    assert r["status"] == "RAPPEL" and r["provenance"][0]["teaching_event_kind"] == "correction"
+    assert r["provenance"][0]["derived_from"] == ["PA1"] and s._lineage(s._derive(), {"K-OK"}) == {"K-OK", "PB1", "PA1"}
+
+
+def test_v16_one_lesson_delivered_twice_is_recalled_once(mod):
+    s = base(mod)
+    s.learn([PB1])
+    assert s.answer("mot", PB1[2])["provenance"] == ["PB1"]
+    r = s._recall("mot", PB1[2])
+    assert r["observations"] == ["PB1"] and r["provenance"][0]["occurrences"] == [2, 3]
+
+
+def test_v16_rappel_never_changes_a_non_identical_answer(mod):
+    s = new(mod)
+    s.learn([PT, EXC, PA2, PA3, PE1, PE2]); s.apply_correction(OK_EXC, EXC)
+    a = s.answer("mot", PQUERY)
+    assert (a["sense"], a["origin"]) == ("L1", "CORRIGE") and base(mod).answer("mot", PQUERY)["sense"] == "HOLD"
+    assert s._recall("mot", PQUERY)["status"] is None
+
+
+def test_v16_rappel_takes_precedence_over_an_unknown_determinant(mod):
+    s = new(mod, lexicon=True)
+    s.learn([("Z-1", "mot", "Le mot zorbulique vole haut.", "L1", "a", "x"), ("Z-2", "mot", "Elle range le mot.", "L2", "b", "x")])
+    assert s.answer("mot", "Le mot zorbulique vole haut.")["origin"] == "RAPPEL"
+    assert s.answer("mot", "Le mot zorbulique vole bas.")["reason"] == "MOT_INCONNU"

@@ -40,6 +40,11 @@ def toks(text: str) -> list[str]:
     return re.findall(r"\w+", fold(text))
 
 
+def recall_key(text: str) -> str:
+    """Folded fingerprint of RAPPEL (§3.8): lower case, folded accents, spaces normalised, final . ! ? removed."""
+    return " ".join(fold(text).split()).rstrip(" .!?")
+
+
 def jaccard(a, b) -> float:
     a, b = set(a), set(b)
     return len(a & b) / len(a | b) if a | b else 0.0
@@ -255,6 +260,17 @@ class R4CoreStudent:
         return [v["item"] for k, v in sorted(d["items"].items())
                 if v["item"][1] == word and k not in d["contested"]]
 
+    def _recall(self, word, sentence, as_of=None) -> dict:
+        """RAPPEL (§3.8): active exemplars with the folded fingerprint of the question; memory, never new evidence."""
+        d = self._derive(as_of)
+        key = recall_key(sentence)
+        ids = sorted(it[0] for it in self._active(d, word) if recall_key(it[2]) == key)
+        labels = sorted({d["items"][i]["item"][3] for i in ids})
+        status = None if not ids else "RAPPEL" if len(labels) == 1 else "CONFLIT"
+        return {"status": status, "labels": labels, "observations": ids,
+                "memory": [h for h in self._hits(d, word) if h["id"] in ids],
+                "provenance": [self._provenance_record(d, i) for i in ids]}
+
     def _evidence(self, word, sentence):
         d = self._derive()
         active = self._active(d, word)
@@ -424,6 +440,12 @@ class R4CoreStudent:
         d = self._derive()
         if not any(v["item"][1] == word for v in d["items"].values()):
             return hold("MOT_INCONNU")
+        recall = self._recall(word, sentence)
+        if recall["status"] == "CONFLIT":
+            return hold("CONFLIT")
+        if recall["status"] == "RAPPEL":                 # §3.8: before P1-P5 and K9; memory of a taught exemplar, not evidence
+            return {"sense": recall["labels"][0], "provenance": recall["observations"], "reason": None,
+                    "origin": "RAPPEL", "corpus_hypotheses": []}
         if self._determinant_unknown(word, sentence):
             return hold("MOT_INCONNU")
         classes, labels, active, event_classes = self._evidence(word, sentence)
