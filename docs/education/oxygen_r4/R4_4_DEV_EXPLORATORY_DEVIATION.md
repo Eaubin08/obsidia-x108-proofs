@@ -361,3 +361,64 @@ Aucun élève n’est modifié.
 - Les tests de bout en bout n’utilisent pas la fixture `new_student`, qui tue tous les conteneurs étiquetés ; ils sont ignorés si Docker est indisponible.
 - Les tests pilotes du banc (`test_pilot_force_*`) ne sont pas exécutés (examens privés ou attente RED) ; leurs appels sans provenance sont inchangés.
 - G2, RAPPEL, P2, P3 et l’attestation des sources restent hors périmètre.
+
+---
+
+## ADDENDUM V1.5 — 2026-10-24 (provenance réelle du curriculum historique V0)
+
+**Base :** `91bbc626`. **Décision :** V15_REAL_PROVENANCE = GO ; source = V0 historique ; V0 non modifié ; S actif ; aucune autorité de réponse nouvelle.
+
+### E.1 Source canonique V0
+
+| Élément | Valeur |
+|---|---|
+| fichier | `tests/education_pilot/_pilot_data.py` |
+| SHA-256 | `9dc3b41fc18326b102344a22e1f209e21ae0639993e7bab0b8c95b16953dbbac` (4 694 octets, LF) |
+| historique | un seul commit, `00cc85fc` (2026-10-22, auteur Git Etienne Aubin) ; inchangé depuis |
+| structure | `(item_id, word, sentence, expected, domain, register)` |
+| contenu | 14 leçons, 4 exercices, 4 corrections, 4 leçons concurrentes, 1 contradiction ; ensembles `E` et `CONC` |
+| usage par le banc | `Teacher.teach(E_LESSONS + E_EXERCISES)` en un seul appel, puis `Teacher.correct` (4 corrections) |
+
+### E.2 Faits et affirmations
+
+| Nature | Contenu | Preuve |
+|---|---|---|
+| fait du fichier | données expérimentales, non canoniques | `_pilot_data.py:1` |
+| fait du fichier | inventaire des sens provisoire, à valider par un auteur humain ; aucun contenu de dictionnaire propriétaire | `_pilot_data.py:3-4` |
+| fait du fichier | corrections dérivées uniquement d’exercices de E ; chaque correction cite son exercice | `_pilot_data.py:8`, `:53-58`, `:74` |
+| fait du fichier | exercices tirés de l’ensemble E, sans parent au niveau de la leçon | `_pilot_data.py:45` |
+| fait du fichier | aucun champ de leçon, de source ni d’auteur | `_pilot_data.py:10` |
+| document tiers | E = « leçons du professeur » : un rôle, pas une identité | spec pilote V0, ligne 51 |
+| document tiers | désignation des auteurs des leçons : décision à prendre ; aucune désignation consignée | spec pilote V0, ligne 144 |
+| document tiers, non vérifié, non utilisé | gloses de correction écrites par l’auteur du contrat R4.2 (Claude) | contrat R4.2, ligne 72 |
+| métadonnée Git | l’auteur du commit est l’auteur du dépôt de l’artefact, non attesté comme auteur pédagogique | `git 00cc85fc` |
+
+### E.3 Manifeste
+
+- `tests/education_pilot/pilot_v0_provenance_manifest.json` (SHA-256 `1de0beb2ae5260efb6092e6dee977e71ec2522773efaa10a7e970068405a5ca5`), généré à partir de V0 sans le modifier.
+- L’identité de l’artefact (chemin, empreinte, commit) est tenue à part de la source pédagogique (source_id et author_id : UNKNOWN).
+- Regroupements attestés : les cinq listes et les ensembles `E` / `CONC` ; un ensemble d’enseignement n’est pas une leçon.
+- 27 observations : lesson_id, source_id et author_id inconnus partout ; derived_from attesté seulement pour les 5 corrections (exercice cité), avec la ligne exacte.
+- Inconnues explicites avec leur motif ; affirmations non utilisées listées ; source_independence = NOT_ATTESTED.
+- `tests/education_pilot/_pilot_provenance.py` : `load_manifest` refuse le manifeste si l’empreinte du curriculum diffère ; `declared_provenance` ne transmet que les champs attestés non nuls.
+
+### E.4 Raccordement et vérifications
+
+- Seul champ effectivement transporté : derived_from des 4 corrections enseignées (le lien porté par chaque correction, désormais déclaré par le manifeste). Aucun champ n’est transmis pour les items.
+- Chemin réel du banc (conteneur Docker), V0 avec et sans manifeste :
+  - réponses identiques (18 PREUVE_INSUFFISANTE + 4 MOT_INCONNU), y compris après redémarrage ;
+  - accusé `true` sur les corrections ;
+  - observations à leçon, source et auteur inconnus ;
+  - teaching_event_id = 1 pour les 18 items : une livraison observée, pas une leçon ;
+  - EX-F1 compté une seule fois (occurrences [1, 2]) ;
+  - deux items de V0 sont SAME_EVENT par leur livraison commune, leur leçon restant inconnue ;
+  - aucune autorité P5-L2.
+- Leave-one-out sur V0 (18 items, en lot et item par item) : 0 divergence sur 36.
+- Tests : 73 + 22 + 8 + 5 = 108/108.
+
+### E.5 Limites
+
+- V0 ne contient ni leçon, ni source, ni auteur attestés : aucune distinction leçon / livraison n’est démontrable sur V0 au-delà du repli par livraison.
+- L’élève ignore de quel artefact viennent ses observations : la liaison artefact ↔ observations reste côté hôte (manifeste vérifié avant livraison) ; le contrat V1.3 n’a pas de champ d’artefact.
+- La contradiction `C-X` figure au manifeste, mais `Teacher.correct` ne l’enseigne pas.
+- Ni V0.4-DEV v1.2.1, ni RED V0.3, ni aucun examen n’ont été lus ou modifiés.

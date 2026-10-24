@@ -1,0 +1,336 @@
+{
+  "manifest": "OXYGEN_PILOT_V0_PROVENANCE",
+  "version": 1,
+  "assertions": "facts read from the curriculum artefact; unknown values explicit; nothing inferred",
+  "curriculum": {
+    "kind": "DOCUMENTARY_ARTIFACT",
+    "path": "tests/education_pilot/_pilot_data.py",
+    "sha256": "9dc3b41fc18326b102344a22e1f209e21ae0639993e7bab0b8c95b16953dbbac",
+    "bytes": 4694,
+    "git_commit": "00cc85fc2dfb0e7c31764136fe5b5be93a2998aa",
+    "git_commit_date": "2026-10-22T11:19:15+02:00",
+    "git_author": "Etienne Aubin",
+    "git_author_role": "committer of the artefact, not attested as pedagogical author",
+    "self_description": {
+      "status": "Experimental, NON-canonical data",
+      "evidence": "tests/education_pilot/_pilot_data.py:1"
+    }
+  },
+  "pedagogical_source": {
+    "source_id": null,
+    "author_id": null,
+    "status": "UNKNOWN"
+  },
+  "groupings": {
+    "E_LESSONS": {
+      "role": "lesson",
+      "teaching_set": "E",
+      "items": [
+        "E-F1-1",
+        "E-F1-2",
+        "E-F2-1",
+        "E-F2-2",
+        "E-F3-1",
+        "E-F3-2",
+        "E-F4-1",
+        "E-F4-2",
+        "E-F5-1",
+        "E-F5-2",
+        "E-F6-1",
+        "E-F6-2",
+        "E-F7-1",
+        "E-F7-2"
+      ],
+      "evidence": "tests/education_pilot/_pilot_data.py:29"
+    },
+    "E_EXERCISES": {
+      "role": "exercise",
+      "teaching_set": "E",
+      "items": [
+        "EX-F1",
+        "EX-F3",
+        "EX-F4",
+        "EX-F6"
+      ],
+      "evidence": "tests/education_pilot/_pilot_data.py:46"
+    },
+    "CONCURRENT_LESSONS": {
+      "role": "concurrent_lesson",
+      "teaching_set": "CONC",
+      "items": [
+        "E-C1-1",
+        "E-C2-1",
+        "E-R1-1",
+        "E-R2-1"
+      ],
+      "evidence": "tests/education_pilot/_pilot_data.py:66"
+    },
+    "C_CORRECTIONS": {
+      "role": "correction",
+      "items": [
+        "C-1",
+        "C-2",
+        "C-3",
+        "C-4"
+      ],
+      "evidence": "tests/education_pilot/_pilot_data.py:54"
+    },
+    "CONTRADICTION": {
+      "role": "contradiction",
+      "items": [
+        "C-X"
+      ],
+      "evidence": "tests/education_pilot/_pilot_data.py:74"
+    },
+    "TEACHING_SETS": {
+      "E": [
+        "E-F1-1",
+        "E-F1-2",
+        "E-F2-1",
+        "E-F2-2",
+        "E-F3-1",
+        "E-F3-2",
+        "E-F4-1",
+        "E-F4-2",
+        "E-F5-1",
+        "E-F5-2",
+        "E-F6-1",
+        "E-F6-2",
+        "E-F7-1",
+        "E-F7-2",
+        "EX-F1",
+        "EX-F3",
+        "EX-F4",
+        "EX-F6"
+      ],
+      "CONC": [
+        "E-C1-1",
+        "E-C2-1",
+        "E-R1-1",
+        "E-R2-1"
+      ],
+      "evidence": "tests/education_pilot/_pilot_data.py:76",
+      "note": "a teaching set is a curriculum subset, not a lesson"
+    }
+  },
+  "observations": {
+    "E-F1-1": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "E-F1-2": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "E-F2-1": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "E-F2-2": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "E-F3-1": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "E-F3-2": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "E-F4-1": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "E-F4-2": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "E-F5-1": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "E-F5-2": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "E-F6-1": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "E-F6-2": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "E-F7-1": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "E-F7-2": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "EX-F1": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "EX-F3": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "EX-F4": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "EX-F6": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "E-C1-1": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "E-C2-1": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "E-R1-1": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "E-R2-1": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": null
+    },
+    "C-1": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": [
+        "EX-F1"
+      ],
+      "evidence": {
+        "derived_from": "tests/education_pilot/_pilot_data.py:55 (exercise id field)"
+      }
+    },
+    "C-2": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": [
+        "EX-F3"
+      ],
+      "evidence": {
+        "derived_from": "tests/education_pilot/_pilot_data.py:56 (exercise id field)"
+      }
+    },
+    "C-3": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": [
+        "EX-F4"
+      ],
+      "evidence": {
+        "derived_from": "tests/education_pilot/_pilot_data.py:57 (exercise id field)"
+      }
+    },
+    "C-4": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": [
+        "EX-F6"
+      ],
+      "evidence": {
+        "derived_from": "tests/education_pilot/_pilot_data.py:58 (exercise id field)"
+      }
+    },
+    "C-X": {
+      "lesson_id": null,
+      "source_id": null,
+      "author_id": null,
+      "derived_from": [
+        "EX-F6"
+      ],
+      "evidence": {
+        "derived_from": "tests/education_pilot/_pilot_data.py:74 (exercise id field)"
+      }
+    }
+  },
+  "unknown": {
+    "lesson_id": {
+      "reason": "no lesson identifier and no grouping into lessons beyond the lists above",
+      "evidence": "tests/education_pilot/_pilot_data.py:10"
+    },
+    "source_id": {
+      "reason": "no pedagogical source is recorded; the file only states that no proprietary dictionary content is included",
+      "evidence": "tests/education_pilot/_pilot_data.py:4"
+    },
+    "author_id": {
+      "reason": "no designation of the lesson authors is recorded; the pilot specification lists it as a decision to take",
+      "evidence": "docs/education/OXYGEN_TEXTUAL_LEARNING_PILOT_SPEC_V0.md:144"
+    },
+    "exercise_derived_from": {
+      "reason": "exercises are drawn from set E as a whole; no lesson-level parent is given",
+      "evidence": "tests/education_pilot/_pilot_data.py:45"
+    }
+  },
+  "claims_not_used": [
+    {
+      "claim": "the correction glosses were written by the author of the R4.2 contract (Claude)",
+      "evidence": "docs/education/oxygen_r4/r4_2/OXYGEN_R4_2_CONTRACT_SPEC.md:72",
+      "status": "THIRD_PARTY_DOCUMENT_CLAIM_NOT_VERIFIED"
+    },
+    {
+      "claim": "the lessons are lessons of the teacher (a role, not an identity)",
+      "evidence": "docs/education/OXYGEN_TEXTUAL_LEARNING_PILOT_SPEC_V0.md:51",
+      "status": "ROLE_NOT_IDENTITY"
+    }
+  ],
+  "source_independence": "NOT_ATTESTED"
+}
