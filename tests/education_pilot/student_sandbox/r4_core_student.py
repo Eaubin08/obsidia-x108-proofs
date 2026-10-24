@@ -27,6 +27,8 @@ STATE_FILE = "student_state.json"
 DEFAULT_LEXICON = pathlib.Path("/extra")
 CONSTRUCTION_CLASSES = ("POS", "NG", "DET", "SURF")
 NEGATION_MARKERS = (("pas",), ("non",), ("plutot", "que"), ("au", "lieu", "de"))
+DEVICE_PAIR = frozenset(("constructions", "exemplaires"))
+P5L2_MISSING_CONDITIONS = ("P2_NC_TPC", "CONTRE_PREUVE", "P3_FREQUENCE", "RAPPEL")
 
 
 def fold(text: str) -> str:
@@ -226,9 +228,11 @@ class R4CoreStudent:
                           ("exemplaires", lambda it: jaccard(ql, self._lemma_set(word, it[2])))):
             voices, prov, ev_cls = {}, {}, {}
             for L in labels:
-                neg_sim, best_id = min((-sim(it), it[0]) for it in active if it[3] == L)   # highest, then smallest id
-                voices[L], prov[L] = shrink(L, -neg_sim), {best_id}
-                ev_cls[L] = frozenset({self._source_event(d, best_id)})
+                sims = [(sim(it), it[0]) for it in active if it[3] == L]
+                best = max(v for v, _ in sims)
+                tied = {i for v, i in sims if v == best}          # every ex aequo item, never an id-order pick
+                voices[L], prov[L] = shrink(L, best), tied
+                ev_cls[L] = frozenset(self._source_event(d, i) for i in tied)
             classes[name] = (voices, prov)
             event_classes[name] = ev_cls
         voices, prov = {L: 0.0 for L in labels}, {L: set() for L in labels}
@@ -258,10 +262,10 @@ class R4CoreStudent:
         return entry["revision"] if entry else None
 
     @staticmethod
-    def _independent_pair(entries, event_of: dict | None = None) -> bool:
+    def _independent_pair(entries, event_of: dict | None = None, dependent=frozenset()) -> bool:
         for i, (na, pa) in enumerate(entries):
             for nb, pb in entries[i + 1:]:
-                if pa & pb:
+                if pa & pb or frozenset((na, nb)) in dependent:
                     continue
                 if event_of is not None:
                     ea = event_of.get(na, frozenset())
@@ -271,23 +275,46 @@ class R4CoreStudent:
                 return True
         return False
 
-    @staticmethod
-    def _p5l2_satisfied(conc, classes, event_classes):
-        """P5-L2: constructions+exemplaires concordant, different argmax items, different source events."""
-        for L, entries in conc.items():
-            names = {n for n, _ in entries}
-            if "constructions" not in names or "exemplaires" not in names:
+    def _device_dependency(self, d, L, pc, pe, event_classes) -> list[str]:
+        """Why the constructions/exemplaires pair cannot count as independent (STOP_CORROBORATION, fail-closed)."""
+        items = d["items"]
+        kinds = {ev["revision"]: ev["kind"] for ev in self.state["events"]}
+        meta = lambda ids, k: {items[i]["item"][k] if len(items[i]["item"]) > k else None for i in ids}
+        causes = []
+        if pc & pe:
+            causes.append("ITEM_COMMUN")
+        if event_classes["constructions"][L] & event_classes["exemplaires"][L]:
+            causes.append("EVENEMENT_COMMUN")
+        for k, cause in ((4, "MEME_DOMAINE"), (5, "MEME_REGISTRE")):
+            a, b = meta(pc, k), meta(pe, k)
+            if a & b or None in a | b:                      # unknown metadata counts as shared
+                causes.append(cause)
+        if any(kinds[items[i]["revision"]] != "learn" for i in pc | pe):
+            causes.append("OBSERVATION_DERIVEE")
+        causes.append("SOURCE_AUTEUR_INCONNUS")             # the item schema carries no author or source
+        return causes
+
+    def _p5l2_status(self, word, sentence) -> dict:
+        """Provisional P5-L2 view (hypothesis, candidate, admissibility). Informational: never authorises an answer."""
+        d = self._derive()
+        classes, _, _, event_classes = self._evidence(word, sentence)
+        out = {"hypothesis": None, "candidate": False, "argmax": {}, "dependency": [], "shared_cue_tokens": [],
+               "missing_conditions": list(P5L2_MISSING_CONDITIONS), "admissible": False, "response_authority": False}
+        for L, entries in self._concordant(classes).items():
+            prov = dict(entries)
+            if not DEVICE_PAIR <= prov.keys():
                 continue
-            prov_c = next(p for n, p in entries if n == "constructions")
-            prov_e = next(p for n, p in entries if n == "exemplaires")
-            if prov_c & prov_e:
-                continue
-            ev_c = event_classes.get("constructions", {}).get(L, frozenset())
-            ev_e = event_classes.get("exemplaires", {}).get(L, frozenset())
-            if ev_c & ev_e:
-                continue
-            return L, [e for e in entries if e[0] in ("constructions", "exemplaires")]
-        return None, []
+            pc, pe = prov["constructions"], prov["exemplaires"]
+            dep = self._device_dependency(d, L, pc, pe, event_classes)
+            qc, ql = self._construction(word, sentence), self._lemma_set(word, sentence)
+            c_tok = {t for i in pc for f in qc & self._construction(word, d["items"][i]["item"][2])
+                     for t in re.split(r"[:=_]", f)}
+            e_tok = {t for i in pe for t in ql & self._lemma_set(word, d["items"][i]["item"][2])}
+            out.update(hypothesis=L, argmax={"constructions": sorted(pc), "exemplaires": sorted(pe)}, dependency=dep,
+                       candidate=not {"ITEM_COMMUN", "EVENEMENT_COMMUN"} & set(dep),
+                       shared_cue_tokens=sorted(c_tok & e_tok))
+            out["admissible"] = out["candidate"] and not dep and not out["missing_conditions"]
+        return out
 
     def answer(self, word, sentence):
         hold = lambda reason: {"sense": HOLD, "provenance": [], "reason": reason, "origin": "INCERTAIN",
@@ -307,18 +334,18 @@ class R4CoreStudent:
         conc = self._concordant(classes)
         event_of_conc = {L: {n: event_classes.get(n, {}).get(L, frozenset()) for n, _ in e}
                          for L, e in conc.items()}
-        indep = {L: e for L, e in conc.items()
-                 if self._independent_pair(e, event_of_conc.get(L))}
+        indep = {}
+        for L, e in conc.items():
+            prov = dict(e)
+            dependent = ({DEVICE_PAIR} if DEVICE_PAIR <= prov.keys() and self._device_dependency(
+                d, L, prov["constructions"], prov["exemplaires"], event_classes) else frozenset())
+            if self._independent_pair(e, event_of_conc[L], dependent):
+                indep[L] = e
         prov_of = {L: set().union(*[p for _, p in e]) for L, e in conc.items()}
         rivals = sorted(prov_of)
         disjoint_rivals = any(not (prov_of[a] & prov_of[b]) for i, a in enumerate(rivals) for b in rivals[i + 1:])
         if disjoint_rivals or (s1 >= TAU and s2 >= TAU and s1 - s2 < DELTA):
             return hold("CONFLIT")                                # K9 precedence 2
-        p5l2_label, p5l2_entries = self._p5l2_satisfied(conc, classes, event_classes)
-        if p5l2_label is not None:
-            provenance = sorted(set().union(*[p for _, p in p5l2_entries]))
-            return {"sense": p5l2_label, "provenance": provenance, "reason": None,
-                    "origin": "CORROBORATION_NIVEAU_2", "corpus_hypotheses": [], "exploratory": True}
         if top not in indep or s1 < TAU or s1 - s2 < DELTA:
             return hold("PREUVE_INSUFFISANTE")
         provenance = sorted(set().union(*[p for _, p in indep[top]]))

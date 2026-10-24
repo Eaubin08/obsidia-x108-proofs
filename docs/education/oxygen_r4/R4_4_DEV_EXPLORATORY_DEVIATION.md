@@ -120,3 +120,56 @@ Une réponse `CORROBORATION_NIVEAU_2` est émise si et seulement si :
 
 *Ce document est figé avant toute modification du moteur. Il consigne les intentions,
 non les résultats. La vérification a posteriori passe par les tests.*
+
+---
+
+## ADDENDUM V1.1 — 2026-10-24 (correctif après audit FAIL)
+
+**Base :** `796cf371` (V1). **Audit :** `R4_4_P5L2_V1_CODE_AUDIT.md` (hors dépôt, SHA-256 `533a2914…8707`), verdict FAIL.
+**Autorisation :** M1 à M5 = GO ; P5_L2_NEW_RESPONSE_AUTHORITY = NO.
+Le texte V1 ci-dessus est conservé tel quel ; cet addendum le corrige.
+
+### A.1 Omissions du document V1 relevées par l’audit
+
+- Condition A1.1-2 du pré-enregistrement (témoins aveugles figés) non remplie lors du build V1 : la piste DEV-EXPLORATORY a été ouverte par décision opérateur, sans que ce document le consigne.
+- Conditions §3.2 non vérifiées par V1 : 4–5 (P2, N_c/TP_c), 6 (contre-preuve), 7 (P3). STOP_CORROBORATION (§7) et RAPPEL (§3.8) absents. V1 émettait pourtant le code contractuel CORROBORATION_NIVEAU_2.
+- V1 court-circuitait la porte historique (seuil agrégé TAU, marge DELTA, sélection TOP).
+- V1 rendait l’origine ACQUIS_LECON inatteignable ; la §2.5 affirmait à tort « sans changer la sémantique contractuelle ».
+- §1 : D1/D2 sont des déviations du filtre C1 (§3.6 du pré-enregistrement), et non des « seuils P3 par classe ».
+- Message du commit V1 : « 27 baseline unchanged » est inexact (une ligne de `test_b4` modifiée ; 102 lignes du fichier de tests normalisées en CRLF).
+
+### A.2 Corrections V1.1
+
+| # | Changement | Effet |
+|---|---|---|
+| M1 | Suppression de la voie d’émission P5-L2 dans `answer()` ; schéma de réponse historique restauré (plus de clé `exploratory`) | P5-L2 n’a plus aucune autorité de réponse |
+| M2 | `_evidence` : la provenance d’une classe devient l’ensemble des items ex æquo au maximum (plus de départage par identifiant) ; ses événements sont les révisions de cet ensemble | aucune réponse ne dépend de l’ordre des identifiants |
+| M3 | `_device_dependency` : causes de dépendance de la paire constructions/exemplaires (ITEM_COMMUN, EVENEMENT_COMMUN, MEME_DOMAINE, MEME_REGISTRE, OBSERVATION_DERIVEE, SOURCE_AUTEUR_INCONNUS) ; une métadonnée absente compte comme partagée | la paire n’est jamais déclarée indépendante |
+| M4 | `_p5l2_status` : statut interne provisoire à quatre niveaux (hypothèse, candidat, admissible, autorité de réponse) ; `admissible` et `response_authority` restent faux | CORROBORATION_NIVEAU_2 n’est plus utilisé |
+| M5 | Cet addendum ; deux tests inexacts corrigés ; test positif V1 retiré | traçabilité |
+
+### A.3 Effet annoncé sur la voie historique
+
+- Le schéma des items ne porte ni auteur ni source : STOP_CORROBORATION ne peut jamais être exclu. En application de la règle « information manquante ⇒ pas d’indépendance », la paire constructions/exemplaires ne peut plus autoriser aucune réponse, ni par P5-L2 ni par la porte historique.
+- Conséquence : `ACQUIS_LECON` est inatteignable ; `TRANSFERE` et `CORRIGE` restent atteignables par les paires incluant les contrastes, dont le comportement est inchangé.
+- Contrôle par injection (graine 108, 20 000 tirages, items réels) : V1.1 ne répond jamais là où `bde60c37` s’abstient (0) ; quand les deux répondent, sens, origine et provenance sont identiques (0 écart). Réponses `bde60c37` perdues : ACQUIS_LECON 121 et TRANSFERE 107, toutes fondées sur la seule paire constructions/exemplaires. CORRIGE : 1 637/1 637 conservées.
+- Données d’enseignement V0 (LOO structurel, transitions seulement) : 18/18 HOLD avant et après, en lot comme item par item.
+
+### A.4 Points NOT_COVERED (contrat insuffisant pour trancher)
+
+| Point | Comportement V1.1 | Décision requise |
+|---|---|---|
+| Auteur / source des items | absents du schéma → dépendance non résolue | contrat de provenance des items |
+| Granularité d’événement (une leçon livrée en plusieurs `learn()`) | bloquée uniquement par la source inconnue | identifiant de leçon fourni par l’appelant, ou révision |
+| Répétition d’un indice lexical entre dispositifs | jetons partagés exposés (`shared_cue_tokens`), sans règle de décision | règle de séparation des dispositifs |
+| RAPPEL §3.8 | non implémenté ; un rappel n’est jamais corroboré (ensembles ex æquo) | implémentation à autoriser |
+| Ré-enseignement d’un item sous le même identifiant | ignoré silencieusement (`setdefault`, préexistant) | règle de révision des items |
+| Événement source des contrastes | non suivi ; contrôle d’événement vacant pour les paires avec contrastes | hors périmètre V1.1 |
+| P2 (N_c/TP_c), contre-preuve, P3 | absents ; listés dans `missing_conditions` | incréments futurs |
+
+### A.5 Tests
+
+- V1 : 36/36 au commit `796cf371` (résultat conservé dans l’historique Git).
+- V1.1 : 50 tests = 27 historiques inchangés depuis V1 + 6 tests V1 inchangés + 2 tests V1 corrigés et renommés + 15 tests V1.1 ; 1 test V1 retiré (il encodait comme attendue une configuration interdite par STOP_CORROBORATION).
+- RED sur le moteur V1 : 15 échecs (10 comportementaux, 5 dus à l’API absente). GREEN après correctif : 50/50.
+- Ces tests sont des tests de développement dérivés de scénarios consommés ; ils ne démontrent ni la conformité P5-L2 ni une calibration.

@@ -339,7 +339,7 @@ def test_t_k9_3_preuve_insuffisante(mod):
 #   PQUERY = "Le mot vole souvent sur les arbres immenses." -- test query
 #
 # With n[L1]=4: voices_constr(PA1)=0.545>=TAU, voices_exem(PB1)=0.533>=TAU (verified analytically).
-# PA1 and PB1 have disjoint prov sets; if different events -> P5-L2 fires; same event -> HOLD.
+# PA1 and PB1 have disjoint prov sets; since V1.1 the device pair is informational and never answers.
 
 PA1 = ("PA1", "mot", "Le mot vole souvent dans les nuages lointains.", "L1", "d", "x")
 PA2 = ("PA2", "mot", "Un mot bondit depuis la branche haute.", "L1", "d", "x")
@@ -396,17 +396,6 @@ def test_p5l2_independent_pair_no_event_of_uses_item_level(mod):
     assert not m.R4CoreStudent._independent_pair(entries_overlap, event_of=None)
 
 
-def test_p5l2_different_events_yield_corroboration_niveau_2(mod):
-    s = new(mod)
-    s.learn([PA1, PA2, PA3, PE1, PE2])   # event 1: PA1/PA2/PA3 for L1, PE1/PE2 for L2
-    s.learn([PB1])                        # event 2: PB1 for L1
-    a = s.answer("mot", PQUERY)
-    assert a["sense"] == "L1", f"expected L1, got {a}"
-    assert a["origin"] == "CORROBORATION_NIVEAU_2"
-    assert a.get("exploratory") is True
-    assert "PA1" in a["provenance"] and "PB1" in a["provenance"]
-
-
 def test_p5l2_same_event_returns_hold(mod):
     s = new(mod)
     s.learn([PA1, PA2, PA3, PB1, PE1, PE2])  # all in event 1 including PB1
@@ -415,22 +404,223 @@ def test_p5l2_same_event_returns_hold(mod):
     assert a["reason"] == "PREUVE_INSUFFISANTE"
 
 
-def test_p5l2_suspended_item_not_in_active_does_not_contribute(mod):
-    # Re-use EX and CONTEST from the existing corpus to verify contested exclusion.
-    # EX is ("S-EX", "mot", ..., "L1") and CONTEST re-labels it L2 -> status CONTESTE.
+def test_p5l2_suspended_correction_and_contested_item_feed_no_evidence(mod):
+    ok_pb1 = ("K-OK", "PB1", "« vole » marque ce sens (L1), pas l’autre (L2).")
+    contest_pb1 = ("K-C1", "PB1", "Révision : lecture L2 admise ici.")
     s = new(mod)
-    s.learn(SYN + [EX])
-    s.apply_correction(CONTEST, EX)
-    d = s._derive()
-    assert "S-EX" in d["contested"]
-    _, _, active, _ = s._evidence("mot", EX[2])
-    assert not any(it[0] == "S-EX" for it in active)
+    s.learn([PA1, PA2, PA3, PE1, PE2]); s.learn([PB1])
+    s.apply_correction(ok_pb1, PB1); s.apply_correction(contest_pb1, PB1)
+    snap = s.derived_snapshot("mot")
+    assert snap["statuses"]["K-OK"] == ("OK", True) and snap["statuses"]["K-C1"] == ("CONTESTE", False)
+    assert snap["contrasts"] == [] and "PB1" in snap["contested"]
+    _, _, active, _ = s._evidence("mot", PQUERY)
+    assert "PB1" not in {it[0] for it in active}
+    assert s.answer("mot", PQUERY)["sense"] == "HOLD"
+    assert "PB1" not in sum(s._p5l2_status("mot", PQUERY)["argmax"].values(), [])
 
 
-def test_p5l2_single_item_per_label_cannot_satisfy_p5l2(mod):
+def test_p5l2_one_item_per_label_gives_the_same_argmax_in_both_devices(mod):
     s = new(mod)
-    s.learn([PA1])
-    s.learn([PB1])
+    s.learn([PA1, PE1])
+    classes, _, _, _ = s._evidence("mot", PQUERY)
+    assert classes["constructions"][1]["L1"] == classes["exemplaires"][1]["L1"] == {"PA1"}
+    assert s.answer("mot", PQUERY)["sense"] == "HOLD"
+    assert not s._p5l2_status("mot", PQUERY)["candidate"]
+
+
+# --- P5-L2 V1.1 corrective: no response authority, ex aequo sets, fail-closed dependency ------------
+# Development tests derived from the consumed V1 audit scenarios; they validate nothing about RED.
+
+PA4 = ("PA4", "mot", "Mon mot tombe dans la vallee sombre.", "L1", "d", "x")
+PE3 = ("PE3", "mot", "Notre mot longe la rive.", "L2", "e", "x")
+EXL2 = ("EXL2", "mot", "Le mot longe toute la colline.", "L2", "e", "x")
+OKL2 = ("K-L2", "EXL2", "« longe » marque ce sens (L2), pas l’autre (L1).")
+INJ = [("A", "mot", "Le mot vole souvent.", "L1", "d1", "r1"), ("B", "mot", "Un mot bondit.", "L1", "d2", "r2"),
+       ("C", "mot", "La route du mot.", "L2", "d3", "r3"), ("D", "mot", "Ce mot longe.", "L2", "d4", "r4")]
+EV_INJ = {"constructions": {"L1": frozenset({1}), "L2": frozenset({1})},
+          "exemplaires": {"L1": frozenset({2}), "L2": frozenset({1})}}
+HISTORICAL_KEYS = {"sense", "provenance", "reason", "origin", "corpus_hypotheses"}
+
+
+def base(mod, *corrections):
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PE1, PE2]); s.learn([PB1])
+    for c, ex in corrections:
+        s.apply_correction(c, ex)
+    return s
+
+
+def injected(mod, classes, active=()):
+    s = new(mod)
+    s.learn(INJ)
+    s._evidence = lambda w, q: (classes, ["L1", "L2"], list(active), EV_INJ)
+    return s
+
+
+def outcome(s, q):
+    return s.answer("mot", q), s._p5l2_status("mot", q)
+
+
+def test_v11_p5l2_has_no_response_authority(mod):
+    a = base(mod).answer("mot", PQUERY)
+    assert a["sense"] == "HOLD" and a["reason"] == "PREUVE_INSUFFISANTE" and set(a) == HISTORICAL_KEYS
+    src = SOURCE.read_text(encoding="utf-8")
+    assert "CORROBORATION_NIVEAU_2" not in src and "exploratory" not in src
+    st = base(mod)._p5l2_status("mot", PQUERY)
+    assert st["hypothesis"] == "L1" and st["candidate"] and st["admissible"] is False and st["response_authority"] is False
+    assert st["argmax"] == {"constructions": ["PA1"], "exemplaires": ["PB1"]} and st["shared_cue_tokens"] == ["souvent", "vole"]
+    assert st["missing_conditions"] == ["P2_NC_TPC", "CONTRE_PREUVE", "P3_FREQUENCE", "RAPPEL"]
+
+
+def test_v11_g_tau_device_pair_cannot_bypass_the_aggregated_threshold(mod):
+    s = base(mod, (OKL2, EXL2))
     a = s.answer("mot", PQUERY)
-    assert a["sense"] == "HOLD"
+    assert a["sense"] == "HOLD" and a["reason"] == "PREUVE_INSUFFISANTE"
+    classes, _, _, _ = s._evidence("mot", PQUERY)
+    assert len(classes) == 3 and sum(c[0]["L1"] for c in classes.values()) / 3 < 0.5
 
+
+def test_v11_g_delta_and_g_top_injected_evidence_cannot_trigger_an_answer(mod):
+    margin = {"constructions": ({"L1": 0.55, "L2": 0.45}, {"L1": {"A"}, "L2": {"C"}}),
+              "exemplaires": ({"L1": 0.52, "L2": 0.45}, {"L1": {"B"}, "L2": {"D"}})}
+    top = {"constructions": ({"L1": 0.55, "L2": 0.54}, {"L1": {"A"}, "L2": {"C"}}),
+           "exemplaires": ({"L1": 0.53, "L2": 0.52}, {"L1": {"B"}, "L2": {"D"}}),
+           "contrastes": ({"L1": 0.0, "L2": 0.49}, {"L1": set(), "L2": {"K", "EX"}})}
+    for classes in (margin, top):
+        a = injected(mod, classes).answer("mot", "Le mot vole.")
+        assert a["sense"] == "HOLD" and a["reason"] == "PREUVE_INSUFFISANTE"
+
+
+def test_v11_historical_gate_still_answers_via_a_contrast_pair_and_enforces_delta(mod):
+    ok = {"constructions": ({"L1": 0.6, "L2": 0.1}, {"L1": {"A"}, "L2": {"C"}}),
+          "contrastes": ({"L1": 0.6, "L2": 0.0}, {"L1": {"K", "EX"}, "L2": set()})}
+    a = injected(mod, ok, active=INJ[:1]).answer("mot", "Le mot vole.")
+    assert a["sense"] == "L1" and a["origin"] == "CORRIGE" and a["provenance"] == ["A", "EX", "K"]
+    thin = {"constructions": ({"L1": 0.6, "L2": 0.5}, {"L1": {"A"}, "L2": {"C"}}),
+            "contrastes": ({"L1": 0.6, "L2": 0.45}, {"L1": {"K", "EX"}, "L2": {"K2", "EX2"}})}
+    a = injected(mod, thin, active=INJ[:1]).answer("mot", "Le mot vole.")
+    assert a["sense"] == "HOLD" and a["reason"] == "PREUVE_INSUFFISANTE"
+
+
+def test_v11_one_lesson_split_into_several_learn_calls_is_not_declared_independent(mod):
+    s = new(mod)
+    for it in (PA1, PA2, PA3, PB1, PE1, PE2):
+        s.learn([it])
+    a = s.answer("mot", PQUERY)
+    assert a["sense"] == "HOLD" and a["reason"] == "PREUVE_INSUFFISANTE"
+    # distinct revisions only make the pair a candidate; event granularity itself is NOT_COVERED by the contract
+    st = s._p5l2_status("mot", PQUERY)
+    assert st["candidate"] and "SOURCE_AUTEUR_INCONNUS" in st["dependency"] and not st["admissible"]
+
+
+def test_v11_exact_duplicate_in_two_events_is_an_ex_aequo_set(mod):
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PE1, PE2]); s.learn([("PA1-B",) + PA1[1:]])
+    q = "Le mot vole souvent dans les nuages lointains ce soir."
+    classes, _, _, _ = s._evidence("mot", q)
+    assert classes["constructions"][1]["L1"] == classes["exemplaires"][1]["L1"] == {"PA1", "PA1-B"}
+    assert s.answer("mot", q)["sense"] == "HOLD"
+    st = s._p5l2_status("mot", q)
+    assert not st["candidate"] and "ITEM_COMMUN" in st["dependency"]
+
+
+def test_v11_near_duplicate_outcome_does_not_depend_on_identifier_order(mod):
+    seen = []
+    for rid in ("PA1-R", "PA0-R"):
+        s = new(mod)
+        s.learn([PA1, PA2, PA3, PE1, PE2])
+        s.learn([(rid, "mot", "Le mot vole souvent dans les arbres immenses.", "L1", "d", "x")])
+        a = s.answer("mot", PQUERY)
+        assert a["sense"] == "HOLD" and a["reason"] == "PREUVE_INSUFFISANTE"
+        assert s._evidence("mot", PQUERY)[0]["constructions"][1]["L1"] == {"PA1", rid}
+        st = s._p5l2_status("mot", PQUERY)
+        seen.append((a, st["candidate"], st["dependency"]))
+    assert seen[0] == seen[1] and seen[0][1] is False
+
+
+def test_v11_same_domain_and_register_is_reported_as_a_dependency(mod):
+    a = base(mod).answer("mot", PQUERY)
+    assert a["sense"] == "HOLD" and a["reason"] == "PREUVE_INSUFFISANTE"
+    st = base(mod)._p5l2_status("mot", PQUERY)
+    assert st["candidate"] and st["dependency"] == ["MEME_DOMAINE", "MEME_REGISTRE", "SOURCE_AUTEUR_INCONNUS"]
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PE1, PE2]); s.learn([PB1[:4] + ("f", "y")])
+    assert s.answer("mot", PQUERY)["sense"] == "HOLD"
+    # distinct domain and register: still undecidable, author and source are absent from the item schema
+    assert s._p5l2_status("mot", PQUERY)["dependency"] == ["SOURCE_AUTEUR_INCONNUS"]
+
+
+def test_v11_single_lexical_cue_repeated_across_lessons_is_not_corroboration(mod):
+    cue = [("D1", "mot", "Le mot vole loin.", "L1", "d1", "r1"), ("D2", "mot", "Ce mot vole.", "L1", "d2", "r2"),
+           ("D5", "mot", "Son mot vole haut.", "L1", "d5", "r5"), ("D3", "mot", "Un mot bondit.", "L1", "d3", "r3")]
+    s = new(mod)
+    for it in cue:
+        s.learn([it])
+    s.learn([PE1, PE2])
+    a = s.answer("mot", "Le mot vole.")
+    assert a["sense"] == "HOLD" and a["reason"] == "PREUVE_INSUFFISANTE"
+    st = s._p5l2_status("mot", "Le mot vole.")
+    assert st["argmax"] == {"constructions": ["D1"], "exemplaires": ["D2"]} and st["shared_cue_tokens"] == ["vole"]
+    # held only because author and source are unknown: a lexical-dependency rule is NOT_COVERED by the contract
+    assert st["dependency"] == ["SOURCE_AUTEUR_INCONNUS"]
+
+
+def test_v11_recall_of_a_lesson_sentence_is_not_corroborated(mod):
+    pa0 = ("PA0", "mot", "Le mot vole souvent dans la cour.", "L1", "d", "x")
+    pz = ("PZ", "mot", "Le mot vole souvent dans les nuages lointains.", "L1", "d", "x")
+    s = new(mod)
+    s.learn([pa0, PA2, PA3, PE1, PE2]); s.learn([pz])
+    r0 = s.state["revision"]
+    a1, a2 = s.answer("mot", pz[2]), s.answer("mot", pz[2])
+    assert a1["sense"] == "HOLD" and a1 == a2 and s.state["revision"] == r0
+    # the RAPPEL code itself (§3.8) is NOT_COVERED: the engine only refuses to corroborate the recall
+    st = s._p5l2_status("mot", pz[2])
+    assert st["argmax"]["constructions"] == ["PA0", "PZ"] and not st["candidate"]
+
+
+def test_v11_contradictory_devices_still_give_conflit(mod):
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PA4, PE1, PE2, PE3]); s.learn([PB1[:3] + ("L2", "e", "x")])
+    assert s.answer("mot", PQUERY)["reason"] == "CONFLIT"
+    s = new(mod)
+    s.learn([("PI-1",) + PA1[1:], PA2, PA3, PE1, PE2]); s.learn([("PI-2", "mot", PA1[2], "L2", "e", "x")])
+    assert s.answer("mot", "Le mot vole souvent dans les nuages lointains ce soir.")["reason"] == "CONFLIT"
+
+
+def test_v11_no_active_corpus_or_single_device_holds(mod):
+    ex2 = ("S-EX2", "mot", "Il range le mot ici.", "L2", "b", "x")
+    s = new(mod)
+    s.learn([EX, ex2]); s.apply_correction(CONTEST, EX)
+    s.apply_correction(("K-Y", "S-EX2", "Révision : lecture L1 admise ici."), ex2)
+    assert s._evidence("mot", "Le mot vole.")[2] == []
+    a = s.answer("mot", "Le mot vole.")
+    assert a["sense"] == "HOLD" and a["reason"] == "PREUVE_INSUFFISANTE"
+    assert base(mod).answer("mot", "Le mot vole souvent.")["sense"] == "HOLD"
+    assert s._p5l2_status("mot", "Le mot vole.")["hypothesis"] is None
+    assert base(mod)._p5l2_status("mot", "Le mot vole souvent.")["hypothesis"] is None
+
+
+def test_v11_exercise_introduced_by_a_correction_is_a_derived_observation(mod):
+    ok_pb1 = ("K-OK", "PB1", "« vole » marque ce sens (L1), pas l’autre (L2).")
+    s = new(mod)
+    s.learn([PA1, PA2, PA3, PE1, PE2]); s.apply_correction(ok_pb1, PB1)
+    assert s.answer("mot", PQUERY)["sense"] == "HOLD"
+    st = s._p5l2_status("mot", PQUERY)
+    assert st["argmax"]["exemplaires"] == ["PB1"] and "OBSERVATION_DERIVEE" in st["dependency"]
+
+
+def test_v11_outcome_is_invariant_to_item_order_within_a_learn_call(mod):
+    first = [PA1, PA2, PA3, PE1, PE2]
+    outs = []
+    for order in (first, first[::-1], first[2:] + first[:2]):
+        s = new(mod)
+        s.learn(order); s.learn([PB1])
+        outs.append(outcome(s, PQUERY))
+    assert outs[1] == outs[0] and outs[2] == outs[0]
+
+
+def test_v11_outcome_is_invariant_to_the_order_of_learn_calls(mod):
+    a, b = new(mod), new(mod)
+    a.learn([PA1, PA2, PA3, PE1, PE2]); a.learn([PB1])
+    b.learn([PB1]); b.learn([PA1, PA2, PA3, PE1, PE2])
+    assert outcome(a, PQUERY) == outcome(b, PQUERY)
