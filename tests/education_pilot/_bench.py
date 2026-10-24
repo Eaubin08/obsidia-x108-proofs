@@ -5,7 +5,8 @@ Physical separation:
     unprivileged user, all capabilities dropped. Only `student_sandbox/` (read-only), its own
     state directory and, for probes, an extra read-only directory are mounted. The repository,
     this bench and the private exam keys are NOT visible to it.
-  - the TEACHER (host) sends only teaching items and corrections.
+  - the TEACHER (host) sends only teaching items and corrections, with the provenance the
+    curriculum declares for them when it declares one (declared, never verified or inferred).
   - the EXAMINER (host) loads exam items and answer keys from a PRIVATE file outside the
     repository (OXYGEN_PILOT_EXAMS) and sends the student only (word, sentence).
 No production module is modified. No canonical memory is touched.
@@ -94,6 +95,7 @@ class SandboxStudent:
     def __init__(self, state_dir: pathlib.Path, spec: str | None = None, extra: str | None = None,
                  load: bool = False):
         state_dir.mkdir(parents=True, exist_ok=True)
+        self.provenance_delivered = None            # last reply: True/False when provenance was sent, else None
         self.proc = subprocess.Popen(docker_command(state_dir, spec or STUDENT_SPEC,
                                                     STUDENT_EXTRA if extra is None else extra, load),
                                      stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -115,13 +117,20 @@ class SandboxStudent:
         resp = self._read()
         if not resp.get("ok"):
             raise StudentError(resp.get("error", "Unknown"), resp.get("message", ""))
+        self.provenance_delivered = resp.get("provenance_delivered")
         return resp.get("result")
 
-    def learn(self, items):
-        return self._call({"op": "learn", "items": [list(i) for i in items]})
+    def learn(self, items, provenance=None):
+        payload = {"op": "learn", "items": [list(i) for i in items]}
+        if provenance:
+            payload["provenance"] = provenance
+        return self._call(payload)
 
-    def apply_correction(self, correction, exercise):
-        return self._call({"op": "apply_correction", "correction": list(correction), "exercise": list(exercise)})
+    def apply_correction(self, correction, exercise, provenance=None):
+        payload = {"op": "apply_correction", "correction": list(correction), "exercise": list(exercise)}
+        if provenance:
+            payload["provenance"] = provenance
+        return self._call(payload)
 
     def answer(self, word, sentence):
         return self._call({"op": "answer", "word": word, "sentence": sentence}) or {}
@@ -173,17 +182,24 @@ class Teacher:
     def __init__(self, log: ShownLog):
         self.log = log
 
-    def teach(self, student, items) -> None:
+    def teach(self, student, items, provenance=None) -> None:
         for it in items:
             self.log.record(it[2])
-        student.learn(list(items))
+        if provenance:
+            student.learn(list(items), provenance=provenance)
+        else:
+            student.learn(list(items))
 
-    def correct(self, student) -> None:
+    def correct(self, student, provenance=None) -> None:
         exercises = {e[0]: e for e in D.E_EXERCISES}
         for corr in D.C_CORRECTIONS:
             ex = exercises[corr[1]]
             self.log.record(ex[2])
-            student.apply_correction(corr, ex)
+            declared = {k: v for k, v in (provenance or {}).items() if k in (corr[0], ex[0])}
+            if declared:
+                student.apply_correction(corr, ex, provenance=declared)
+            else:
+                student.apply_correction(corr, ex)
 
 
 @dataclass

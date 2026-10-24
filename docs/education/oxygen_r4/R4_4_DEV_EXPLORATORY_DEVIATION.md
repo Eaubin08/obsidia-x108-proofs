@@ -310,3 +310,54 @@ Distinctions : l’identité d’une leçon est `lesson_id` ; une occurrence est
 - Les 61 tests existants sont conservés sans modification ; 12 tests V1.3 ajoutés → 73/73.
 - RED sur V1.2 : 12 échecs, tous dus à l’API absente.
 - Régressions locales sans examens : 22/22.
+
+---
+
+## ADDENDUM V1.4 — 2026-10-24 (transport de la provenance déclarée)
+
+**Base :** `00f7a8f6`. **Décision :** PROVENANCE_TRANSPORT = GO ; BACKWARD_COMPATIBILITY = MANDATORY ; S actif ; H = référence ; aucune autorité de réponse nouvelle.
+
+### D.1 Où la provenance se perdait
+
+| Étape | Avant V1.4 | V1.4 |
+|---|---|---|
+| curriculum (`_pilot_data`) | aucune métadonnée | inchangé : aucune métadonnée réelle n’existe, aucune n’est créée |
+| `Teacher.teach` / `Teacher.correct` | aucun paramètre de provenance | `provenance=None` facultatif, transmis seulement s’il est présent ; `correct` ne transmet à chaque correction que les entrées de cette correction et de son exercice |
+| `SandboxStudent.learn` / `apply_correction` | messages `{op, items}` / `{op, correction, exercise}` | clé `provenance` ajoutée seulement si présente ; `provenance_delivered` exposé après chaque appel |
+| `runner.py` (partagé) | n’appelait que `learn(items)` / `apply_correction(c, e)` | `_deliver` : la provenance n’est passée qu’à une méthode dont la signature déclare `provenance`, sinon l’appel historique est inchangé ; la réponse gagne `provenance_delivered` seulement si la requête portait une provenance |
+| élève R4-Core | réception facultative (V1.3) | inchangé |
+
+### D.2 Consommateurs du runner partagé
+
+| Élève | Signatures | Effet de V1.4 |
+|---|---|---|
+| `EmptyStudent` | `learn(items)`, `apply_correction(correction, exercise)` | aucun : provenance non transmise, accusé `false` |
+| `ExemplarSenseStudent` | idem | idem |
+| `R4CoreStudent` | idem + `provenance=None` | reçoit la provenance, accusé `true` |
+| `Probe` (généré par `test_pilot_force_controls`) | `probe()` seulement | aucun |
+| `Sink` (hôte, `test_pilot_force_controls`) | `learn(items)`, `apply_correction(c, e)` | aucun : `Teacher` n’ajoute rien sans provenance |
+
+Aucun élève n’est modifié.
+
+### D.3 Contrat de transport
+
+- Transportés, par id d’item ou de correction : lesson_id, source_id, author_id, derived_from (item_id = `it[0]` est déjà dans l’item).
+- Calculés par l’élève, jamais transportés : teaching_event_id, occurrences, evidence_status.
+- Trois niveaux distincts : métadonnée déclarée (seul niveau transporté) ; métadonnée vérifiée (aucun mécanisme) ; indépendance scientifiquement attestée (SOURCE_ATTESTATION = NOT_IMPLEMENTED).
+- L’inconnu est préservé : aucun champ absent n’est complété ; lesson_id n’est jamais déduit d’un appel `learn()`.
+- Aucun rattrapage de `TypeError` : une erreur interne d’un élève remonte telle quelle.
+
+### D.4 Vérifications
+
+- Protocole : transcriptions historiques identiques octet pour octet entre l’ancien et le nouveau runner pour les trois élèves ; avec provenance, seul l’accusé diffère.
+- Chemin réel du banc (conteneur Docker, image épinglée, sans réseau), fixture synthétique : deux leçons dans un même appel, deux livraisons d’une même leçon, items sans provenance, correction avec filiation, deux source_id déclarés sans attestation. Les métadonnées sont retrouvées après sauvegarde, rechargement côté hôte et redémarrage du conteneur ; TP-A1 n’est compté qu’une fois (occurrences [1, 2]) ; aucune relation VERIFIED ; réponses identiques à la même fixture sans métadonnées.
+- Curriculum pilote sans métadonnées : événements sans clé `provenance`, toutes les observations inconnues.
+- CORRIGE conservé, avec ou sans métadonnées.
+- Tests : 73 R4-Core + 22 régressions locales + 8 tests de transport → 103/103.
+
+### D.5 Limites
+
+- Aucune provenance réellement attestée n’existe dans le curriculum : la fixture est synthétique et ses métadonnées sont déclarées par le test.
+- Les tests de bout en bout n’utilisent pas la fixture `new_student`, qui tue tous les conteneurs étiquetés ; ils sont ignorés si Docker est indisponible.
+- Les tests pilotes du banc (`test_pilot_force_*`) ne sont pas exécutés (examens privés ou attente RED) ; leurs appels sans provenance sont inchangés.
+- G2, RAPPEL, P2, P3 et l’attestation des sources restent hors périmètre.

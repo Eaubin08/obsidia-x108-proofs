@@ -5,11 +5,14 @@ an extra read-only directory are mounted. The repository, the bench and the priv
 keys are not visible. The runner speaks JSON lines on stdin/stdout:
   {"op": "learn", "items": [...]}            -> {"ok": true, "result": null}
   {"op": "answer", "word": w, "sentence": s} -> {"ok": true, "result": {"sense": ..., "provenance": [...]}}
+"learn" and "apply_correction" may carry an optional declared "provenance"; the reply then adds
+"provenance_delivered": true only if the student method declares that parameter and received it.
 Errors are reported as {"ok": false, "error": <exception class name>, "message": ...}.
 """
 from __future__ import annotations
 
 import importlib
+import inspect
 import json
 import os
 import pathlib
@@ -20,6 +23,16 @@ for extra in filter(None, os.environ.get("STUDENT_PATHS", "/student").split(":")
         sys.path.insert(0, extra)
 
 STATE = pathlib.Path("/state")
+
+
+def _deliver(method, req: dict, reply: dict, *args):
+    """Pass the declared provenance only to a student method whose signature names it."""
+    if "provenance" not in req:
+        return method(*args)
+    reply["provenance_delivered"] = "provenance" in inspect.signature(method).parameters
+    if reply["provenance_delivered"]:
+        return method(*args, provenance=req["provenance"])
+    return method(*args)
 
 
 def main() -> None:
@@ -37,10 +50,11 @@ def main() -> None:
         req = json.loads(line)
         op = req.get("op")
         try:
+            reply = {}
             if op == "learn":
-                result = student.learn([tuple(i) for i in req["items"]])
+                result = _deliver(student.learn, req, reply, [tuple(i) for i in req["items"]])
             elif op == "apply_correction":
-                result = student.apply_correction(tuple(req["correction"]), tuple(req["exercise"]))
+                result = _deliver(student.apply_correction, req, reply, tuple(req["correction"]), tuple(req["exercise"]))
             elif op == "answer":
                 result = student.answer(req["word"], req["sentence"])
             elif op == "retrieve":
@@ -56,7 +70,7 @@ def main() -> None:
                 return
             else:
                 raise ValueError(f"unknown op {op!r}")
-            print(json.dumps({"ok": True, "result": result}, default=str), flush=True)
+            print(json.dumps({"ok": True, "result": result, **reply}, default=str), flush=True)
         except Exception as exc:
             print(json.dumps({"ok": False, "error": type(exc).__name__, "message": str(exc)[:200]}), flush=True)
 
