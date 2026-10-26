@@ -28,6 +28,7 @@ DEFAULT_LEXICON = pathlib.Path("/extra")
 CONSTRUCTION_CLASSES = ("POS", "NG", "DET", "SURF")
 NEGATION_MARKERS = (("pas",), ("non",), ("plutot", "que"), ("au", "lieu", "de"))
 DEVICE_PAIR = frozenset(("constructions", "exemplaires"))
+LOO_CAL_CLASSES = ("constructions", "exemplaires")
 P5L2_MISSING_CONDITIONS = ("P2_NC_TPC", "CONTRE_PREUVE", "P3_FREQUENCE", "RAPPEL")
 PROVENANCE_FIELDS = ("lesson_id", "source_id", "author_id", "derived_from")
 
@@ -89,6 +90,37 @@ def filtered_voices(question, exemplars: dict) -> dict:
     top = max((v["voice"] for v in labels.values()), default=0.0)
     return {"labels": labels, "silent": top == 0, "top": top,
             "max_labels": [e for e, v in labels.items() if v["voice"] == top] if top > 0 else []}
+
+
+def p2_metrics(votes: dict) -> dict:
+    """P2 diagnostic metrics (preregistration §3.1, §3.4) from the LOO-CAL voices of one word, per evidence class:
+    N_c = non-silent units; TP_c = units whose single maximal label is the expected one (a tie scores 0);
+    r_c = (TP_c + 1) / (N_c + 2), Beta(1,1); qualified = N_c >= 1 and TP_c >= 1. Diagnostic only: it opens no answer."""
+    excluded = list(votes["excluded"])
+    rows = []
+    for u in votes["units"]:
+        if isinstance(u["label"], str) and u["label"]:
+            rows.append(u)
+        else:                                                         # no reliable ground truth: never counted as a hit
+            excluded.append({"observation_id": u["observation_id"], "reason": "NO_GROUND_TRUTH"})
+    classes = {}
+    for c in LOO_CAL_CLASSES:
+        units = []
+        for u in rows:
+            v = u["classes"][c]
+            units.append({"observation_id": u["observation_id"], "expected": u["label"],
+                          "voices": {e: x["voice"] for e, x in v["labels"].items()}, "max_labels": v["max_labels"],
+                          "silent": v["silent"], "tie": len(v["max_labels"]) > 1, "n": int(not v["silent"]),
+                          "tp": int(not v["silent"] and v["max_labels"] == [u["label"]]),
+                          "reason": "SILENT" if v["silent"] else None})
+        n, tp = sum(x["n"] for x in units), sum(x["tp"] for x in units)
+        classes[c] = {"N_c": n, "TP_c": tp, "r_c": (tp + 1) / (n + 2), "informative": n >= 1,
+                      "qualified": n >= 1 and tp >= 1, "units": units}
+    return {"classes": classes, "excluded": sorted(excluded, key=lambda x: x["observation_id"]),
+            "not_calibrated": {"contrastes": "NOT_CALIBRATED", "corpus": "HOLD"},
+            "descendant_units": sorted(u["observation_id"] for u in votes["units"] if u.get("descendants_in_training")),
+            "not_covered": sorted(set(votes.get("not_covered", [])) | {"RELEVANCE_FILTER_DUPLICATES"}),
+            "estimator": "BETA_1_1", "purpose": "DIAGNOSTIC_ONLY", "response_authority": False}
 
 
 def canonical(obj) -> bytes:
@@ -399,6 +431,10 @@ class R4CoreStudent:
         return {"units": units, "excluded": rel["excluded"], "conflicting_fingerprints": conflicts,
                 "score": "RAW_FILTERED_JACCARD", "metrics": "NOT_COMPUTED", "missing": ["P2_NC_TPC"],
                 "not_covered": ["DECLARED_DESCENDANTS"]}
+
+    def _loo_cal_metrics(self, word, as_of=None) -> dict:
+        """P2 diagnostic metrics of the word, computed on the V1.9 LOO-CAL voices without recomputing them."""
+        return p2_metrics(self._loo_cal_votes(word, as_of))
 
     def _evidence(self, word, sentence):
         d = self._derive()

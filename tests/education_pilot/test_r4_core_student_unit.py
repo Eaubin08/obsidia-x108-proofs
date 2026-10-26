@@ -1554,3 +1554,168 @@ def test_v19_diagnostic_the_relevance_filter_counts_an_identical_duplicate_twice
     assert rel["H"]["relevance"]["frequencies"]["vole"] == 3 and rel["H"]["relevance"]["excluded"] == ["vole"]
     assert h["labels"]["L1"]["units"] == [["GA", "GA2"], ["GB"]] and h["labels"]["L1"]["voice"] == 0.0
     assert h["max_labels"] == ["L2"]
+
+
+# --- R4.4 V2.0: P2 LOO-CAL metrics, diagnostic only (preregistration §3.1, §3.4; gap closure, gap 1) ----------------
+# Development tests, not independent validation. N_c, TP_c and r_c are counted per evidence class from the V1.9 voices;
+# a qualified class opens no answer and P5-L2 keeps no authority.
+
+def synthetic_votes(*rows):
+    """rows: (unit id, expected label, maximal labels of the exemplaires class or None when silent); constructions silent."""
+    def cls(top):
+        return {"silent": top is None, "max_labels": list(top or ()), "labels": {}}
+    return {"units": [{"observation_id": i, "label": e, "classes": {"exemplaires": cls(top), "constructions": cls(None)}}
+                      for i, e, top in rows], "excluded": []}
+
+
+def metrics_summary(out):
+    return {c: (v["N_c"], v["TP_c"], v["r_c"], v["qualified"]) for c, v in out["classes"].items()}
+
+
+def test_v20_01_05_beta_estimator_and_p2_qualification_table(mod):
+    m, _ = mod
+    table = {(): (0, 0, 0.5, False), (("u1", "L1", ("L2",)),): (1, 0, 1 / 3, False), (("u1", "L1", ("L1",)),): (1, 1, 2 / 3, True),
+             (("u1", "L1", ("L1",)), ("u2", "L1", ("L2",)), ("u3", "L2", ("L1", "L2"))): (3, 1, 0.4, True),
+             (("u1", "L1", ("L1",)), ("u2", "L2", ("L2",)), ("u3", "L2", ("L1",))): (3, 2, 0.6, True)}
+    for rows, (n, tp, r, qualified) in table.items():
+        c = m.p2_metrics(synthetic_votes(*rows))["classes"]["exemplaires"]
+        assert (c["N_c"], c["TP_c"], c["r_c"], c["qualified"], c["informative"]) == (n, tp, r, qualified, n >= 1), rows
+
+
+def test_v20_06_a_non_silent_tie_counts_in_n_and_never_in_tp(mod):
+    m, _ = mod
+    c = m.p2_metrics(synthetic_votes(("u1", "L1", ("L1", "L2"))))["classes"]["exemplaires"]
+    assert (c["N_c"], c["TP_c"]) == (1, 0) and c["units"][0]["tie"] and (c["units"][0]["n"], c["units"][0]["tp"]) == (1, 0)
+
+
+def test_v20_07_a_silent_unit_increments_nothing(mod):
+    m, _ = mod
+    c = m.p2_metrics(synthetic_votes(("u1", "L1", None), ("u2", "L1", ("L1",))))["classes"]["exemplaires"]
+    assert (c["N_c"], c["TP_c"]) == (1, 1) and c["units"][0]["reason"] == "SILENT"
+    assert (c["units"][0]["n"], c["units"][0]["tp"]) == (0, 0)
+
+
+def test_v20_a_unit_without_ground_truth_is_excluded_with_its_reason_and_never_a_hit(mod):
+    m, _ = mod
+    out = m.p2_metrics(synthetic_votes(("u1", None, ("L1",)), ("u2", "", ("L1",)), ("u3", "L1", ("L1",))))
+    assert out["excluded"] == [{"observation_id": "u1", "reason": "NO_GROUND_TRUTH"},
+                               {"observation_id": "u2", "reason": "NO_GROUND_TRUTH"}]
+    assert (out["classes"]["exemplaires"]["N_c"], out["classes"]["exemplaires"]["TP_c"]) == (1, 1)
+
+
+def test_v20_08_rappel_units_are_excluded_and_answers_are_never_read(mod):
+    out = taught(mod, N2 + [("GA2",) + GA[1:]])._loo_cal_metrics("mot")
+    assert {"observation_id": "GA", "reason": "RAPPEL"} in out["excluded"]
+    assert {"observation_id": "GA2", "reason": "RAPPEL"} in out["excluded"]
+    assert not {"GA", "GA2"} & {u["observation_id"] for c in out["classes"].values() for u in c["units"]}
+    for function in ("p2_metrics", "_loo_cal_metrics"):
+        assert not names_in(function) & {"answer", "_recall", "recall_key"}, function
+
+
+def test_v20_09_a_contested_item_is_excluded(mod):
+    out = gloss_student(mod)._loo_cal_metrics("mot")
+    assert out["excluded"] == [{"observation_id": "GE", "reason": "CONTESTE"}]
+    assert all(u["observation_id"] != "GE" for c in out["classes"].values() for u in c["units"])
+
+
+def test_v20_10_a_suspended_correction_changes_nothing(mod):
+    without = new(mod)
+    without.learn([GA, GB, GC, GD, GE])
+    for c, ex in ((K_GA, GA), (K_GA2, GA), (X_GE, GE)):
+        without.apply_correction(c, ex)
+    assert gloss_student(mod).derived_snapshot("mot")["statuses"]["K-GE"] == ("OK", True)          # K-GE is SUSPENDU
+    assert gloss_student(mod)._loo_cal_metrics("mot") == without._loo_cal_metrics("mot")
+
+
+def test_v20_11_a_repeated_event_is_not_counted_twice(mod):
+    once, twice = taught(mod, N2), taught(mod, N2)
+    twice.learn(N2)
+    assert twice._loo_cal_metrics("mot") == once._loo_cal_metrics("mot")
+
+
+def test_v20_12_tc_n2_replacement_counts_its_tie_in_n_and_not_in_tp(mod):
+    rows = {u["observation_id"]: u for u in taught(mod, N2)._loo_cal_metrics("mot")["classes"]["exemplaires"]["units"]}
+    h = rows["H"]
+    assert (h["expected"], h["max_labels"], h["tie"], h["n"], h["tp"]) == ("L1", ["L1", "L2"], True, 1, 0)
+    assert h["voices"] == {"L1": 1.0, "L2": 1.0}
+
+
+def test_v20_13_tc_n5_replacement_gives_three_units_two_hits_and_point_six(mod):
+    c = taught(mod, N2)._loo_cal_metrics("mot")["classes"]["exemplaires"]
+    assert (c["N_c"], c["TP_c"], c["r_c"], c["qualified"]) == (3, 2, 0.6, True)
+    assert {u["observation_id"]: (u["n"], u["tp"], u["reason"]) for u in c["units"]} == {
+        "GA": (1, 1, None), "GB": (1, 1, None), "GC": (0, 0, "SILENT"), "GD": (0, 0, "SILENT"), "H": (1, 0, None)}
+
+
+def test_v20_14_historical_tc_n2_fixture_is_silent_and_outside_n(mod):
+    out = taught(mod, ONE_PER_LABEL)._loo_cal_metrics("mot")
+    for c in out["classes"].values():
+        assert (c["N_c"], c["TP_c"], c["r_c"], c["informative"], c["qualified"]) == (0, 0, 0.5, False, False)
+        assert all(u["reason"] == "SILENT" for u in c["units"])
+
+
+def test_v20_15_the_two_evidence_classes_keep_separate_counts_and_the_others_stay_uncalibrated(mod):
+    out = taught(mod, N2)._loo_cal_metrics("mot")
+    assert metrics_summary(out) == {"exemplaires": (3, 2, 0.6, True), "constructions": (5, 3, 4 / 7, True)}
+    assert out["not_calibrated"] == {"contrastes": "NOT_CALIBRATED", "corpus": "HOLD"}
+
+
+def test_v20_16_the_evaluated_item_never_feeds_its_own_training_and_voices_are_reused(mod):
+    m, _ = mod
+    s = taught(mod, [HP, GA, GB, GC, GD])
+    out = s._loo_cal_metrics("mot")
+    hp = {u["observation_id"]: u for u in out["classes"]["exemplaires"]["units"]}["HP"]
+    assert (hp["reason"], hp["n"], hp["tp"]) == ("SILENT", 0, 0)        # with HP in its own training, "falaise" would vote
+    assert out == m.p2_metrics(s._loo_cal_votes("mot"))
+    for function in ("p2_metrics", "_loo_cal_metrics"):
+        assert not names_in(function) & {"lexical_relevance", "filtered_voices", "_loo_cal_relevance", "_lexical_traits"}, function
+
+
+def test_v20_17_metrics_ignore_teaching_order_and_identifier_names(mod):
+    renamed = [("Z" + it[0],) + tuple(it[1:]) for it in reversed(N2)]
+    reference = metrics_summary(taught(mod, N2)._loo_cal_metrics("mot"))
+    assert metrics_summary(taught(mod, renamed)._loo_cal_metrics("mot")) == reference
+    assert metrics_summary(taught(mod, N2[::-1])._loo_cal_metrics("mot")) == reference
+
+
+def test_v20_18_metrics_survive_save_reload_and_replay(mod, tmp_path):
+    m, _ = mod
+    s = gloss_student(mod)
+    out = s._loo_cal_metrics("mot")
+    s.save(tmp_path)
+    r = m.R4CoreStudent.load(tmp_path, lexicon_dir=str(SANDBOX / "__no_lexicon__"))
+    lessons = new(mod)
+    lessons.learn([GA, GB, GC, GD, GE])
+    assert r._loo_cal_metrics("mot") == out and r._loo_cal_metrics("mot", as_of=1) == lessons._loo_cal_metrics("mot")
+
+
+def test_v20_19_metrics_change_no_answer_and_no_state(mod):
+    m, _ = mod
+    s = new(mod)
+    s.learn([PT, EXC, PA2, PA3, PE1, PE2]); s.apply_correction(OK_EXC, EXC)
+    state, votes = m.canonical(s.state), s._loo_cal_votes("mot")
+    before = [s.answer("mot", q) for q in (PQUERY, PT[2])]
+    s._loo_cal_metrics("mot")
+    assert m.canonical(s.state) == state and s._loo_cal_votes("mot") == votes
+    assert [s.answer("mot", q) for q in (PQUERY, PT[2])] == before and [a["origin"] for a in before] == ["CORRIGE", "RAPPEL"]
+
+
+def test_v20_20_metrics_grant_no_p5l2_authority_and_stay_off_the_answer_path(mod):
+    s = base(mod)
+    status = s._p5l2_status("mot", PQUERY)
+    out = s._loo_cal_metrics("mot")
+    assert (out["purpose"], out["response_authority"], out["estimator"]) == ("DIAGNOSTIC_ONLY", False, "BETA_1_1")
+    assert s._p5l2_status("mot", PQUERY) == status and not status["admissible"] and not status["response_authority"]
+    for function in ("answer", "_evidence", "_concordant", "_p5l2_status", "_recall", "_loo_cal_plan", "_loo_cal_relevance",
+                     "_loo_cal_votes"):
+        assert not names_in(function) & {"p2_metrics", "_loo_cal_metrics"}, function
+    for function in ("p2_metrics", "_loo_cal_metrics"):
+        assert not names_in(function) & {"TAU", "DELTA", "CONTRAST_MIN", "_evidence", "_concordant"}, function
+
+
+def test_v20_declared_limits_are_reported_not_hidden(mod):
+    prov = {"GA": {"source_id": "S-1", "author_id": "A-1"}, "GB": {"source_id": "S-1", "author_id": "A-1", "derived_from": ["GA"]}}
+    s = taught(mod, [GA, GB], provenance=prov)
+    s.learn([GC, GD])
+    out = s._loo_cal_metrics("mot")
+    assert out["descendant_units"] == ["GA"] and out["not_covered"] == ["DECLARED_DESCENDANTS", "RELEVANCE_FILTER_DUPLICATES"]
