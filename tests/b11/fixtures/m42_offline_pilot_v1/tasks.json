@@ -1,0 +1,52 @@
+[
+  {
+    "task_id": "task-florvaxium-01",
+    "prompt": "Quelle est la température de florvaxium ?",
+    "task_category": "FACT_KNOWN",
+    "oracle_reference": {
+      "oracle_id": "oracle-florvaxium-01",
+      "locator": "16b9d28ef7878084a353c4dbec94889efc6239016c7af01a3e8f17567ccc466b",
+      "ground_truth_provenance": "B8_PINNED_DOCUMENT",
+      "expected_assertion": {
+        "symbol": "florvaxium",
+        "property": "temperature",
+        "numeric_value": 12.0,
+        "unit": "K"
+      }
+    },
+    "metadata": {
+      "created_at": "2026-10-24T12:00:00Z",
+      "corpus_source": "two_encounter_support.py"
+    }
+  },
+  {
+    "task_id": "task-florvaxium-02",
+    "prompt": "A combien de Kelvin s'élève la température de florvaxium ?",
+    "task_category": "FACT_KNOWN",
+    "oracle_reference": {
+      "oracle_id": "oracle-florvaxium-02",
+      "locator": "16b9d28ef7878084a353c4dbec94889efc6239016c7af01a3e8f17567ccc466b",
+      "ground_truth_provenance": "B8_PINNED_DOCUMENT",
+      "expected_assertion": {
+        "symbol": "florvaxium",
+        "property": "temperature",
+        "numeric_value": 12.0,
+        "unit": "K"
+      }
+    },
+    "metadata": {
+      "created_at": "2026-10-24T12:00:00Z",
+      "reformulation_of": "task-florvaxium-01"
+    }
+  },
+  {
+    "task_id": "task-omega9-01",
+    "prompt": "Quelle est la concentration de florvaxium dans le secteur Omega-9 ?",
+    "task_category": "FACT_UNKNOWN",
+    "oracle_reference": null,
+    "metadata": {
+      "created_at": "2026-10-24T12:00:00Z",
+      "negative_control": true
+    }
+  }
+]

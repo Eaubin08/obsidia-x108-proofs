@@ -1,0 +1,62 @@
+[
+  {
+    "task_id": "task-florvaxium-01",
+    "trial_id": "tr-contradiction-01",
+    "condition": "STACK_ONLY",
+    "raw_response_text": "La température de florvaxium est de 99 K.",
+    "provenance_kind": "SYNTHETIC_FIXTURE",
+    "system_identity": "brody-v1-lattice",
+    "components": {},
+    "external_telemetry": {
+      "model_calls": 0,
+      "provenance": "SYNTHETIC_FIXTURE"
+    },
+    "field_provenances": {
+      "cost": "UNAVAILABLE"
+    },
+    "timestamp_iso": "2026-10-24T18:00:00Z",
+    "abstained": false,
+    "abstention_reason": null,
+    "oracle_version": "v1"
+  },
+  {
+    "task_id": "task-florvaxium-01",
+    "trial_id": "tr-mismatch-01",
+    "condition": "STACK_PLUS_QWEN",
+    "raw_response_text": "La température de florvaxium est de 12 K.",
+    "provenance_kind": "MOCKED_EXTERNAL",
+    "system_identity": "brody-v1-lattice-plus-qwen-mock",
+    "components": {},
+    "external_telemetry": {
+      "model_calls": 1,
+      "provenance": "MOCKED_EXTERNAL"
+    },
+    "field_provenances": {
+      "cost": "UNAVAILABLE"
+    },
+    "timestamp_iso": "2026-10-24T18:00:00Z",
+    "abstained": false,
+    "abstention_reason": null,
+    "oracle_version": "v2"
+  },
+  {
+    "task_id": "task-florvaxium-02",
+    "trial_id": "tr-florvaxium-02-a",
+    "condition": "STACK_ONLY",
+    "raw_response_text": "Température: 12 K.",
+    "provenance_kind": "SYNTHETIC_FIXTURE",
+    "system_identity": "brody-v1-lattice",
+    "components": {},
+    "external_telemetry": {
+      "model_calls": 0,
+      "provenance": "SYNTHETIC_FIXTURE"
+    },
+    "field_provenances": {
+      "cost": "UNAVAILABLE"
+    },
+    "timestamp_iso": "2026-10-24T18:00:00Z",
+    "abstained": false,
+    "abstention_reason": null,
+    "oracle_version": "v1"
+  }
+]

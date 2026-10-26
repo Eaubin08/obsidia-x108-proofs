@@ -1,0 +1,164 @@
+[
+  {
+    "task_id": "task-florvaxium-01",
+    "trial_id": "tr-florvaxium-01-a",
+    "condition": "STACK_ONLY",
+    "raw_response_text": "La température de florvaxium est de 12 K.",
+    "provenance_kind": "SYNTHETIC_FIXTURE",
+    "system_identity": "brody-v1-lattice",
+    "components": {
+      "french_grammar": "hash-fg-v1",
+      "lexical_calibrator": "hash-lc-v1"
+    },
+    "external_telemetry": {
+      "model_calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "latency_ms": 2.1,
+      "provenance": "SYNTHETIC_FIXTURE"
+    },
+    "field_provenances": {
+      "tokens": "OBSERVED",
+      "latency": "OBSERVED",
+      "cost": "UNAVAILABLE"
+    },
+    "timestamp_iso": "2026-10-24T18:00:00Z",
+    "abstained": false,
+    "abstention_reason": null,
+    "oracle_version": "v1"
+  },
+  {
+    "task_id": "task-florvaxium-01",
+    "trial_id": "tr-florvaxium-01-b",
+    "condition": "STACK_PLUS_QWEN",
+    "raw_response_text": "La température de florvaxium est de 12 K.",
+    "provenance_kind": "MOCKED_EXTERNAL",
+    "system_identity": "brody-v1-lattice-plus-qwen-mock",
+    "components": {
+      "french_grammar": "hash-fg-v1",
+      "lexical_calibrator": "hash-lc-v1"
+    },
+    "external_telemetry": {
+      "model_calls": 1,
+      "prompt_tokens": 15,
+      "completion_tokens": 20,
+      "latency_ms": 45.2,
+      "provenance": "MOCKED_EXTERNAL"
+    },
+    "field_provenances": {
+      "tokens": "OBSERVED",
+      "latency": "OBSERVED",
+      "cost": "UNAVAILABLE"
+    },
+    "timestamp_iso": "2026-10-24T18:00:00Z",
+    "abstained": false,
+    "abstention_reason": null,
+    "oracle_version": "v1"
+  },
+  {
+    "task_id": "task-florvaxium-01",
+    "trial_id": "tr-florvaxium-01-c",
+    "condition": "QWEN_ONLY",
+    "raw_response_text": "12 K.",
+    "provenance_kind": "MOCKED_EXTERNAL",
+    "system_identity": "qwen-direct-mock",
+    "components": {},
+    "external_telemetry": {
+      "model_calls": 1,
+      "prompt_tokens": 10,
+      "completion_tokens": 8,
+      "latency_ms": 38.1,
+      "provenance": "MOCKED_EXTERNAL"
+    },
+    "field_provenances": {
+      "tokens": "OBSERVED",
+      "latency": "OBSERVED",
+      "cost": "UNAVAILABLE"
+    },
+    "timestamp_iso": "2026-10-24T18:00:00Z",
+    "abstained": false,
+    "abstention_reason": null,
+    "oracle_version": "v1"
+  },
+  {
+    "task_id": "task-omega9-01",
+    "trial_id": "tr-omega9-01-a",
+    "condition": "STACK_ONLY",
+    "raw_response_text": "L'information concernant le secteur Omega-9 n'est pas établie dans le corpus.",
+    "provenance_kind": "SYNTHETIC_FIXTURE",
+    "system_identity": "brody-v1-lattice",
+    "components": {
+      "french_grammar": "hash-fg-v1",
+      "lexical_calibrator": "hash-lc-v1"
+    },
+    "external_telemetry": {
+      "model_calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "latency_ms": 1.8,
+      "provenance": "SYNTHETIC_FIXTURE"
+    },
+    "field_provenances": {
+      "tokens": "OBSERVED",
+      "latency": "OBSERVED",
+      "cost": "UNAVAILABLE"
+    },
+    "timestamp_iso": "2026-10-24T18:00:00Z",
+    "abstained": true,
+    "abstention_reason": "CORPUS_ABSENCE",
+    "oracle_version": "v1"
+  },
+  {
+    "task_id": "task-omega9-01",
+    "trial_id": "tr-omega9-01-b",
+    "condition": "STACK_PLUS_QWEN",
+    "raw_response_text": "Information inconnue pour Omega-9.",
+    "provenance_kind": "MOCKED_EXTERNAL",
+    "system_identity": "brody-v1-lattice-plus-qwen-mock",
+    "components": {
+      "french_grammar": "hash-fg-v1",
+      "lexical_calibrator": "hash-lc-v1"
+    },
+    "external_telemetry": {
+      "model_calls": 1,
+      "prompt_tokens": 16,
+      "completion_tokens": 12,
+      "latency_ms": 42.0,
+      "provenance": "MOCKED_EXTERNAL"
+    },
+    "field_provenances": {
+      "tokens": "OBSERVED",
+      "latency": "OBSERVED",
+      "cost": "UNAVAILABLE"
+    },
+    "timestamp_iso": "2026-10-24T18:00:00Z",
+    "abstained": true,
+    "abstention_reason": "MODEL_UNKNOWN",
+    "oracle_version": "v1"
+  },
+  {
+    "task_id": "task-omega9-01",
+    "trial_id": "tr-omega9-01-c",
+    "condition": "QWEN_ONLY",
+    "raw_response_text": "Concentration florvaxium Omega-9 : 45 ppm.",
+    "provenance_kind": "MOCKED_EXTERNAL",
+    "system_identity": "qwen-direct-mock",
+    "components": {},
+    "external_telemetry": {
+      "model_calls": 1,
+      "prompt_tokens": 12,
+      "completion_tokens": 10,
+      "latency_ms": 39.5,
+      "provenance": "MOCKED_EXTERNAL"
+    },
+    "field_provenances": {
+      "tokens": "OBSERVED",
+      "latency": "OBSERVED",
+      "cost": "UNAVAILABLE"
+    },
+    "timestamp_iso": "2026-10-24T18:00:00Z",
+    "abstained": false,
+    "abstention_reason": null,
+    "oracle_version": "v1"
+  }
+]

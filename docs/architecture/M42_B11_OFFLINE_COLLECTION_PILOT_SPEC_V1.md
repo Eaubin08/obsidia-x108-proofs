@@ -118,7 +118,10 @@ def collect_and_compare_offline_pilot(
 1. **Appariement :** Pour qu'une tâche soit appariée entre conditions, les observations doivent partager le même `task_id`, la même assertion attendue et la même version d'oracle. En cas de divergence, la tâche est rejetée avec `"UNPAIRED_TASK"` ou `"ORACLE_VERSION_MISMATCH"` consigné dans `hold_reasons`.
 2. **Décompte des faits indépendants :** Plusieurs tâches reformulant la même interrogation sur un même oracle (ex. même locator `16b9d28e...`) comptent pour des tâches distinctes dans `unique_tasks_count`, mais doivent être dédupliquées dans `independent_facts_count` pour éviter toute illusion statistique.
 3. **Absence d'auto-attestation d'oracle :** Un locator B8 syntaxiquement valide (`ORACLE_METADATA_ACCEPTED`) ne confère aucune certification d'indépendance documentaire externe (`oracle_independence_attested=False` sauf si explicitement corroboré par un ancrage B8 préexistant).
-4. **Verdicts du pilote :**
+4. **Évaluation de l'abstention et étiquette de l'évaluateur (F-F3-D7-R1 / R2) :**
+   - L'extracteur de normalisation du collecteur est étiqueté `evaluator="OfflineCollectionPilotV1"`, reflétant une extraction simplifiée sans prétendre à l'exécution souveraine d'`evaluate_brody_cognitive_evidence_bundle`.
+   - Dans le collecteur simplifié, une réponse abstenue (`abstained=True`) évalue souverainement à `INDETERMINATE`. La seule présence d'un champ non vérifié `requires_abstention=True` dans un dictionnaire ou d'un locator non résolu ne permet pas de décerner `ABSTAIN_CORRECT` (qualification strictement réservée au chemin complet E3 avec preuves documentaires épinglées). L'indication déclarée de `requires_abstention` est conservée à titre consultatif dans les métadonnées `reasons`.
+5. **Verdicts du pilote :**
    - **`HARNESS_VALIDATED` :** Structure et normalisation valides sur fixtures de contrôle.
    - **`PILOT_WITH_GAPS` :** Données incomplètes mais comparabilité partielle préservée.
    - **`HOLD` :** Tâches non appariables, collisions d'identifiants ou rupture de traçabilité.

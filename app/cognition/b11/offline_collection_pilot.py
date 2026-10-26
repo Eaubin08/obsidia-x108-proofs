@@ -145,8 +145,16 @@ def collect_and_compare_offline_pilot(
 
         task = tasks_by_id.get(obs.task_id)
         verdict = "INDETERMINATE"
+        reasons: list[str] = []
         if obs.abstained:
-            verdict = "ABSTAIN_CORRECT"
+            oracle = task.oracle_reference if task else None
+            if oracle and oracle.get("requires_abstention") is True:
+                reasons.append("DECLARED_REQUIRES_ABSTENTION_UNVERIFIED_BY_COLLECTOR")
+            else:
+                reasons.append("ABSTENTION_WITHOUT_ORACLE_SUPPORT")
+            # F-F3-D7-R1-04: OfflineCollectionPilotV1 cannot fabricate independent proof
+            # for requires_abstention without pinned document verification under E3.
+            verdict = "INDETERMINATE"
         elif task:
             oracle = task.oracle_reference or {}
             expected_assertion = oracle.get("expected_assertion") or {}
@@ -177,8 +185,8 @@ def collect_and_compare_offline_pilot(
             external_telemetry=ext_telem,
             evaluation_result={
                 "verdict": verdict,
-                "evaluator": "BrodyIndependentEvaluatorV1",
-                "reasons": [],
+                "evaluator": "OfflineCollectionPilotV1",
+                "reasons": reasons,
             },
             is_mock=is_mock,
             timestamp_iso=obs.timestamp_iso,
