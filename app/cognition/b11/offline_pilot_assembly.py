@@ -171,6 +171,13 @@ def assemble_offline_pilot_v1(
     )
 
     # 6. Construction de export_payload (sans content_hash)
+    # F-F3-D8-01 (Option B): Exclure report_id (UUID volatil d'instanciation runtime F2)
+    # de la projection canonique export_payload pour garantir un content_hash purement sémantique.
+    comp_report_payload: dict[str, Any] | None = None
+    if comparison_report:
+        comp_report_payload = _to_serializable(comparison_report)
+        comp_report_payload.pop("report_id", None)
+
     assembly_id = f"assembly-m42-{hashlib.sha256(str(len(tasks)).encode()).hexdigest()[:8]}"
     export_payload: dict[str, Any] = {
         "assembly_id": assembly_id,
@@ -187,7 +194,7 @@ def assemble_offline_pilot_v1(
         "unpaired_tasks": list(pilot_result.unpaired_tasks),
         "tasks": [_to_serializable(t) for t in tasks],
         "normalized_trials": [_to_serializable(tr) for tr in guarded_trials],
-        "comparison_report": _to_serializable(comparison_report) if comparison_report else None,
+        "comparison_report": comp_report_payload,
         "metadata": _to_serializable(pilot_result.metadata),
     }
 

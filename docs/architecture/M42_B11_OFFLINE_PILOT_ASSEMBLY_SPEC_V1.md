@@ -123,11 +123,12 @@ Le lot minimal est constitué de deux catégories de tâches :
 
 ---
 
-## 6. Sérialisation Canonique et Empreinte Reproductible (F-F3-D5-REV-03)
+## 6. Sérialisation Canonique et Empreinte Reproductible (F-F3-D5-REV-03 / F-F3-D8-02)
 
-1. **Périmètre du payload (`export_payload`) :**
-   - Le dictionnaire `export_payload` représente l'état métier complet sérialisable du résultat d'assemblage.
+1. **Périmètre du payload (`export_payload`) et projection canonique (Option B) :**
+   - Le dictionnaire `export_payload` représente la projection sémantique rejouable du résultat d'assemblage.
    - **Règle d'acyclicité :** `export_payload` exclut formellement le champ `content_hash`.
+   - **Exclusion de l'identifiant volatil F2 (`F-F3-D8-01`) :** `comparison_report.report_id` (généré via `uuid.uuid4()` dans le composant F2 pour identifier l'instanciation runtime) est préservé dans l'objet de domaine en mémoire `pilot_result.comparison_report`, mais est formellement exclu de la projection `export_payload`. Cette séparation étanche entre identité d'exécution (`report_id`) et identité de contenu garantit que deux invocations indépendantes sur le même lot produisent un `content_hash` bit-exact identique.
 2. **Calcul de l'empreinte (`content_hash`) :**
    - `content_hash = sha256(canonical_json(export_payload).encode("utf-8")).hexdigest()`.
    - Le digest porte sur un contenu entièrement déterminé sans inclure son propre digest.
@@ -136,8 +137,10 @@ Le lot minimal est constitué de deux catégories de tâches :
    - Séparateurs stricts (virgule, deux-points avec espace normalisé).
    - Encodage UTF-8 strict.
    - Aucun horodatage dynamique ni identifiant volatile dans `export_payload`.
-4. **Portée de l'empreinte :**
-   - Garantit la reproductibilité bit-exacte du calcul et l'intégrité de transport.
+4. **Portée de l'empreinte et sémantique du rejeu :**
+   - **`REPORT_ID` :** Identité d'instanciation du rapport comparatif F2.
+   - **`CONTENT_HASH` :** Identité du contenu canonique défini par la projection F3.
+   - **`REPLAY` :** Vérification de l'équivalence bit-exacte du contenu canonique entre invocations distinctes.
    - **Limite dogmatique absolue :** Ne constitue en aucun cas une signature externe ni une preuve d'attestation B8.
 
 ---
