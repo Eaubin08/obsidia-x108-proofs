@@ -1,0 +1,191 @@
+{
+  "total_decision_functions": 26,
+  "exposed": 20,
+  "not_exposed": 6,
+  "decision_authority": "KX108_ONLY",
+  "readonly": true,
+  "findings": [
+    {
+      "file": "periphery/sigma_bridge.py",
+      "function": "_merge_periphery_into_aggregate",
+      "is_root_shim": true,
+      "exposed_via_shim": true,
+      "status": "EXPOSED"
+    },
+    {
+      "file": "periphery/bias/bias_gate.py",
+      "function": "apply_bias_gate",
+      "is_root_shim": false,
+      "exposed_via_shim": false,
+      "status": "NOT_EXPOSED"
+    },
+    {
+      "file": "periphery/engine_gates/12_ENGINE__gate_engine_v4.py",
+      "function": "verdict",
+      "is_root_shim": false,
+      "exposed_via_shim": true,
+      "status": "EXPOSED"
+    },
+    {
+      "file": "periphery/engine_gates/data_gate.py",
+      "function": "run_data_gate",
+      "is_root_shim": false,
+      "exposed_via_shim": true,
+      "status": "EXPOSED"
+    },
+    {
+      "file": "periphery/engine_gates/gate_engine_v4.py",
+      "function": "verdict",
+      "is_root_shim": false,
+      "exposed_via_shim": true,
+      "status": "EXPOSED"
+    },
+    {
+      "file": "periphery/engine_gates/GROUPE_02__Temps_X_108_Non_contournement_12_ENGINE__gate_engine_v4.py",
+      "function": "verdict",
+      "is_root_shim": false,
+      "exposed_via_shim": true,
+      "status": "EXPOSED"
+    },
+    {
+      "file": "periphery/engine_gates/GROUPE_03__Semantique_OS4_Recit_12_ENGINE__gate_engine_v4.py",
+      "function": "verdict",
+      "is_root_shim": false,
+      "exposed_via_shim": true,
+      "status": "EXPOSED"
+    },
+    {
+      "file": "periphery/engine_gates/GROUPE_04__Ethique_ADeLe_Securite_12_ENGINE__gate_engine_v4.py",
+      "function": "verdict",
+      "is_root_shim": false,
+      "exposed_via_shim": true,
+      "status": "EXPOSED"
+    },
+    {
+      "file": "periphery/engine_gates/GROUPE_05__Agents_Infrastructure_Tools_12_ENGINE__gate_engine_v4.py",
+      "function": "verdict",
+      "is_root_shim": false,
+      "exposed_via_shim": true,
+      "status": "EXPOSED"
+    },
+    {
+      "file": "periphery/engine_gates/GROUPE_06__Cosmologie_Economie_R_D_12_ENGINE__gate_engine_v4.py",
+      "function": "verdict",
+      "is_root_shim": false,
+      "exposed_via_shim": true,
+      "status": "EXPOSED"
+    },
+    {
+      "file": "periphery/engine_gates/GROUPE_07__Ops_CI_CD_Validation_continue_12_ENGINE__gate_engine_v4.py",
+      "function": "verdict",
+      "is_root_shim": false,
+      "exposed_via_shim": true,
+      "status": "EXPOSED"
+    },
+    {
+      "file": "periphery/engine_gates/provenance_gate.py",
+      "function": "run_provenance_gate",
+      "is_root_shim": false,
+      "exposed_via_shim": true,
+      "status": "EXPOSED"
+    },
+    {
+      "file": "periphery/gencoin_sandbox/regime_state.py",
+      "function": "is_admissible",
+      "is_root_shim": false,
+      "exposed_via_shim": false,
+      "status": "NOT_EXPOSED"
+    },
+    {
+      "file": "periphery/gencoin_sandbox/regime_truth_gate.py",
+      "function": "apply_regime_truth_gate",
+      "is_root_shim": false,
+      "exposed_via_shim": false,
+      "status": "NOT_EXPOSED"
+    },
+    {
+      "file": "periphery/math_core/governance_partition.py",
+      "function": "partition_to_gate",
+      "is_root_shim": false,
+      "exposed_via_shim": false,
+      "status": "NOT_EXPOSED"
+    },
+    {
+      "file": "periphery/math_core/governance_partition.py",
+      "function": "is_admissible",
+      "is_root_shim": false,
+      "exposed_via_shim": false,
+      "status": "NOT_EXPOSED"
+    },
+    {
+      "file": "periphery/world_calls/action_risk_classifier.py",
+      "function": "requires_x108_gate",
+      "is_root_shim": false,
+      "exposed_via_shim": false,
+      "status": "NOT_EXPOSED"
+    },
+    {
+      "file": "periphery/OBSIDIA_V4_STRUCTURED_FULL/13_ENGINE_GATES/gate_engine_v4.py",
+      "function": "verdict",
+      "is_root_shim": false,
+      "exposed_via_shim": true,
+      "status": "EXPOSED"
+    },
+    {
+      "file": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_01__Memoire_Trace_Audit/12_ENGINE__gate_engine_v4.py",
+      "function": "verdict",
+      "is_root_shim": false,
+      "exposed_via_shim": true,
+      "status": "EXPOSED"
+    },
+    {
+      "file": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_02__Temps_X_108_Non_contournement/12_ENGINE__gate_engine_v4.py",
+      "function": "verdict",
+      "is_root_shim": false,
+      "exposed_via_shim": true,
+      "status": "EXPOSED"
+    },
+    {
+      "file": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_03__Semantique_OS4_Recit/12_ENGINE__gate_engine_v4.py",
+      "function": "verdict",
+      "is_root_shim": false,
+      "exposed_via_shim": true,
+      "status": "EXPOSED"
+    },
+    {
+      "file": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_04__Ethique_ADeLe_Securite/12_ENGINE__gate_engine_v4.py",
+      "function": "verdict",
+      "is_root_shim": false,
+      "exposed_via_shim": true,
+      "status": "EXPOSED"
+    },
+    {
+      "file": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/12_ENGINE__gate_engine_v4.py",
+      "function": "verdict",
+      "is_root_shim": false,
+      "exposed_via_shim": true,
+      "status": "EXPOSED"
+    },
+    {
+      "file": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_06__Cosmologie_Economie_R_D/12_ENGINE__gate_engine_v4.py",
+      "function": "verdict",
+      "is_root_shim": false,
+      "exposed_via_shim": true,
+      "status": "EXPOSED"
+    },
+    {
+      "file": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_07__Ops_CI_CD_Validation_continue/12_ENGINE__gate_engine_v4.py",
+      "function": "verdict",
+      "is_root_shim": false,
+      "exposed_via_shim": true,
+      "status": "EXPOSED"
+    },
+    {
+      "file": "periphery/engine_gates/v4_structure/gate_engine_v4.py",
+      "function": "verdict",
+      "is_root_shim": false,
+      "exposed_via_shim": true,
+      "status": "EXPOSED"
+    }
+  ]
+}

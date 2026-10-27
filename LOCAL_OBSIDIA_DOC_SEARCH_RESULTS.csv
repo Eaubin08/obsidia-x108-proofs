@@ -1,0 +1,98 @@
+theme,priority,filename,path,keywords,raison_pertinence
+A_RAG,HIGH,context_packet_flow.py,connectors/,context_packet retrieval,Connecteur principal du flux context packet vers Brody
+A_RAG,HIGH,CONTEXT_PACKET_BUILDER_V2.md,docs/context/,context packet builder,Spec de construction du context packet (v2)
+A_RAG,HIGH,CONTEXT_PACKET_TO_X108_READONLY_INGRESS_V1.md,docs/context/,context packet X108 ingress,Règle d'ingestion readonly du context packet vers X108
+A_RAG,HIGH,CONTEXT_SIGNAL_ONLY_POLICY_V1.md,docs/context/,context signal policy,Politique : le context ne décide pas il signale
+A_RAG,HIGH,GRAPHITI_CONTEXT_ADAPTER_V1.md,docs/graphiti/,graphiti context retrieval,Adaptateur Graphiti pour la récupération contextuelle
+A_RAG,HIGH,GRAPHITI_READONLY_BRIDGE_V1.md,docs/graphiti/,graphiti readonly bridge,Bridge lecture seule vers le graph-store Graphiti
+A_RAG,HIGH,GRAPHITI_NO_WRITE_POLICY_V1.md,docs/graphiti/,graphiti no write,Politique : Graphiti est en lecture seule depuis Brody
+A_RAG,HIGH,brody_semantic_query_router.py,apps/obsidia_api/,semantic query router retrieval,Routage sémantique des requêtes — cœur du RAG Brody
+A_RAG,HIGH,brody_runtime_context_adapter.py,apps/obsidia_api/,context adapter retrieval,Adaptateur de contexte runtime pour Brody
+A_RAG,HIGH,brody_temporal_context_adapter.py,apps/obsidia_api/,temporal context retrieval,Contexte temporel pour la requête
+A_RAG,HIGH,routes/context.py,apps/obsidia_api/routes/,context route,Route API du context packet
+A_RAG,MEDIUM,BRODY_TRIADIC_MEMORY_GOVERNOR_READONLY_V1.md,docs/periphery/,triadic memory retrieval,Gouverneur triadic mémoire en lecture seule
+A_RAG,MEDIUM,interface_ready_memory_flow.py,connectors/,memory flow retrieval,Flux mémoire prêt pour interface
+A_RAG,MEDIUM,BRODY_GRAPHITI_LIVE_READONLY_REPORT.md,docs/freeze/,graphiti readonly,Rapport de validation Graphiti readonly live
+B_RCHF,HIGH,FEEDBACK_MEMORY_CANDIDATE_POLICY_V0.md,docs/memory/,feedback memory candidate,Politique de feedback humain → mémoire candidate
+B_RCHF,HIGH,MEMORY_CANDIDATE_LEDGER_V1.md,docs/memory/,memory candidate ledger,Registre des candidats mémoire validés
+B_RCHF,HIGH,MEMORY_PROMOTION_MANUAL_ONLY_V1.md,docs/memory/,memory promotion manual,Promotion de mémoire = validation humaine uniquement (pas auto)
+B_RCHF,HIGH,memory_feedback_candidate_flow.py,connectors/,feedback candidate flow,Flux de feedback vers candidat mémoire
+B_RCHF,HIGH,brody_candidate_memory_adapter.py,apps/obsidia_api/,candidate memory,Adaptateur mémoire candidate dans Brody
+B_RCHF,MEDIUM,MEMORY_SECURITY_BOUNDARY_V1.md,docs/memory/,memory security,Frontière de sécurité de la mémoire
+B_RCHF,MEDIUM,MEMORY_SOURCE_REGISTRY_V1.md,docs/memory/,memory source,Registre des sources mémoire
+B_RCHF,MEDIUM,BANK_TRADING_GPS_CALIBRATION_WORLDS_V0.md,docs/architecture/,calibration worlds,Calibration des mondes pour domaine bank/trading/GPS
+C_AUTOAUTO,HIGH,brody_automation_orchestrator.py,apps/obsidia_api/,automation orchestrator,Orchestrateur principal d'automatisation de Brody
+C_AUTOAUTO,HIGH,brody_full_runtime_orchestrator.py,apps/obsidia_api/,full runtime orchestrator automation,Orchestrateur runtime complet — automatisation de bout en bout
+C_AUTOAUTO,HIGH,brody_full_runtime_reconnect.py,apps/obsidia_api/,runtime reconnect automation,Reconnexion automatique du runtime
+C_AUTOAUTO,HIGH,BRODY_AUTOMATION_LAYER_BINDING_REPORT.md,docs/freeze/,automation layer,Rapport de liaison de la couche automation
+C_AUTOAUTO,HIGH,BRODY_AUTOMATION_SNAPSHOT_API_REPORT.md,docs/freeze/,automation snapshot,API snapshot de l'état d'automatisation
+C_AUTOAUTO,HIGH,BRODY_EXISTING_AUTOMATION_MODULES_AUDIT.md,docs/freeze/,automation modules audit,Audit des modules d'automatisation existants
+C_AUTOAUTO,MEDIUM,CONTROL_PLANE_ORCHESTRATOR_SPEC_V0.md,docs/architecture/,control plane orchestrator,Spec du plan de contrôle orchestrateur
+C_AUTOAUTO,MEDIUM,AGENTIC_ENGINE_EXTENSION_MAP_V0.md,docs/architecture/,agentic engine,Carte d'extension du moteur agentique
+D_LOOP,HIGH,brody_operator_loop_adapter.py,apps/obsidia_api/,operator loop,Boucle opérateur de Brody — cycle principal
+D_LOOP,HIGH,brody_bridge_lifecycle.py,apps/obsidia_api/,bridge lifecycle loop,Cycle de vie du bridge Brody
+D_LOOP,HIGH,ACTION_SEQUENCE_GOVERNOR_V0.md,docs/act/,action sequence loop,Gouverneur de séquence d'actions — définit la boucle
+D_LOOP,HIGH,ACTION_LIFECYCLE_CONTRACT_V0.md,docs/act/,action lifecycle,Contrat de cycle de vie d'une action
+D_LOOP,HIGH,ACTION_CANDIDATE_TO_WORLD_ACTION_FLOW_V0.md,docs/act/,action candidate world,Flux : action candidate → action monde réel
+D_LOOP,HIGH,WORLD_ACTION_DRY_RUN_POLICY_V0.md,docs/act/,dry run policy loop,Politique dry-run — simulation avant exécution réelle
+D_LOOP,HIGH,CONTROL_PLANE_ORCHESTRATOR_SPEC_V0.md,docs/architecture/,orchestrator pipeline,Spec orchestrateur — définit le pipeline complet
+D_LOOP,HIGH,CI_PIPELINE_X108_PERIPHERY_V1.md,docs/ci/,pipeline CI,Pipeline CI X108 periphery
+D_LOOP,MEDIUM,brody_real_response_pipeline.py,apps/obsidia_api/,pipeline loop,Pipeline de réponse réelle de Brody
+D_LOOP,MEDIUM,brody_memory_response_chain_adapter.py,apps/obsidia_api/,response chain loop,Chaîne mémoire-réponse
+D_LOOP,MEDIUM,OS3_REPLAY_MANIFEST_V0.md,docs/os3/,replay loop,Manifest de replay OS3
+D_LOOP,MEDIUM,OS3_HASH_CHAIN_POLICY_V0.md,docs/os3/,hash chain loop,Chaîne de hash OS3
+E_CHEMIN,HIGH,COGNITION_TO_ACTION_GOVERNANCE_V1.md,docs/civilization/,cognition action governance chemin,Gouvernance du chemin cognition→action — doc stratégique principal
+E_CHEMIN,HIGH,CAPABILITY_IS_NOT_AUTHORITY_V1.md,docs/civilization/,capability authority chemin,Distinction capacité vs autorité — règle du chemin fidèle
+E_CHEMIN,HIGH,SOURCE_OF_TRUTH_POLICY_V0.md,docs/architecture/,source of truth chemin,Politique de source de vérité unique
+E_CHEMIN,HIGH,CROSS_LAYER_STABILIZATION_MATRIX_V0.md,docs/architecture/,cross layer stabilization coherence,Matrice de stabilisation inter-couches
+E_CHEMIN,HIGH,routing_rules.md,agents/routing/,routing chemin,Règles de routage des agents
+E_CHEMIN,HIGH,AGENT_TO_GATE_MAPPING_V0.md,docs/agents/,agent gate mapping gouvernance,Mapping agent → gate de gouvernance
+E_CHEMIN,HIGH,NON_SOVEREIGN_AGENT_CONTRACT_V0.md,docs/agents/,non sovereign agent gouvernance,Contrat agent non-souverain — base du chemin fidèle
+E_CHEMIN,HIGH,brody_tree_policy.py,apps/obsidia_api/,tree policy chemin,Politique arbre de décision de Brody
+E_CHEMIN,HIGH,brody_source_of_truth_adapter.py,apps/obsidia_api/,source of truth chemin,Adaptateur source de vérité
+E_CHEMIN,HIGH,BRODY_NO_DECISION_POLICY_V1.md,docs/brody/,no decision policy chemin,Brody ne décide pas — règle centrale du chemin fidèle
+E_CHEMIN,MEDIUM,O5_ELIMINATION_DECISIONNELLE.md,periphery/.../02_CONSTITUTION/,elimination decisionnelle chemin,Loi O5 : élimination décisionnelle — gouvernance du chemin
+E_CHEMIN,MEDIUM,O8_SEPARATION_COGNITION_ACTION.md,periphery/.../02_CONSTITUTION/,separation cognition action chemin,Loi O8 : séparation cognition/action
+E_CHEMIN,MEDIUM,AGENTIC_ROUTING.md,.claude/context/,agentic routing chemin,Routing agentique par couche et mode
+F_X108,HIGH,routes/x108.py,apps/obsidia_api/routes/,x108 authority,Route API X108 — endpoint d'autorité finale
+F_X108,HIGH,X108View.tsx,apps/obsidia-workbench/src/views/,x108 guard,Vue X108 dans le workbench
+F_X108,HIGH,BACKEND_BINDING_PLAN_X108_PROOFS.md,apps/obsidia-workbench/,x108 proof,Plan de liaison backend X108 proofs
+F_X108,HIGH,X108_REBRANCHING_POLICY_V0.md,docs/architecture/,x108 rebranching,Politique de rebranching X108
+F_X108,HIGH,O3_EPREUVE_TEMPORELLE_X108.md,periphery/.../02_CONSTITUTION/,x108 epreuve temporelle,Loi O3 : épreuve temporelle X108 — loi constitutionnelle
+F_X108,HIGH,brody_rights_authority_matrix.py,apps/obsidia_api/,authority matrix x108,Matrix d'autorité des droits — cœur de X108
+F_X108,HIGH,BRODY_RIGHTS_AUTHORITY_MATRIX_REPORT.md,docs/freeze/,authority matrix report x108,Rapport authority matrix
+F_X108,HIGH,OS3_PROOF_TICKET_SCHEMA_V0.md,docs/os3/,proof ticket x108,Schéma de ticket de preuve OS3
+F_X108,HIGH,CANON_GUARDIAN.md,agents/prompts/,guard canon x108,Agent canon guardian — gardien des fichiers protégés
+F_X108,HIGH,PROOF_SENTINEL.md,agents/prompts/,proof sentinel x108,Agent proof sentinel — diagnostic Lean/Merkle
+F_X108,HIGH,PROOF_INDEX.md,racine/,proof index x108,Index des preuves du repo
+F_X108,MEDIUM,FREEZE_CRITERIA_FULL_STACK_V0.md,docs/architecture/,freeze criteria x108,Critères de freeze X108 full stack
+F_X108,MEDIUM,x108-periphery-ci.yml,.github/workflows/,x108 CI,CI X108 periphery
+G_BRODY,HIGH,brody_full_runtime_orchestrator.py,apps/obsidia_api/,brody orchestrator,Orchestrateur runtime complet de Brody
+G_BRODY,HIGH,brody_project_memory_adapter.py,apps/obsidia_api/,brody project memory,Adaptateur mémoire projet (fondation A)
+G_BRODY,HIGH,brody_session_memory_adapter.py,apps/obsidia_api/,brody session memory,Adaptateur mémoire session (fondation B)
+G_BRODY,HIGH,brody_candidate_memory_adapter.py,apps/obsidia_api/,brody candidate memory,Adaptateur mémoire candidate
+G_BRODY,HIGH,brody_cognitive_modules_adapter.py,apps/obsidia_api/,brody cognitive modules,Modules cognitifs de Brody
+G_BRODY,HIGH,BRODY_FOUNDATION_A_PROJECT_MEMORY_FREEZE.md,docs/freeze/,brody project memory foundation,Fondation A : project memory — freeze report
+G_BRODY,HIGH,BRODY_FOUNDATION_B_SESSION_MEMORY_FOLLOWUP_FREEZE.md,docs/freeze/,brody session memory foundation,Fondation B : session memory — freeze report
+G_BRODY,HIGH,BRODY_FOUNDATION_C_TRUE_RESPONSE_STRUCTURE_FREEZE.md,docs/freeze/,brody true response structure,Fondation C : true response structure — freeze report
+G_BRODY,HIGH,BRODY_LANGUAGE_ROUTING_V1.md,docs/brody/,brody language routing,Routing linguistique de Brody
+G_BRODY,HIGH,BRODY_RESPONSE_CONTRACT_V1.md,docs/brody/,brody response contract,Contrat de réponse de Brody
+G_BRODY,HIGH,BRODY_RUNTIME_READONLY_V1.md,docs/brody/,brody runtime readonly,Runtime Brody en lecture seule
+G_BRODY,HIGH,brody_memory_readonly_flow.py,connectors/,brody memory readonly,Flux mémoire readonly de Brody
+G_BRODY,HIGH,BrodyPanel.tsx,apps/obsidia-workbench/src/components/,brody panel UI,Panneau Brody dans l'interface workbench
+G_BRODY,HIGH,brodyResponseComposer.ts,apps/obsidia-workbench/src/lib/,brody response composer,Compositeur de réponse Brody côté frontend
+G_BRODY,MEDIUM,BRODY_FULL_POINTER_MAP.md,docs/freeze/,brody pointer map,Carte complète des pointeurs Brody
+G_BRODY,MEDIUM,routes/brody.py,apps/obsidia_api/routes/,brody route API,Route API principale de Brody
+G_BRODY,MEDIUM,routes/brody_monitoring.py,apps/obsidia_api/routes/,brody monitoring,Route monitoring de Brody
+G_BRODY,MEDIUM,BRODY_THREE_FOUNDATIONS_CURRENT_STATE_AUDIT.md,docs/freeze/,brody three foundations,Audit état courant des 3 fondations Brody
+H_JEUX,HIGH,OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/,periphery/,34 arbres simulateurs jeux,34 arbres décisionnels — environnements d'éducation agentique complets
+H_JEUX,HIGH,WORLD_ACTION_DRY_RUN_POLICY_V0.md,docs/act/,dry run simulateur jeux,Politique de simulation dry-run — test sans effet réel
+H_JEUX,HIGH,TRANSACTION_SIMULATOR_DRYRUN_V1.md,docs/blockchain/,simulateur transaction jeux,Simulateur de transaction en dry-run
+H_JEUX,HIGH,docs/education/README.md,docs/education/,education agentique jeux,README éducation agentique
+H_JEUX,HIGH,O5_ELIMINATION_DECISIONNELLE.md,periphery/.../02_CONSTITUTION/,decision elimination jeux,Loi d'élimination décisionnelle — règle du jeu
+H_JEUX,MEDIUM,BANK_SCENARIOS.md,docs/,scenarios jeux simulateurs,Scénarios bank — environnement de simulation
+H_JEUX,MEDIUM,P2_BANK_ADVERSARIAL_SCOPE.md,docs/,adversarial jeux simulateurs,Scope adversarial bank — simulation d'attaque
+H_JEUX,MEDIUM,HACKATHON_TO_OBSIDIA_MAPPING_V1.md,docs/hackathons/,hackathon education,Mapping hackathon → Obsidia — retour d'expérience
+H_JEUX,MEDIUM,HACKATHON_FAILURE_TAXONOMY_V1.md,docs/hackathons/,hackathon failure education,Taxonomie des échecs hackathon — base d'apprentissage
+H_JEUX,LOW,connectors/aviation_robo.py,connectors/,aviation simulateur,Connecteur robotique aviation — environnement simulé
+H_JEUX,LOW,connectors/bank_normal_flow.py,connectors/,bank simulateur,Connecteur flux bancaire normal — environnement simulé

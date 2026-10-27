@@ -1,0 +1,170 @@
+{
+  "generated_by": "generate_shim_map.py",
+  "periphery_root": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/periphery",
+  "total_py_files": 597,
+  "proxy_count": 16,
+  "decision_authority": "KX108_ONLY",
+  "readonly": true,
+  "proxies": [
+    {
+      "proxy": "periphery/agent_contracts.py",
+      "targets": [
+        "periphery.modules_agents.agent_contracts"
+      ],
+      "import_type": "star",
+      "import_count": 1,
+      "star_count": 1,
+      "explicit_count": 0
+    },
+    {
+      "proxy": "periphery/agent_registry.py",
+      "targets": [
+        "periphery.modules_agents.agent_registry"
+      ],
+      "import_type": "star",
+      "import_count": 1,
+      "star_count": 1,
+      "explicit_count": 0
+    },
+    {
+      "proxy": "periphery/contrats/gencoin_distribution.py",
+      "targets": [
+        "periphery.gencoin_distribution"
+      ],
+      "import_type": "star",
+      "import_count": 1,
+      "star_count": 1,
+      "explicit_count": 0
+    },
+    {
+      "proxy": "periphery/data_gate.py",
+      "targets": [
+        "periphery.engine_gates.data_gate"
+      ],
+      "import_type": "star",
+      "import_count": 1,
+      "star_count": 1,
+      "explicit_count": 0
+    },
+    {
+      "proxy": "periphery/engine_gates/common.py",
+      "targets": [
+        "periphery.common"
+      ],
+      "import_type": "explicit",
+      "import_count": 1,
+      "star_count": 0,
+      "explicit_count": 1
+    },
+    {
+      "proxy": "periphery/engine_gates/constants.py",
+      "targets": [
+        "periphery.constants"
+      ],
+      "import_type": "star",
+      "import_count": 1,
+      "star_count": 1,
+      "explicit_count": 0
+    },
+    {
+      "proxy": "periphery/engine_gates/hackathon_failures.py",
+      "targets": [
+        "periphery.hackathon_failures"
+      ],
+      "import_type": "star",
+      "import_count": 1,
+      "star_count": 1,
+      "explicit_count": 0
+    },
+    {
+      "proxy": "periphery/engine_gates/os3_ticket.py",
+      "targets": [
+        "periphery.os3_ticket"
+      ],
+      "import_type": "explicit",
+      "import_count": 1,
+      "star_count": 0,
+      "explicit_count": 1
+    },
+    {
+      "proxy": "periphery/modules_agents/agents/__init__.py",
+      "targets": [
+        "periphery.agents"
+      ],
+      "import_type": "explicit",
+      "import_count": 14,
+      "star_count": 0,
+      "explicit_count": 14
+    },
+    {
+      "proxy": "periphery/modules_agents/common.py",
+      "targets": [
+        "periphery.common"
+      ],
+      "import_type": "explicit",
+      "import_count": 1,
+      "star_count": 0,
+      "explicit_count": 1
+    },
+    {
+      "proxy": "periphery/modules_agents/os3_replay_manifest.py",
+      "targets": [
+        "periphery.os3_replay_manifest"
+      ],
+      "import_type": "star",
+      "import_count": 1,
+      "star_count": 1,
+      "explicit_count": 0
+    },
+    {
+      "proxy": "periphery/modules_agents/os3_ticket.py",
+      "targets": [
+        "periphery.os3_ticket"
+      ],
+      "import_type": "explicit",
+      "import_count": 1,
+      "star_count": 0,
+      "explicit_count": 1
+    },
+    {
+      "proxy": "periphery/os3_replay_manifest.py",
+      "targets": [
+        "periphery.specs.os3_replay_manifest"
+      ],
+      "import_type": "star",
+      "import_count": 1,
+      "star_count": 1,
+      "explicit_count": 0
+    },
+    {
+      "proxy": "periphery/os3_replay_runner.py",
+      "targets": [
+        "periphery.modules_agents.os3_replay_runner"
+      ],
+      "import_type": "star",
+      "import_count": 1,
+      "star_count": 1,
+      "explicit_count": 0
+    },
+    {
+      "proxy": "periphery/provenance_gate.py",
+      "targets": [
+        "periphery.engine_gates.provenance_gate"
+      ],
+      "import_type": "explicit",
+      "import_count": 1,
+      "star_count": 0,
+      "explicit_count": 1
+    },
+    {
+      "proxy": "periphery/world_action_gateway.py",
+      "targets": [
+        "periphery.engine_gates.world_action_gateway"
+      ],
+      "import_type": "star",
+      "import_count": 1,
+      "star_count": 1,
+      "explicit_count": 0
+    }
+  ]
+}
