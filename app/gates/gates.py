@@ -45,7 +45,28 @@ def evaluate(ir: dict) -> dict:
                 "reason": f"deny keyword '{kw}' — out of authorized frame",
             }
 
+    constraints = set(
+        ir.get("constraints")
+        or []
+    )
+
+    negated_execution_keywords = {
+        "execute",
+        "run",
+        "lance",
+    }
+
     for kw in HOLD_KEYWORDS:
+        if (
+            "no_execute"
+            in constraints
+            and ir.get("action_type")
+            != "act_request"
+            and kw
+            in negated_execution_keywords
+        ):
+            continue
+
         if _key_match(kw, normalized):
             return {
                 "verdict": "HOLD",
