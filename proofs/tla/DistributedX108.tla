@@ -1,4 +1,4 @@
-﻿---- MODULE DistributedX108 ----
+---- MODULE DistributedX108 ----
 EXTENDS Naturals, Integers, FiniteSets, TLC
 
 VARIABLES f, N, tau, irr, elapsed, baseAct, honest, byz, local, global
@@ -24,7 +24,7 @@ StateOK ==
   /\ irr \in BOOLEAN
   /\ elapsed \in 0..10
   /\ baseAct \in BOOLEAN
-  /\ honest \subseteq NodeIds(N)
+  /\ honest \in SUBSET NodeIds(N)
   /\ byz = NodeIds(N) \ honest
   /\ Cardinality(byz) <= f
   /\ local \in [NodeIds(N) -> {"HOLD","ACT"}]
@@ -32,10 +32,24 @@ StateOK ==
   /\ global = Aggregate(local, f)
 
 Init == StateOK
-Next == UNCHANGED Vars
+
+Next ==
+  /\ f' \in 0..1
+  /\ N' = 3 * f' + 1
+  /\ tau' \in 0..5
+  /\ irr' \in BOOLEAN
+  /\ elapsed' \in 0..10
+  /\ baseAct' \in BOOLEAN
+  /\ honest' \in SUBSET NodeIds(N')
+  /\ byz' = NodeIds(N') \ honest'
+  /\ Cardinality(byz') <= f'
+  /\ local' \in [NodeIds(N') -> {"HOLD","ACT"}]
+  /\ (\A i \in honest' : local'[i] = GateDecision(tau', irr', elapsed', baseAct'))
+  /\ global' = Aggregate(local', f')
+
 Spec == Init /\ [][Next]_Vars
 
 SafetyDistributed ==
-  (irr /\ elapsed < tau) => (global # "ACT")
+  [] ( (irr /\ elapsed < tau) => (global # "ACT") )
 
 ====
