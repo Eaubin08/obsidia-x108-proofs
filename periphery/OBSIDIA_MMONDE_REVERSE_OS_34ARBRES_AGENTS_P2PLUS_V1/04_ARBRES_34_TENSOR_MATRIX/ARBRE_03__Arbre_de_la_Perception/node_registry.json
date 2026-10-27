@@ -1,0 +1,11 @@
+{
+  "tree_id": "03",
+  "nodes": [
+    {
+      "id": "T03_N01",
+      "label": "Perception",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

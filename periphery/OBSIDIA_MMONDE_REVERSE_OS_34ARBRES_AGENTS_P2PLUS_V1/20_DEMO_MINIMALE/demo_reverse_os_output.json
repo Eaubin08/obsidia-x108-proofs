@@ -1,0 +1,60 @@
+{
+  "qui": "DEMO_FULL_PIPELINE",
+  "pourquoi": "RC_CONTEXT_ONLY",
+  "preuve": "demo_merkle_root_placeholder",
+  "verdict_existant": "NO_KERNEL_DECISION",
+  "dominant_trees": [
+    [
+      4,
+      0.3
+    ],
+    [
+      8,
+      0.3
+    ],
+    [
+      10,
+      0.3
+    ],
+    [
+      17,
+      0.3
+    ],
+    [
+      23,
+      0.3
+    ]
+  ],
+  "text_projection": "DEMO_FULL_PIPELINE / RC_CONTEXT_ONLY / preuve=demo_merkle_root_placeholder",
+  "ui_projection": {
+    "agent": "DEMO_FULL_PIPELINE",
+    "reason_code": "RC_CONTEXT_ONLY",
+    "verdict_existant": "NO_KERNEL_DECISION"
+  },
+  "voice_projection_stub": "Agent DEMO_FULL_PIPELINE, raison RC_CONTEXT_ONLY.",
+  "visual_state": {
+    "top_trees": [
+      [
+        4,
+        0.3
+      ],
+      [
+        8,
+        0.3
+      ],
+      [
+        10,
+        0.3
+      ],
+      [
+        17,
+        0.3
+      ],
+      [
+        23,
+        0.3
+      ]
+    ]
+  },
+  "non_decision": true
+}

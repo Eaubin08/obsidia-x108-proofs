@@ -1,0 +1,253 @@
+{
+  "source": "image_34_arbres.png",
+  "raw_entries": [
+    {
+      "section": "I",
+      "raw_number": "1",
+      "name": "Arbre de l’Humain",
+      "status": "VISIBLE"
+    },
+    {
+      "section": "I",
+      "raw_number": "2",
+      "name": "Arbre de la Conscience",
+      "status": "VISIBLE_DUPLICATE_NUMBER_OR_NAME"
+    },
+    {
+      "section": "I",
+      "raw_number": "3",
+      "name": "Arbre du Sens",
+      "status": "VISIBLE"
+    },
+    {
+      "section": "I",
+      "raw_number": "2",
+      "name": "Arbre de la Conscience",
+      "status": "DUPLICATE_VISIBLE"
+    },
+    {
+      "section": "I",
+      "raw_number": "4",
+      "name": "Arbre de la Perception",
+      "status": "VISIBLE"
+    },
+    {
+      "section": "I",
+      "raw_number": "5",
+      "name": "Arbre de l’Identité",
+      "status": "VISIBLE"
+    },
+    {
+      "section": "II",
+      "raw_number": "6",
+      "name": "Arbre de la Compréhension",
+      "status": "VISIBLE"
+    },
+    {
+      "section": "II",
+      "raw_number": "7",
+      "name": "Arbre de l’Organisation",
+      "status": "VISIBLE"
+    },
+    {
+      "section": "II",
+      "raw_number": "8",
+      "name": "Arbre de l’Organisation",
+      "status": "DUPLICATE_NAME_WITH_DIFFERENT_NUMBER"
+    },
+    {
+      "section": "II",
+      "raw_number": "8",
+      "name": "Arbre de la Pensée",
+      "status": "DUPLICATE_NUMBER_VISIBLE"
+    },
+    {
+      "section": "II",
+      "raw_number": "9",
+      "name": "Arbre de la Pensée",
+      "status": "DUPLICATE_NAME_WITH_DIFFERENT_NUMBER"
+    },
+    {
+      "section": "II",
+      "raw_number": "10",
+      "name": "Arbre de l’Intelligence",
+      "status": "VISIBLE"
+    },
+    {
+      "section": "III",
+      "raw_number": "11",
+      "name": "Arbre de la Science",
+      "status": "VISIBLE"
+    },
+    {
+      "section": "III",
+      "raw_number": "12",
+      "name": "Arbre de la Science",
+      "status": "DUPLICATE_NAME"
+    },
+    {
+      "section": "III",
+      "raw_number": "12",
+      "name": "Arbre de la Technique",
+      "status": "DUPLICATE_NUMBER_VISIBLE"
+    },
+    {
+      "section": "III",
+      "raw_number": "13",
+      "name": "Arbre de la Technique",
+      "status": "DUPLICATE_NAME"
+    },
+    {
+      "section": "III",
+      "raw_number": "13",
+      "name": "Arbre de l’Art",
+      "status": "DUPLICATE_NUMBER_VISIBLE"
+    },
+    {
+      "section": "III",
+      "raw_number": "14",
+      "name": "Arbre de la Spiritualité",
+      "status": "VISIBLE"
+    },
+    {
+      "section": "IV",
+      "raw_number": "16",
+      "name": "Arbre de la Relation",
+      "status": "VISIBLE"
+    },
+    {
+      "section": "IV",
+      "raw_number": "17",
+      "name": "Arbre de la Relation",
+      "status": "DUPLICATE_NAME"
+    },
+    {
+      "section": "IV",
+      "raw_number": "17",
+      "name": "Arbre du Collectif",
+      "status": "DUPLICATE_NUMBER_VISIBLE"
+    },
+    {
+      "section": "IV",
+      "raw_number": "18",
+      "name": "Arbre de la Transmission",
+      "status": "VISIBLE"
+    },
+    {
+      "section": "IV",
+      "raw_number": "18",
+      "name": "Arbre de la Culture",
+      "status": "DUPLICATE_NUMBER_VISIBLE"
+    },
+    {
+      "section": "IV",
+      "raw_number": "19",
+      "name": "Arbre de la Culture",
+      "status": "DUPLICATE_NAME"
+    },
+    {
+      "section": "V",
+      "raw_number": "20",
+      "name": "Arbre de l’Action",
+      "status": "VISIBLE"
+    },
+    {
+      "section": "V",
+      "raw_number": "21",
+      "name": "Arbre de l’Action",
+      "status": "DUPLICATE_NAME"
+    },
+    {
+      "section": "V",
+      "raw_number": "21",
+      "name": "Arbre de la Mémoire",
+      "status": "DUPLICATE_NUMBER_VISIBLE"
+    },
+    {
+      "section": "V",
+      "raw_number": "22",
+      "name": "Arbre de la Transformation",
+      "status": "VISIBLE"
+    },
+    {
+      "section": "VI",
+      "raw_number": "23",
+      "name": "Arbre du Temps",
+      "status": "VISIBLE"
+    },
+    {
+      "section": "VI",
+      "raw_number": "23",
+      "name": "Arbre du Temps",
+      "status": "DUPLICATE_VISIBLE"
+    },
+    {
+      "section": "VI",
+      "raw_number": "24",
+      "name": "Arbre de la Mémoire",
+      "status": "VISIBLE"
+    },
+    {
+      "section": "VI",
+      "raw_number": "25",
+      "name": "Arbre de l’Histoire",
+      "status": "VISIBLE"
+    },
+    {
+      "section": "VII",
+      "raw_number": "26",
+      "name": "Arbre de la Cohérence",
+      "status": "VISIBLE"
+    },
+    {
+      "section": "VII",
+      "raw_number": "26",
+      "name": "Arbre de la Cohérence",
+      "status": "DUPLICATE_VISIBLE"
+    },
+    {
+      "section": "VII",
+      "raw_number": "27",
+      "name": "Arbre de la Vérité",
+      "status": "VISIBLE"
+    },
+    {
+      "section": "VII",
+      "raw_number": "22",
+      "name": "Arbre de la Valeur",
+      "status": "NUMBER_CONFLICT_VISIBLE"
+    },
+    {
+      "section": "VII",
+      "raw_number": "29",
+      "name": "Arbre de la Finalité",
+      "status": "VISIBLE_DUPLICATE"
+    },
+    {
+      "section": "VIII",
+      "raw_number": "30",
+      "name": "Arbre Cognitif Global",
+      "status": "VISIBLE_DUPLICATE"
+    },
+    {
+      "section": "VIII",
+      "raw_number": "31",
+      "name": "Arbre des Flux",
+      "status": "VISIBLE_DUPLICATE"
+    },
+    {
+      "section": "VIII",
+      "raw_number": "32",
+      "name": "Arbre des Connexions",
+      "status": "VISIBLE"
+    },
+    {
+      "section": "VIII",
+      "raw_number": "33",
+      "name": "Arbre de l’Optimisation",
+      "status": "VISIBLE"
+    }
+  ],
+  "status": "RAW_TRANSCRIPTION_NEEDS_HUMAN_VALIDATION",
+  "non_decision": true
+}

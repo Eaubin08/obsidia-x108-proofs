@@ -1,0 +1,11 @@
+{
+  "tree_id": "26",
+  "nodes": [
+    {
+      "id": "T26_N01",
+      "label": "Coherence",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

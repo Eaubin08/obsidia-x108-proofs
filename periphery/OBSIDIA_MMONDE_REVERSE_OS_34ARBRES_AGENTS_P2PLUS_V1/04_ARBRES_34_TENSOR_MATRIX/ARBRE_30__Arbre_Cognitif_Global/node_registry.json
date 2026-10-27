@@ -1,0 +1,11 @@
+{
+  "tree_id": "30",
+  "nodes": [
+    {
+      "id": "T30_N01",
+      "label": "Cognitif_Global",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

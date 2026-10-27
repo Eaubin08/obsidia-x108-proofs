@@ -1,0 +1,37 @@
+{
+  "query": "démo Mmonde Reverse OS non-décision",
+  "events": [],
+  "activated_trees": {
+    "4": 0.3,
+    "8": 0.3,
+    "10": 0.3,
+    "17": 0.3,
+    "23": 0.3,
+    "25": 0.3,
+    "26": 0.3,
+    "31": 0.3
+  },
+  "dominant_tree_names": [
+    "Arbre de l’Identité",
+    "Arbre de l’Intelligence",
+    "Arbre de la Science",
+    "Arbre de la Transmission",
+    "Arbre de la Mémoire",
+    "Arbre de la Cohérence",
+    "Arbre de la Vérité",
+    "Arbre des Connexions"
+  ],
+  "calibrated_links": [],
+  "projection": {
+    "node_continuum": {
+      "id": "NODE_CONTINUUM_DEMO_001",
+      "description": "Nœud créé par divergence/contextualisation de démo.",
+      "event_ids": [],
+      "divergence": 0.21,
+      "non_decision": true
+    }
+  },
+  "confidence": 0.42,
+  "non_decision": true,
+  "export_target": "X-108"
+}

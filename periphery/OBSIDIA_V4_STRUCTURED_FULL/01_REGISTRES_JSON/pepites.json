@@ -1,0 +1,1476 @@
+[
+  {
+    "id_num": 1,
+    "id": "P1",
+    "name": "Mémoire ≠ stockage",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\nM(t+1) = f(M(t),\\ I(t)) \\text{ avec } M(t) \\neq \\emptyset\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 03 — Couche Mémoire (C1)"
+  },
+  {
+    "id_num": 2,
+    "id": "P2",
+    "name": "Mémoire fractale hiérarchique",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\nM = \\{M_1, M_2, \\ldots, M_n\\} \\text{ avec } M_i \\subset M_{i-1}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 03 — Couche Mémoire (C1)"
+  },
+  {
+    "id_num": 3,
+    "id": "P3",
+    "name": "Oubli actif",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Oubli}(m) = 1 - \\frac{U(m,t)}{U_{max}} \\cdot e^{-\\lambda \\cdot \\Delta t}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 03 — Couche Mémoire (C1)"
+  },
+  {
+    "id_num": 4,
+    "id": "P4",
+    "name": "Mémoire comme condition d'éthique",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Éthique}(a) \\Rightarrow \\exists m \\in M : m \\text{ justifie } a\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 03 — Couche Mémoire (C1)"
+  },
+  {
+    "id_num": 5,
+    "id": "P5",
+    "name": "Mémoire humaine ↔ mémoire système",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\nM_{humain} \\leftrightarrow M_{système} : \\text{isomorphisme partiel}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 03 — Couche Mémoire (C1)"
+  },
+  {
+    "id_num": 6,
+    "id": "P6",
+    "name": "Mémoire comme récit vivant",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\nR(t) = \\langle M(t),\\ \\text{narration}(M(t)) \\rangle\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 03 — Couche Mémoire (C1)"
+  },
+  {
+    "id_num": 7,
+    "id": "P7",
+    "name": "Mémoire comme garde-fou contre l'hallucination",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Hallucination} \\Rightarrow \\neg \\exists m \\in M : m \\text{ valide l'assertion}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 03 — Couche Mémoire (C1)"
+  },
+  {
+    "id_num": 8,
+    "id": "P8",
+    "name": "Mémoire transversale",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\forall L_i : M \\cap L_i \\neq \\emptyset\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 03 — Couche Mémoire (C1)"
+  },
+  {
+    "id_num": 9,
+    "id": "P9",
+    "name": "Sens ≠ information",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\mathcal{S}(i, c, k) \\text{ indéfini si } (c, k) \\text{ absents}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 03 — Couche Mémoire (C1)"
+  },
+  {
+    "id_num": 10,
+    "id": "P10",
+    "name": "Cadre avant réponse",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Réponse} = f(\\text{Cadre}(c), \\text{Input}(i))\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 03 — Couche Mémoire (C1)"
+  },
+  {
+    "id_num": 11,
+    "id": "P11",
+    "name": "Refus hors cadre",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Refus}(i) \\Leftrightarrow \\neg \\exists c \\in \\mathcal{C} : c \\text{ autorise } i\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 03 — Couche Mémoire (C1)"
+  },
+  {
+    "id_num": 12,
+    "id": "P12",
+    "name": "Désambiguïsation contextuelle",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Désambiguïsation}(i) = \\arg\\max_{c \\in \\mathcal{C}} P(c | i, \\text{contexte})\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 03 — Couche Mémoire (C1)"
+  },
+  {
+    "id_num": 13,
+    "id": "P13",
+    "name": "Immuabilité par sceau Merkle",
+    "status": "🔵 PÉPITE_ANCRÉE — A généré un ou plusieurs théorèmes Lean compilés",
+    "formula": "$$\n\\text{Sceau}(F) = H(H(f_1), H(f_2), \\ldots, H(f_n)) \\text{ — immuable}\n$$",
+    "code_blocks": [
+      "theorem P13_Immutability\n    (manifest : Obsidia.Hash) (files files2 : List File)\n    (hmap : Not (files.map Obsidia.SealAssumptions.fileHash =\n                 files2.map Obsidia.SealAssumptions.fileHash)) :\n    Not (globalSeal manifest (rootHash files) =\n         globalSeal manifest (rootHash files2)) := by\n  have hroot : rootHash files ≠ rootHash files2 := by\n    unfold rootHash\n    intro heq\n    apply hmap\n    exact Obsidia.SealAssumptions.combine_inj _ _ heq\n  unfold globalSeal\n  exact Obsidia.merkle2_right_mutation manifest (rootHash files) (rootHash files2) hroot",
+      "// Sceau Merkle — TypeScript actif\nimport { createHash } from 'crypto';\n\nexport function sealFiles(files: Buffer[]): string {\n  const hashes = files.map(f => createHash('sha256').update(f).digest('hex'));\n  return hashes.reduce((acc, h) => createHash('sha256').update(acc + h).digest('hex'));\n}\n\nexport function verifyIntegrity(files: Buffer[], expectedSeal: string): boolean {\n  return sealFiles(files) === expectedSeal;\n}"
+    ],
+    "primary_block": "Bloc 11 — Trace et Immuabilité (C10)"
+  },
+  {
+    "id_num": 14,
+    "id": "P14",
+    "name": "Traduction humain ↔ machine",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Traduction}(h \\to m) : \\mathcal{L}_{humain} \\to \\mathcal{L}_{machine}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 11 — Trace et Immuabilité (C10)"
+  },
+  {
+    "id_num": 15,
+    "id": "P15",
+    "name": "Immuabilité forte (Sensitivity)",
+    "status": "🔵 PÉPITE_ANCRÉE — A généré un ou plusieurs théorèmes Lean compilés",
+    "formula": "$$\n\\forall r \\neq r' : \\text{Sceau}(r) \\neq \\text{Sceau}(r')\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 11 — Trace et Immuabilité (C10)"
+  },
+  {
+    "id_num": 16,
+    "id": "P16",
+    "name": "Rupture data ↔ sens",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Rupture} = \\{i : \\text{data}(i) \\neq \\text{sens}(i)\\}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 11 — Trace et Immuabilité (C10)"
+  },
+  {
+    "id_num": 17,
+    "id": "P17",
+    "name": "Croissance du log d'audit",
+    "status": "🔵 PÉPITE_ANCRÉE — A généré un ou plusieurs théorèmes Lean compilés | Opératoire : Oui (Code actif)",
+    "formula": "$$\n\\text{AuditLog}(t+1) = \\text{AuditLog}(t) \\cup \\{(i_t, d_t)\\}\n$$",
+    "code_blocks": [
+      "theorem P17_AuditGrowth (s : State) (i : Input) :\n    (transition s i).2.auditLog.length = s.auditLog.length + 1 := by\n  unfold transition\n  simp [List.length_append]"
+    ],
+    "primary_block": "Bloc 11 — Trace et Immuabilité (C10)"
+  },
+  {
+    "id_num": 18,
+    "id": "P18",
+    "name": "Sémantique avant calcul",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx | Opératoire : Oui (Code actif)",
+    "formula": "$$\n\\text{Sémantique}(i) \\text{ vérifié avant } \\text{Calcul}(i)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 11 — Trace et Immuabilité (C10)"
+  },
+  {
+    "id_num": 19,
+    "id": "P19",
+    "name": "Pluralité des niveaux de sens",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx | Opératoire : Oui (Code actif)",
+    "formula": "$$\n\\mathcal{S} = \\{s_1, s_2, \\ldots, s_k\\} \\text{ niveaux de sens}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 17 — Synthèse et Interfaces"
+  },
+  {
+    "id_num": 20,
+    "id": "P20",
+    "name": "Sens avant performance",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Sens}(i) > \\text{Performance}(i) \\text{ dans l'ordre de priorité}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 17 — Synthèse et Interfaces"
+  },
+  {
+    "id_num": 21,
+    "id": "P21",
+    "name": "Sémantique transversale",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\forall L_i : \\mathcal{S} \\cap L_i \\neq \\emptyset\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 04 — Couche Temporelle (C2)"
+  },
+  {
+    "id_num": 22,
+    "id": "P22",
+    "name": "Le symbolique n'est pas décoratif",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Symbole}(\\sigma) \\neq \\text{Décoration} : \\sigma \\in \\mathcal{O}_{opératoire}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 04 — Couche Temporelle (C2)"
+  },
+  {
+    "id_num": 23,
+    "id": "P23",
+    "name": "Compression du sens",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Compression}(\\sigma) = \\frac{|\\text{sens}(\\sigma)|}{|\\sigma|}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 04 — Couche Temporelle (C2)"
+  },
+  {
+    "id_num": 24,
+    "id": "P24",
+    "name": "Non-verbal comme vecteur",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Non-verbal}(v) \\in \\mathcal{V}_{compréhension}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 04 — Couche Temporelle (C2)"
+  },
+  {
+    "id_num": 25,
+    "id": "P25",
+    "name": "Symboles comme passerelles",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Passerelle}(\\sigma) : \\mathcal{D}_1 \\to \\mathcal{D}_2\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 04 — Couche Temporelle (C2)"
+  },
+  {
+    "id_num": 26,
+    "id": "P26",
+    "name": "Résonance plutôt que calcul",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Résonance}(\\sigma, c) = \\langle \\sigma, c \\rangle_{\\mathcal{H}}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 04 — Couche Temporelle (C2)"
+  },
+  {
+    "id_num": 27,
+    "id": "P27",
+    "name": "Transmission implicite",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Implicite}(m) \\subset \\text{Explicite}(m)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 05 — Couche Identité et Sémantique (C3)"
+  },
+  {
+    "id_num": 28,
+    "id": "P28",
+    "name": "Récit comme structure",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Récit}(t) = f(M(t-1),\\ I(t),\\ \\Delta M(t))\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 05 — Couche Identité et Sémantique (C3)"
+  },
+  {
+    "id_num": 29,
+    "id": "P29",
+    "name": "Mythologie vivante",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Mythologie}(t) = \\lim_{n \\to \\infty} \\text{Récit}^n(t)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 05 — Couche Identité et Sémantique (C3)"
+  },
+  {
+    "id_num": 30,
+    "id": "P30",
+    "name": "Symbolique opératoire",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Symbolique}_{opératoire} : \\sigma \\to \\text{Action}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 05 — Couche Identité et Sémantique (C3)"
+  },
+  {
+    "id_num": 31,
+    "id": "P31",
+    "name": "Archétype",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Archétype}(\\sigma) = \\arg\\max_{a \\in \\mathcal{A}} \\text{Résonance}(\\sigma, a)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 05 — Couche Identité et Sémantique (C3)"
+  },
+  {
+    "id_num": 32,
+    "id": "P32",
+    "name": "Rituel comme séquence symbolique",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Rituel}(r) = \\text{Séquence}(\\sigma_1, \\sigma_2, \\ldots, \\sigma_n)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 05 — Couche Identité et Sémantique (C3)"
+  },
+  {
+    "id_num": 33,
+    "id": "P33",
+    "name": "Symbolique transversal",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Symbolique}_{transversal} : \\forall L_i, \\sigma \\in L_i\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 05 — Couche Identité et Sémantique (C3)"
+  },
+  {
+    "id_num": 34,
+    "id": "P34",
+    "name": "Kernel = intersection des contraintes",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\nK(s) = 1 \\Leftrightarrow \\forall c \\in \\mathcal{C} : c(s) = \\text{vrai}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 01 — Noyau Mathématique et Déterministe"
+  },
+  {
+    "id_num": 35,
+    "id": "P35",
+    "name": "Preuve formelle sans sorry",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Preuve}(T) = \\text{Lean4}(T) \\text{ sans } \\texttt{sorry}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 01 — Noyau Mathématique et Déterministe"
+  },
+  {
+    "id_num": 36,
+    "id": "P36",
+    "name": "Quintuplet d'état canonique (S,Φ,I,τ,L)",
+    "status": "🟡 À_PROUVER — Formalisé, code Lean esquissé, pas encore compilé",
+    "formula": "$$\n(S, \\Phi, I, \\tau, L) \\text{ — quintuplet d'état canonique}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 01 — Noyau Mathématique et Déterministe"
+  },
+  {
+    "id_num": 37,
+    "id": "P37",
+    "name": "Formalisation : narratif → math",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Formalisation}(P) : \\text{Narratif} \\to \\text{Math pur}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 01 — Noyau Mathématique et Déterministe"
+  },
+  {
+    "id_num": 38,
+    "id": "P38",
+    "name": "Filtre éthique χ(t)",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\chi(t) \\in [0,1],\\ \\chi(t) < \\varepsilon \\Rightarrow \\text{BLOCK}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 01 — Noyau Mathématique et Déterministe"
+  },
+  {
+    "id_num": 39,
+    "id": "P39",
+    "name": "Invariant permanent",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Invariant}(I) : \\forall t,\\ I(s_t) = \\text{vrai}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 01 — Noyau Mathématique et Déterministe"
+  },
+  {
+    "id_num": 40,
+    "id": "P40",
+    "name": "Axiome non dérivable",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Axiome}(A) : A \\text{ non dérivable, posé comme fondement}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 01 — Noyau Mathématique et Déterministe"
+  },
+  {
+    "id_num": 41,
+    "id": "P41",
+    "name": "Déterminisme D1",
+    "status": "🔵 PÉPITE_ANCRÉE — A généré un ou plusieurs théorèmes Lean compilés | Opératoire : Oui (Code actif)",
+    "formula": "$$\nD_1 : \\text{decision}(m, \\theta) = \\text{decision}(m, \\theta) \\text{ (déterminisme)}\n$$",
+    "code_blocks": [
+      "theorem D1_determinism (m : Metrics) (theta : Rat) :\n    decision m theta = decision m theta := rfl",
+      "// Contrat canonique X-108 — TypeScript actif\nexport interface CanonicalDecision {\n  verdict: 'ACT' | 'HOLD' | 'BLOCK';\n  score: number;\n  threshold: number;\n  timestamp: number;\n  irreversible: boolean;\n  elapsed: number;\n  tau: number;\n  auditHash: string;\n}\n\nexport function decide(metrics: Metrics, theta: number): CanonicalDecision {\n  const verdict = metrics.S >= theta ? 'ACT' : 'HOLD';\n  return { verdict, score: metrics.S, threshold: theta, ... };\n}"
+    ],
+    "primary_block": "Bloc 01 — Noyau Mathématique et Déterministe"
+  },
+  {
+    "id_num": 42,
+    "id": "P42",
+    "name": "Seuil G1 : ACT si θ ≤ S",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\nG_1 : \\theta \\leq m.S \\Rightarrow \\text{decision}(m, \\theta) = \\text{ACT}\n$$",
+    "code_blocks": [
+      "theorem G1_act_above_threshold (m : Metrics) (theta : Rat)\n    (h : theta <= m.S) :\n    decision m theta = Decision.ACT := by\n  unfold decision\n  have htrue : decide (theta <= m.S) = true := decide_eq_true h\n  rw [htrue]"
+    ],
+    "primary_block": "Bloc 01 — Noyau Mathématique et Déterministe"
+  },
+  {
+    "id_num": 43,
+    "id": "P43",
+    "name": "Pas de BLOCK natif L11.3",
+    "status": "🔵 PÉPITE_ANCRÉE — A généré un ou plusieurs théorèmes Lean compilés | Opératoire : Oui (Code actif)",
+    "formula": "$$\nL_{11.3} : \\neg(\\text{decision3}(m, \\theta) = \\text{BLOCK})\n$$",
+    "code_blocks": [
+      "theorem L11_3_no_block (m : Metrics) (theta : Rat) :\n    Not (decision3 m theta = Decision3.BLOCK) := by\n  intro h\n  cases hd : decision m theta with\n  | HOLD =>\n      rw [show decision3 m theta = Decision3.HOLD by\n        unfold decision3; rw [hd]; rfl] at h\n      cases h\n  | ACT =>\n      rw [show decision3 m theta = Decision3.ACT by\n        unfold decision3; rw [hd]; rfl] at h\n      cases h",
+      "// Bridge canonique — TypeScript actif\nexport function canonicalBridge(decision: CanonicalDecision): BridgeResult {\n  // Le kernel ne peut jamais émettre BLOCK seul\n  if (decision.verdict === 'BLOCK') {\n    throw new Error('INVARIANT VIOLATION: kernel cannot emit BLOCK');\n  }\n  return { ...decision, bridged: true };\n}"
+    ],
+    "primary_block": "Bloc 01 — Noyau Mathématique et Déterministe"
+  },
+  {
+    "id_num": 44,
+    "id": "P44",
+    "name": "Verrou temporel X-108",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{X108}(\\tau, m, \\theta, irr, t) : irr \\wedge t < \\tau \\Rightarrow \\text{HOLD}\n$$",
+    "code_blocks": [
+      "theorem X108_no_act_before_tau (τ : Nat) (metrics : Metrics) (theta : Rat) (irr : Bool) (elapsed : Nat)\n    (hIrr : irr = true)\n    (h : elapsed < τ) :\n    decideX108 τ metrics theta irr elapsed = Decision.HOLD := by\n  unfold decideX108 beforeTau\n  have hlt : decide (elapsed < τ) = true := decide_eq_true h\n  rw [hIrr, hlt]\n  rfl"
+    ],
+    "primary_block": "Bloc 17 — Synthèse et Interfaces"
+  },
+  {
+    "id_num": 45,
+    "id": "P45",
+    "name": "Skew négatif → HOLD",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Skew}(t) < 0 \\Rightarrow \\text{decision}(\\text{raw}) = \\text{HOLD}\n$$",
+    "code_blocks": [
+      "theorem X108_no_act_before_tau (τ : Nat) (metrics : Metrics) (theta : Rat) (irr : Bool) (elapsed : Nat)\n    (hIrr : irr = true)\n    (h : elapsed < τ) :\n    decideX108 τ metrics theta irr elapsed = Decision.HOLD := by\n  unfold decideX108 beforeTau\n  have hlt : decide (elapsed < τ) = true := decide_eq_true h\n  rw [hIrr, hlt]\n  rfl"
+    ],
+    "primary_block": "Bloc 17 — Synthèse et Interfaces"
+  },
+  {
+    "id_num": 46,
+    "id": "P46",
+    "name": "Consensus fail-closed 4 agents",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Consensus}_4(d_1, d_2, d_3, d_4) = \\text{BLOCK si pas de supermajorité}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 17 — Synthèse et Interfaces"
+  },
+  {
+    "id_num": 47,
+    "id": "P47",
+    "name": "Couplage réel/moteur dR/dt",
+    "status": "🔴 À_FORMALISER — Formulation narrative existante, formule mathématique insuffisante (V3.1)",
+    "formula": "$$\n\\frac{dR}{dt} = f(R(t), M(t), U(t))\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 06 — Couche Cosmologique (C5)"
+  },
+  {
+    "id_num": 48,
+    "id": "P48",
+    "name": "Structure cosmologique",
+    "status": "🔴 À_FORMALISER — Formulation narrative existante, formule mathématique insuffisante (V3.1)",
+    "formula": "$$\n\\text{Cosmos}(t) = \\langle \\mathcal{O}, \\mathcal{R}, \\mathcal{E} \\rangle\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 06 — Couche Cosmologique (C5)"
+  },
+  {
+    "id_num": 49,
+    "id": "P49",
+    "name": "Émergence par interaction",
+    "status": "🔴 À_FORMALISER — Formulation narrative existante, formule mathématique insuffisante (V3.1)",
+    "formula": "$$\n\\text{Émergence}(E) = \\lim_{n \\to \\infty} \\text{Interaction}^n(\\mathcal{O})\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 06 — Couche Cosmologique (C5)"
+  },
+  {
+    "id_num": 50,
+    "id": "P50",
+    "name": "Récursivité fondamentale",
+    "status": "🔴 À_FORMALISER — Formulation narrative existante, formule mathématique insuffisante (V3.1)",
+    "formula": "$$\n\\text{Récursivité}(R) : R = f(R)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 06 — Couche Cosmologique (C5)"
+  },
+  {
+    "id_num": 51,
+    "id": "P51",
+    "name": "Structure fractale",
+    "status": "🔴 À_FORMALISER — Formulation narrative existante, formule mathématique insuffisante (V3.1)",
+    "formula": "$$\n\\text{Fractal}(F) : F = \\bigcup_{i} F_i,\\ F_i \\sim F\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 06 — Couche Cosmologique (C5)"
+  },
+  {
+    "id_num": 52,
+    "id": "P52",
+    "name": "Principe holographique",
+    "status": "🔴 À_FORMALISER — Formulation narrative existante, formule mathématique insuffisante (V3.1)",
+    "formula": "$$\n\\text{Holographie}(H) : \\forall \\text{partie} \\subset H, \\text{partie} \\sim H\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 06 — Couche Cosmologique (C5)"
+  },
+  {
+    "id_num": 53,
+    "id": "P53",
+    "name": "Résonance cosmique",
+    "status": "🔴 À_FORMALISER — Formulation narrative existante, formule mathématique insuffisante (V3.1)",
+    "formula": "$$\n\\text{Résonance cosmique}(R_c) = \\sum_i \\omega_i \\cdot \\phi_i\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 06 — Couche Cosmologique (C5)"
+  },
+  {
+    "id_num": 54,
+    "id": "P54",
+    "name": "Temps comme intégrale d'événements",
+    "status": "🔴 À_FORMALISER — Formulation narrative existante, formule mathématique insuffisante (V3.1)",
+    "formula": "$$\n\\text{Temps}(t) = \\int_0^t \\text{Événement}(\\tau) d\\tau\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 06 — Couche Cosmologique (C5)"
+  },
+  {
+    "id_num": 55,
+    "id": "P55",
+    "name": "Espace métrique",
+    "status": "🔴 À_FORMALISER — Formulation narrative existante, formule mathématique insuffisante (V3.1)",
+    "formula": "$$\n\\text{Espace}(E) = \\{x : \\text{Métrique}(x) \\text{ définie}\\}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 06 — Couche Cosmologique (C5)"
+  },
+  {
+    "id_num": 56,
+    "id": "P56",
+    "name": "Causalité temporelle",
+    "status": "🔴 À_FORMALISER — Formulation narrative existante, formule mathématique insuffisante (V3.1)",
+    "formula": "$$\n\\text{Causalité}(C) : A \\to B \\Leftrightarrow \\text{Temps}(A) < \\text{Temps}(B)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 06 — Couche Cosmologique (C5)"
+  },
+  {
+    "id_num": 57,
+    "id": "P57",
+    "name": "Entropie de Shannon",
+    "status": "🔴 À_FORMALISER — Formulation narrative existante, formule mathématique insuffisante (V3.1)",
+    "formula": "$$\n\\text{Entropie}(S) = -\\sum_i p_i \\log p_i\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 06 — Couche Cosmologique (C5)"
+  },
+  {
+    "id_num": 58,
+    "id": "P58",
+    "name": "Néguentropie",
+    "status": "🔴 À_FORMALISER — Formulation narrative existante, formule mathématique insuffisante (V3.1)",
+    "formula": "$$\n\\text{Néguentropie}(N) = -\\text{Entropie}(S)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 06 — Couche Cosmologique (C5)"
+  },
+  {
+    "id_num": 59,
+    "id": "P59",
+    "name": "Complexité de Kolmogorov",
+    "status": "🔴 À_FORMALISER — Formulation narrative existante, formule mathématique insuffisante (V3.1)",
+    "formula": "$$\n\\text{Complexité}(C) = K(x) \\text{ (complexité de Kolmogorov)}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 02 — Architecture Cognitive (C6)"
+  },
+  {
+    "id_num": 60,
+    "id": "P60",
+    "name": "Auto-organisation",
+    "status": "🔴 À_FORMALISER — Formulation narrative existante, formule mathématique insuffisante (V3.1)",
+    "formula": "$$\n\\text{Auto-organisation}(A) : \\frac{d\\text{Ordre}}{dt} > 0\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 02 — Architecture Cognitive (C6)"
+  },
+  {
+    "id_num": 61,
+    "id": "P61",
+    "name": "Bifurcation de trajectoire",
+    "status": "🔴 À_FORMALISER — Formulation narrative existante, formule mathématique insuffisante (V3.1)",
+    "formula": "$$\n\\text{Bifurcation}(B) : \\exists t^* : \\text{Trajectoire}(t^*) \\text{ bifurque}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 02 — Architecture Cognitive (C6)"
+  },
+  {
+    "id_num": 62,
+    "id": "P62",
+    "name": "Attracteur",
+    "status": "🔴 À_FORMALISER — Formulation narrative existante, formule mathématique insuffisante (V3.1)",
+    "formula": "$$\n\\text{Attracteur}(A) : \\lim_{t \\to \\infty} \\text{Trajectoire}(t) = A\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 02 — Architecture Cognitive (C6)"
+  },
+  {
+    "id_num": 63,
+    "id": "P63",
+    "name": "Sensibilité aux conditions initiales",
+    "status": "🔴 À_FORMALISER — Formulation narrative existante, formule mathématique insuffisante (V3.1)",
+    "formula": "$$\n\\text{Chaos}(C) : \\text{Sensibilité aux conditions initiales}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 02 — Architecture Cognitive (C6)"
+  },
+  {
+    "id_num": 64,
+    "id": "P64",
+    "name": "Ordre = 1 - entropie normalisée",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Ordre}(O) = 1 - \\text{Entropie normalisée}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 02 — Architecture Cognitive (C6)"
+  },
+  {
+    "id_num": 65,
+    "id": "P65",
+    "name": "Définition de la vie",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Vie}(V) = \\text{Auto-organisation} + \\text{Reproduction} + \\text{Métabolisme}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 02 — Architecture Cognitive (C6)"
+  },
+  {
+    "id_num": 66,
+    "id": "P66",
+    "name": "Conscience comme récursivité infinie",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Conscience}(C) = \\lim_{n \\to \\infty} \\text{Récursivité}^n(\\text{Soi})\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 02 — Architecture Cognitive (C6)"
+  },
+  {
+    "id_num": 67,
+    "id": "P67",
+    "name": "Filtre éthique continu χ(t)",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\chi(t) \\in [0,1] : \\text{filtre éthique continu}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 07 — Couche Éthique (C6+)"
+  },
+  {
+    "id_num": 68,
+    "id": "P68",
+    "name": "Éthique intégrée sur le temps",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Éthique}(a) = \\int_0^T \\chi(\\tau) \\cdot \\text{Impact}(a, \\tau) d\\tau\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 07 — Couche Éthique (C6+)"
+  },
+  {
+    "id_num": 69,
+    "id": "P69",
+    "name": "Responsabilité action/conséquence",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Responsabilité}(R) : R = f(\\text{Action}, \\text{Conséquence})\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 07 — Couche Éthique (C6+)"
+  },
+  {
+    "id_num": 70,
+    "id": "P70",
+    "name": "Consentement binaire",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Consentement}(C) : C \\in \\{0, 1\\},\\ C = 1 \\Rightarrow \\text{autorisé}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 07 — Couche Éthique (C6+)"
+  },
+  {
+    "id_num": 71,
+    "id": "P71",
+    "name": "Transparence universelle",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Transparence}(T) : \\forall a,\\ \\exists \\text{explication}(a)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 07 — Couche Éthique (C6+)"
+  },
+  {
+    "id_num": 72,
+    "id": "P72",
+    "name": "Équité ε-approximée",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Équité}(E) : \\forall i,j,\\ |\\text{Traitement}(i) - \\text{Traitement}(j)| < \\varepsilon\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 07 — Couche Éthique (C6+)"
+  },
+  {
+    "id_num": 73,
+    "id": "P73",
+    "name": "Non-nuisance",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Non-nuisance}(N) : \\forall a,\\ \\text{Impact}(a) \\geq 0\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 07 — Couche Éthique (C6+)"
+  },
+  {
+    "id_num": 74,
+    "id": "P74",
+    "name": "Bienfaisance maximale",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Bienfaisance}(B) : \\text{Maximiser}(\\sum_i \\text{Bien-être}(i))\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 08 — Couche Émotionnelle et Interaction (C7)"
+  },
+  {
+    "id_num": 75,
+    "id": "P75",
+    "name": "Justice proportionnelle",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Justice}(J) : \\text{Proportionnalité}(\\text{Peine}, \\text{Faute})\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 08 — Couche Émotionnelle et Interaction (C7)"
+  },
+  {
+    "id_num": 76,
+    "id": "P76",
+    "name": "Budget énergétique E_c(t)",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\nE_c(t) = \\int_0^t \\text{Coût}(R_c(\\tau)) d\\tau \\leq E_{max}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 08 — Couche Émotionnelle et Interaction (C7)"
+  },
+  {
+    "id_num": 77,
+    "id": "P77",
+    "name": "Flux énergétique dE/dt",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Flux}(F) = \\frac{dE}{dt}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 08 — Couche Émotionnelle et Interaction (C7)"
+  },
+  {
+    "id_num": 78,
+    "id": "P78",
+    "name": "Réserve énergétique",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Réserve}(R) = E_{max} - E_c(t)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 08 — Couche Émotionnelle et Interaction (C7)"
+  },
+  {
+    "id_num": 79,
+    "id": "P79",
+    "name": "Régénération en repos",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Régénération}(R) : \\frac{dE}{dt} > 0 \\text{ en repos}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 08 — Couche Émotionnelle et Interaction (C7)"
+  },
+  {
+    "id_num": 80,
+    "id": "P80",
+    "name": "Équilibre énergétique",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Équilibre}(E) : \\frac{dE}{dt} = 0\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 08 — Couche Émotionnelle et Interaction (C7)"
+  },
+  {
+    "id_num": 81,
+    "id": "P81",
+    "name": "Surcharge → HOLD",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Surcharge}(S) : E_c(t) > E_{max} \\Rightarrow \\text{HOLD}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 08 — Couche Émotionnelle et Interaction (C7)"
+  },
+  {
+    "id_num": 82,
+    "id": "P82",
+    "name": "Optimisation coût/qualité",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Optimisation}(O) : \\min \\text{Coût}(a) \\text{ s.c. } \\text{Qualité}(a) \\geq Q_{min}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 08 — Couche Émotionnelle et Interaction (C7)"
+  },
+  {
+    "id_num": 83,
+    "id": "P83",
+    "name": "Efficience output/input",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Efficience}(E) = \\frac{\\text{Output}}{\\text{Input}}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 08 — Couche Émotionnelle et Interaction (C7)"
+  },
+  {
+    "id_num": 84,
+    "id": "P84",
+    "name": "Durabilité à long terme",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Durabilité}(D) : \\lim_{t \\to \\infty} E_c(t) < \\infty\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 08 — Couche Émotionnelle et Interaction (C7)"
+  },
+  {
+    "id_num": 85,
+    "id": "P85",
+    "name": "Loi de réciprocité",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Réciprocité}(R) : \\text{Donner} \\leftrightarrow \\text{Recevoir}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 08 — Couche Émotionnelle et Interaction (C7)"
+  },
+  {
+    "id_num": 86,
+    "id": "P86",
+    "name": "Consensus supermajorité 3/4",
+    "status": "🔵 PÉPITE_ANCRÉE — A généré un ou plusieurs théorèmes Lean compilés | Opératoire : Oui (Code actif)",
+    "formula": "$$\n\\text{Consensus}(d_1, \\ldots, d_4) : \\text{Supermajorité} \\geq 3/4\n$$",
+    "code_blocks": [
+      "theorem aggregate4_act\n  (d1 d2 d3 d4 : Decision3)\n  (h : 3 <= countDec Decision3.ACT [d1, d2, d3, d4]) :\n  aggregate4 d1 d2 d3 d4 = Decision3.ACT := by\n  unfold aggregate4\n  have htrue : decide (3 <= countDec Decision3.ACT [d1, d2, d3, d4]) = true := decide_eq_true h\n  rw [htrue]; rfl"
+    ],
+    "primary_block": "Bloc 01 — Noyau Mathématique et Déterministe"
+  },
+  {
+    "id_num": 87,
+    "id": "P87",
+    "name": "Fail-closed sans supermajorité",
+    "status": "🔵 PÉPITE_ANCRÉE — A généré un ou plusieurs théorèmes Lean compilés | Opératoire : Oui (Code actif)",
+    "formula": "$$\n\\text{Fail-closed} : \\neg \\text{Supermajorité} \\Rightarrow \\text{BLOCK}\n$$",
+    "code_blocks": [
+      "theorem aggregate4_act\n  (d1 d2 d3 d4 : Decision3)\n  (h : 3 <= countDec Decision3.ACT [d1, d2, d3, d4]) :\n  aggregate4 d1 d2 d3 d4 = Decision3.ACT := by\n  unfold aggregate4\n  have htrue : decide (3 <= countDec Decision3.ACT [d1, d2, d3, d4]) = true := decide_eq_true h\n  rw [htrue]; rfl"
+    ],
+    "primary_block": "Bloc 01 — Noyau Mathématique et Déterministe"
+  },
+  {
+    "id_num": 88,
+    "id": "P88",
+    "name": "Non-contradiction",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Non-contradiction} : \\neg(A \\wedge \\neg A)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 09 — Les 7 Lois Obsidiennes (C8)"
+  },
+  {
+    "id_num": 89,
+    "id": "P89",
+    "name": "Complétude",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Complétude} : \\forall P,\\ \\vdash P \\vee \\vdash \\neg P\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 09 — Les 7 Lois Obsidiennes (C8)"
+  },
+  {
+    "id_num": 90,
+    "id": "P90",
+    "name": "Cohérence",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Cohérence} : \\neg(\\vdash P \\wedge \\vdash \\neg P)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 09 — Les 7 Lois Obsidiennes (C8)"
+  },
+  {
+    "id_num": 91,
+    "id": "P91",
+    "name": "Décidabilité",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Décidabilité} : \\exists \\text{algorithme} : P \\to \\{0, 1\\}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 09 — Les 7 Lois Obsidiennes (C8)"
+  },
+  {
+    "id_num": 92,
+    "id": "P92",
+    "name": "Calculabilité (Turing)",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Calculabilité} : f \\text{ calculable} \\Leftrightarrow \\exists \\text{TM} : \\text{TM}(x) = f(x)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 09 — Les 7 Lois Obsidiennes (C8)"
+  },
+  {
+    "id_num": 93,
+    "id": "P93",
+    "name": "P ⊆ NP",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Complexité} : P \\subseteq NP\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 09 — Les 7 Lois Obsidiennes (C8)"
+  },
+  {
+    "id_num": 94,
+    "id": "P94",
+    "name": "Réductibilité",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Réductibilité} : A \\leq_m B\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 09 — Les 7 Lois Obsidiennes (C8)"
+  },
+  {
+    "id_num": 95,
+    "id": "P95",
+    "name": "Indécidabilité (Halting)",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Indécidabilité} : \\text{Halting Problem} \\notin \\text{Décidable}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 10 — Les 7 Géométries (C9)"
+  },
+  {
+    "id_num": 96,
+    "id": "P96",
+    "name": "Récursivité",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Récursivité} : f = g \\circ f\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 10 — Les 7 Géométries (C9)"
+  },
+  {
+    "id_num": 97,
+    "id": "P97",
+    "name": "Point fixe",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Point fixe} : \\exists x : f(x) = x\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 10 — Les 7 Géométries (C9)"
+  },
+  {
+    "id_num": 98,
+    "id": "P98",
+    "name": "Continuité ε-δ",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Continuité} : \\forall \\varepsilon > 0,\\ \\exists \\delta > 0 : |x - y| < \\delta \\Rightarrow |f(x) - f(y)| < \\varepsilon\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 10 — Les 7 Géométries (C9)"
+  },
+  {
+    "id_num": 99,
+    "id": "P99",
+    "name": "Convergence",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Convergence} : \\lim_{n \\to \\infty} a_n = L\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 10 — Les 7 Géométries (C9)"
+  },
+  {
+    "id_num": 100,
+    "id": "P100",
+    "name": "Stabilité de Lyapunov L(Φ(s)) ≤ L(s)",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Stabilité Lyapunov} : L(\\Phi(s)) \\leq L(s)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 10 — Les 7 Géométries (C9)"
+  },
+  {
+    "id_num": 101,
+    "id": "P101",
+    "name": "Avancement incrémental validé",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Avancement}_{n+1} = \\text{Avancement}_n + \\Delta_{\\text{validée}}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 10 — Les 7 Géométries (C9)"
+  },
+  {
+    "id_num": 102,
+    "id": "P102",
+    "name": "Itération convergente",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Itération}(I) : I_{n+1} = f(I_n)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 12 — Dynamique de l'Effondrement (C11)"
+  },
+  {
+    "id_num": 103,
+    "id": "P103",
+    "name": "Validation par critères",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Validation}(V) : V(P) = 1 \\Leftrightarrow P \\text{ satisfait les critères}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 12 — Dynamique de l'Effondrement (C11)"
+  },
+  {
+    "id_num": 104,
+    "id": "P104",
+    "name": "Réfutation par contre-exemple",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Réfutation}(R) : R(H) = 1 \\Leftrightarrow \\exists e : \\neg H(e)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 12 — Dynamique de l'Effondrement (C11)"
+  },
+  {
+    "id_num": 105,
+    "id": "P105",
+    "name": "Induction mathématique",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Induction}(I) : P(0) \\wedge \\forall n : P(n) \\Rightarrow P(n+1) \\Rightarrow \\forall n : P(n)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 12 — Dynamique de l'Effondrement (C11)"
+  },
+  {
+    "id_num": 106,
+    "id": "P106",
+    "name": "Déduction logique",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Déduction}(D) : P \\wedge (P \\Rightarrow Q) \\Rightarrow Q\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 12 — Dynamique de l'Effondrement (C11)"
+  },
+  {
+    "id_num": 107,
+    "id": "P107",
+    "name": "Stabilité Lyapunov (δ-ε)",
+    "status": "🟡 À_PROUVER — Formalisé, code Lean esquissé, pas encore compilé | Opératoire : Oui (Code actif)",
+    "formula": "$$\n\\text{Stabilité}(S) : \\forall \\varepsilon > 0,\\ \\exists \\delta > 0 : \\|x_0\\| < \\delta \\Rightarrow \\|x(t)\\| < \\varepsilon\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 12 — Dynamique de l'Effondrement (C11)"
+  },
+  {
+    "id_num": 108,
+    "id": "P108",
+    "name": "Robustesse aux perturbations",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Robustesse}(R) : \\text{Performance}(f, x + \\delta) \\approx \\text{Performance}(f, x)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 12 — Dynamique de l'Effondrement (C11)"
+  },
+  {
+    "id_num": 109,
+    "id": "P109",
+    "name": "Reproductibilité",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Reproductibilité}(R) : \\forall i,\\ f(x_i) = f(x_i)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 12 — Dynamique de l'Effondrement (C11)"
+  },
+  {
+    "id_num": 110,
+    "id": "P110",
+    "name": "Falsifiabilité (Popper)",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Falsifiabilité}(F) : \\exists e : \\neg H(e) \\text{ est possible}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 12 — Dynamique de l'Effondrement (C11)"
+  },
+  {
+    "id_num": 111,
+    "id": "P111",
+    "name": "Moteur non substituable",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\forall L_i : \\text{Moteur} \\leftrightarrow L_i \\wedge \\neg \\text{Substitution}(L_i)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 12 — Dynamique de l'Effondrement (C11)"
+  },
+  {
+    "id_num": 112,
+    "id": "P112",
+    "name": "Hiérarchie OS0→OS4",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{OS0} \\subset \\text{OS1} \\subset \\text{OS2} \\subset \\text{OS3} \\subset \\text{OS4}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 12 — Dynamique de l'Effondrement (C11)"
+  },
+  {
+    "id_num": 113,
+    "id": "P113",
+    "name": "Kernel = intersection des couches",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Kernel}(K) : K = \\bigcap_{i} L_i\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 12 — Dynamique de l'Effondrement (C11)"
+  },
+  {
+    "id_num": 114,
+    "id": "P114",
+    "name": "Guard = Kernel + Temporal + Consensus",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Guard}(G) : G = \\text{Kernel} + \\text{Temporal} + \\text{Consensus}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 13 — Infrastructure et Agents (C11+)"
+  },
+  {
+    "id_num": 115,
+    "id": "P115",
+    "name": "Filtre éthique du moteur",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\chi(t) \\in [0,1] : \\text{filtre éthique du moteur}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 13 — Infrastructure et Agents (C11+)"
+  },
+  {
+    "id_num": 116,
+    "id": "P116",
+    "name": "Pipeline de couches",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Pipeline}(P) : P = L_1 \\circ L_2 \\circ \\cdots \\circ L_n\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 13 — Infrastructure et Agents (C11+)"
+  },
+  {
+    "id_num": 117,
+    "id": "P117",
+    "name": "Orchestration par scheduler",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Orchestration}(O) : O = \\text{Scheduler}(\\{L_i\\})\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 13 — Infrastructure et Agents (C11+)"
+  },
+  {
+    "id_num": 118,
+    "id": "P118",
+    "name": "Isolation des couches",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Isolation}(I) : L_i \\cap L_j = \\emptyset \\text{ pour } i \\neq j\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 13 — Infrastructure et Agents (C11+)"
+  },
+  {
+    "id_num": 119,
+    "id": "P119",
+    "name": "Composition fonctionnelle",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Composition}(C) : C = f_1 \\circ f_2 \\circ \\cdots \\circ f_n\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 13 — Infrastructure et Agents (C11+)"
+  },
+  {
+    "id_num": 120,
+    "id": "P120",
+    "name": "Abstraction par interface",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Abstraction}(A) : A = \\text{Interface}(L_i)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 13 — Infrastructure et Agents (C11+)"
+  },
+  {
+    "id_num": 121,
+    "id": "P121",
+    "name": "Encapsulation (boîte noire)",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Encapsulation}(E) : E = \\text{Boîte noire}(L_i)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 13 — Infrastructure et Agents (C11+)"
+  },
+  {
+    "id_num": 122,
+    "id": "P122",
+    "name": "Modularité",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Modularité}(M) : M = \\{L_i : L_i \\text{ remplaçable}\\}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 13 — Infrastructure et Agents (C11+)"
+  },
+  {
+    "id_num": 123,
+    "id": "P123",
+    "name": "Extensibilité",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Extensibilité}(E) : E = \\{L_i : L_i \\text{ ajoutables}\\}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 13 — Infrastructure et Agents (C11+)"
+  },
+  {
+    "id_num": 124,
+    "id": "P124",
+    "name": "Infrastructure : I∘M=O",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx | Opératoire : Oui (Code actif)",
+    "formula": "$$\nI \\circ M = O \\text{ avec } M \\neq I\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 14 — Économie et Énergie (C12)"
+  },
+  {
+    "id_num": 125,
+    "id": "P125",
+    "name": "Déploiement Build+Test+Release",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Déploiement}(D) : D = \\text{Build} + \\text{Test} + \\text{Release}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 14 — Économie et Énergie (C12)"
+  },
+  {
+    "id_num": 126,
+    "id": "P126",
+    "name": "Scalabilité linéaire",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Scalabilité}(S) : \\text{Performance}(n) \\propto n\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 14 — Économie et Énergie (C12)"
+  },
+  {
+    "id_num": 127,
+    "id": "P127",
+    "name": "Disponibilité (uptime)",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Disponibilité}(A) : A = \\frac{\\text{Uptime}}{\\text{Uptime} + \\text{Downtime}}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 14 — Économie et Énergie (C12)"
+  },
+  {
+    "id_num": 128,
+    "id": "P128",
+    "name": "Latence de réponse",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Latence}(L) : L = t_{\\text{réponse}} - t_{\\text{requête}}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 14 — Économie et Énergie (C12)"
+  },
+  {
+    "id_num": 129,
+    "id": "P129",
+    "name": "Débit (throughput)",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Débit}(T) : T = \\frac{\\text{Requêtes}}{\\text{Temps}}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 14 — Économie et Énergie (C12)"
+  },
+  {
+    "id_num": 130,
+    "id": "P130",
+    "name": "Résilience MTBF/MTTR",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Résilience}(R) : R = \\text{MTBF} / (\\text{MTBF} + \\text{MTTR})\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 14 — Économie et Énergie (C12)"
+  },
+  {
+    "id_num": 131,
+    "id": "P131",
+    "name": "Sécurité CIA",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx | Opératoire : Oui (Code actif)",
+    "formula": "$$\n\\text{Sécurité}(S) : S = \\text{Confidentialité} + \\text{Intégrité} + \\text{Disponibilité}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 02 — Architecture Cognitive (C6)"
+  },
+  {
+    "id_num": 132,
+    "id": "P132",
+    "name": "Observabilité (logs+métriques+traces)",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Observabilité}(O) : O = \\text{Logs} + \\text{Métriques} + \\text{Traces}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 02 — Architecture Cognitive (C6)"
+  },
+  {
+    "id_num": 133,
+    "id": "P133",
+    "name": "Configuration clé-valeur",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Configuration}(C) : C = \\{k_i : v_i\\}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 02 — Architecture Cognitive (C6)"
+  },
+  {
+    "id_num": 134,
+    "id": "P134",
+    "name": "Versioning sémantique",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Versioning}(V) : V = \\text{Sémantique}(\\text{Major.Minor.Patch})\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 02 — Architecture Cognitive (C6)"
+  },
+  {
+    "id_num": 135,
+    "id": "P135",
+    "name": "Pipeline CI/CD",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{CI/CD}(P) : P = \\text{Build} \\to \\text{Test} \\to \\text{Deploy}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 02 — Architecture Cognitive (C6)"
+  },
+  {
+    "id_num": 136,
+    "id": "P136",
+    "name": "Infrastructure as Code",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Infrastructure as Code}(I) : I = f(\\text{Config})\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 15 — Les 16 Dimensions Cognitives (LTO-16D)"
+  },
+  {
+    "id_num": 137,
+    "id": "P137",
+    "name": "Agent = Rôle+Protocole+Flux",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Agent}(A) = \\langle \\text{Rôle}, \\text{Protocole}, \\text{Flux} \\rangle\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 15 — Les 16 Dimensions Cognitives (LTO-16D)"
+  },
+  {
+    "id_num": 138,
+    "id": "P138",
+    "name": "Écologie d'agents",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Écologie}(E) = \\{A_i : A_i \\text{ interagit avec } A_j\\}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 15 — Les 16 Dimensions Cognitives (LTO-16D)"
+  },
+  {
+    "id_num": 139,
+    "id": "P139",
+    "name": "Protocole = séquence de messages",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Protocole}(P) : P = \\text{Séquence}(\\text{Messages})\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 15 — Les 16 Dimensions Cognitives (LTO-16D)"
+  },
+  {
+    "id_num": 140,
+    "id": "P140",
+    "name": "Coordination par consensus",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Coordination}(C) : C = \\text{Consensus}(\\{A_i\\})\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 15 — Les 16 Dimensions Cognitives (LTO-16D)"
+  },
+  {
+    "id_num": 141,
+    "id": "P141",
+    "name": "Émergence collective",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Émergence}(E) : E = f(\\{A_i\\}) \\neq \\sum_i f(A_i)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 15 — Les 16 Dimensions Cognitives (LTO-16D)"
+  },
+  {
+    "id_num": 142,
+    "id": "P142",
+    "name": "Spécialisation par domaine",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Spécialisation}(S) : A_i \\text{ expert en } D_i\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 15 — Les 16 Dimensions Cognitives (LTO-16D)"
+  },
+  {
+    "id_num": 143,
+    "id": "P143",
+    "name": "Généralisation multi-domaine",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Généralisation}(G) : A_i \\text{ compétent en } \\{D_j\\}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 16 — Récit et Narration (C13)"
+  },
+  {
+    "id_num": 144,
+    "id": "P144",
+    "name": "Apprentissage par expérience",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Apprentissage}(L) : A_i(t+1) = f(A_i(t), \\text{Expérience})\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 16 — Récit et Narration (C13)"
+  },
+  {
+    "id_num": 145,
+    "id": "P145",
+    "name": "Adaptation à l'environnement",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Adaptation}(A) : A_i \\to A_i' \\text{ selon l'environnement}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 16 — Récit et Narration (C13)"
+  },
+  {
+    "id_num": 146,
+    "id": "P146",
+    "name": "Autonomie décisionnelle",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Autonomie}(A) : A_i \\text{ décide sans supervision}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 16 — Récit et Narration (C13)"
+  },
+  {
+    "id_num": 147,
+    "id": "P147",
+    "name": "Collaboration synergique",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Collaboration}(C) : A_i + A_j \\to \\text{Résultat} > A_i + A_j\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 16 — Récit et Narration (C13)"
+  },
+  {
+    "id_num": 148,
+    "id": "P148",
+    "name": "Compétition sélective",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Compétition}(C) : A_i \\text{ vs } A_j \\to \\text{Sélection}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 16 — Récit et Narration (C13)"
+  },
+  {
+    "id_num": 149,
+    "id": "P149",
+    "name": "Narration début-milieu-fin",
+    "status": "🔴 À_FORMALISER — Formulation narrative existante, formule mathématique insuffisante (V3.1)",
+    "formula": "$$\n\\text{Narration}(N) : N = \\langle \\text{Début}, \\text{Milieu}, \\text{Fin} \\rangle\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 16 — Récit et Narration (C13)"
+  },
+  {
+    "id_num": 150,
+    "id": "P150",
+    "name": "Personnage = identité+motivation+arc",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Personnage}(P) : P = \\langle \\text{Identité}, \\text{Motivation}, \\text{Arc} \\rangle\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 16 — Récit et Narration (C13)"
+  },
+  {
+    "id_num": 151,
+    "id": "P151",
+    "name": "Conflit = désir vs obstacle",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Conflit}(C) : C = \\text{Tension}(\\text{Désir}, \\text{Obstacle})\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 16 — Récit et Narration (C13)"
+  },
+  {
+    "id_num": 152,
+    "id": "P152",
+    "name": "Résolution du conflit",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Résolution}(R) : R = f(\\text{Conflit}, \\text{Action})\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 16 — Récit et Narration (C13)"
+  },
+  {
+    "id_num": 153,
+    "id": "P153",
+    "name": "Thème = abstraction du récit",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Thème}(T) : T = \\text{Abstraction}(\\text{Récit})\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 16 — Récit et Narration (C13)"
+  },
+  {
+    "id_num": 154,
+    "id": "P154",
+    "name": "Symbole narratif",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Symbole narratif}(S) : S \\in \\mathcal{O}_{récit}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 16 — Récit et Narration (C13)"
+  },
+  {
+    "id_num": 155,
+    "id": "P155",
+    "name": "Métaphore = analogie",
+    "status": "🔴 À_FORMALISER — Formulation narrative existante, formule mathématique insuffisante (V3.1)",
+    "formula": "$$\n\\text{Métaphore}(M) : M = \\text{Analogie}(A, B)\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 16 — Récit et Narration (C13)"
+  },
+  {
+    "id_num": 156,
+    "id": "P156",
+    "name": "Ironie = écart attendu/réel",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx | Opératoire : Oui (Code actif)",
+    "formula": "$$\n\\text{Ironie}(I) : I = \\text{Écart}(\\text{Attendu}, \\text{Réel})\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 14 — Économie et Énergie (C12)"
+  },
+  {
+    "id_num": 157,
+    "id": "P157",
+    "name": "Suspense = incertitude de résolution",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Suspense}(S) : S = \\text{Incertitude}(\\text{Résolution})\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 14 — Économie et Énergie (C12)"
+  },
+  {
+    "id_num": 158,
+    "id": "P158",
+    "name": "Catharsis = libération émotionnelle",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Catharsis}(C) : C = \\text{Libération}(\\text{Émotion})\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 14 — Économie et Énergie (C12)"
+  },
+  {
+    "id_num": 159,
+    "id": "P159",
+    "name": "Épiphanie = révélation soudaine",
+    "status": "🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx",
+    "formula": "$$\n\\text{Épiphanie}(E) : E = \\text{Révélation soudaine}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 14 — Économie et Énergie (C12)"
+  },
+  {
+    "id_num": 160,
+    "id": "P160",
+    "name": "Dénouement final",
+    "status": "🟣 VISION — Conceptuel, hors-scope mathématique",
+    "formula": "$$\n\\text{Dénouement}(D) : D = \\text{Résolution finale}\n$$",
+    "code_blocks": [],
+    "primary_block": "Bloc 14 — Économie et Énergie (C12)"
+  },
+  {
+    "id_num": 161,
+    "id": "P161",
+    "name": "Calibration énergétique temporelle (loi finale)",
+    "status": "🟡 À_PROUVER — Formalisé, code Lean esquissé, pas encore compilé | Opératoire : Oui (Code actif)",
+    "formula": "$$\n\\text{Coût}(A, t) = f(M(t),\\ R_c(t),\\ \\dot{M}(t),\\ \\text{Contexte}_{humain}(t))\n$$",
+    "code_blocks": [
+      "-- P161Proofs.lean\nimport Obsidia.Basic\nnamespace Obsidia.P161\n\n-- LP-0 : Existence du coût\naxiom cost_exists : ∀ (a : Action) (t : Time), ∃ c : Real, cost a t = c\n\n-- LP-1 : Positivité\naxiom cost_positive : ∀ (a : Action) (t : Time), cost a t ≥ 0\n\n-- LP-2 : Dépendance à la mémoire\naxiom cost_memory_dep : ∀ (a : Action) (t : Time) (m1 m2 : Memory),\n    m1 ≠ m2 → cost_with_mem a t m1 ≠ cost_with_mem a t m2\n\nend Obsidia.P161",
+      "-- StabilityProofs.lean\ntheorem lyapunov_stability\n    (L : State → Real)\n    (hL : ∀ s, L (transition s) ≤ L s) :\n    ∀ ε > 0, ∃ δ > 0, ∀ s₀, norm s₀ < δ → ∀ t, norm (iterate transition t s₀) < ε := by\n  sorry -- À compléter avec la preuve formelle",
+      "-- SystemModel.lean (à enrichir)\nstructure CanonicalState where\n  S     : Metrics        -- Score courant\n  Phi   : State → State  -- Fonction de transition\n  I     : Input          -- Entrée courante\n  tau   : Nat            -- Seuil temporel\n  L     : State → Real   -- Fonction de Lyapunov\n\ntheorem canonical_state_deterministic (cs : CanonicalState) :\n    cs.Phi (cs.Phi s) = cs.Phi (cs.Phi s) := rfl"
+    ],
+    "primary_block": "Bloc 14 — Économie et Énergie (C12)"
+  }
+]

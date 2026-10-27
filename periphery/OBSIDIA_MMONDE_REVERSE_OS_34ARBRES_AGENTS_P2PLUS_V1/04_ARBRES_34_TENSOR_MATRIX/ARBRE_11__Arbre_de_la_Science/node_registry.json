@@ -1,0 +1,11 @@
+{
+  "tree_id": "11",
+  "nodes": [
+    {
+      "id": "T11_N01",
+      "label": "Science",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

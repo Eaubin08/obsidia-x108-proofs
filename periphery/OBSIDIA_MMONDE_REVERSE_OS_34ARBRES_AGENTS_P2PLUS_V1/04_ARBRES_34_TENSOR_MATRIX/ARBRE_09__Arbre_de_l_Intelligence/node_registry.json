@@ -1,0 +1,11 @@
+{
+  "tree_id": "09",
+  "nodes": [
+    {
+      "id": "T09_N01",
+      "label": "Intelligence",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

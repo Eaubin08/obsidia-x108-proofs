@@ -1,0 +1,11 @@
+{
+  "tree_id": "34",
+  "nodes": [
+    {
+      "id": "T34_N01",
+      "label": "Stabilite",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

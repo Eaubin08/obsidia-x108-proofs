@@ -1,0 +1,276 @@
+{
+  "trees": [
+    {
+      "id": "01",
+      "name": "Arbre de l’Humain",
+      "folder": "ARBRE_01__Arbre_de_l_Humain",
+      "family": "I_FONDAMENTAUX",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "02",
+      "name": "Arbre de la Conscience",
+      "folder": "ARBRE_02__Arbre_de_la_Conscience",
+      "family": "I_FONDAMENTAUX",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "03",
+      "name": "Arbre de la Perception",
+      "folder": "ARBRE_03__Arbre_de_la_Perception",
+      "family": "I_FONDAMENTAUX",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "04",
+      "name": "Arbre du Sens",
+      "folder": "ARBRE_04__Arbre_du_Sens",
+      "family": "I_FONDAMENTAUX",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "05",
+      "name": "Arbre de l’Identité",
+      "folder": "ARBRE_05__Arbre_de_l_Identite",
+      "family": "I_FONDAMENTAUX",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "06",
+      "name": "Arbre de la Compréhension",
+      "folder": "ARBRE_06__Arbre_de_la_Comprehension",
+      "family": "II_COGNITIFS",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "07",
+      "name": "Arbre de l’Organisation",
+      "folder": "ARBRE_07__Arbre_de_l_Organisation",
+      "family": "II_COGNITIFS",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "08",
+      "name": "Arbre de la Pensée",
+      "folder": "ARBRE_08__Arbre_de_la_Pensee",
+      "family": "II_COGNITIFS",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "09",
+      "name": "Arbre de l’Intelligence",
+      "folder": "ARBRE_09__Arbre_de_l_Intelligence",
+      "family": "II_COGNITIFS",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "10",
+      "name": "Arbre du Langage",
+      "folder": "ARBRE_10__Arbre_du_Langage",
+      "family": "II_COGNITIFS",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "11",
+      "name": "Arbre de la Science",
+      "folder": "ARBRE_11__Arbre_de_la_Science",
+      "family": "III_CONNAISSANCE",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "12",
+      "name": "Arbre de la Technique",
+      "folder": "ARBRE_12__Arbre_de_la_Technique",
+      "family": "III_CONNAISSANCE",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "13",
+      "name": "Arbre de l’Art",
+      "folder": "ARBRE_13__Arbre_de_l_Art",
+      "family": "III_CONNAISSANCE",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "14",
+      "name": "Arbre de la Philosophie",
+      "folder": "ARBRE_14__Arbre_de_la_Philosophie",
+      "family": "III_CONNAISSANCE",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "15",
+      "name": "Arbre de la Spiritualité",
+      "folder": "ARBRE_15__Arbre_de_la_Spiritualite",
+      "family": "III_CONNAISSANCE",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "16",
+      "name": "Arbre de la Relation",
+      "folder": "ARBRE_16__Arbre_de_la_Relation",
+      "family": "IV_RELATIONNELS_SOCIAUX",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "17",
+      "name": "Arbre du Collectif",
+      "folder": "ARBRE_17__Arbre_du_Collectif",
+      "family": "IV_RELATIONNELS_SOCIAUX",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "18",
+      "name": "Arbre de la Transmission",
+      "folder": "ARBRE_18__Arbre_de_la_Transmission",
+      "family": "IV_RELATIONNELS_SOCIAUX",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "19",
+      "name": "Arbre de la Culture",
+      "folder": "ARBRE_19__Arbre_de_la_Culture",
+      "family": "IV_RELATIONNELS_SOCIAUX",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "20",
+      "name": "Arbre de l’Action",
+      "folder": "ARBRE_20__Arbre_de_l_Action",
+      "family": "V_ACTION_TRANSFORMATION",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "21",
+      "name": "Arbre de la Création",
+      "folder": "ARBRE_21__Arbre_de_la_Creation",
+      "family": "V_ACTION_TRANSFORMATION",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "22",
+      "name": "Arbre de la Transformation",
+      "folder": "ARBRE_22__Arbre_de_la_Transformation",
+      "family": "V_ACTION_TRANSFORMATION",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "23",
+      "name": "Arbre du Temps",
+      "folder": "ARBRE_23__Arbre_du_Temps",
+      "family": "VI_TEMPORELS_MEMORIELS",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "24",
+      "name": "Arbre de la Mémoire",
+      "folder": "ARBRE_24__Arbre_de_la_Memoire",
+      "family": "VI_TEMPORELS_MEMORIELS",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "25",
+      "name": "Arbre de l’Histoire",
+      "folder": "ARBRE_25__Arbre_de_l_Histoire",
+      "family": "VI_TEMPORELS_MEMORIELS",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "26",
+      "name": "Arbre de la Cohérence",
+      "folder": "ARBRE_26__Arbre_de_la_Coherence",
+      "family": "VII_META_STRUCTURELS",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "27",
+      "name": "Arbre de la Vérité",
+      "folder": "ARBRE_27__Arbre_de_la_Verite",
+      "family": "VII_META_STRUCTURELS",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "28",
+      "name": "Arbre de la Valeur",
+      "folder": "ARBRE_28__Arbre_de_la_Valeur",
+      "family": "VII_META_STRUCTURELS",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "29",
+      "name": "Arbre de la Finalité",
+      "folder": "ARBRE_29__Arbre_de_la_Finalite",
+      "family": "VII_META_STRUCTURELS",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "30",
+      "name": "Arbre Cognitif Global",
+      "folder": "ARBRE_30__Arbre_Cognitif_Global",
+      "family": "VIII_OBSIDIA_AGI",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "31",
+      "name": "Arbre des Flux",
+      "folder": "ARBRE_31__Arbre_des_Flux",
+      "family": "VIII_OBSIDIA_AGI",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "32",
+      "name": "Arbre des Connexions",
+      "folder": "ARBRE_32__Arbre_des_Connexions",
+      "family": "VIII_OBSIDIA_AGI",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "33",
+      "name": "Arbre de l’Optimisation",
+      "folder": "ARBRE_33__Arbre_de_l_Optimisation",
+      "family": "VIII_OBSIDIA_AGI",
+      "non_decision": true,
+      "needs_human_validation": false
+    },
+    {
+      "id": "34",
+      "name": "Arbre de la Stabilité",
+      "folder": "ARBRE_34__Arbre_de_la_Stabilite",
+      "family": "VIII_OBSIDIA_AGI",
+      "non_decision": true,
+      "needs_human_validation": false
+    }
+  ]
+}

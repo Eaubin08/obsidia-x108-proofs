@@ -1,0 +1,11 @@
+{
+  "tree_id": "08",
+  "nodes": [
+    {
+      "id": "T08_N01",
+      "label": "Pensee",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

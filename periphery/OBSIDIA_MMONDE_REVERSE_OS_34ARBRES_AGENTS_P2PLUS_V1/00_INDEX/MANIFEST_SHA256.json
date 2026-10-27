@@ -1,0 +1,3156 @@
+{
+  "manifest_policy": "MANIFEST_SHA256.json excludes itself",
+  "file_count_excluding_manifest": 630,
+  "files": [
+    {
+      "path": "00_INDEX/ANOMALIES_ET_DECISIONS_REQUISES.md",
+      "sha256": "959ddb9169f157ea1c136238b7bf136957786642fec6a672809f4beb63d233bd",
+      "bytes": 2875
+    },
+    {
+      "path": "00_INDEX/ARBORESCENCE_COMPLETE.md",
+      "sha256": "88804bac96b5d359f7d71fbc4fe13520cc53d054bec9090a4740004dd6578fcc",
+      "bytes": 43791
+    },
+    {
+      "path": "00_INDEX/BUILD_REPORT.md",
+      "sha256": "bfec9ffcaaa70f82f7e5da541981d1c0e9b6e1ad7c3f8c8c4c08675fc5c5a97e",
+      "bytes": 1007
+    },
+    {
+      "path": "00_INDEX/FINAL_LIGHT_PATCH_REPORT.md",
+      "sha256": "3782f4f466d173a71e367cd928b2ca7af2c25ab893cdfb4dc95ca9df3c2ae52b",
+      "bytes": 1287
+    },
+    {
+      "path": "00_INDEX/GUIDE_LECTURE.md",
+      "sha256": "2a6f5d382e58822000ef51927ec4552ff312b74eb34ca37e96d0f83ce6659947",
+      "bytes": 75
+    },
+    {
+      "path": "00_INDEX/NON_DECISION_FORMULAS.md",
+      "sha256": "b2bb6270b62674d2ec9e9397c442530965e3eef756b61ef0641f98fb71e71e58",
+      "bytes": 353
+    },
+    {
+      "path": "00_INDEX/README_PACK.md",
+      "sha256": "8fdf3be8fc0264618d2f54fcba4392974d2236880672c897cc196b46c51cc86b",
+      "bytes": 123
+    },
+    {
+      "path": "00_INDEX/SOURCE_COVERAGE_REPORT.md",
+      "sha256": "1fb906e751fd908bb028379604195762805dd9b7cd6c494e866c609eded6cbeb",
+      "bytes": 1606
+    },
+    {
+      "path": "01_SOURCES/documents_originaux/Architecture BDF et Protocole d_Eveil Cognitif d_Obsidia.docx",
+      "sha256": "3a6865683d93e3c63744916876fdecbdbdd52f20a25011232c18b6dd5e2db3f4",
+      "bytes": 9716
+    },
+    {
+      "path": "01_SOURCES/documents_originaux/Architecture d'Obsidia _ Fusion des 34 Arbres et HexaFlux.docx",
+      "sha256": "efc2c80abf4ea91632ef808d4895a4637f13ff6d69031c97622cc8bb9d8b1d13",
+      "bytes": 11214
+    },
+    {
+      "path": "01_SOURCES/documents_originaux/Architecture et Protocoles de l'OS Cognitif Obsidia.docx",
+      "sha256": "7781cea39e6e40cb437bfbf0d2a0ef6bfeba0f4aa2a6bdf77964efef8d5292b8",
+      "bytes": 1009850
+    },
+    {
+      "path": "01_SOURCES/documents_originaux/Architecture et Visualisation du Reverse OS d'Obsidia.docx",
+      "sha256": "0c4dfa8d762a2ae568029eda3fc36dfcef9c9d395315b28507176095eab94208",
+      "bytes": 8169
+    },
+    {
+      "path": "01_SOURCES/documents_originaux/Constitution d_Obsidia et Protocoles de Securite Cognitive.docx",
+      "sha256": "8ee44ee5a5677450b6b7415365c5f6a67567980951a9f9a2beb6a1739bd974a7",
+      "bytes": 10557
+    },
+    {
+      "path": "01_SOURCES/documents_originaux/Dossier de Fabrication d_Obsidia X-108 - Eveil du Maitre d_Oeuvre.docx",
+      "sha256": "c7adb2f20ac5b1af8839a1974bf539b488986162911e4b615747821cb52c8aa8",
+      "bytes": 1011746
+    },
+    {
+      "path": "01_SOURCES/documents_originaux/Dossier de Fabrication et Checklist d_Eveil P2+ Obsidia (1).docx",
+      "sha256": "566b306b01e485edf48ccd9678d882e3cdb1f2edc7d3d757aa17138127ad5ead",
+      "bytes": 12901
+    },
+    {
+      "path": "01_SOURCES/documents_originaux/L'Agent Shazam Cognitif et la Matrice des 34 Arbres.docx",
+      "sha256": "2bc905d9d94ca8be2a6edc8cf611dd1da0516ce0fda807fef8572e13dc52e849",
+      "bytes": 8805
+    },
+    {
+      "path": "01_SOURCES/documents_originaux/L'Algorithme Shazam Cognitif et la Matrice des 34 Arbres.docx",
+      "sha256": "f985762bd57a067817be9881e7a426a5d5d828ff158a06a8e39af064bd8f9468",
+      "bytes": 8895
+    },
+    {
+      "path": "01_SOURCES/documents_originaux/L'Architecture Narrative du Reverse OS d'Obsidia.docx",
+      "sha256": "dda488a383b0115f2eff04961c4ce60293fa6c357973ead122d5f4e20f393751",
+      "bytes": 9244
+    },
+    {
+      "path": "01_SOURCES/documents_originaux/LES 34 ARBRES _ Architecture et Structure Cognitive Globale.docx",
+      "sha256": "9840d1d5ece8f305b24a93b7ed7c10ede0c15b3b2012db25586b81541fd6f438",
+      "bytes": 12628
+    },
+    {
+      "path": "01_SOURCES/documents_originaux/La Matrice Cognitive d_Obsidia - Mecanique Tensorielle des 34 Arbres.docx",
+      "sha256": "f0d7d6ef628ef73c999b85d213a0f51241ebd25186632a9c31a743383939ff8f",
+      "bytes": 8508
+    },
+    {
+      "path": "01_SOURCES/documents_originaux/Le Reverse OS - Eloquence Semantique d_Obsidia.docx",
+      "sha256": "8c2182824850d7b3d9c65fd9c6775f1db0428dedec5a032ac0af204f36cece3b",
+      "bytes": 9499
+    },
+    {
+      "path": "01_SOURCES/documents_originaux/OBSIDIA_TOUS_LES_AGENTS.docx",
+      "sha256": "3eac4002d67ef70575bd840b85309faff5c227c5d2e768c27046d089308057b9",
+      "bytes": 53113
+    },
+    {
+      "path": "01_SOURCES/documents_originaux/Obsidia - Souverainete Cognitive et Protocole MCP.docx",
+      "sha256": "f701eb8e506918ce145f0ac34cac8c43c3a9e0b07b40d320edbb4f53981237d0",
+      "bytes": 8726
+    },
+    {
+      "path": "01_SOURCES/documents_originaux/Plan d_Execution Industriel et Checklist de Forge Holistique P2+.docx",
+      "sha256": "3d1ed100a50fd88ea056397495ec50bae88b7812cba23525d8fd0a76481ea1c4",
+      "bytes": 14008
+    },
+    {
+      "path": "01_SOURCES/documents_originaux/bazar suite kernel moteur memoire phrise chrono + comos ect reflex  .docx",
+      "sha256": "1ad19e08c384e93810b4f9e35b65e4742bea65026d00356b3212facdff481822",
+      "bytes": 46548
+    },
+    {
+      "path": "01_SOURCES/documents_originaux/math formlisation memoir eect .docx",
+      "sha256": "e09fd660de77e1c218210bd795c9addf47d65ecec0f51331f907a2fc82aae86d",
+      "bytes": 1051726
+    },
+    {
+      "path": "01_SOURCES/extracted_text_all.md",
+      "sha256": "8288d87ac3206108b958831f69230e2da8bb5efc7b4ca043344932c3a101452b",
+      "bytes": 443520
+    },
+    {
+      "path": "01_SOURCES/image_34_arbres.png",
+      "sha256": "f064d0088048108948b9afe2833a258f02fe5b7123676930881190f2589fa7c8",
+      "bytes": 80373
+    },
+    {
+      "path": "01_SOURCES/source_inventory.json",
+      "sha256": "15c52acb9ac8d6533d86e0eb4c04d3ff737449e840c2be99487e9fa8dd77c818",
+      "bytes": 2760
+    },
+    {
+      "path": "02_CONSTITUTION_LOIS_OBSIDIENNES/O1_NON_ACTION_LEGITIME.md",
+      "sha256": "1b3bfec37909335fc4bd9c96b48a764fc29b83df808438794ad138bb394266f1",
+      "bytes": 252
+    },
+    {
+      "path": "02_CONSTITUTION_LOIS_OBSIDIENNES/O2_IRREVERSIBILITE_STRUCTURELLE.md",
+      "sha256": "423137d5495452bb78190361b8d8394afb29875eaad672815cd883df743ca327",
+      "bytes": 243
+    },
+    {
+      "path": "02_CONSTITUTION_LOIS_OBSIDIENNES/O3_EPREUVE_TEMPORELLE_X108.md",
+      "sha256": "9bfa95f301ad60337a0bddfa2f4e42b1f7aabaf34f96a32b9b36d44e78771ee1",
+      "bytes": 218
+    },
+    {
+      "path": "02_CONSTITUTION_LOIS_OBSIDIENNES/O4_NON_ARBITRAGE_CONFLIT.md",
+      "sha256": "6fc08987ead2f1ad1c0b79cdfcb93996f8925517ee20beac1fa9dd5631b5fd53",
+      "bytes": 240
+    },
+    {
+      "path": "02_CONSTITUTION_LOIS_OBSIDIENNES/O5_ELIMINATION_DECISIONNELLE.md",
+      "sha256": "942b2599dc6d9a117ad187525e0e594f8a01179954f817f62f4b70ae186e7e9f",
+      "bytes": 205
+    },
+    {
+      "path": "02_CONSTITUTION_LOIS_OBSIDIENNES/O6_MEMOIRE_NEGATIVE.md",
+      "sha256": "864638ac1ef42ec14c79f01392fef3989902f9d990059451affdd4c52eb7bb3c",
+      "bytes": 198
+    },
+    {
+      "path": "02_CONSTITUTION_LOIS_OBSIDIENNES/O7_AUDITABILITE_NATIVE.md",
+      "sha256": "59c217ee6e9da1f47eee587501aa76fdba4f9c12824a6e9e0c0a09e6e9990f26",
+      "bytes": 193
+    },
+    {
+      "path": "02_CONSTITUTION_LOIS_OBSIDIENNES/O8_SEPARATION_COGNITION_ACTION.md",
+      "sha256": "e319e5d91cb5023e9fec2c005c7fcb817413f184c2a6a7906aa5ffbec81f5935",
+      "bytes": 228
+    },
+    {
+      "path": "02_CONSTITUTION_LOIS_OBSIDIENNES/README.md",
+      "sha256": "e84ce6b915c62c7bbba874aa4e34110b8370787b5494c3b9a621cc5a10ac3c1b",
+      "bytes": 125
+    },
+    {
+      "path": "02_CONSTITUTION_LOIS_OBSIDIENNES/genome.json",
+      "sha256": "300fa1a5ec54cda9da2552a3fc2ed8a1d1f02b7ca51d6842988291f7207dbebc",
+      "bytes": 294
+    },
+    {
+      "path": "02_CONSTITUTION_LOIS_OBSIDIENNES/genome_lock_policy.md",
+      "sha256": "6be19dd3f3fdebb6b22f886b3b551afc48f80da21a48b91696b6e7ae349a3bb7",
+      "bytes": 1238
+    },
+    {
+      "path": "03_MEMOIRE_MONDE_COSMOS_REFLEX/COSMOS_CONSTRAINT_LAYER.md",
+      "sha256": "dd01dcf5100243e8951ab21643bfa93186700eea53f7db940cafe528be3a22b0",
+      "bytes": 37
+    },
+    {
+      "path": "03_MEMOIRE_MONDE_COSMOS_REFLEX/Event.schema.json",
+      "sha256": "b0d121771d1a5c3974c329113f54af72cf6b9978c8a186e94725cc7c4d4a0a57",
+      "bytes": 168
+    },
+    {
+      "path": "03_MEMOIRE_MONDE_COSMOS_REFLEX/Mmonde_FORMAL_SPEC.md",
+      "sha256": "9f87302fab30482128f32dc183f3a5f3b2e6d8e1cd62d019df5101b12d53944a",
+      "bytes": 49
+    },
+    {
+      "path": "03_MEMOIRE_MONDE_COSMOS_REFLEX/NodeContinuum.schema.json",
+      "sha256": "3f85e943acb5e9e67528746c6b55b0e7c330306ca2537bce9b22d6933c39e5fd",
+      "bytes": 184
+    },
+    {
+      "path": "03_MEMOIRE_MONDE_COSMOS_REFLEX/README.md",
+      "sha256": "4f81dd30c23ae6b414fc534a34965e261df7022f40e39f27a56c6b5e530c45ab",
+      "bytes": 112
+    },
+    {
+      "path": "03_MEMOIRE_MONDE_COSMOS_REFLEX/REFLEX_REDUCER_SPEC.md",
+      "sha256": "1ac81d65317be205205c86320afd5a80e9d16141bb48c2d2954b992293a322bd",
+      "bytes": 51
+    },
+    {
+      "path": "03_MEMOIRE_MONDE_COSMOS_REFLEX/Timeline.schema.json",
+      "sha256": "83d8341c7a22354986743ad79ba4d9804a4879629f7cf3f8910e4a8adee80e91",
+      "bytes": 174
+    },
+    {
+      "path": "03_MEMOIRE_MONDE_COSMOS_REFLEX/continuum_node.py",
+      "sha256": "2eaaee982128ce4ea4c1c4b0a6c29912c037a5a89154587e52af532192c9b8a5",
+      "bytes": 244
+    },
+    {
+      "path": "03_MEMOIRE_MONDE_COSMOS_REFLEX/event_model.py",
+      "sha256": "643f8f33c826ec00b7c64ff8287b65b5f133ad9555ca1aa6dbf2a8b049276613",
+      "bytes": 121
+    },
+    {
+      "path": "03_MEMOIRE_MONDE_COSMOS_REFLEX/reflex_reducer.py",
+      "sha256": "2528882bd40108a8cc45319886b66786f10e65cbc35bb668e1d0da7cfff432b8",
+      "bytes": 115
+    },
+    {
+      "path": "03_MEMOIRE_MONDE_COSMOS_REFLEX/sample_events.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "bytes": 2
+    },
+    {
+      "path": "03_MEMOIRE_MONDE_COSMOS_REFLEX/timeline.py",
+      "sha256": "fe95371093abcb870765a5478869343d5f12657195ec5ab56b5ecd7676091fec",
+      "bytes": 157
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/00_REGISTRY_CANON_DOC.md",
+      "sha256": "cfe35b6a1d3ddb2d0a170c7089d54da05c96aaf3853d5b7437772e605c5814d6",
+      "bytes": 51
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/01_REGISTRY_RAW_IMAGE.md",
+      "sha256": "a5490d40808ce66b9b433ace0f713cb42c9bb500b032ba0a97c6e0d87e285551",
+      "bytes": 175
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/02_COMPARAISON_DOC_IMAGE.md",
+      "sha256": "027d6df653bd63fe82e4c85c6ad313ef8e7bc7c414ff7f5ee6f0f1dc5a7c9ad9",
+      "bytes": 217
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/03_ANOMALIES_ET_DECISIONS.md",
+      "sha256": "4ebf692048aa64f7210c969effa5835795d300efbfa208e46e23daa1a515b0fc",
+      "bytes": 224
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_01__Arbre_de_l_Humain/README.md",
+      "sha256": "574f102947244d2654dbed7627940cf577e1b957a3d8507f80738ca7d0ecc295",
+      "bytes": 165
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_01__Arbre_de_l_Humain/activation_rules.md",
+      "sha256": "ef6aaf226e3b88bdbd85571ec5b9e79c594e74a349f96cf5ec0cb8cd45f89986",
+      "bytes": 252
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_01__Arbre_de_l_Humain/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_01__Arbre_de_l_Humain/definition.md",
+      "sha256": "3d12a7ebebdcf5d02bface2b3fa78b90bd35a6cd5bc5a5f62d088d4a6d8b3212",
+      "bytes": 194
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_01__Arbre_de_l_Humain/examples_events.md",
+      "sha256": "3e343b90b4f4fd8f337d883fa8bef03e9683e96cc47b84b7564f78eeb8a4cfe1",
+      "bytes": 207
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_01__Arbre_de_l_Humain/links_to_other_trees.json",
+      "sha256": "0bb03c1b728801ca442efc15d211af46fc6a8d973df14582e60868901328940a",
+      "bytes": 95
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_01__Arbre_de_l_Humain/node_registry.json",
+      "sha256": "33d6735006f9d9dddeb0eb0a586dbaab8b4a040bd0c528e5458b2751cefa2aaf",
+      "bytes": 164
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_01__Arbre_de_l_Humain/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_01__Arbre_de_l_Humain/risks_confusions.md",
+      "sha256": "a0ea8085e36b6483b86ae71ac3420e6f4ec96e25075d5ed4998ff86cacc47c0f",
+      "bytes": 186
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_01__Arbre_de_l_Humain/tensor_coordinates.json",
+      "sha256": "4fb9633b3d97f486244385b242d7f01ff38f65fb7f324988c4b2ec589c88ea2f",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_01__Arbre_de_l_Humain/tests.md",
+      "sha256": "ac00187383fb8f7e53f7a49e7d455d51df6208eb4c9d45de11a81226e4f71868",
+      "bytes": 112
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_02__Arbre_de_la_Conscience/README.md",
+      "sha256": "4138eb4e3b3e9249179efd25e21985a3fd23672f5c64748abe1da651db191c4c",
+      "bytes": 168
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_02__Arbre_de_la_Conscience/activation_rules.md",
+      "sha256": "1140deb521e71a285a36a7e25fd7458d07a56c01f8e0ec00b3c40b95f1194f9a",
+      "bytes": 259
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_02__Arbre_de_la_Conscience/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_02__Arbre_de_la_Conscience/definition.md",
+      "sha256": "5a2c297a788884b6ccf1b99dab319a2f7c96437bbc4c32b8a45ba264726ab9b1",
+      "bytes": 197
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_02__Arbre_de_la_Conscience/examples_events.md",
+      "sha256": "e5e6d2a6ac81f850fdc56256b0bdc6122aa25c1d1c38293b076d78cfbe145c36",
+      "bytes": 213
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_02__Arbre_de_la_Conscience/links_to_other_trees.json",
+      "sha256": "e9349b322450dd8bd3add6a1456cbaa78993596f4e7ebd924059fc86455a7ed5",
+      "bytes": 107
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_02__Arbre_de_la_Conscience/node_registry.json",
+      "sha256": "ef5eccb0e581df084ef5ed0603399aef268a5837dbdfa44386bae02b6dfeb02b",
+      "bytes": 168
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_02__Arbre_de_la_Conscience/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_02__Arbre_de_la_Conscience/risks_confusions.md",
+      "sha256": "2b5e0e81881175f76e71f8771afca3c631110090b774dbde49e5202b652c0a4c",
+      "bytes": 189
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_02__Arbre_de_la_Conscience/tensor_coordinates.json",
+      "sha256": "181241ef6d99fbd202a64117b9228e755deed10c978ecab7ffc0e5db712e2def",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_02__Arbre_de_la_Conscience/tests.md",
+      "sha256": "62cb4e7adc5279cb85a301c57b34a5208bc6f099acd08a3ec32adb576cbd11e4",
+      "bytes": 115
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_03__Arbre_de_la_Perception/README.md",
+      "sha256": "9b0bfb018fcd72dd2ada9fa68d65c1fb6b3a7e0abb5e020ab95dbb193bc2db77",
+      "bytes": 168
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_03__Arbre_de_la_Perception/activation_rules.md",
+      "sha256": "b31504934f5ef18d084255c0dda5254a94fa75022929ebb78360a5341f48d9e5",
+      "bytes": 259
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_03__Arbre_de_la_Perception/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_03__Arbre_de_la_Perception/definition.md",
+      "sha256": "86247d8f2169fbca108d5ac8a4663a12e2bf036a76d2c84c47520e2ca15638ba",
+      "bytes": 197
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_03__Arbre_de_la_Perception/examples_events.md",
+      "sha256": "dfbb3d57d64062c435dc6137e273440dece49a15232aa85b16d068e39ee5f584",
+      "bytes": 213
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_03__Arbre_de_la_Perception/links_to_other_trees.json",
+      "sha256": "6f1ae6cbbeebf31f859d47d6b30bd5e3fb5299e79d391e3c71ddef1493580c93",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_03__Arbre_de_la_Perception/node_registry.json",
+      "sha256": "eca304977529e0f0a92535d4afdafbb88daa610d37b4ea1778d68c596bb0c110",
+      "bytes": 168
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_03__Arbre_de_la_Perception/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_03__Arbre_de_la_Perception/risks_confusions.md",
+      "sha256": "d6dd6f21950810bf5866f1dcc0e50aa924bc01788a6d5a94411b6425afd580e2",
+      "bytes": 189
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_03__Arbre_de_la_Perception/tensor_coordinates.json",
+      "sha256": "44aab8726e3422fe8b0e65feb586226d09c5ed89664017a8c3bc526381adab5f",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_03__Arbre_de_la_Perception/tests.md",
+      "sha256": "27486e9c73af04de8d0bb1bb0f15544166c491621e75dd28982b224a07aca05f",
+      "bytes": 115
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_04__Arbre_du_Sens/README.md",
+      "sha256": "cf049b38e8e2637487218508d4fd925949ce53355ddbb6a921ec68f82fc16a2e",
+      "bytes": 159
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_04__Arbre_du_Sens/activation_rules.md",
+      "sha256": "130eccb46dc6d410b2aa32df63a1651e6234f7e50517d69da3fa9f49696949ec",
+      "bytes": 244
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_04__Arbre_du_Sens/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_04__Arbre_du_Sens/definition.md",
+      "sha256": "20545d8de6bfb2bbb81da598ee72bd048253e1d70bb85d1e57d3781bd04ecc2d",
+      "bytes": 188
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_04__Arbre_du_Sens/examples_events.md",
+      "sha256": "0da4d77be529050195e05b72da6c3e2ef6e6b220a8858f19f0ac716c661d7afc",
+      "bytes": 195
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_04__Arbre_du_Sens/links_to_other_trees.json",
+      "sha256": "6f4197b8ee4b8d999f587ca1502f9e92fb6aec725d83874eca3ddc08e09c87a1",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_04__Arbre_du_Sens/node_registry.json",
+      "sha256": "b5b9c0c84c8708e7a9537410d900dd683336fb9cfa8f5c38fe3d6b385ecc5d03",
+      "bytes": 162
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_04__Arbre_du_Sens/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_04__Arbre_du_Sens/risks_confusions.md",
+      "sha256": "fc76f5964cd08c883d78b237869e80cff4f9f98b0bcbc260660aed9da735d91e",
+      "bytes": 180
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_04__Arbre_du_Sens/tensor_coordinates.json",
+      "sha256": "5d38ee1a37ce0ae21047d4f2977ceed76f6bd1fd649dbdd51dc986eaae6cac9d",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_04__Arbre_du_Sens/tests.md",
+      "sha256": "61e6ad10d57ab7ee32c79f53211a2931558e01e291589125d9724f5c95474b08",
+      "bytes": 106
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_05__Arbre_de_l_Identite/README.md",
+      "sha256": "a2d546a56762c662e685554778b594e53435b8ffc94b7ecb374df26d4e504e50",
+      "bytes": 168
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_05__Arbre_de_l_Identite/activation_rules.md",
+      "sha256": "706e064c52f0f52f107f791c52e868609f4bdd5091f61105735ba75268ce0d81",
+      "bytes": 257
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_05__Arbre_de_l_Identite/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_05__Arbre_de_l_Identite/definition.md",
+      "sha256": "124c2b73a83c9b5afac88e1640468e353cbf397f4d6411c76d8b63d579a1d312",
+      "bytes": 197
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_05__Arbre_de_l_Identite/examples_events.md",
+      "sha256": "396dfd9afebfd4089575779c463bfe24da8f2fcbeeb4f327816e466477c5fb8c",
+      "bytes": 213
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_05__Arbre_de_l_Identite/links_to_other_trees.json",
+      "sha256": "37682bbd07d4f452c56f212af09599abd6755e514daa594dfa6720e5578f195d",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_05__Arbre_de_l_Identite/node_registry.json",
+      "sha256": "2f85765a6299e570959f4df1a11048a8e2882cf3cbe20ea22a9f6d92d6ac81dd",
+      "bytes": 166
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_05__Arbre_de_l_Identite/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_05__Arbre_de_l_Identite/risks_confusions.md",
+      "sha256": "6beab2ec1980bb297e87c405132544c33da9470899acdf7e6d6a50f519bd74ce",
+      "bytes": 189
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_05__Arbre_de_l_Identite/tensor_coordinates.json",
+      "sha256": "8313c1df0a30f005eb47d078ffa7c039a1a87b770c7d014a6e87edc0b1b6a54f",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_05__Arbre_de_l_Identite/tests.md",
+      "sha256": "518cab30008b82ecd7bc451941ad8f4f6a8d8099bcc9318ba922d4452005d9e7",
+      "bytes": 115
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_06__Arbre_de_la_Comprehension/README.md",
+      "sha256": "e7935e387fdbb4c5697f090edbbe241cc7581fceb353d6ce6a2ab36ed0b0e3ec",
+      "bytes": 170
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_06__Arbre_de_la_Comprehension/activation_rules.md",
+      "sha256": "8a41587f5e8e97b6853408d5ffbc28300baff6433487889ee010d8d7e0a3a3ac",
+      "bytes": 264
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_06__Arbre_de_la_Comprehension/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_06__Arbre_de_la_Comprehension/definition.md",
+      "sha256": "868cb5c255e03c2059c53fb0ce53b775c2b1c918b9edb7d73055a12699eecfd2",
+      "bytes": 201
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_06__Arbre_de_la_Comprehension/examples_events.md",
+      "sha256": "033445cb916d0d327e5a6989de64aec746b12440d34ce026d5e327ab6044f0e3",
+      "bytes": 221
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_06__Arbre_de_la_Comprehension/links_to_other_trees.json",
+      "sha256": "4814d3d91b107302f51f877220f8f3104eb9fe24ef25ff03d674a19bf1a5f0d4",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_06__Arbre_de_la_Comprehension/node_registry.json",
+      "sha256": "93b8802ed181be2975d59e75452bb6396d809ae3d11a5c836203d76a04e42607",
+      "bytes": 171
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_06__Arbre_de_la_Comprehension/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_06__Arbre_de_la_Comprehension/risks_confusions.md",
+      "sha256": "9ab28cc73f01510bae445718f519b563a1e1ebdacb77cb38c287078807b64565",
+      "bytes": 193
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_06__Arbre_de_la_Comprehension/tensor_coordinates.json",
+      "sha256": "333869c73a65cb22334f44c9ba3c00247331831606c8f39f253182aa0a42f53f",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_06__Arbre_de_la_Comprehension/tests.md",
+      "sha256": "597359bb57619272f8f2db169290adad874491870ccf4c14a7bb4f69d0e2eefd",
+      "bytes": 119
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_07__Arbre_de_l_Organisation/README.md",
+      "sha256": "53cb75cd531bdb4e8f936af9d8e29b03967a9f03e8a220ddc0fbc9f01ae29b0f",
+      "bytes": 169
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_07__Arbre_de_l_Organisation/activation_rules.md",
+      "sha256": "3b56f965f674a30724e88fe4077386b00357fdb1bfe3be5cc1f868e5185f9d55",
+      "bytes": 262
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_07__Arbre_de_l_Organisation/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_07__Arbre_de_l_Organisation/definition.md",
+      "sha256": "61e5aebd4f46da8f7c74c3f514eedfd06c5603be99fd2fdcb0881304cc05620e",
+      "bytes": 200
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_07__Arbre_de_l_Organisation/examples_events.md",
+      "sha256": "1c07c02ba3b36c07e82f69bd89ab5f6c6d29e8e6e417e9e5c86fee33de64704d",
+      "bytes": 219
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_07__Arbre_de_l_Organisation/links_to_other_trees.json",
+      "sha256": "dcae6516206e411670ed660ad63b66f0cdb2d2416580983ec5a34af5648ca0ff",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_07__Arbre_de_l_Organisation/node_registry.json",
+      "sha256": "58d5b28ef152cc218a341b0dfaa1daaca3a28f1f4acc3a5f1fcebddf42358559",
+      "bytes": 170
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_07__Arbre_de_l_Organisation/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_07__Arbre_de_l_Organisation/risks_confusions.md",
+      "sha256": "b29e7e27743217349a12111a303bd9f3231fa2238f28595d0bd6d4706d7d1232",
+      "bytes": 192
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_07__Arbre_de_l_Organisation/tensor_coordinates.json",
+      "sha256": "af1300ddeed962bbf0de229d3f84b36146836b298fc0984516c754edfabe54fb",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_07__Arbre_de_l_Organisation/tests.md",
+      "sha256": "7abd2febb1f592ea6e45050a55936978ff1b88b535911bb3a2ef0feda2061ce1",
+      "bytes": 118
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_08__Arbre_de_la_Pensee/README.md",
+      "sha256": "175d1a821ea0f5f0c93f0daefb7d5a07c681296ba3f04cedd39e3e2abff12713",
+      "bytes": 163
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_08__Arbre_de_la_Pensee/activation_rules.md",
+      "sha256": "f6719fc7c2a25c4478ce647d9a63c21e19e6c54da5a5012a93654e0a154799e4",
+      "bytes": 250
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_08__Arbre_de_la_Pensee/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_08__Arbre_de_la_Pensee/definition.md",
+      "sha256": "d6c6fa702b6d44812bb58643a15ccdd60b7209d9d483b1c07dfafb7211980593",
+      "bytes": 194
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_08__Arbre_de_la_Pensee/examples_events.md",
+      "sha256": "656e1d6717b74d7fff620d5c749284373717c0c55768368616bcd2a0353ff427",
+      "bytes": 207
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_08__Arbre_de_la_Pensee/links_to_other_trees.json",
+      "sha256": "7b57656cfda70d82d4945003aa2712fd91b50b6aa12dddde0bb08b2e14f5a43c",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_08__Arbre_de_la_Pensee/node_registry.json",
+      "sha256": "6cde1e4904532cebad13519b0f10c056ceff329f5588700f71a66efefe48a513",
+      "bytes": 164
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_08__Arbre_de_la_Pensee/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_08__Arbre_de_la_Pensee/risks_confusions.md",
+      "sha256": "2469ca29aa254412f1b2c2e2275f2500bec875dc97e1e9deda24d649cf4b82dd",
+      "bytes": 186
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_08__Arbre_de_la_Pensee/tensor_coordinates.json",
+      "sha256": "f1520fe186642b2a36d96aad86e0cb3b833b6161bb088ea18ddc50084bf4d26d",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_08__Arbre_de_la_Pensee/tests.md",
+      "sha256": "35c34c2b0d325186ba8eeb600e743c6a662993a71a893cd6aa20639fae36554a",
+      "bytes": 112
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_09__Arbre_de_l_Intelligence/README.md",
+      "sha256": "028e95c5cce4cdd59cf9c60109bc926a1c493277d7c718bcb86ee0a335101b4d",
+      "bytes": 169
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_09__Arbre_de_l_Intelligence/activation_rules.md",
+      "sha256": "6992426d0d60af767800a089403779b31dd71acf7be07814fda4abdff75f1d2e",
+      "bytes": 262
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_09__Arbre_de_l_Intelligence/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_09__Arbre_de_l_Intelligence/definition.md",
+      "sha256": "79f523266f7cd4e3c19625556694532f0b1c3e461f45e848613a185ad6c3ad31",
+      "bytes": 200
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_09__Arbre_de_l_Intelligence/examples_events.md",
+      "sha256": "cefd6653d72d8de5ed7d695a1c0df7b1d5cc0c492eef647ea9b3657ca706f323",
+      "bytes": 219
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_09__Arbre_de_l_Intelligence/links_to_other_trees.json",
+      "sha256": "638e4837dd9c4fefdd0d6d935fac079c2812634c7360b9cf78b6a3c1c57e1b51",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_09__Arbre_de_l_Intelligence/node_registry.json",
+      "sha256": "8947ac2b611d92896f6a79fe7f0c277d4cd9b9388d3f2648dfd6a07ca67b4c66",
+      "bytes": 170
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_09__Arbre_de_l_Intelligence/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_09__Arbre_de_l_Intelligence/risks_confusions.md",
+      "sha256": "21ce6f4ac16c2d21bc363839bbda8449705b5425e2fe4e26950b7e87b54e4849",
+      "bytes": 192
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_09__Arbre_de_l_Intelligence/tensor_coordinates.json",
+      "sha256": "961a126e45c9b1972baa2452210ec1b30eb799a11479d44ed78b081cfa4f8d6f",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_09__Arbre_de_l_Intelligence/tests.md",
+      "sha256": "cc574a7dbb986e67f759d6a28a9717ea7fa63508d502fe81946e62e7ae1e8ee7",
+      "bytes": 118
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_10__Arbre_du_Langage/README.md",
+      "sha256": "76caedaa5214a46208bf63c2d0210c4b6de3b7c8c057205f7962d500db046f75",
+      "bytes": 160
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_10__Arbre_du_Langage/activation_rules.md",
+      "sha256": "0fe099e48fdcceb16d39e7699d76b3202826e2364d72c3963625eaae968ac17b",
+      "bytes": 248
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_10__Arbre_du_Langage/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_10__Arbre_du_Langage/definition.md",
+      "sha256": "d407a01ab21c7c29e2a3a2222c3f8b8beacada0badc00c652182bf095a3c990f",
+      "bytes": 191
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_10__Arbre_du_Langage/examples_events.md",
+      "sha256": "ea53bdcaa39ae6cd93fd9f706f12bb44265aa6c2177883a33931bfd11e59294d",
+      "bytes": 201
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_10__Arbre_du_Langage/links_to_other_trees.json",
+      "sha256": "a59c0c57111e7e79a6bbb11c8bf3e493d20b75784cd95424acb2a9c69433b4f7",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_10__Arbre_du_Langage/node_registry.json",
+      "sha256": "0a0523a1c404850a88043e7b43258a9c5de2b5cc35e648f5d0fae5648896322b",
+      "bytes": 165
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_10__Arbre_du_Langage/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_10__Arbre_du_Langage/risks_confusions.md",
+      "sha256": "1c2052f449b50a62c8c5521de7dd4cf68f3ecbf47a6baed35c4e05c52e0beaa1",
+      "bytes": 183
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_10__Arbre_du_Langage/tensor_coordinates.json",
+      "sha256": "ce98c802c71407aacc0ae79a9cf03a1cd000421c47ff668380f64daa5e12c78e",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_10__Arbre_du_Langage/tests.md",
+      "sha256": "58b35317c77659820ec5388ea9ce37e8660dee2c6a71a41caf00c9a023ccb511",
+      "bytes": 109
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_11__Arbre_de_la_Science/README.md",
+      "sha256": "24c28f640475b1992cbd4817868f02a69f281ca0c947fae2558f234e57efc278",
+      "bytes": 167
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_11__Arbre_de_la_Science/activation_rules.md",
+      "sha256": "077efc08d0245af112f60b0452aeaa5f66828e80626f1c0b441a1b60a183bb11",
+      "bytes": 255
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_11__Arbre_de_la_Science/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_11__Arbre_de_la_Science/definition.md",
+      "sha256": "8abc91c13fa2642624f39723e3c3e26a34cf8d8ff8a26be6812413fe10645110",
+      "bytes": 194
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_11__Arbre_de_la_Science/examples_events.md",
+      "sha256": "1b131fdff929a838e94a37df3dbe9da65b183a88efdf2a5b23f1bd239d2736ac",
+      "bytes": 207
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_11__Arbre_de_la_Science/links_to_other_trees.json",
+      "sha256": "a0f028f802ce7dff7a9206660092bc14e171ad047a9aef641794d75c42ecf610",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_11__Arbre_de_la_Science/node_registry.json",
+      "sha256": "c18d335a34a2713d22c0086a9075f8cfaf8a36dc5d19ef75537284c770f53d8f",
+      "bytes": 165
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_11__Arbre_de_la_Science/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_11__Arbre_de_la_Science/risks_confusions.md",
+      "sha256": "86e1ae1a7306285a8e65772e09ab8c6181d9afa5375a7a49af64b7f0a7323e1a",
+      "bytes": 186
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_11__Arbre_de_la_Science/tensor_coordinates.json",
+      "sha256": "29c5d57677f453b7e29cd321bdfd6e0ff2610e331431e0bffc44e4b1ff37a051",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_11__Arbre_de_la_Science/tests.md",
+      "sha256": "c1a54a6fbff7b37c2d998c32ddb6c912fb9b2dc04979639dc6af15f77af9ca79",
+      "bytes": 112
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_12__Arbre_de_la_Technique/README.md",
+      "sha256": "67b0bb4f39f4cc6b4a924ccea3744ba496a2187ab1b20ffdc298ee402aac57bb",
+      "bytes": 169
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_12__Arbre_de_la_Technique/activation_rules.md",
+      "sha256": "1343a6380233cf0a8f4bcc9d889fcfc663bd1ab336177fac0a41b5d8c1a492e6",
+      "bytes": 259
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_12__Arbre_de_la_Technique/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_12__Arbre_de_la_Technique/definition.md",
+      "sha256": "0eb481de0691be74842de6b4a40d52fb117307f658b29a43b63d07ebc913a313",
+      "bytes": 196
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_12__Arbre_de_la_Technique/examples_events.md",
+      "sha256": "ba816ed7269837a5f7e8cbf1b37fb9abcd3256e084eb072d78b3e6f73e3cbdc4",
+      "bytes": 211
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_12__Arbre_de_la_Technique/links_to_other_trees.json",
+      "sha256": "67f2f8ff8d49f5b6b125fe1aa381a922fbc3c9b5c848a7eea0883182d5f74ea3",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_12__Arbre_de_la_Technique/node_registry.json",
+      "sha256": "63dec412576f9b74d4e9151426ccd1d38e2541bc55d82d7530e6d4656de381fd",
+      "bytes": 167
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_12__Arbre_de_la_Technique/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_12__Arbre_de_la_Technique/risks_confusions.md",
+      "sha256": "0edfbd93659bf5ad345318376e62af06aee731830ec17db8652806c0160bb214",
+      "bytes": 188
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_12__Arbre_de_la_Technique/tensor_coordinates.json",
+      "sha256": "de6ac1fde23c3f4d7daaa7b8da25b45be1e9886ee19e2d1e40d319079512ecd0",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_12__Arbre_de_la_Technique/tests.md",
+      "sha256": "1ef0716b30e83d4c7cfcbfae86fe235c07fdbec4bcfe2a6f04c9119ef434459d",
+      "bytes": 114
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_13__Arbre_de_l_Art/README.md",
+      "sha256": "a7f03c78a85ca43d54f7aa07299d50d7ebdab390cc01e76feddf4246275bc46b",
+      "bytes": 164
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_13__Arbre_de_l_Art/activation_rules.md",
+      "sha256": "a6cb8ab83ac335f3ef8732de41c7f0b09f89e7f7d8b4198abb21c4227014f18b",
+      "bytes": 248
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_13__Arbre_de_l_Art/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_13__Arbre_de_l_Art/definition.md",
+      "sha256": "e3d0276664de0b000d6fdba04dd52a3d3cc3a3d9d2f6702cd67ffd711e041a3c",
+      "bytes": 191
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_13__Arbre_de_l_Art/examples_events.md",
+      "sha256": "1e915a0ec22dc8bf874dde61b406c089146b7b21ebbc11cf1a0f2b321a0ded2e",
+      "bytes": 201
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_13__Arbre_de_l_Art/links_to_other_trees.json",
+      "sha256": "6118735f773723004e3e6407b817f8703f52f1fa0f82f723479d11333a556eb0",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_13__Arbre_de_l_Art/node_registry.json",
+      "sha256": "319cf530a171510ef42b6f4e89c70c567193d7053f3b3b8a8b5c0ebb97c7ae29",
+      "bytes": 161
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_13__Arbre_de_l_Art/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_13__Arbre_de_l_Art/risks_confusions.md",
+      "sha256": "020411d2c4f3826a278bdfef85443398aaacab9c8c44a342070b18cd3b35d3cc",
+      "bytes": 183
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_13__Arbre_de_l_Art/tensor_coordinates.json",
+      "sha256": "ceb3edb2486b64119bf4aa0a12084276cc0d377d0eef7f361bb72d6cafe9be05",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_13__Arbre_de_l_Art/tests.md",
+      "sha256": "249f4788a572973fd1b65eae0ed8628cfe2cd542b36c8d2801c9816b1836ffce",
+      "bytes": 109
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_14__Arbre_de_la_Philosophie/README.md",
+      "sha256": "2234803a5351c25aea59f8674741634b4a5bdf3eb972861db9851090aa65a6ce",
+      "bytes": 171
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_14__Arbre_de_la_Philosophie/activation_rules.md",
+      "sha256": "938f45778f0d95e1688782796255200c88acb909d21b7a1872f0a52c7a0a8756",
+      "bytes": 263
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_14__Arbre_de_la_Philosophie/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_14__Arbre_de_la_Philosophie/definition.md",
+      "sha256": "db22cb31e55f13285dc93e7502a047d91548755823d72cacd343be8e2ed95eaa",
+      "bytes": 198
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_14__Arbre_de_la_Philosophie/examples_events.md",
+      "sha256": "919bddfa221302173f6f4a04ea4ecfd28b506993a9b028b49c860837a8c543be",
+      "bytes": 215
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_14__Arbre_de_la_Philosophie/links_to_other_trees.json",
+      "sha256": "e77d6e1249468c325376e0e02b778434e67beb930afda09948c7110cca2f6fe5",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_14__Arbre_de_la_Philosophie/node_registry.json",
+      "sha256": "64c1929b2dc971b131180dfde4208f0ac8d8e343b1da01575e6f862ee17906f1",
+      "bytes": 169
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_14__Arbre_de_la_Philosophie/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_14__Arbre_de_la_Philosophie/risks_confusions.md",
+      "sha256": "bcf5e189990c540a9fd000a0235a66ad525181ca5454bc1d4aec884693553875",
+      "bytes": 190
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_14__Arbre_de_la_Philosophie/tensor_coordinates.json",
+      "sha256": "eb92899f5f337ea78d297fb4cc28f32f353ddb68cc60801ba5b10ff72947c26b",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_14__Arbre_de_la_Philosophie/tests.md",
+      "sha256": "5962c710eaeece37ee1a980e12c0c0fc6defbc1fc142c6e7f6e2fce5aff12f7d",
+      "bytes": 116
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_15__Arbre_de_la_Spiritualite/README.md",
+      "sha256": "0a478b3f52a1296205bc422610048044f7688d2f0ee8f7bfc5e34d64b1a3be8b",
+      "bytes": 173
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_15__Arbre_de_la_Spiritualite/activation_rules.md",
+      "sha256": "ffc9f20e29c0bbd65ea77546d6c1afd6a1bb709c71dbb22ea9154e0964d98335",
+      "bytes": 266
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_15__Arbre_de_la_Spiritualite/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_15__Arbre_de_la_Spiritualite/definition.md",
+      "sha256": "3e8dbbfc8a0768ee56164dc488df8d2603352cc69a3f0cafa4938fd04da6036d",
+      "bytes": 200
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_15__Arbre_de_la_Spiritualite/examples_events.md",
+      "sha256": "227adfc3f426e0c22f2cf9ee01b51974ff38d1906a9ca67c047c60dc70c8b2e2",
+      "bytes": 219
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_15__Arbre_de_la_Spiritualite/links_to_other_trees.json",
+      "sha256": "d3760dad93918b6a5420971913b0d8b66d52c1ab364d90a305bee6f883292552",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_15__Arbre_de_la_Spiritualite/node_registry.json",
+      "sha256": "51596c25d7bcd471b0068e4b5ad895f1c0ad8be636eadaab349236fcd0f165bf",
+      "bytes": 170
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_15__Arbre_de_la_Spiritualite/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_15__Arbre_de_la_Spiritualite/risks_confusions.md",
+      "sha256": "9ffd414e1403549fb02f077667e4a87c4ceb26a19031ad47841f924921f26fa7",
+      "bytes": 192
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_15__Arbre_de_la_Spiritualite/tensor_coordinates.json",
+      "sha256": "aaffa3f8384cb6cdcc481353b20089526d61cd5c3988f7e3bc41bf177eb340a8",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_15__Arbre_de_la_Spiritualite/tests.md",
+      "sha256": "6464914644bc391e7d6734e70a64303a67e2839d7454b41d5b39e6b279ff1324",
+      "bytes": 118
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_16__Arbre_de_la_Relation/README.md",
+      "sha256": "019474b53d36eb3ec2c646a8438dbf14205810dd076e05d93fcac652cfcf832f",
+      "bytes": 175
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_16__Arbre_de_la_Relation/activation_rules.md",
+      "sha256": "2865a246a9f44507b40140cf9cd1e0d30b814d9d4ed9175c92c3d7b118452c6e",
+      "bytes": 264
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_16__Arbre_de_la_Relation/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_16__Arbre_de_la_Relation/definition.md",
+      "sha256": "9046be559fa9b542441175c97ae97d618eed0a3396445cb05ba71ef732507864",
+      "bytes": 195
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_16__Arbre_de_la_Relation/examples_events.md",
+      "sha256": "9dfb36703b05123ec5c0fc91144066f1f1593a0bb10ba8a92930728077bfde6f",
+      "bytes": 209
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_16__Arbre_de_la_Relation/links_to_other_trees.json",
+      "sha256": "a40051f7d21aa1be3854b9ac501397819dc061b4bee554e531fe87dd5ad19a00",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_16__Arbre_de_la_Relation/node_registry.json",
+      "sha256": "e34fd7850e37b464fabaa8d7d452a72c547adeac24caa6f5a0de789c171c2d02",
+      "bytes": 166
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_16__Arbre_de_la_Relation/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_16__Arbre_de_la_Relation/risks_confusions.md",
+      "sha256": "217df55f426df4fb29d6cfe199aa69bf6e7936d0b94ffaf5f99fb069d4ac3370",
+      "bytes": 187
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_16__Arbre_de_la_Relation/tensor_coordinates.json",
+      "sha256": "0b403564d9ab12cbe2565655bfcf28327f20fc1ebdacfaec3784c527dbe82e98",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_16__Arbre_de_la_Relation/tests.md",
+      "sha256": "0871679f3710ed024cff542dfb68927bed51a8d31ed8524b94ba9ccaf981cab8",
+      "bytes": 113
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_17__Arbre_du_Collectif/README.md",
+      "sha256": "a483fb5f57e9598a8bebf32948393a4904d04946a627292e6d7d1f6d19feb8e6",
+      "bytes": 173
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_17__Arbre_du_Collectif/activation_rules.md",
+      "sha256": "5d15042683ed1e858bc1baecec61ab5732daaece27f62d8ea509ab153538468d",
+      "bytes": 263
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_17__Arbre_du_Collectif/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_17__Arbre_du_Collectif/definition.md",
+      "sha256": "b9a9d1051f5ad5c9e9dfe1076f0a705e24215037311d35b3e18f496c7ddb62cf",
+      "bytes": 193
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_17__Arbre_du_Collectif/examples_events.md",
+      "sha256": "857da30340d59643037b43d1d5b1701be380b954436b1ad0bdcbdfd5f69ff8b8",
+      "bytes": 205
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_17__Arbre_du_Collectif/links_to_other_trees.json",
+      "sha256": "175a720c54f0382ebdc7c26db81de079718e1910c13a8b88af716f9a4c0c141c",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_17__Arbre_du_Collectif/node_registry.json",
+      "sha256": "6899a6d6985b863af71f5db6f6481c25965ac6175f8d4743b1fe898492a1bb12",
+      "bytes": 167
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_17__Arbre_du_Collectif/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_17__Arbre_du_Collectif/risks_confusions.md",
+      "sha256": "5ca8c8c39a46eb31f461380147dc830cc654bff139b70b698f9d63431075d6a8",
+      "bytes": 185
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_17__Arbre_du_Collectif/tensor_coordinates.json",
+      "sha256": "02adaf371f64f3fed59ba515e09d5ab049c22f9db836bc2920354af7e1b0dc69",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_17__Arbre_du_Collectif/tests.md",
+      "sha256": "0cb849b3413dedce633f17817f49da307b7a0a2a7773a66513bdfc832ad703da",
+      "bytes": 111
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_18__Arbre_de_la_Transmission/README.md",
+      "sha256": "24f51462bbac851fc86e67de45d86a9dae12c297ce240f1b8713355ed4817cb0",
+      "bytes": 179
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_18__Arbre_de_la_Transmission/activation_rules.md",
+      "sha256": "21b4ea5ca8ddf7ddd9e22b5f303e6e6cc41f1246e35f3f1531b502be6e6877b0",
+      "bytes": 272
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_18__Arbre_de_la_Transmission/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_18__Arbre_de_la_Transmission/definition.md",
+      "sha256": "a4cc00737730aaffdca1caf0b4cf9403567cbcc210e501d3f6294793157c28ff",
+      "bytes": 199
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_18__Arbre_de_la_Transmission/examples_events.md",
+      "sha256": "9fa64479bf666eeb64d90279353493bd08289a072fcb425ceab7aed5f0c8ce61",
+      "bytes": 217
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_18__Arbre_de_la_Transmission/links_to_other_trees.json",
+      "sha256": "d14b60fe6a356e4616768e208e04a8c44099d478628ad38c2f4ed6e21bf5350d",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_18__Arbre_de_la_Transmission/node_registry.json",
+      "sha256": "6b8b34794f53d47f5bd3b03f361807d205efee3aa570b7861caddd9454054daf",
+      "bytes": 170
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_18__Arbre_de_la_Transmission/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_18__Arbre_de_la_Transmission/risks_confusions.md",
+      "sha256": "4624d3c91e0d4ea7bed22e58edbb0c693d02f6f813e0c68067614374e2d247a8",
+      "bytes": 191
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_18__Arbre_de_la_Transmission/tensor_coordinates.json",
+      "sha256": "bc26b8675b82403762b5a542a30fd0599c719110984483f4093710f13f7e54d1",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_18__Arbre_de_la_Transmission/tests.md",
+      "sha256": "fca22631120b7c0ea77c1fccb1e649b5bf64012e8baa142f8160223d326bcdfc",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_19__Arbre_de_la_Culture/README.md",
+      "sha256": "311a9abd07f68a970eb185e4ebc07e059e02bb301aa02e89f8464c876c24d745",
+      "bytes": 174
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_19__Arbre_de_la_Culture/activation_rules.md",
+      "sha256": "b507e01acd7f5246204a6a9592c7d60483db557bdcf3433119e4b1f01bacf541",
+      "bytes": 262
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_19__Arbre_de_la_Culture/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_19__Arbre_de_la_Culture/definition.md",
+      "sha256": "202bed34ced1a04e9e74d3f9d51efd8a1af13e0c714b602905489629a47fc620",
+      "bytes": 194
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_19__Arbre_de_la_Culture/examples_events.md",
+      "sha256": "10a5059d8e152a166ceffc2db0a99ce665e07ecb95353bbd749d0dc5d535dc38",
+      "bytes": 207
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_19__Arbre_de_la_Culture/links_to_other_trees.json",
+      "sha256": "524c2ca44e6b4c91b5048a196ed4654493a019c4bce965d38b9788edeb4a69ba",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_19__Arbre_de_la_Culture/node_registry.json",
+      "sha256": "116ad593747a1cc435ae75628371e8102d95b2dc0f880646de672a54e10301c4",
+      "bytes": 165
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_19__Arbre_de_la_Culture/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_19__Arbre_de_la_Culture/risks_confusions.md",
+      "sha256": "64a95e15ee6ae767e46ac067efcb6eddb981bbd7467fe4d3cd93c796931e03d9",
+      "bytes": 186
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_19__Arbre_de_la_Culture/tensor_coordinates.json",
+      "sha256": "1d5a07a2e325e0813445ccf36f64a7956d63866ef6dc9a7edb85201e148949a4",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_19__Arbre_de_la_Culture/tests.md",
+      "sha256": "0b463a904ca90b10cdbac9a6a204952cfb92504b276b6f99125bf70feaaf5fc4",
+      "bytes": 112
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_20__Arbre_de_l_Action/README.md",
+      "sha256": "78233ba2e043cf0e9d99ad18844b1f0388971ad45da373836f9de9fa55e1e47b",
+      "bytes": 174
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_20__Arbre_de_l_Action/activation_rules.md",
+      "sha256": "6be894561efd65a1f3367b5b986859b0942ac618f8312d593edab4c2aa4a33f7",
+      "bytes": 261
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_20__Arbre_de_l_Action/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_20__Arbre_de_l_Action/definition.md",
+      "sha256": "b5ed443fc716d12ada2af80b5e03fc0186c7a20de26f04e4f41186ecbbd2fede",
+      "bytes": 194
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_20__Arbre_de_l_Action/examples_events.md",
+      "sha256": "ca147a254b760e05df788ea17925b49a5e39c1541ee5131aabbe0c26b0dffeb0",
+      "bytes": 207
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_20__Arbre_de_l_Action/links_to_other_trees.json",
+      "sha256": "379313354308ffb2a7ce314f25a9e3780141c2df5cb6f8320a465e1effe66038",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_20__Arbre_de_l_Action/node_registry.json",
+      "sha256": "1f235ebe7ce94ffc0965d9fd27a55e92b31ea3c6e1d7adfa476b640f14530cf2",
+      "bytes": 164
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_20__Arbre_de_l_Action/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_20__Arbre_de_l_Action/risks_confusions.md",
+      "sha256": "a7bd1d74eb17fd83b1b5cb4b5227677b22a7d87948da578a6fd69ffef11e94c4",
+      "bytes": 186
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_20__Arbre_de_l_Action/tensor_coordinates.json",
+      "sha256": "dc3ad224fe31c361b5c864ce49005ef2b62972e61f531667d93c73113fe8f727",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_20__Arbre_de_l_Action/tests.md",
+      "sha256": "3304417c25d11c01f08381d31e0a179d77329b7d397b42ecb6eed584a8f85942",
+      "bytes": 112
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_21__Arbre_de_la_Creation/README.md",
+      "sha256": "72b75dbab18e4cd5080e7cdf2eac8dc7bde9525853c921e5b268a8924ad4d91d",
+      "bytes": 176
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_21__Arbre_de_la_Creation/activation_rules.md",
+      "sha256": "5d31f72c8871bf5473fa368da253189c1bd7844221b886b28caf2ea94d8e1625",
+      "bytes": 265
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_21__Arbre_de_la_Creation/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_21__Arbre_de_la_Creation/definition.md",
+      "sha256": "a96c1b58fab456edb80e48ff50b549d6961ce2e39230c6a695cccadeb0ea4952",
+      "bytes": 196
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_21__Arbre_de_la_Creation/examples_events.md",
+      "sha256": "162c1faf1235a5e260976f32069b85e82592a7f7504805df585de403b1953119",
+      "bytes": 211
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_21__Arbre_de_la_Creation/links_to_other_trees.json",
+      "sha256": "d7ace4a957761073da4331ce05eaa2657a8a085b8ceeee08063a6d5fd7a04e3b",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_21__Arbre_de_la_Creation/node_registry.json",
+      "sha256": "306c6dc113a233e8502402279caf95d77d542d8a1ef55a44a7e660c4bfa1f36c",
+      "bytes": 166
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_21__Arbre_de_la_Creation/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_21__Arbre_de_la_Creation/risks_confusions.md",
+      "sha256": "265b6defdf53a3580519481c7f79106d61ffc8fb319059f97e917b3991d74e3e",
+      "bytes": 188
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_21__Arbre_de_la_Creation/tensor_coordinates.json",
+      "sha256": "6290de80d706b7e62045c32e1bc2b99c6a71391470f10aca8144af3445d4255c",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_21__Arbre_de_la_Creation/tests.md",
+      "sha256": "40891b7dc80838faf3656d614baebb4cee453ddfe5c59d36f7a08db6de11ff81",
+      "bytes": 114
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_22__Arbre_de_la_Transformation/README.md",
+      "sha256": "e7c4a7ac902ee696d909e6b2f2e1a9b35867972b987dabbf78b34dbf990822f1",
+      "bytes": 181
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_22__Arbre_de_la_Transformation/activation_rules.md",
+      "sha256": "7a568bf4a4eefe5c68c8b395cf37fba36d4224af7fe8ef5ce64ea3e5ca24bdbc",
+      "bytes": 276
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_22__Arbre_de_la_Transformation/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_22__Arbre_de_la_Transformation/definition.md",
+      "sha256": "8f2132beb244693dba72064b20fd1b706e39c0d8c83226527d506bd412619784",
+      "bytes": 201
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_22__Arbre_de_la_Transformation/examples_events.md",
+      "sha256": "6a35c0ab6cab8a7d7102dd53a38c217208c1a2fd9b0c16a9a2e14aaa5790acd5",
+      "bytes": 221
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_22__Arbre_de_la_Transformation/links_to_other_trees.json",
+      "sha256": "280813ce035af1456acd0cce2edbfd7970224b176c333258e29811bd7a4a1a97",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_22__Arbre_de_la_Transformation/node_registry.json",
+      "sha256": "4cd956a371c08ecbe4a8717b40f8664507f91d7e1e5bd4b43660d9858a33a888",
+      "bytes": 172
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_22__Arbre_de_la_Transformation/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_22__Arbre_de_la_Transformation/risks_confusions.md",
+      "sha256": "56c5d510ac89707331ab4dbd9bf5f7780e2cd541d6e1a1e6e64bba1bbbe8c632",
+      "bytes": 193
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_22__Arbre_de_la_Transformation/tensor_coordinates.json",
+      "sha256": "77a27765770908e0ccdd038f29ca54f79b15eb4c32adc967297250e8298c04b6",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_22__Arbre_de_la_Transformation/tests.md",
+      "sha256": "6cccd91c837a40b02a335cd40d259505b06e333120fc032fefe2fd3dd0f14afa",
+      "bytes": 119
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_23__Arbre_du_Temps/README.md",
+      "sha256": "6d034ecc543d0380c6f84768401e7926bf0a063d8dc8d52359fc92ed8381723e",
+      "bytes": 168
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_23__Arbre_du_Temps/activation_rules.md",
+      "sha256": "b7a40972f6a61122271d94936c19f0b394a5f400c2c790badc54b4743052384a",
+      "bytes": 254
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_23__Arbre_du_Temps/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_23__Arbre_du_Temps/definition.md",
+      "sha256": "6eb02a1fe391214529ec2bf5b991725d9dce33ed0512b74260219b5a2f6d3d0f",
+      "bytes": 189
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_23__Arbre_du_Temps/examples_events.md",
+      "sha256": "800ddae3266b36e492c3cc430f308bb16aa0e6b06ea1ad2f4ba5dcd39ef2d58a",
+      "bytes": 197
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_23__Arbre_du_Temps/links_to_other_trees.json",
+      "sha256": "b502562252d6b8790658bb85212516d3debf6cc27a2c386d8f90d974475b6c86",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_23__Arbre_du_Temps/node_registry.json",
+      "sha256": "ff7833da8233dd6bcbd2a00171c716b6619af209a80d652e50e6c0eff61f57e4",
+      "bytes": 163
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_23__Arbre_du_Temps/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_23__Arbre_du_Temps/risks_confusions.md",
+      "sha256": "f1c2f78e267779f60d7e1d1a45c82eae5d5430d6a7fb41efb6fa99047c8b904b",
+      "bytes": 181
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_23__Arbre_du_Temps/tensor_coordinates.json",
+      "sha256": "1e6fe9faeaca36a624926c17b8c58a51d5b376e08f948f9a514a0b8133067937",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_23__Arbre_du_Temps/tests.md",
+      "sha256": "3a1e1395af2b1225dd2441c66f3fdd93cc3e3ddd401523dc4835e0339a528505",
+      "bytes": 107
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_24__Arbre_de_la_Memoire/README.md",
+      "sha256": "2ebd5fcf2aebed549d3f190ebac98e83d6e82be01abb7dbe9001404e426fadfc",
+      "bytes": 174
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_24__Arbre_de_la_Memoire/activation_rules.md",
+      "sha256": "661bd57174c1aa838f7b2d71c5490c450207305b0a9d9196a4f8bcbd51057d08",
+      "bytes": 262
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_24__Arbre_de_la_Memoire/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_24__Arbre_de_la_Memoire/definition.md",
+      "sha256": "3871d15a661f506cabc25171a6ad53440c3ccfc62f02cbe47762e6fa9e916de4",
+      "bytes": 195
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_24__Arbre_de_la_Memoire/examples_events.md",
+      "sha256": "6803424681bc514aa245151d8e94b821c486379c1eba6a6da57e948f7d834628",
+      "bytes": 209
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_24__Arbre_de_la_Memoire/links_to_other_trees.json",
+      "sha256": "6ec17493913b70fdc3c7734edcebdfe0d97ce6b660f2989bf101dd3f6413d6bb",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_24__Arbre_de_la_Memoire/node_registry.json",
+      "sha256": "2c0b322d950f029eb5cd9d396f5a1d71c1f14c81fcb8a8578696f8a651fddb6b",
+      "bytes": 165
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_24__Arbre_de_la_Memoire/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_24__Arbre_de_la_Memoire/risks_confusions.md",
+      "sha256": "98380229f3b860f32cccce8e27fa5855c5d50cc990557cd9ea7d1346ef0f6031",
+      "bytes": 187
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_24__Arbre_de_la_Memoire/tensor_coordinates.json",
+      "sha256": "7aa80ae1d895197ae16a69503abd578db762e28af275f7b991a7f87f8eda893b",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_24__Arbre_de_la_Memoire/tests.md",
+      "sha256": "ad34e5b819ffc8101b29e03f0c119d96e7201410d3ca210d1e6ca74ec5732118",
+      "bytes": 113
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_25__Arbre_de_l_Histoire/README.md",
+      "sha256": "1fa1b9d7847a36ec45929caebd7ce110b518c4d5ed9d2a2380d45be90a679ff1",
+      "bytes": 175
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_25__Arbre_de_l_Histoire/activation_rules.md",
+      "sha256": "c70d94db08438c374b6016a60ac0dbc2ab79e76600f85d5c34007c2c4ff7736c",
+      "bytes": 264
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_25__Arbre_de_l_Histoire/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_25__Arbre_de_l_Histoire/definition.md",
+      "sha256": "59d0164ce641d536fed62b6e4b8368ed103122b0b6429ce0d5d44de6bfb722f3",
+      "bytes": 196
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_25__Arbre_de_l_Histoire/examples_events.md",
+      "sha256": "2cbc8e0ed31d90bcba935b1222fce9b1a82ef60b6d4bfe288130f513eb35f9fe",
+      "bytes": 211
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_25__Arbre_de_l_Histoire/links_to_other_trees.json",
+      "sha256": "6aa57a285ddeeb8a743f3f84fbfc10daebd3c7f50c4d662d82662f646e683a53",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_25__Arbre_de_l_Histoire/node_registry.json",
+      "sha256": "c4217ea6175ff8b3bcdf8468bfa0acea9576eb3758ced46dce3ce09fc35d910c",
+      "bytes": 166
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_25__Arbre_de_l_Histoire/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_25__Arbre_de_l_Histoire/risks_confusions.md",
+      "sha256": "669f53d6bbaf750f5ba6374c7a1de3dfc764c37bb5029dd3b7183bef500d622a",
+      "bytes": 188
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_25__Arbre_de_l_Histoire/tensor_coordinates.json",
+      "sha256": "898de1fbfcb3c32113c250c47c4f6d6c269ea902323b9ed70462df583f4d9104",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_25__Arbre_de_l_Histoire/tests.md",
+      "sha256": "0fe9c316c20182a14fc097fb65d51e68ab9cdff97638dfaa8d61c3d8456fbb5f",
+      "bytes": 114
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_26__Arbre_de_la_Coherence/README.md",
+      "sha256": "cd9bba9744d218b9136b314d9d3da96cbb5b83476b96c7f7b4c6d9ed3edda5b3",
+      "bytes": 174
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_26__Arbre_de_la_Coherence/activation_rules.md",
+      "sha256": "8a72e17bb3f7c4f523cee4257c8b4cd7f2ff5df5f5866b854fe7fe1f333d3ee4",
+      "bytes": 264
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_26__Arbre_de_la_Coherence/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_26__Arbre_de_la_Coherence/definition.md",
+      "sha256": "7efa025d2b68916f8ea2e8c95293b7068b90e27e45726c6409ddf8e16f6366f8",
+      "bytes": 197
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_26__Arbre_de_la_Coherence/examples_events.md",
+      "sha256": "9f37ebe410c8fbec9239e91e28243559fd011b5e9418c2a23142ff372eb7f921",
+      "bytes": 213
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_26__Arbre_de_la_Coherence/links_to_other_trees.json",
+      "sha256": "c8072ecd74c28529e7ad7e62b5c027bd1f0c74f6e1e9c385b74943fab5c0cbff",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_26__Arbre_de_la_Coherence/node_registry.json",
+      "sha256": "ad115c149d082c3a85faa3485632968c53103273931108fea3e64b2d47f72ce7",
+      "bytes": 167
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_26__Arbre_de_la_Coherence/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_26__Arbre_de_la_Coherence/risks_confusions.md",
+      "sha256": "67f5408fad39ba79cb5c9b3f5810c2f3c32ab8207cd321c05b08ad0fe9904c44",
+      "bytes": 189
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_26__Arbre_de_la_Coherence/tensor_coordinates.json",
+      "sha256": "1bc65cbe51545e91f99bb199756b12c1f57e6633f43315d101c40f4c1ff06f6d",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_26__Arbre_de_la_Coherence/tests.md",
+      "sha256": "950b8744882291dec44c2b230c244d06db758ea852d0c682496ad1b4e6f04792",
+      "bytes": 115
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_27__Arbre_de_la_Verite/README.md",
+      "sha256": "edf333f6879b38ec837e466eddc8af8962297ec947c5e0af58778bdc093dcc20",
+      "bytes": 172
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_27__Arbre_de_la_Verite/activation_rules.md",
+      "sha256": "7acabf202e9465e38d7abe4b6c101e0bc9168cefe299b4a6a2db9104758f7175",
+      "bytes": 259
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_27__Arbre_de_la_Verite/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_27__Arbre_de_la_Verite/definition.md",
+      "sha256": "47da3a8c69b5d16ceca0cd38924c7863ec59894f7fac7f34cfc11c03e449e7bf",
+      "bytes": 195
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_27__Arbre_de_la_Verite/examples_events.md",
+      "sha256": "924129c65925dfb66e09227a6a8b34b7089d81f5b1ca864ccbc503bf8fcfa611",
+      "bytes": 209
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_27__Arbre_de_la_Verite/links_to_other_trees.json",
+      "sha256": "9e7031ba9a5d2818d320adbbfca14b2c78875a995c383ec4958fb637087b49ad",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_27__Arbre_de_la_Verite/node_registry.json",
+      "sha256": "6a6e8b2a81f4b49d09bf505aab103da28c1fb55fd9ed81608d204f5ccc50ef1b",
+      "bytes": 164
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_27__Arbre_de_la_Verite/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_27__Arbre_de_la_Verite/risks_confusions.md",
+      "sha256": "56e02f2b49f19b3aa388295e9b7acc5cb3ca4376ca44fbb4cd50e8efc80126b1",
+      "bytes": 187
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_27__Arbre_de_la_Verite/tensor_coordinates.json",
+      "sha256": "fa6e01836ad7de6e11e76bad93f77f611b35e315a9848c75184049cabd2f591b",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_27__Arbre_de_la_Verite/tests.md",
+      "sha256": "7f568a2891c4f487878727ae3c70881f44da28334626e9d118e90f63f31bbf2d",
+      "bytes": 113
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_28__Arbre_de_la_Valeur/README.md",
+      "sha256": "a931893004786d70cd41dbcf5420c6b21712ac32f69a848394b9cb108fad2b3c",
+      "bytes": 170
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_28__Arbre_de_la_Valeur/activation_rules.md",
+      "sha256": "716c3604d5df40e80911f677e91d08f40d52f8014ab355598a2e8d19003daf92",
+      "bytes": 257
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_28__Arbre_de_la_Valeur/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_28__Arbre_de_la_Valeur/definition.md",
+      "sha256": "63ae9da28a0ae0576f69c8eceef18568ac8f5786e4bfeae870aa38a7e35ee2c0",
+      "bytes": 193
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_28__Arbre_de_la_Valeur/examples_events.md",
+      "sha256": "b10dc07bce20d66762855d7c087722df6dcd0af7946ddc66a1a06faaf0580236",
+      "bytes": 205
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_28__Arbre_de_la_Valeur/links_to_other_trees.json",
+      "sha256": "c7ce1a809f6ab98b95267b4b82c60abde84d57f7432151049c57ae0023a8b390",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_28__Arbre_de_la_Valeur/node_registry.json",
+      "sha256": "a11f1d486cd4c137254da0ae106ca4ae0de2a2bf5e7b388c91856520bd00fa41",
+      "bytes": 164
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_28__Arbre_de_la_Valeur/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_28__Arbre_de_la_Valeur/risks_confusions.md",
+      "sha256": "b8d29765be3d0ce2fba192ece63f73e74271bd9de68c97a62ac1ed8a99dcd696",
+      "bytes": 185
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_28__Arbre_de_la_Valeur/tensor_coordinates.json",
+      "sha256": "fe28fb20920220d60cfe72916934886546605426eeeda3d444fdfdf1c185c0b7",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_28__Arbre_de_la_Valeur/tests.md",
+      "sha256": "8d776573086fd1b607120fe9ac1e62fed6bcff8c3f0f8b88b581e2a87dbcd67f",
+      "bytes": 111
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_29__Arbre_de_la_Finalite/README.md",
+      "sha256": "7ab2b7672d296b3e63499719095d16373e25f2ed0134c932a4e863e990d81d40",
+      "bytes": 173
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_29__Arbre_de_la_Finalite/activation_rules.md",
+      "sha256": "50e9c1177e6d112a78b21841159b308f0244e1e419f9840e9544b5d49f73b9b7",
+      "bytes": 262
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_29__Arbre_de_la_Finalite/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_29__Arbre_de_la_Finalite/definition.md",
+      "sha256": "7994796b6e1a051647fff41c9eae08aa11c4d588a6875a6eb72479d721dc57ac",
+      "bytes": 196
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_29__Arbre_de_la_Finalite/examples_events.md",
+      "sha256": "559c1b40acf0469ff9afaddd3cadaecd84d743c44de0f572faf37e8910c0bc80",
+      "bytes": 211
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_29__Arbre_de_la_Finalite/links_to_other_trees.json",
+      "sha256": "d4608b88a999023a6641dbb13ce4d0a870a5f8bc225d7c348ddd9e0501433534",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_29__Arbre_de_la_Finalite/node_registry.json",
+      "sha256": "bf009927b8301135556c1e2fcf8ff2d99923e2e75869ec40070018a4ac12ff5e",
+      "bytes": 166
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_29__Arbre_de_la_Finalite/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_29__Arbre_de_la_Finalite/risks_confusions.md",
+      "sha256": "61ea08b4e4f20e68ec5469aaa704df817da6feca0f750c97ea28342cba367ee7",
+      "bytes": 188
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_29__Arbre_de_la_Finalite/tensor_coordinates.json",
+      "sha256": "a563b017bc985589a026e7ecb59ae2a9fe947b5f59e42a9e40b788449e45f9c1",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_29__Arbre_de_la_Finalite/tests.md",
+      "sha256": "47198019c2fd5cf9819227ca5820186321890c26a38bec529917192803f443d5",
+      "bytes": 114
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_30__Arbre_Cognitif_Global/README.md",
+      "sha256": "f0f28960370aeea39ffc743299beb280dadf9792ee7a2f001b49b35a41394397",
+      "bytes": 169
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_30__Arbre_Cognitif_Global/activation_rules.md",
+      "sha256": "6746f62be480ec7cab8b58cc429ddc0b982bbe513aeda645abf86ebfd79ae8fd",
+      "bytes": 265
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_30__Arbre_Cognitif_Global/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_30__Arbre_Cognitif_Global/definition.md",
+      "sha256": "1cc6a7148d230393bf69d7df9e4643aad0e980964657014666555e40cc4aabfc",
+      "bytes": 196
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_30__Arbre_Cognitif_Global/examples_events.md",
+      "sha256": "7edf704e851f57c962de1ae1acff50c05659bebe54e77075bf50ad6481ef33b6",
+      "bytes": 211
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_30__Arbre_Cognitif_Global/links_to_other_trees.json",
+      "sha256": "bcb57ecae3fb0e67bf664bbe2dc4693370db34733b6d9c4055ffede6dc877511",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_30__Arbre_Cognitif_Global/node_registry.json",
+      "sha256": "46c3c735eb88a75c65001452d9d65e333d2bae926550b3552bb118428d1061f1",
+      "bytes": 173
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_30__Arbre_Cognitif_Global/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_30__Arbre_Cognitif_Global/risks_confusions.md",
+      "sha256": "409d38f19555bd0997055e76335392177c1c5ff84c1789a073e91ee3674cc8bb",
+      "bytes": 188
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_30__Arbre_Cognitif_Global/tensor_coordinates.json",
+      "sha256": "0de5231c7c50d9342336854b1601a501aa31c85c5f8fea4968bb2e8b961cc6ea",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_30__Arbre_Cognitif_Global/tests.md",
+      "sha256": "1a45e8269c2491628bb8a1641a565f08d8bf77f2721fe8df636e22261490909c",
+      "bytes": 114
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_31__Arbre_des_Flux/README.md",
+      "sha256": "955343b9500203ed673d0b500ebfcce5c12c2a71f4791deb8eb2ce97a93e6b26",
+      "bytes": 162
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_31__Arbre_des_Flux/activation_rules.md",
+      "sha256": "1fa88e0393eaa13371b8180d0b89f8708b8ec4c34ad977984d636b94c70fa00c",
+      "bytes": 247
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_31__Arbre_des_Flux/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_31__Arbre_des_Flux/definition.md",
+      "sha256": "dad00dbff421a55df135e499b6fd8f624f69ce0300cdda19d66d250263e946a2",
+      "bytes": 189
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_31__Arbre_des_Flux/examples_events.md",
+      "sha256": "dc35f6ed2e34ecf59c5e5d40fe42b9c04484d9ef1c0e711b6f89f97e86a5b43e",
+      "bytes": 197
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_31__Arbre_des_Flux/links_to_other_trees.json",
+      "sha256": "ed2a6eb87d8f2c1126e5c6fc5809b50a09166f6a54a55a8fe513d7fcb5e0d8bc",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_31__Arbre_des_Flux/node_registry.json",
+      "sha256": "a045ae2532695051d4feac3c36115afbe74cc024d9f8fc3abb6d3abb705dfe91",
+      "bytes": 162
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_31__Arbre_des_Flux/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_31__Arbre_des_Flux/risks_confusions.md",
+      "sha256": "1271088c4fad2708ebfced59cf6bb9808b066be78c35b5abc0a369e3949113f7",
+      "bytes": 181
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_31__Arbre_des_Flux/tensor_coordinates.json",
+      "sha256": "aef13048f924ea95a4de0cdd60933f4ad7c1c83d6de19c40776bf57001a027ce",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_31__Arbre_des_Flux/tests.md",
+      "sha256": "3d1dcb3dd66e4c9d0da3dbafccc11758a3a85fbdd433b2aa1cddb9358f115fb1",
+      "bytes": 107
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_32__Arbre_des_Connexions/README.md",
+      "sha256": "c7c502251b1361326ffb40f705530f37f9257719c6f23a56f0007c91c3767aad",
+      "bytes": 168
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_32__Arbre_des_Connexions/activation_rules.md",
+      "sha256": "a828d5fcfb2f08228922921b94f8c6e384a01edea38efcbbfe51f98cd2fccc4a",
+      "bytes": 259
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_32__Arbre_des_Connexions/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_32__Arbre_des_Connexions/definition.md",
+      "sha256": "d97136f20e63398cee3b3b8c487853b0fb2c4f4b6c2da413ff8b792c6b7b7679",
+      "bytes": 195
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_32__Arbre_des_Connexions/examples_events.md",
+      "sha256": "a82478551d0f1585a65dc73158efdef6f308de71dc657291822b730a2197fda2",
+      "bytes": 209
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_32__Arbre_des_Connexions/links_to_other_trees.json",
+      "sha256": "b9dbeca5a998ef62290f46569b325aa70566fb4563b3117f2fffb76511de437a",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_32__Arbre_des_Connexions/node_registry.json",
+      "sha256": "e7c4241c9af219bdf4bdfac52277c1add36d6b2baeeeb0507aba7f9b188e41fc",
+      "bytes": 168
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_32__Arbre_des_Connexions/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_32__Arbre_des_Connexions/risks_confusions.md",
+      "sha256": "adef9bebe10238c0ba4b57fbc2fc1b2c89af14fe8c31d860526a493e4563f70a",
+      "bytes": 187
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_32__Arbre_des_Connexions/tensor_coordinates.json",
+      "sha256": "fb4ce8e62c5547b27b9e95a75a580fa2673b8c938941ae8be6113e1fd9f01e93",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_32__Arbre_des_Connexions/tests.md",
+      "sha256": "a2d87ded7ce83325d8ae33651813114e0c5fed3997e605804caba812468aec9e",
+      "bytes": 113
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_33__Arbre_de_l_Optimisation/README.md",
+      "sha256": "c1bf07fd3f8b4ecb6a5bc400dcec741440f01ec8e0f740cbdf125b546087c18e",
+      "bytes": 173
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_33__Arbre_de_l_Optimisation/activation_rules.md",
+      "sha256": "b4a7e763a5063671ca521a2e90e105daf97af3988e707f6d90d6809b6b5eae55",
+      "bytes": 266
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_33__Arbre_de_l_Optimisation/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_33__Arbre_de_l_Optimisation/definition.md",
+      "sha256": "0bd42b22a37737488a29c6c8d68912111395116a38e687eb6969a613667a09aa",
+      "bytes": 200
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_33__Arbre_de_l_Optimisation/examples_events.md",
+      "sha256": "ad4aca83c0695de87e39c0159c3d1a260c5da6eb123e2f6ac26685634befcd10",
+      "bytes": 219
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_33__Arbre_de_l_Optimisation/links_to_other_trees.json",
+      "sha256": "e8ef1204d1b266e56f297c26ec18edf2e9ef39fdb13942b3778ca4af286278a0",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_33__Arbre_de_l_Optimisation/node_registry.json",
+      "sha256": "24fcf837b476d8f8a8c402c4f3ae327be336f384addf07ad2bf8558294dc1874",
+      "bytes": 170
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_33__Arbre_de_l_Optimisation/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_33__Arbre_de_l_Optimisation/risks_confusions.md",
+      "sha256": "37ae4d07ae34fc2a9e1e8b3cc90cadb52e87d32028a3fbd9b516b1045959d9ca",
+      "bytes": 192
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_33__Arbre_de_l_Optimisation/tensor_coordinates.json",
+      "sha256": "87801ad9ff038f7318410a22e377371dfb46bde7e9a5a9b38d834a92f5dec9b6",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_33__Arbre_de_l_Optimisation/tests.md",
+      "sha256": "0618d4f4dfdf19a49389261792dfd466f6e97081205aaefb4ee6268c91aeaa6b",
+      "bytes": 118
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_34__Arbre_de_la_Stabilite/README.md",
+      "sha256": "891c60af4dff8eace1f570ccccb41b48157184245c6af15e3cd23868e6348465",
+      "bytes": 170
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_34__Arbre_de_la_Stabilite/activation_rules.md",
+      "sha256": "239325772d61658cee667c3e73052bf0ebe26b87c5fffcfc8944cfa78e6118bb",
+      "bytes": 260
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_34__Arbre_de_la_Stabilite/arbre.schema.json",
+      "sha256": "c8498525e72b3c5908f7808b8ff48fe139319b605f53fcb65da4424aef5c9c14",
+      "bytes": 305
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_34__Arbre_de_la_Stabilite/definition.md",
+      "sha256": "9708d5353d93f168206710dd9cc53618c2355b26a0835ed9a815a98fc4046eaf",
+      "bytes": 197
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_34__Arbre_de_la_Stabilite/examples_events.md",
+      "sha256": "3ee7a69e7b6f0c774c471fcba18d7b30ab04c846e1aa7d097a1e9724da6c0a5c",
+      "bytes": 213
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_34__Arbre_de_la_Stabilite/links_to_other_trees.json",
+      "sha256": "b96589c1d4b82895fac2a7fe465527522d1a8d29e78f1e41e9fb8e03647ff7cc",
+      "bytes": 117
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_34__Arbre_de_la_Stabilite/node_registry.json",
+      "sha256": "105ea848a6873894a8122f1b2cb3b44c7060a8961f07f0208516444f03938f31",
+      "bytes": 167
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_34__Arbre_de_la_Stabilite/non_decision_contract.md",
+      "sha256": "843cdb66a93c3b180284ba9642dc14f6ee0c0c89e88ee8b8d1e29724a08b9b42",
+      "bytes": 150
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_34__Arbre_de_la_Stabilite/risks_confusions.md",
+      "sha256": "393a87b354a10e016465cbd0e3e479ad141aa6b30d4e5e919b9eabc4a826cfc6",
+      "bytes": 189
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_34__Arbre_de_la_Stabilite/tensor_coordinates.json",
+      "sha256": "a3c75fb9f309e48304c373311cefefe7e639425dd66f6734441c73d988d25fac",
+      "bytes": 395
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/ARBRE_34__Arbre_de_la_Stabilite/tests.md",
+      "sha256": "02c63e000672ee0ae1b858ce60c84e78decc00928cfc482a2df290ab0ad4b354",
+      "bytes": 115
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/README.md",
+      "sha256": "e12161a49543d537ced3764e692319ea984568084a2ae255e9bfe699fb4d53b8",
+      "bytes": 107
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/Tree.schema.json",
+      "sha256": "c3ae0d21b1dfd3425367605b5d09d3efb853dedbf1f28b797ae95485dac6ae4c",
+      "bytes": 166
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/TreeSpace34.schema.json",
+      "sha256": "2079fb34e83a3703e2d1d80e8c5ca0471b64bcaec3dfaadcbecd18c93402691d",
+      "bytes": 180
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/arbres_34.canon.json",
+      "sha256": "0b9af809dd8a4c865b8dbee07ec8f0c8d0b6a95ee364b9dafcb6656bba6d41ff",
+      "bytes": 7595
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/arbres_34.diff.json",
+      "sha256": "795ec6422b4bd3c914a67e5e7d3e6068aad78aa2211d010369ad1eff31d6d968",
+      "bytes": 505
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/arbres_34.raw_image.json",
+      "sha256": "8b8216072c056e412772d96194a7e9836d649d5d41938c826f402318ff00ab0a",
+      "bytes": 5616
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/cognitive_reduction.py",
+      "sha256": "ca48d0532e70c4d689c5cf2f73abe9bfe198049425fb75fe0fb3d6920def7876",
+      "bytes": 141
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/matrix_examples.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/tensor_activation.py",
+      "sha256": "372ff55c62ca8adc3a2740b0470a5b6e19fef1bbb38422ffaaa57d9fc6c87e95",
+      "bytes": 120
+    },
+    {
+      "path": "04_ARBRES_34_TENSOR_MATRIX/tree_space.py",
+      "sha256": "07636fb21e8d3e2d21114139b1b56895050eea7c8c4295493e70da4a883a9dcd",
+      "bytes": 158
+    },
+    {
+      "path": "05_SHAZAM_COGNITIF/README.md",
+      "sha256": "105008ea445fb597e53f814d166b4d188f08a593fb4c03dc8d987fb7502ec364",
+      "bytes": 119
+    },
+    {
+      "path": "05_SHAZAM_COGNITIF/ShazamCognitif.schema.json",
+      "sha256": "1251512ff81326b2e3583761857b4d19a6bd9d274ceb34c90923bf32e9f01f73",
+      "bytes": 186
+    },
+    {
+      "path": "05_SHAZAM_COGNITIF/cosine_similarity.py",
+      "sha256": "1d29176467f0abb84a332d9bd404f33bf6dd8d5ffd0b8183ef0b873065ab7c19",
+      "bytes": 247
+    },
+    {
+      "path": "05_SHAZAM_COGNITIF/dominant_tree_filter.py",
+      "sha256": "919cfc092003a6b8702678b56d467242a251e630e1f88ce16b5642229154c221",
+      "bytes": 115
+    },
+    {
+      "path": "05_SHAZAM_COGNITIF/sample_payloads.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "bytes": 2
+    },
+    {
+      "path": "05_SHAZAM_COGNITIF/sample_shazam_output.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "05_SHAZAM_COGNITIF/shazam_cognitif.py",
+      "sha256": "53177ac1b409f82c56ae92fc642e1ccfd9cce872e35d83b54dfa425c9b465a94",
+      "bytes": 2351
+    },
+    {
+      "path": "05_SHAZAM_COGNITIF/spectral_hash.py",
+      "sha256": "f9c276d8d4e86596514ab8eeb6cba99f567a6d98f3670a484ecae671f3e1e2db",
+      "bytes": 900
+    },
+    {
+      "path": "06_REVERSE_OS_SSR_JARVIS/README.md",
+      "sha256": "33686906481792f4a4f4fcb7210347d40523e423ada096234b7b24ec44ccd903",
+      "bytes": 97
+    },
+    {
+      "path": "06_REVERSE_OS_SSR_JARVIS/SSR.schema.json",
+      "sha256": "96314fd49e58832585b06e5d626a2a3031e33decc6f84a00fe21c3add637ca27",
+      "bytes": 164
+    },
+    {
+      "path": "06_REVERSE_OS_SSR_JARVIS/active_cognitive_reduction.py",
+      "sha256": "8bef80f1d67fd482eeb808c3717df1f9800b54282bf3f01c2503009c1f27fa62",
+      "bytes": 116
+    },
+    {
+      "path": "06_REVERSE_OS_SSR_JARVIS/complete_decision_flow.schema.json",
+      "sha256": "d4aab998b175bc54600419c03eb5a85a811ce5d075f970b1fcb779fc4f74027c",
+      "bytes": 198
+    },
+    {
+      "path": "06_REVERSE_OS_SSR_JARVIS/jarvis_projection.py",
+      "sha256": "bb7d7171dad9b54826213ae46e8a64aa1ebcf0c1be791a36299612d0b477b640",
+      "bytes": 105
+    },
+    {
+      "path": "06_REVERSE_OS_SSR_JARVIS/reverse_os.py",
+      "sha256": "bd216a6183977d965e92e485781dcd030b3e8b97a490ec693bcbcf023505578d",
+      "bytes": 1046
+    },
+    {
+      "path": "06_REVERSE_OS_SSR_JARVIS/sample_complete_decision_flow.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "06_REVERSE_OS_SSR_JARVIS/sample_reverse_output.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "06_REVERSE_OS_SSR_JARVIS/semantic_mapper.py",
+      "sha256": "60a1a233249fedf42dfddde96e51e8d387da7ce61fd8ecdf22cb7e3bb3321146",
+      "bytes": 176
+    },
+    {
+      "path": "06_REVERSE_OS_SSR_JARVIS/semantics.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "07_BDF_DOUBLE_CERVEAU/BDF.schema.json",
+      "sha256": "3eb58da67f80593e65af0ce13998413f75e19e177f2ef815abee08fb67dc75cf",
+      "bytes": 164
+    },
+    {
+      "path": "07_BDF_DOUBLE_CERVEAU/README.md",
+      "sha256": "1b5c9bd445916640692ca3392280f99c09b6f825fc0e20dfb680186624522d6b",
+      "bytes": 90
+    },
+    {
+      "path": "07_BDF_DOUBLE_CERVEAU/aeg_guard.py",
+      "sha256": "fef91873c09a8ed1cf5675b370bc987ee0f54ad681216439dd6a7e9d1220b486",
+      "bytes": 83
+    },
+    {
+      "path": "07_BDF_DOUBLE_CERVEAU/alpha_beta_router.py",
+      "sha256": "cea8af81e643296de50c169eb1b7d166948e40f95493fb435b2656a8279a3eea",
+      "bytes": 81
+    },
+    {
+      "path": "07_BDF_DOUBLE_CERVEAU/bdf_response.py",
+      "sha256": "43aa56fe42307e2e9d2e160c1490f57ef685f1843990df72030f4b8e492c3b33",
+      "bytes": 379
+    },
+    {
+      "path": "07_BDF_DOUBLE_CERVEAU/diffusion_stub.py",
+      "sha256": "b117bca1f156a02492698f0eec1b7db035bf7e9c9d815d17963a183132a1cb38",
+      "bytes": 72
+    },
+    {
+      "path": "07_BDF_DOUBLE_CERVEAU/llm_stub.py",
+      "sha256": "9ace10cc3b4b05c974d30e7d067da2727e8da1c5cadbeeb32dc183df6331b5d2",
+      "bytes": 60
+    },
+    {
+      "path": "07_BDF_DOUBLE_CERVEAU/sample_bdf_output.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "08_HEXAFLUX_LTCU_MUTATIONS/HexaFlux.schema.json",
+      "sha256": "9790bacfa03ec6c091ab5ee2f85de27558b5e90626989239e990779e95c71c93",
+      "bytes": 174
+    },
+    {
+      "path": "08_HEXAFLUX_LTCU_MUTATIONS/LTCUPlus.schema.json",
+      "sha256": "314f7b54a602bea9bf928ab377a44a8f6b9eeb33fd60fef97ed8bec6ff3f3ec7",
+      "bytes": 174
+    },
+    {
+      "path": "08_HEXAFLUX_LTCU_MUTATIONS/README.md",
+      "sha256": "53a2c69e395410cf5dec824e44b0c2d523c4a07c812f41a47095e2ad5f13a2fe",
+      "bytes": 74
+    },
+    {
+      "path": "08_HEXAFLUX_LTCU_MUTATIONS/hexaflux.py",
+      "sha256": "763edf03b1d6fe3365f3c65190465c9e62d3d3b3214722d4a982bd73912773ee",
+      "bytes": 241
+    },
+    {
+      "path": "08_HEXAFLUX_LTCU_MUTATIONS/ltcu_plus.py",
+      "sha256": "e7103a44c3b3e088457feadf2debda27ec98b8201e95b3c53794ff413603d34f",
+      "bytes": 56
+    },
+    {
+      "path": "08_HEXAFLUX_LTCU_MUTATIONS/mutation_matrix.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "08_HEXAFLUX_LTCU_MUTATIONS/sample_mutation.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "08_HEXAFLUX_LTCU_MUTATIONS/yi_jing_64_registry.json",
+      "sha256": "2ecc4797e9dc7a715c0b7d3abd37637ce98abb23e903aaab02d80777d811d649",
+      "bytes": 9209
+    },
+    {
+      "path": "09_MCP_BRIDGE_OBSIDIA_IR/MCPBridge.schema.json",
+      "sha256": "3fc2e699d2b0335122a3abab07d372128f4e6c3a0b4a31f8c4cf55a577651a3d",
+      "bytes": 176
+    },
+    {
+      "path": "09_MCP_BRIDGE_OBSIDIA_IR/ObsidiaIR.schema.json",
+      "sha256": "8a8bd3f1888eb637878556058a04d72c72dedde485cb4f896e1963bdb8225f2d",
+      "bytes": 176
+    },
+    {
+      "path": "09_MCP_BRIDGE_OBSIDIA_IR/README.md",
+      "sha256": "81af5b02d6e2cd9b6fcfddcd509196943d3ea060680d31af8bd4b8407cc02516",
+      "bytes": 88
+    },
+    {
+      "path": "09_MCP_BRIDGE_OBSIDIA_IR/mcp_bridge.py",
+      "sha256": "ad3a98dda260acc01623b7402115709af17696e38208573fa97ac882bde283e3",
+      "bytes": 521
+    },
+    {
+      "path": "09_MCP_BRIDGE_OBSIDIA_IR/obsidia_ir.py",
+      "sha256": "cba768b2de4273207379d7716453f7c54018f02f010ec30082019aad8d96122c",
+      "bytes": 55
+    },
+    {
+      "path": "09_MCP_BRIDGE_OBSIDIA_IR/policy_scope_guard.py",
+      "sha256": "d574e20b3269090cdb3ac9b88a5e76808e5cbf603f2e8e825029b2bd52720c4c",
+      "bytes": 64
+    },
+    {
+      "path": "09_MCP_BRIDGE_OBSIDIA_IR/sample_mcp_request.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "09_MCP_BRIDGE_OBSIDIA_IR/sample_obsidia_ir.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "10_AGENTS_52/00_TOP5_FONDATEURS/CANON_GUARDIAN.md",
+      "sha256": "24fe5891c33aec2f5976abbfdc38e5836424b0c2f39f83fc80bcf6fca887c896",
+      "bytes": 180
+    },
+    {
+      "path": "10_AGENTS_52/00_TOP5_FONDATEURS/GRAPH_BUILDER.md",
+      "sha256": "23325053aca33d8251557bbf1aa5e76b5483c44fb7549994f82e82ba7e5d988f",
+      "bytes": 182
+    },
+    {
+      "path": "10_AGENTS_52/00_TOP5_FONDATEURS/OBSIDIA_ATLAS_INGESTOR.md",
+      "sha256": "a6b0b98170ef87175e28e5f6ca2abefd5a10fcd0a1602e8bac9052dc556cf323",
+      "bytes": 192
+    },
+    {
+      "path": "10_AGENTS_52/00_TOP5_FONDATEURS/PROOF_SENTINEL.md",
+      "sha256": "934eaf5caae9ca2cb3861b3cb56b312fdd3b20b1a750cf95453ecc3569a35165",
+      "bytes": 183
+    },
+    {
+      "path": "10_AGENTS_52/00_TOP5_FONDATEURS/TERMINAL_BUILDER.md",
+      "sha256": "8187e943287ca63cd8b382e437ac3e0b65d6fcb7147b4931278d9f7982c86410",
+      "bytes": 180
+    },
+    {
+      "path": "10_AGENTS_52/01_CODE_REPO_CI/ADVERSARIAL_RED_TEAM.md",
+      "sha256": "b4fcff2dfbc6569a643cda8fed21d37b89d107074a9919e8fea7037b64c62532",
+      "bytes": 178
+    },
+    {
+      "path": "10_AGENTS_52/01_CODE_REPO_CI/CARTOGRAPHE_PREUVES.md",
+      "sha256": "cf52a52e5cb4ccf475d5962ed6c4a4321d4d452c8f6d73766e25b05ac5fba6e8",
+      "bytes": 154
+    },
+    {
+      "path": "10_AGENTS_52/01_CODE_REPO_CI/CI_REPO_SURGEON.md",
+      "sha256": "284916f1ddc391f684223cd3e3c4b5d870f9f722466ba024d7373c360fe35199",
+      "bytes": 162
+    },
+    {
+      "path": "10_AGENTS_52/01_CODE_REPO_CI/CO_PILOTE_CODE.md",
+      "sha256": "329dd6572a99b8bd4b212769877ecb8f33d4369d3046d000bd73c8345039e81f",
+      "bytes": 173
+    },
+    {
+      "path": "10_AGENTS_52/01_CODE_REPO_CI/FORMAL_BRIDGE.md",
+      "sha256": "39704e5342fbcd90abf351846c54eb4fac4f7b7ef867040887de12c169410926",
+      "bytes": 158
+    },
+    {
+      "path": "10_AGENTS_52/01_CODE_REPO_CI/GENERATEUR_TESTS_ADVERSARIAUX.md",
+      "sha256": "5b6d17c151b771fa11fd92edc77c87b03c4b2759c455f6d4803ce7292e6ba218",
+      "bytes": 168
+    },
+    {
+      "path": "10_AGENTS_52/01_CODE_REPO_CI/REPO_HISTORIAN.md",
+      "sha256": "8130e00763371d866a71e4ebe5407b286571feb9ce8de1cc4dea577a1a20bf65",
+      "bytes": 160
+    },
+    {
+      "path": "10_AGENTS_52/01_CODE_REPO_CI/VERSION_COMPARATOR.md",
+      "sha256": "8ad8f4790183c19eb049187598063c2e8101d739ceb16deef4d5fd2efc730774",
+      "bytes": 157
+    },
+    {
+      "path": "10_AGENTS_52/02_DOCUMENTATION_THEORIE_FREEZE/ASSISTANT_THEORIQUE_DOCUMENTAIRE.md",
+      "sha256": "b5ec84b7459aab46c425d7d2f5d95e46ca9b6089f5e2a8a1c1e47e1880917d09",
+      "bytes": 208
+    },
+    {
+      "path": "10_AGENTS_52/02_DOCUMENTATION_THEORIE_FREEZE/CONTRADICTION_HUNTER.md",
+      "sha256": "8acd2f335bc7fb5caf0315141482d1e505ba53c79785d207bcc31658269bd689",
+      "bytes": 181
+    },
+    {
+      "path": "10_AGENTS_52/02_DOCUMENTATION_THEORIE_FREEZE/FREEZE_MASTER.md",
+      "sha256": "52f958511025249496afa2f7e86c3dc6d5171ed47fc4c31c3bb58fa3185a89e8",
+      "bytes": 177
+    },
+    {
+      "path": "10_AGENTS_52/02_DOCUMENTATION_THEORIE_FREEZE/HISTORIEN_DECISIONS.md",
+      "sha256": "7c62e9d2853416401877172ddd60a70f629798f1b8a03b196921df50b1d7803e",
+      "bytes": 205
+    },
+    {
+      "path": "10_AGENTS_52/02_DOCUMENTATION_THEORIE_FREEZE/MEMOIRE_PERSONNELLE_OBSIDIA.md",
+      "sha256": "75e3f22ae0204605c36d1d5d2215a56da72b5115acadf1121fc1d79c44e9d434",
+      "bytes": 190
+    },
+    {
+      "path": "10_AGENTS_52/02_DOCUMENTATION_THEORIE_FREEZE/PRE_FREEZE.md",
+      "sha256": "6f57671c1e2e810b0714dc57508501131e0c3742b269c0be1eee2ef6ccfa9eff",
+      "bytes": 187
+    },
+    {
+      "path": "10_AGENTS_52/02_DOCUMENTATION_THEORIE_FREEZE/RECHERCHE_EXTERNE.md",
+      "sha256": "447e9c0314006288a9b727f9af25d391b6976f2859d124bfe62ad60a32a36bcc",
+      "bytes": 197
+    },
+    {
+      "path": "10_AGENTS_52/02_DOCUMENTATION_THEORIE_FREEZE/THEORIE_VIVANTE.md",
+      "sha256": "5242c3cf8512dedfb35383f1277fc75d160e339f435566d114c3fa6ef136aa98",
+      "bytes": 191
+    },
+    {
+      "path": "10_AGENTS_52/02_DOCUMENTATION_THEORIE_FREEZE/VOCABULAIRE_CANONIQUE.md",
+      "sha256": "cea7103e5bcb7ebdf142ee26be2c6cfcf29f4c5a58806cfea34831e863e5b5dc",
+      "bytes": 183
+    },
+    {
+      "path": "10_AGENTS_52/03_DONNEES_LOGS_AUDIT/ANALYSTE_LOGS_EXPERIMENTAUX.md",
+      "sha256": "5499408401119c0a1f243a7a7653d7fe62f934d048cb28266826c2b4a2a97e59",
+      "bytes": 198
+    },
+    {
+      "path": "10_AGENTS_52/03_DONNEES_LOGS_AUDIT/AUDIT_LOCAL_AGENT.md",
+      "sha256": "e28f1dd55a0caa8d17b7dcb6e84f0838d8bbca4de38b19d19681a89f25df72a6",
+      "bytes": 159
+    },
+    {
+      "path": "10_AGENTS_52/03_DONNEES_LOGS_AUDIT/DATA_SOVEREIGNTY_GUARD.md",
+      "sha256": "5a9784dab8ab79f5d635afccca56f1dbeb2f2b761b120e2e1e92cd4a1aa8bfe5",
+      "bytes": 182
+    },
+    {
+      "path": "10_AGENTS_52/03_DONNEES_LOGS_AUDIT/EVIDENCE_BOARD_BUILDER.md",
+      "sha256": "34210eb22eeb56d817cce652057754c36429f1dd15b6bd918a5f04fba3fc6656",
+      "bytes": 181
+    },
+    {
+      "path": "10_AGENTS_52/04_SECURITE_PAREFEU/POLICY_FIREWALL_AGENT.md",
+      "sha256": "8bb05bcd68dabc0134f2921bb603bd3e9972f59aa59ab4edf815314e4c81ad43",
+      "bytes": 163
+    },
+    {
+      "path": "10_AGENTS_52/04_SECURITE_PAREFEU/RUNTIME_ATTESTATION_AGENT.md",
+      "sha256": "6333d9508cf2382838cb2ef0609ab63f91c4048e959f179f6babd2779cad76d6",
+      "bytes": 172
+    },
+    {
+      "path": "10_AGENTS_52/04_SECURITE_PAREFEU/SECRET_GUARD.md",
+      "sha256": "eae642815ab516d2bbea6e1d80ee9ae5389c82a894116af3f2ddfd1f2746e241",
+      "bytes": 157
+    },
+    {
+      "path": "10_AGENTS_52/04_SECURITE_PAREFEU/SECURITY_FIREWALL_ARCHITECT.md",
+      "sha256": "e3aa35e4e57e485b11ce48d042f59406f6c895db138a1654149fbf0cc205a1a5",
+      "bytes": 195
+    },
+    {
+      "path": "10_AGENTS_52/04_SECURITE_PAREFEU/SUPPLY_CHAIN_GUARD.md",
+      "sha256": "d73532a740f58cf383950b6adf712f473e7a8abff6d18ccaa032cadac1f126f5",
+      "bytes": 179
+    },
+    {
+      "path": "10_AGENTS_52/05_TERRAIN_PRODUIT_COMMUNICATION/EXPLIQUE_A_UN_HUMAIN.md",
+      "sha256": "6267172ed1d24c68ca3da91b2992104cca670e1d86068e23dd6ad2f5f9a90b27",
+      "bytes": 190
+    },
+    {
+      "path": "10_AGENTS_52/05_TERRAIN_PRODUIT_COMMUNICATION/FIELD_POC_MAPPER.md",
+      "sha256": "8f0f1906a82ab9038a9548dc7dd710db801b35949e270ecdc7277cfca6380163",
+      "bytes": 190
+    },
+    {
+      "path": "10_AGENTS_52/05_TERRAIN_PRODUIT_COMMUNICATION/MONETISATION_PACKAGING.md",
+      "sha256": "b8e1b02daea35c64682fd02e1aabdb48db9ca78786e3398fb238ebdf405dc3f4",
+      "bytes": 183
+    },
+    {
+      "path": "10_AGENTS_52/05_TERRAIN_PRODUIT_COMMUNICATION/PITCH_AGENT.md",
+      "sha256": "3c090729f53cf060efebbf0c30b0735f2afb5fa95a65e502039734ebf96d0177",
+      "bytes": 169
+    },
+    {
+      "path": "10_AGENTS_52/05_TERRAIN_PRODUIT_COMMUNICATION/SIMULATEUR_REUNION.md",
+      "sha256": "9048d7f3830abe71fd5221b1578577a62bec22df4664f1d9f544c4a4abc77c2c",
+      "bytes": 175
+    },
+    {
+      "path": "10_AGENTS_52/06_FRISE_ARBRES_MONDE_HUMAIN/CALIBRATION_PROCEDURALE.md",
+      "sha256": "378672335cd92aa4a6f2cabbeab252913fb7663f6c9e862181790b248dc262e1",
+      "bytes": 177
+    },
+    {
+      "path": "10_AGENTS_52/06_FRISE_ARBRES_MONDE_HUMAIN/CARTOGRAPHE_34_ARBRES.md",
+      "sha256": "865ef111c3b34105862ba5de23b79cec7b1372eed00ad2cf1f8d50f05f651d69",
+      "bytes": 180
+    },
+    {
+      "path": "10_AGENTS_52/06_FRISE_ARBRES_MONDE_HUMAIN/FRISE_HUMAINE.md",
+      "sha256": "f697b3e549346c1926f827a38c1f46bfa6045d0720f3df2a7282e96f3f442e91",
+      "bytes": 167
+    },
+    {
+      "path": "10_AGENTS_52/06_FRISE_ARBRES_MONDE_HUMAIN/HUMAN_HISTORY_MAPPER.md",
+      "sha256": "62a4b23c2d4e110d70e4462051851906b3624f9fbdef8d78417ecf7a56db725d",
+      "bytes": 188
+    },
+    {
+      "path": "10_AGENTS_52/06_FRISE_ARBRES_MONDE_HUMAIN/NUAGE_POINTS.md",
+      "sha256": "4f96dba97ee916aaaa7ecfc4b6d8a818cdacecf636d64f4aa2ad4559df6fbc2f",
+      "bytes": 177
+    },
+    {
+      "path": "10_AGENTS_52/07_ATLAS_OBSIDIA/CARTOGRAPHE_AGI_VISION_HAUTE.md",
+      "sha256": "03c0d3d0f756fd2f4ceab92719875cefafce4c7937e580b35b11ffee266d8d0d",
+      "bytes": 176
+    },
+    {
+      "path": "10_AGENTS_52/07_ATLAS_OBSIDIA/CARTOGRAPHE_COUCHES.md",
+      "sha256": "c1800928dd36580446cd0260bf2a3a51b36af83ac3a2ae527a580c6d4fb7a549",
+      "bytes": 171
+    },
+    {
+      "path": "10_AGENTS_52/07_ATLAS_OBSIDIA/CARTOGRAPHE_DOMAINES_TERRAIN.md",
+      "sha256": "e6bde17922f6fe0d4bf1bd4a66c4fae03dc9cd8a5d70fcca4972f8e2f2bc63c7",
+      "bytes": 191
+    },
+    {
+      "path": "10_AGENTS_52/07_ATLAS_OBSIDIA/CARTOGRAPHE_FORMULES.md",
+      "sha256": "5957ce1c24d60d1c47b0493bd5298f40ba08eee7fcded3d6013ea2ba9066d16a",
+      "bytes": 158
+    },
+    {
+      "path": "10_AGENTS_52/07_ATLAS_OBSIDIA/CARTOGRAPHE_LOIS_PROTOCOLES.md",
+      "sha256": "1ed59ee51f16ccc519be4c9bd417a9421ededa9973f06de232db52694a8e93b7",
+      "bytes": 168
+    },
+    {
+      "path": "10_AGENTS_52/07_ATLAS_OBSIDIA/COLLISION_DETECTOR.md",
+      "sha256": "8d924117ce23d618bd1189ec7ab539802569d5fc36917aee3ea58ba563f2454a",
+      "bytes": 160
+    },
+    {
+      "path": "10_AGENTS_52/07_ATLAS_OBSIDIA/GRAND_CARTOGRAPHE_OBSIDIA.md",
+      "sha256": "f21d8ea2b7385aea09c6a90d93f930c7cae149ffcdfdcd9a28c0b193d43c4b3f",
+      "bytes": 203
+    },
+    {
+      "path": "10_AGENTS_52/07_ATLAS_OBSIDIA/ONTOLOGUE_OBSIDIA.md",
+      "sha256": "93a11d44758f62620f24838c40aa1ace6b8a9450c76685fe828d24d5d01e378f",
+      "bytes": 179
+    },
+    {
+      "path": "10_AGENTS_52/08_POUR_ETIENNE_DIRECTEMENT/ANTI_DISPERSION.md",
+      "sha256": "2a27eb0a62b504a8e475a1f7248aa5ba10fc8d95b9366177254f33e6ba966977",
+      "bytes": 193
+    },
+    {
+      "path": "10_AGENTS_52/08_POUR_ETIENNE_DIRECTEMENT/ENERGIE_PRIORITE.md",
+      "sha256": "64437c48cdcf0f2edc3b37cfe8aa2ffab8681bc5ed4f1d359523fd2de51dba0c",
+      "bytes": 193
+    },
+    {
+      "path": "10_AGENTS_52/08_POUR_ETIENNE_DIRECTEMENT/EXTRACTEUR_MATIERE_BRUTE.md",
+      "sha256": "db426a45b6ccfa370d15ca11ff4d335016ae90b150e014b74e3c708bb28d70d2",
+      "bytes": 199
+    },
+    {
+      "path": "10_AGENTS_52/README.md",
+      "sha256": "31d5606b3450a91f2dc3de542c8a11bcd51a53a2d711e4e57337f7b1fa7af9ae",
+      "bytes": 89
+    },
+    {
+      "path": "10_AGENTS_52/agents_52.csv",
+      "sha256": "9799c419d3fd9f33ef94a1f30f826080a6f0eaec1c9ccd65073f1b40ec8223b3",
+      "bytes": 10936
+    },
+    {
+      "path": "10_AGENTS_52/agents_52.registry.json",
+      "sha256": "789a800379da38dce5d517db82030f1758762de053446a2bc9773357f7e7bd5d",
+      "bytes": 73005
+    },
+    {
+      "path": "11_AGENTS_RUNTIME_CONTRACTS/README.md",
+      "sha256": "a6b9dce911954c98ca2c95705b0f052ddea0fde65b6fd0cf91c4a63e849b56f3",
+      "bytes": 100
+    },
+    {
+      "path": "11_AGENTS_RUNTIME_CONTRACTS/agent_boundary.md",
+      "sha256": "012937f947f012e0f99747c4b0355dbb43b1b473cda21b7531ecefb91ed2e9fa",
+      "bytes": 76
+    },
+    {
+      "path": "11_AGENTS_RUNTIME_CONTRACTS/agent_contract.schema.json",
+      "sha256": "bae7eeacabaad9dfe634640591cac0210b1fb3f78e0101a8884f7e1c0efec7fb",
+      "bytes": 184
+    },
+    {
+      "path": "11_AGENTS_RUNTIME_CONTRACTS/agent_reliability.py",
+      "sha256": "dd9773d3f966c9fb4a0f073667c9280991d632bca01aa0806d6fff419a0e408a",
+      "bytes": 82
+    },
+    {
+      "path": "11_AGENTS_RUNTIME_CONTRACTS/data_sovereignty_policy.md",
+      "sha256": "ca86c521e176f184ded40cb1d7eefcc23ac02716ce53e56a9e27194ba652279f",
+      "bytes": 56
+    },
+    {
+      "path": "11_AGENTS_RUNTIME_CONTRACTS/no_agent_act_guard.py",
+      "sha256": "3213753d1a2ef0fbb55021b45f7596381c6c4f520995b4d7497a7ea8b0ececf9",
+      "bytes": 67
+    },
+    {
+      "path": "11_AGENTS_RUNTIME_CONTRACTS/vertex_vs_local_policy.md",
+      "sha256": "21dbe9c88a93bface8af2cb3618c1ed2fda52b985a6ebd298013f2982f2b60ba",
+      "bytes": 39
+    },
+    {
+      "path": "12_FRICTION_AVDR_CONTINUUM/AVDR.schema.json",
+      "sha256": "1298abd4f853ad3fe62ac32178678f0eb5f35d0840f0291325c3c8cbc11f2988",
+      "bytes": 166
+    },
+    {
+      "path": "12_FRICTION_AVDR_CONTINUUM/FrictionSymbolique.schema.json",
+      "sha256": "212de18b592179c539da1d73ab323647207fa4fa311fc8303d3932498c8ad963",
+      "bytes": 194
+    },
+    {
+      "path": "12_FRICTION_AVDR_CONTINUUM/OBAN.schema.json",
+      "sha256": "0faed84ea5ddb87ddda866003a21a500e30074f1e7758ea384db20a91eb05efd",
+      "bytes": 166
+    },
+    {
+      "path": "12_FRICTION_AVDR_CONTINUUM/README.md",
+      "sha256": "acbeea5d1a8ec5b33bf79b538ee2fb9230c1e4c7e6dca9e9fd0b9e2d60c327d5",
+      "bytes": 80
+    },
+    {
+      "path": "12_FRICTION_AVDR_CONTINUUM/avdr.py",
+      "sha256": "60bcf93c9fa8c0c22718b67f8e92b70f84cb31c50fec2b1b1205fa9121672ba3",
+      "bytes": 121
+    },
+    {
+      "path": "12_FRICTION_AVDR_CONTINUUM/check_incoherence.py",
+      "sha256": "8bfbd385ea65dde5e2ae9bb649c0da8908c79674cc1a03625ddbbce8a2253710",
+      "bytes": 70
+    },
+    {
+      "path": "12_FRICTION_AVDR_CONTINUUM/compress_nodes.py",
+      "sha256": "f6f58239da8b9d2de7a4908bdc35db058ba63c3acb51f5a316eeb8740b2e4389",
+      "bytes": 31
+    },
+    {
+      "path": "12_FRICTION_AVDR_CONTINUUM/friction_symbolique.py",
+      "sha256": "5c36fe1460ce02dbcee464916ee9efa7c112783e930604bafdfca7d81ad593a3",
+      "bytes": 98
+    },
+    {
+      "path": "12_FRICTION_AVDR_CONTINUUM/oban_rollback.py",
+      "sha256": "93a03e60f44a1897ab6a03afb4e34811d32a9ab3a3f3875a28543c05c2c9aa41",
+      "bytes": 30
+    },
+    {
+      "path": "12_FRICTION_AVDR_CONTINUUM/sample_friction_node.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "13_GRAPHES_NUAGE_POINTS/Link.schema.json",
+      "sha256": "f0c90f5fee5cf12b2d4809815d38edfe1ef3b0e606151d3bef1b7d0ffd0e1498",
+      "bytes": 166
+    },
+    {
+      "path": "13_GRAPHES_NUAGE_POINTS/LinkType.enum.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "13_GRAPHES_NUAGE_POINTS/ProjectionPhi.schema.json",
+      "sha256": "714634c9220123c94682def301c49a3ab2b826e7dc2a2be5342c134466f71247",
+      "bytes": 184
+    },
+    {
+      "path": "13_GRAPHES_NUAGE_POINTS/README.md",
+      "sha256": "0ab6927df829166c132d5eb573424c3b7be208683b6a012be2b1389b6aaea4f5",
+      "bytes": 93
+    },
+    {
+      "path": "13_GRAPHES_NUAGE_POINTS/distance_structured.py",
+      "sha256": "33d8ec41aa268022f4cf2044f8b7d98b06734c27d21274c40f2b459dec9fda9f",
+      "bytes": 72
+    },
+    {
+      "path": "13_GRAPHES_NUAGE_POINTS/path_finder.py",
+      "sha256": "71b178e8ef59a9bb5ffc354994fa52515dd3c9482d5f263368589d55d341a501",
+      "bytes": 81
+    },
+    {
+      "path": "13_GRAPHES_NUAGE_POINTS/projection_phi.py",
+      "sha256": "510730408005f36c6c71e55eb0016685e59df2f37ee29f1273198700613b350d",
+      "bytes": 66
+    },
+    {
+      "path": "13_GRAPHES_NUAGE_POINTS/relation_graph.py",
+      "sha256": "b7dbb92c80b9f5e39cc8a0095c221d62179abbe0926bea1488799c27832e203f",
+      "bytes": 78
+    },
+    {
+      "path": "13_GRAPHES_NUAGE_POINTS/sample_links.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "13_GRAPHES_NUAGE_POINTS/sample_projection.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "13_GRAPHES_NUAGE_POINTS/similarity_search.py",
+      "sha256": "534fc4a6ccc9519a1398aefbb89bc88f7a7bd37a99e1a3dbb41ea1c3dfc88b69",
+      "bytes": 75
+    },
+    {
+      "path": "14_CONTEXT_EXPORT_X108_BOUNDARY/ContextPacket.schema.json",
+      "sha256": "97a52e7a21434f88185a688a417e602580fffef3c7a063feb3b6994614658afe",
+      "bytes": 184
+    },
+    {
+      "path": "14_CONTEXT_EXPORT_X108_BOUNDARY/README.md",
+      "sha256": "425bbff974572927f09c43193843bbbe5d16c317452e0f9ce8bf8bcdec2a3bef",
+      "bytes": 86
+    },
+    {
+      "path": "14_CONTEXT_EXPORT_X108_BOUNDARY/export_for_x108.py",
+      "sha256": "ff119d952cfb0b6c793f240bd9629a9395e9e82fd34eb5009a95420e9f28c810",
+      "bytes": 227
+    },
+    {
+      "path": "14_CONTEXT_EXPORT_X108_BOUNDARY/retrieve_context.py",
+      "sha256": "9e21b198535754e3b48bfbcdce30bbb0c64e507a09c05bb81c6242faa27a379f",
+      "bytes": 311
+    },
+    {
+      "path": "14_CONTEXT_EXPORT_X108_BOUNDARY/sample_context_packet.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "14_CONTEXT_EXPORT_X108_BOUNDARY/x108_boundary_contract.md",
+      "sha256": "ab516f9f15198d688ea3b37e6afc4310c9f5ed71838b474e5832874cc0586465",
+      "bytes": 100
+    },
+    {
+      "path": "15_GUARDS_NON_DECISION/README.md",
+      "sha256": "2445ef314689f3c29302be5892c7e544fd73c9372fb389926e489994fa3d2625",
+      "bytes": 94
+    },
+    {
+      "path": "15_GUARDS_NON_DECISION/kernel_boundary_tests.py",
+      "sha256": "87f581e7f62925e2d5c61e16c52acb7e928539122defdae589fd257d702583ff",
+      "bytes": 76
+    },
+    {
+      "path": "15_GUARDS_NON_DECISION/no_agent_act.py",
+      "sha256": "e6a5bced5a57010ae40ffc4fe777da352364a8acc9f91f3d312ea9bcdc22501d",
+      "bytes": 55
+    },
+    {
+      "path": "15_GUARDS_NON_DECISION/no_bdf_act.py",
+      "sha256": "1a820d04b575139cb7b81780df53fb2a69fd9847a0eb07e91bf3acdc9b7ba802",
+      "bytes": 53
+    },
+    {
+      "path": "15_GUARDS_NON_DECISION/no_cortex_act.py",
+      "sha256": "00d9a2c4ff10f2ee9aaf76d4038066e0a57fde2131e335b04aa0b309994b2f0b",
+      "bytes": 56
+    },
+    {
+      "path": "15_GUARDS_NON_DECISION/no_hexaflux_act.py",
+      "sha256": "7c1fda30a904c126d6d0323f3af834d69ae1602fda3a75a9468ee314732b97fd",
+      "bytes": 58
+    },
+    {
+      "path": "15_GUARDS_NON_DECISION/no_memory_act.py",
+      "sha256": "60ad5e15863a7e3a4db8f15201398c8ccd7964b75c5bb1f20312f14e4f9df910",
+      "bytes": 56
+    },
+    {
+      "path": "15_GUARDS_NON_DECISION/no_reverse_os_act.py",
+      "sha256": "36d147a2f4cfde2deabf5af871be91c70fbea502fe915c38d9eac9a8152abd2e",
+      "bytes": 60
+    },
+    {
+      "path": "15_GUARDS_NON_DECISION/no_shazam_act.py",
+      "sha256": "e661ad0a0833026f50adb14f15a86ea15f93e463221e010fd75a9fdf58fa9755",
+      "bytes": 56
+    },
+    {
+      "path": "15_GUARDS_NON_DECISION/no_tree_act.py",
+      "sha256": "8d9e26c4075642c9525e0c13afb7479c7f5dc74a647aa024b720449ee52bda7e",
+      "bytes": 54
+    },
+    {
+      "path": "15_GUARDS_NON_DECISION/readonly_context_guard.py",
+      "sha256": "556a16044792580da16cca6bf9e7a2dcfc082009d2f84c1b09bef6148ebd7c70",
+      "bytes": 57
+    },
+    {
+      "path": "16_VISUALISATION_REVERSE_OS/README.md",
+      "sha256": "7c25731a811a9d444c935cd82517e5b352b86125830e24e0637ff15452ce1c92",
+      "bytes": 105
+    },
+    {
+      "path": "16_VISUALISATION_REVERSE_OS/holographic_map_spec.md",
+      "sha256": "e7fd31154bf033c82757af68e41d96cef626fe5f4d81f1ae1e7f7d6138a63f2d",
+      "bytes": 57
+    },
+    {
+      "path": "16_VISUALISATION_REVERSE_OS/reverse_os_ui_contract.md",
+      "sha256": "0502ee0379a567692673fe623f0f12d6be9b241fa03c6d3ed98696f443a0549f",
+      "bytes": 38
+    },
+    {
+      "path": "16_VISUALISATION_REVERSE_OS/sample_visual_state.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "16_VISUALISATION_REVERSE_OS/top_5_tree_filter.py",
+      "sha256": "26bac83747ed2dbc7426d9201528059d2d7481e511e062dca3e5f20f2ab58095",
+      "bytes": 143
+    },
+    {
+      "path": "16_VISUALISATION_REVERSE_OS/visual_state.schema.json",
+      "sha256": "4f8f28959df3b68c578995c39fd05f5d6bc2e10f3e57f8fbc79a7d70f7e38adf",
+      "bytes": 180
+    },
+    {
+      "path": "17_TESTS/README.md",
+      "sha256": "b570fed5930c9bdd986da016956a1a2aa601d8e2ad8bd875fd57411a294789dc",
+      "bytes": 104
+    },
+    {
+      "path": "17_TESTS/test_agents_52_registry.py",
+      "sha256": "d541a783c79672b36981e4e9352a5a8ef7bea87ec95899d3b91b67aadcafb47e",
+      "bytes": 1155
+    },
+    {
+      "path": "17_TESTS/test_bdf_non_decision.py",
+      "sha256": "17a44a5cd3ec855a739be605e7719fe06f1f29080072b1232745f298f1e2c23c",
+      "bytes": 706
+    },
+    {
+      "path": "17_TESTS/test_constitution_o1_o8.py",
+      "sha256": "f2043557e071a8000f9119223b74a164fb10ec4622da53f598f0ad0ced6a5142",
+      "bytes": 1086
+    },
+    {
+      "path": "17_TESTS/test_context_export.py",
+      "sha256": "52bbc3370c19594988b3bda8dd80619e110a7bc68efaf7b63caae66c3a8b8500",
+      "bytes": 946
+    },
+    {
+      "path": "17_TESTS/test_friction_avdr.py",
+      "sha256": "a866d0063918012b0ce1a350f769326f7599b4738c13329fb211397a98967620",
+      "bytes": 951
+    },
+    {
+      "path": "17_TESTS/test_hexaflux_non_decision.py",
+      "sha256": "5df808987a04dbc9792a2fa98d5416ac51b18c4512a425bab5a67be6cb6ca514",
+      "bytes": 706
+    },
+    {
+      "path": "17_TESTS/test_mcp_bridge.py",
+      "sha256": "26a1fcfb2be87d0c9d270a954d6b0723f23373ff3c996620ec59874faf9b230f",
+      "bytes": 780
+    },
+    {
+      "path": "17_TESTS/test_reverse_os_non_decision.py",
+      "sha256": "99db37f4b4e36c4acd1a13f19d08da5b1da0d06472c587a7fe6764fb131fc0d8",
+      "bytes": 857
+    },
+    {
+      "path": "17_TESTS/test_shazam_cognitif.py",
+      "sha256": "98e501129f4fddf26d8d71efb377ef02c38fdeb717357796ef0580d2f55dd09e",
+      "bytes": 921
+    },
+    {
+      "path": "17_TESTS/test_tree_space_34.py",
+      "sha256": "4727878c7d1ac12d86894e908d6a787d5722aab3c19e61695d5c0b1e5e7afe3f",
+      "bytes": 889
+    },
+    {
+      "path": "18_AUDIT/AUDIT_34_ARBRES.md",
+      "sha256": "12626ee2acee469f82e6da4ce4d5ee858b22952a7ce58ed03512fa8c2f71fd2b",
+      "bytes": 701
+    },
+    {
+      "path": "18_AUDIT/AUDIT_AGENTS_52.md",
+      "sha256": "dae693610a7785fd731063dd27921cfc0aaaa171344d6e8caf50a6a8c1ad5ece",
+      "bytes": 568
+    },
+    {
+      "path": "18_AUDIT/AUDIT_BDF.md",
+      "sha256": "4749dd278db869881e6f85f0b6dd25a98b96131af1dc0ff30c28037eec4ba778",
+      "bytes": 512
+    },
+    {
+      "path": "18_AUDIT/AUDIT_HEXAFLUX_LTCU.md",
+      "sha256": "56663ff0d38dc4c3ef1f189343bbeb9b0f391e5e7dda1a37e287f94636518017",
+      "bytes": 559
+    },
+    {
+      "path": "18_AUDIT/AUDIT_MCP.md",
+      "sha256": "4f63da2f27e6519d33e235583cf04d4efb95719f9ec78a8eea5278fcbc6c14f6",
+      "bytes": 555
+    },
+    {
+      "path": "18_AUDIT/AUDIT_MMONDE.md",
+      "sha256": "7c8ecbffbf87dd62282bd0c1461de2f9c025499838c437928d2badfec5968b65",
+      "bytes": 695
+    },
+    {
+      "path": "18_AUDIT/AUDIT_NON_DECISION.md",
+      "sha256": "143b5fcb589585a6538d135ca399a1bf4ed237c8cf68bf34fa3a54459497769d",
+      "bytes": 582
+    },
+    {
+      "path": "18_AUDIT/AUDIT_REVERSE_OS.md",
+      "sha256": "2678b89abe206b9128371386a686143ff8350368e4d849bc6f4baf30a86683ed",
+      "bytes": 570
+    },
+    {
+      "path": "18_AUDIT/AUDIT_SHAZAM.md",
+      "sha256": "cf86fca638597a1f7e313402e21f042d1672877736a2aa5365b941e9ff51e505",
+      "bytes": 560
+    },
+    {
+      "path": "18_AUDIT/COVERAGE_SOURCE_REPORT.md",
+      "sha256": "c50f3bd44f328c3bb889ee1a56045d5483b833eaf39f435773429c8ddecc4858",
+      "bytes": 1726
+    },
+    {
+      "path": "18_AUDIT/NON_DECISION_VERDICT.md",
+      "sha256": "e16532646894e48171a0cb1a77d15ed9b7ca146142a70d33cd46f898b76fda3a",
+      "bytes": 766
+    },
+    {
+      "path": "19_REGISTRES_JSON/agents_52.registry.json",
+      "sha256": "789a800379da38dce5d517db82030f1758762de053446a2bc9773357f7e7bd5d",
+      "bytes": 73005
+    },
+    {
+      "path": "19_REGISTRES_JSON/anomalies.registry.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "19_REGISTRES_JSON/arbres_34.registry.json",
+      "sha256": "916f1e3631021495e81cd9eb3a58520e1f31e56c58f5ba6899f4ce9950738c22",
+      "bytes": 3626
+    },
+    {
+      "path": "19_REGISTRES_JSON/bdf.registry.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "19_REGISTRES_JSON/guards.registry.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "19_REGISTRES_JSON/hexaflux.registry.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "19_REGISTRES_JSON/mcp_bridge.registry.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "19_REGISTRES_JSON/mmonde.registry.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "19_REGISTRES_JSON/reverse_os.registry.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "19_REGISTRES_JSON/shazam.registry.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "19_REGISTRES_JSON/source_coverage.registry.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "19_REGISTRES_JSON/tree_space_34.registry.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "bytes": 2
+    },
+    {
+      "path": "20_DEMO_MINIMALE/demo_full_pipeline.py",
+      "sha256": "e53679b43935497a6ce10b5a309da9d2fb5474185fdffe0a151bde57efc9e74a",
+      "bytes": 2792
+    },
+    {
+      "path": "20_DEMO_MINIMALE/demo_output_context_packet.json",
+      "sha256": "48aab2f1c2860aaa96835d0d0ecc31c22f82183abd9ee56d6c3281ad5763c4bc",
+      "bytes": 830
+    },
+    {
+      "path": "20_DEMO_MINIMALE/demo_query.json",
+      "sha256": "3614e47b6fa41070bef188a49e19ec7f41ad4fbfdc8db3782909f03f49892a0c",
+      "bytes": 151
+    },
+    {
+      "path": "20_DEMO_MINIMALE/demo_readme.md",
+      "sha256": "684449490f4f73554e0a55e4e56ba98335ce860a982e1ac3686cd6886ef9bfc6",
+      "bytes": 225
+    },
+    {
+      "path": "20_DEMO_MINIMALE/demo_reverse_os_output.json",
+      "sha256": "08957fcb5a727009cc532a78f136e5f1ca1368a163f74b3eaeea59726ffdbff2",
+      "bytes": 942
+    },
+    {
+      "path": "20_DEMO_MINIMALE/run_demo.ps1",
+      "sha256": "792638afac81b78733c4ca7946f410c2a13ac9b39f8cb856fd6417ab97ef1aa2",
+      "bytes": 63
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "9271480bce04398110e4026000add1d14efafd21ad811cb9cb8cb8d113e48d17",
+      "bytes": 518
+    },
+    {
+      "path": "common_types.py",
+      "sha256": "66598954a79787fab4f7231a980737db8fc6b50fcdb95512a8e069e3bbbdf435",
+      "bytes": 5778
+    }
+  ]
+}

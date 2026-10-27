@@ -1,0 +1,11 @@
+{
+  "tree_id": "15",
+  "nodes": [
+    {
+      "id": "T15_N01",
+      "label": "Spiritualite",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

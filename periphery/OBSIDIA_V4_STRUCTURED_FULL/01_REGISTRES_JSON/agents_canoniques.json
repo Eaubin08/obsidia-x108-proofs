@@ -1,0 +1,231 @@
+[
+  {
+    "id": "AGENT_001",
+    "name": "Observateur",
+    "type": "agent_obsidien_R&D",
+    "source": "src_branche149 — Branche 85 : Entités Cognitives / Agents Obsidia",
+    "function": "Observer l’état, les flux, les signaux faibles et les variations sans décider.",
+    "kernel_boundary": "Ne décide jamais. Remonte contexte et anomalies.",
+    "linked": [
+      "Bloc 13",
+      "P137",
+      "P138",
+      "OS3",
+      "OS4"
+    ]
+  },
+  {
+    "id": "AGENT_002",
+    "name": "Sentinelle",
+    "type": "agent_obsidien_R&D",
+    "source": "src_branche149 — Branche 85",
+    "function": "Surveiller les conditions critiques, seuils, incohérences, menaces et dérives.",
+    "kernel_boundary": "Peut alerter ou recommander HOLD/BLOCK, ne force jamais ALLOW.",
+    "linked": [
+      "ADeLe",
+      "OS-S",
+      "Audit F",
+      "Bloc 7"
+    ]
+  },
+  {
+    "id": "AGENT_003",
+    "name": "Gardien",
+    "type": "agent_obsidien_R&D / gardien de fond",
+    "source": "src_branche149 — Branche 85 + checklist A24 Gardien des Métriques",
+    "function": "Garder une frontière, une métrique, une règle ou un invariant.",
+    "kernel_boundary": "Surveille et signale. La décision souveraine reste X-108.",
+    "linked": [
+      "A24",
+      "T1-T12",
+      "OS-S",
+      "X-108"
+    ]
+  },
+  {
+    "id": "AGENT_004",
+    "name": "Architecte",
+    "type": "agent_obsidien_R&D",
+    "source": "src_branche149 — Branche 85",
+    "function": "Assembler, relier, cadrer et proposer des structures systémiques.",
+    "kernel_boundary": "Ne modifie pas le noyau sans audit/gate.",
+    "linked": [
+      "Bloc 13",
+      "Bloc 15",
+      "C4",
+      "G4"
+    ]
+  },
+  {
+    "id": "ROLE_005",
+    "name": "Human Operator",
+    "type": "rôle_responsabilité",
+    "source": "src_40spec — Spec 26 Liability Boundary & Responsibility Graph",
+    "function": "Porte l’intention, le veto et l’autorisation finale.",
+    "kernel_boundary": "Responsable de l’intention et de l’autorisation, pas d’une exécution technique non autorisée.",
+    "linked": [
+      "Spec 26",
+      "Human Veto",
+      "Audit C"
+    ]
+  },
+  {
+    "id": "ROLE_006",
+    "name": "Governance Layer",
+    "type": "rôle_système",
+    "source": "src_40spec — Spec 26",
+    "function": "Appliquer les policies et gouverner les frontières d’action.",
+    "kernel_boundary": "Ne remplace pas OS3/X-108, applique le contrat.",
+    "linked": [
+      "Spec 11",
+      "Spec 26",
+      "ADeLe"
+    ]
+  },
+  {
+    "id": "ROLE_007",
+    "name": "OS3 Audit Layer",
+    "type": "rôle_système",
+    "source": "src_40spec — Spec 26",
+    "function": "Porter la trace, l’audit, le replay et la preuve.",
+    "kernel_boundary": "Trace sans narration décisionnelle.",
+    "linked": [
+      "OS3",
+      "Spec 1",
+      "Spec 2",
+      "Spec 5",
+      "Spec 7"
+    ]
+  },
+  {
+    "id": "ROLE_008",
+    "name": "Agents / Tools",
+    "type": "rôle_outils",
+    "source": "src_40spec — Spec 26",
+    "function": "Exécuter ou assister dans leur scope déclaré.",
+    "kernel_boundary": "Jamais décisionnaires.",
+    "linked": [
+      "Spec 9",
+      "Spec 10",
+      "MCP",
+      "Adapters"
+    ]
+  },
+  {
+    "id": "GUARDIAN_009",
+    "name": "Sigma Verifier",
+    "type": "gardien_de_fond",
+    "source": "checklist domaine 5",
+    "function": "Vérifier l’orchestration Sigma.",
+    "kernel_boundary": "Produit un PASS/FAIL de vérification.",
+    "linked": [
+      "Tests Python",
+      "Audit D",
+      "G3"
+    ]
+  },
+  {
+    "id": "GUARDIAN_010",
+    "name": "Merkle Verifier",
+    "type": "gardien_de_fond",
+    "source": "checklist domaine 5",
+    "function": "Vérifier immutabilité et intégrité Merkle.",
+    "kernel_boundary": "Vérifie la trace, ne décide pas.",
+    "linked": [
+      "Merkle",
+      "Spec 2",
+      "Audit A/D"
+    ]
+  },
+  {
+    "id": "GUARDIAN_011",
+    "name": "RFC3161 Verifier",
+    "type": "gardien_de_fond",
+    "source": "checklist domaine 5",
+    "function": "Vérifier preuve temporelle légale.",
+    "kernel_boundary": "Certifie le temps, ne décide pas.",
+    "linked": [
+      "RFC3161",
+      "Spec 17",
+      "Audit D"
+    ]
+  },
+  {
+    "id": "GUARDIAN_012",
+    "name": "TLA Verifier",
+    "type": "gardien_de_fond",
+    "source": "checklist domaine 5",
+    "function": "Vérifier SafetyX108 / NoDeadlock / NoLivelock.",
+    "kernel_boundary": "Modèle formel, pas runtime décisionnel.",
+    "linked": [
+      "TLA+",
+      "G1/G3"
+    ]
+  },
+  {
+    "id": "ROLE_013",
+    "name": "Orchestrator",
+    "type": "rôle_runtime",
+    "source": "checklist domaine 5",
+    "function": "Coordonner le flux complet entre kernel, adapters, agents et audits.",
+    "kernel_boundary": "Coordonne, ne contourne pas le guard.",
+    "linked": [
+      "Vitest",
+      "Integration",
+      "Spec 15"
+    ]
+  },
+  {
+    "id": "ROLE_014",
+    "name": "Adapter MCP",
+    "type": "adapter_outil",
+    "source": "src_40spec + checklist Spec 9",
+    "function": "Mapper outils/scopes vers policy gate.",
+    "kernel_boundary": "Aucun tool call hors policy.",
+    "linked": [
+      "Spec 9",
+      "Spec 10",
+      "Spec 12"
+    ]
+  },
+  {
+    "id": "ROLE_015",
+    "name": "Cortex",
+    "type": "rôle_couche",
+    "source": "src_40spec Event Schema / traces",
+    "function": "Couche de traitement/contextualisation mentionnée dans le schéma event.",
+    "kernel_boundary": "Ne doit pas modifier OS3.",
+    "linked": [
+      "Spec 1",
+      "OS4",
+      "CORTEX"
+    ]
+  },
+  {
+    "id": "GUARDIAN_016",
+    "name": "GPS — Gardien / Guide / Alerteur",
+    "type": "périphérie_sigma",
+    "source": "DocD mentions GPS + mémoire projet",
+    "function": "Guider la cohérence, alerter, orienter.",
+    "kernel_boundary": "Ne décide jamais.",
+    "linked": [
+      "Sigma",
+      "OS4",
+      "G4"
+    ]
+  },
+  {
+    "id": "GUARDIAN_017",
+    "name": "ADeLe",
+    "type": "gouvernance_alignement",
+    "source": "checklist domaine 8",
+    "function": "Contrôler l’alignement critique Banking / Trading / Aviation.",
+    "kernel_boundary": "Peut refuser ou demander HOLD, ne force pas ALLOW.",
+    "linked": [
+      "Audit F",
+      "G3",
+      "Bloc 11",
+      "OS-S"
+    ]
+  }
+]

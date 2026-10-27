@@ -1,0 +1,53 @@
+id,nom,famille,role,sortie_principale,deploiement,non_decision,status
+1,OBSIDIA_ATLAS_INGESTOR,À créer en premier (top 5),Analyse multi-couches + cartes mémoire JSON,Signal/context packet non décisionnel pour OBSIDIA_ATLAS_INGESTOR,Vertex AI — premier agent,True,NEEDS_HUMAN_VALIDATION
+2,CANON_GUARDIAN,À créer en premier (top 5),Verdict statut canonique + alertes contradictions,Signal/context packet non décisionnel pour CANON_GUARDIAN,Vertex AI ou local,True,NEEDS_HUMAN_VALIDATION
+3,GRAPH_BUILDER,À créer en premier (top 5),Graphe nœuds/liens avec force et type de relation,Signal/context packet non décisionnel pour GRAPH_BUILDER,Vertex AI puis local,True,NEEDS_HUMAN_VALIDATION
+4,TERMINAL_BUILDER,À créer en premier (top 5),Blocs commandes + preuves d'exécution attendues,Signal/context packet non décisionnel pour TERMINAL_BUILDER,Local prioritaire,True,NEEDS_HUMAN_VALIDATION
+5,PROOF_SENTINEL,À créer en premier (top 5),"Rapport preuve : invariant touché, cause, niveau de rupture",Signal/context packet non décisionnel pour PROOF_SENTINEL,Local + CI,True,NEEDS_HUMAN_VALIDATION
+6,CO_PILOTE_CODE,Code / Repo / CI,"Patchs, analyse fichiers, optimisation code",Signal/context packet non décisionnel pour CO_PILOTE_CODE,"Vertex d'abord, local ensuite",True,NEEDS_HUMAN_VALIDATION
+7,CI_REPO_SURGEON,Code / Repo / CI,"PR propres, workflows stricts, diagnostics CI",Signal/context packet non décisionnel pour CI_REPO_SURGEON,Vertex ou local,True,NEEDS_HUMAN_VALIDATION
+8,REPO_HISTORIAN,Code / Repo / CI,Historique clair des branches/fix/merges avec contexte,Signal/context packet non décisionnel pour REPO_HISTORIAN,Local,True,NEEDS_HUMAN_VALIDATION
+9,VERSION_COMPARATOR,Code / Repo / CI,Diff sémantique + diff technique avec gravité,Signal/context packet non décisionnel pour VERSION_COMPARATOR,Local,True,NEEDS_HUMAN_VALIDATION
+10,CARTOGRAPHE_PREUVES,Code / Repo / CI,Table idée → niveau de preuve → statut,Signal/context packet non décisionnel pour CARTOGRAPHE_PREUVES,Local,True,NEEDS_HUMAN_VALIDATION
+11,FORMAL_BRIDGE,Code / Repo / CI,Invariant formalisé + test adversarial + propriété,Signal/context packet non décisionnel pour FORMAL_BRIDGE,Local,True,NEEDS_HUMAN_VALIDATION
+12,GENERATEUR_TESTS_ADVERSARIAUX,Code / Repo / CI,Tests fuzz / edge cases / scénarios de rupture,Signal/context packet non décisionnel pour GENERATEUR_TESTS_ADVERSARIAUX,Local,True,NEEDS_HUMAN_VALIDATION
+13,ADVERSARIAL_RED_TEAM,Code / Repo / CI,Rapport failles / scénarios d'attaque / points faibles,Signal/context packet non décisionnel pour ADVERSARIAL_RED_TEAM,Local sécurisé,True,NEEDS_HUMAN_VALIDATION
+14,ASSISTANT_THEORIQUE_DOCUMENTAIRE,Documentation / Théorie / Freeze,"Résumés ciblés, liens entre docs, cohérence théorique",Signal/context packet non décisionnel pour ASSISTANT_THEORIQUE_DOCUMENTAIRE,Vertex d'abord,True,NEEDS_HUMAN_VALIDATION
+15,MEMOIRE_PERSONNELLE_OBSIDIA,Documentation / Théorie / Freeze,Réponse 'on avait dit quoi ?' avec statut et contexte,Signal/context packet non décisionnel pour MEMOIRE_PERSONNELLE_OBSIDIA,Local,True,NEEDS_HUMAN_VALIDATION
+16,FREEZE_MASTER,Documentation / Théorie / Freeze,"Bloc canonique version freeze, structuré et versionné",Signal/context packet non décisionnel pour FREEZE_MASTER,Local,True,NEEDS_HUMAN_VALIDATION
+17,PRE_FREEZE,Documentation / Théorie / Freeze,Statut : vivant / mûr / prêt au freeze / danger de gel prématuré,Signal/context packet non décisionnel pour PRE_FREEZE,Local,True,NEEDS_HUMAN_VALIDATION
+18,HISTORIEN_DECISIONS,Documentation / Théorie / Freeze,Registre 'pourquoi on a décidé ça' avec contexte et alternatives rejetées,Signal/context packet non décisionnel pour HISTORIEN_DECISIONS,Local,True,NEEDS_HUMAN_VALIDATION
+19,VOCABULAIRE_CANONIQUE,Documentation / Théorie / Freeze,Lexique canonique + alertes de renommage ou confusion,Signal/context packet non décisionnel pour VOCABULAIRE_CANONIQUE,Local,True,NEEDS_HUMAN_VALIDATION
+20,CONTRADICTION_HUNTER,Documentation / Théorie / Freeze,Liste contradictions avec gravité et recommandation,Signal/context packet non décisionnel pour CONTRADICTION_HUNTER,Local,True,NEEDS_HUMAN_VALIDATION
+21,THEORIE_VIVANTE,Documentation / Théorie / Freeze,"Mise en relation profonde, liens entre dimensions, portée étendue",Signal/context packet non décisionnel pour THEORIE_VIVANTE,Local,True,NEEDS_HUMAN_VALIDATION
+22,RECHERCHE_EXTERNE,Documentation / Théorie / Freeze,Notes de positionnement Obsidia vs état de l'art,Signal/context packet non décisionnel pour RECHERCHE_EXTERNE,Vertex (web search activé),True,NEEDS_HUMAN_VALIDATION
+23,ANALYSTE_LOGS_EXPERIMENTAUX,Données / Logs / Audit,"Tableaux d'analyse, alertes, synthèses avec recommandations",Signal/context packet non décisionnel pour ANALYSTE_LOGS_EXPERIMENTAUX,Vertex puis local,True,NEEDS_HUMAN_VALIDATION
+24,EVIDENCE_BOARD_BUILDER,Données / Logs / Audit,Rapport audit PASS/FAIL avec limites clairement documentées,Signal/context packet non décisionnel pour EVIDENCE_BOARD_BUILDER,Local,True,NEEDS_HUMAN_VALIDATION
+25,AUDIT_LOCAL_AGENT,Données / Logs / Audit,"Index audit, manifest, hashes des artefacts",Signal/context packet non décisionnel pour AUDIT_LOCAL_AGENT,Local,True,NEEDS_HUMAN_VALIDATION
+26,DATA_SOVEREIGNTY_GUARD,Données / Logs / Audit,Classification : public / privé / interdit cloud,Signal/context packet non décisionnel pour DATA_SOVEREIGNTY_GUARD,Local obligatoire,True,NEEDS_HUMAN_VALIDATION
+27,SECURITY_FIREWALL_ARCHITECT,Sécurité / Pare-feu,Architecture pare-feu autour de X-108 avec spécifications,Signal/context packet non décisionnel pour SECURITY_FIREWALL_ARCHITECT,Local + cloud test,True,NEEDS_HUMAN_VALIDATION
+28,POLICY_FIREWALL_AGENT,Sécurité / Pare-feu,Verdict policy / autorisation / refus motivé,Signal/context packet non décisionnel pour POLICY_FIREWALL_AGENT,Local,True,NEEDS_HUMAN_VALIDATION
+29,RUNTIME_ATTESTATION_AGENT,Sécurité / Pare-feu,"Hash runtime, build seal, rapport d'intégrité",Signal/context packet non décisionnel pour RUNTIME_ATTESTATION_AGENT,Local/CI,True,NEEDS_HUMAN_VALIDATION
+30,SUPPLY_CHAIN_GUARD,Sécurité / Pare-feu,Rapport supply chain avec vulnérabilités et recommandations,Signal/context packet non décisionnel pour SUPPLY_CHAIN_GUARD,Local/CI,True,NEEDS_HUMAN_VALIDATION
+31,SECRET_GUARD,Sécurité / Pare-feu,Alertes secrets avec localisation et gravité,Signal/context packet non décisionnel pour SECRET_GUARD,Local/CI,True,NEEDS_HUMAN_VALIDATION
+32,FIELD_POC_MAPPER,Terrain / Produit / Communication,"Fiche POC terrain avec couches, risques, preuves attendues",Signal/context packet non décisionnel pour FIELD_POC_MAPPER,Vertex/local,True,NEEDS_HUMAN_VALIDATION
+33,PITCH_AGENT,Terrain / Produit / Communication,Pitch ciblé selon audience avec langage adapté,Signal/context packet non décisionnel pour PITCH_AGENT,Vertex,True,NEEDS_HUMAN_VALIDATION
+34,EXPLIQUE_A_UN_HUMAIN,Terrain / Produit / Communication,Version claire du concept selon l'audience spécifiée,Signal/context packet non décisionnel pour EXPLIQUE_A_UN_HUMAIN,Vertex/local,True,NEEDS_HUMAN_VALIDATION
+35,SIMULATEUR_REUNION,Terrain / Produit / Communication,Objections réalistes + réponses recommandées,Signal/context packet non décisionnel pour SIMULATEUR_REUNION,Vertex,True,NEEDS_HUMAN_VALIDATION
+36,MONETISATION_PACKAGING,Terrain / Produit / Communication,Table offre / cible / valeur / prix indicatif,Signal/context packet non décisionnel pour MONETISATION_PACKAGING,Vertex/local,True,NEEDS_HUMAN_VALIDATION
+37,FRISE_HUMAINE,Frise / Arbres / Monde humain,Timeline structurée des faits humains avec liens,Signal/context packet non décisionnel pour FRISE_HUMAINE,Local,True,NEEDS_HUMAN_VALIDATION
+38,CARTOGRAPHE_34_ARBRES,Frise / Arbres / Monde humain,Tableau : élément → arbres activés → intensité,Signal/context packet non décisionnel pour CARTOGRAPHE_34_ARBRES,Local,True,NEEDS_HUMAN_VALIDATION
+39,HUMAN_HISTORY_MAPPER,Frise / Arbres / Monde humain,"Frise + liens + arbres activés, navigable et structurée",Signal/context packet non décisionnel pour HUMAN_HISTORY_MAPPER,Local final,True,NEEDS_HUMAN_VALIDATION
+40,CALIBRATION_PROCEDURALE,Frise / Arbres / Monde humain,Lien : fort/faible/direct/incertain/hypothétique,Signal/context packet non décisionnel pour CALIBRATION_PROCEDURALE,Local,True,NEEDS_HUMAN_VALIDATION
+41,NUAGE_POINTS,Frise / Arbres / Monde humain,"Clusters, densités, résonances entre éléments éloignés",Signal/context packet non décisionnel pour NUAGE_POINTS,Local,True,NEEDS_HUMAN_VALIDATION
+42,GRAND_CARTOGRAPHE_OBSIDIA,Atlas Obsidia,OBSIDIA GLOBAL MAP — vue complète et cohérente,Signal/context packet non décisionnel pour GRAND_CARTOGRAPHE_OBSIDIA,Vertex (vision globale) + local (validation),True,NEEDS_HUMAN_VALIDATION
+43,ONTOLOGUE_OBSIDIA,Atlas Obsidia,"Ontologie propre avec définitions, règles de classification et exemples",Signal/context packet non décisionnel pour ONTOLOGUE_OBSIDIA,Local,True,NEEDS_HUMAN_VALIDATION
+44,CARTOGRAPHE_COUCHES,Atlas Obsidia,"Carte par couches avec état, tensions et éléments par couche",Signal/context packet non décisionnel pour CARTOGRAPHE_COUCHES,Local,True,NEEDS_HUMAN_VALIDATION
+45,CARTOGRAPHE_LOIS_PROTOCOLES,Atlas Obsidia,"Table lois/protocoles avec statuts, couches et liens",Signal/context packet non décisionnel pour CARTOGRAPHE_LOIS_PROTOCOLES,Local,True,NEEDS_HUMAN_VALIDATION
+46,CARTOGRAPHE_FORMULES,Atlas Obsidia,Formule → statut → usage → preuve associée,Signal/context packet non décisionnel pour CARTOGRAPHE_FORMULES,Local,True,NEEDS_HUMAN_VALIDATION
+47,CARTOGRAPHE_DOMAINES_TERRAIN,Atlas Obsidia,Domaine → couches mobilisées → risques → preuves disponibles,Signal/context packet non décisionnel pour CARTOGRAPHE_DOMAINES_TERRAIN,Vertex/local,True,NEEDS_HUMAN_VALIDATION
+48,CARTOGRAPHE_AGI_VISION_HAUTE,Atlas Obsidia,"Vision classée et protégée, sans contamination du kernel",Signal/context packet non décisionnel pour CARTOGRAPHE_AGI_VISION_HAUTE,Local,True,NEEDS_HUMAN_VALIDATION
+49,COLLISION_DETECTOR,Atlas Obsidia,Alertes structurelles avec gravité et recommandation,Signal/context packet non décisionnel pour COLLISION_DETECTOR,Local,True,NEEDS_HUMAN_VALIDATION
+50,ANTI_DISPERSION,Pour Étienne directement,'Là tu es sur quelle couche ?' — diagnostic et recentrage,Signal/context packet non décisionnel pour ANTI_DISPERSION,Vertex (accès rapide),True,NEEDS_HUMAN_VALIDATION
+51,ENERGIE_PRIORITE,Pour Étienne directement,Priorité froide du moment avec justification énergétique,Signal/context packet non décisionnel pour ENERGIE_PRIORITE,Vertex (accès rapide),True,NEEDS_HUMAN_VALIDATION
+52,EXTRACTEUR_MATIERE_BRUTE,Pour Étienne directement,"Pépites classées, décisions, concepts à conserver",Signal/context packet non décisionnel pour EXTRACTEUR_MATIERE_BRUTE,Vertex (traitement rapide),True,NEEDS_HUMAN_VALIDATION

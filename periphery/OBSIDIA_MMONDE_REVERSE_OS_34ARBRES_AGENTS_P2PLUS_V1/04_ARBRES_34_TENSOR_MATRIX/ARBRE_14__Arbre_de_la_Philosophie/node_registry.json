@@ -1,0 +1,11 @@
+{
+  "tree_id": "14",
+  "nodes": [
+    {
+      "id": "T14_N01",
+      "label": "Philosophie",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

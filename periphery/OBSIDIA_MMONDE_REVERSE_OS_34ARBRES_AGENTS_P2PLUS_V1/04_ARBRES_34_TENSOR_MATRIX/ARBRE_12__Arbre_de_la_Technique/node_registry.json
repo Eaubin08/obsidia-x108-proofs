@@ -1,0 +1,11 @@
+{
+  "tree_id": "12",
+  "nodes": [
+    {
+      "id": "T12_N01",
+      "label": "Technique",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

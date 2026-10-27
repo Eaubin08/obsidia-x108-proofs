@@ -1,0 +1,13 @@
+{
+  "status": "NEEDS_HUMAN_VALIDATION",
+  "doc_canon_count": 34,
+  "raw_image_entries_count": 41,
+  "anomalies": [
+    "Image shows duplicated numbers and names.",
+    "Image does not clearly present a clean 1..34 unique list.",
+    "Canonical doc registry is used as provisional source of truth.",
+    "Raw image is preserved as secondary evidence and must be human-validated."
+  ],
+  "kept_strategy": "Keep 34 canonical doc trees; do not use image numbering as final registry.",
+  "non_decision": true
+}

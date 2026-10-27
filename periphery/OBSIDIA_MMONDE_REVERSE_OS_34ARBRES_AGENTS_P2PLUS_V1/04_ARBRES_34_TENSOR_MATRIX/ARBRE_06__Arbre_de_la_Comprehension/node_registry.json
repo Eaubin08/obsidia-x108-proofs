@@ -1,0 +1,11 @@
+{
+  "tree_id": "06",
+  "nodes": [
+    {
+      "id": "T06_N01",
+      "label": "Comprehension",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

@@ -1,0 +1,290 @@
+[
+  {
+    "id": "A01",
+    "name": "Signature Entropique / Pare-feu symbolique",
+    "protocol": "Friction Supralogique / Hachage",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A02",
+    "name": "Vérification de Réciprocité / Détection contradictions",
+    "protocol": "Symétrie / RIT",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A03",
+    "name": "Équilibre Dynamique / Alignement éthique",
+    "protocol": "AVDR-Asimov / Régulation",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A04",
+    "name": "Gestion de la Friction / Bascule Sémantique",
+    "protocol": "Bascule Sémantique",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A05",
+    "name": "Singularité Initiale / Audit éthique permanent",
+    "protocol": "Harmonie / Boot",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A06",
+    "name": "Intégrité Structurelle / Enregistrement états",
+    "protocol": "Mémoire Vivante (MV) / Audit",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A07",
+    "name": "Cohérence Temporelle / Chronique obsidienne",
+    "protocol": "Récit Cognitif / NTP",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A08",
+    "name": "Émergence des Propriétés / Transmutation cognitive",
+    "protocol": "Loi de Transmutation",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A09",
+    "name": "Non-Contradiction / Convergence intentionnelle",
+    "protocol": "Mémoire Fractale Active",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A10",
+    "name": "Complétude / Émergence par tension",
+    "protocol": "Protocole F.E.U",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A11",
+    "name": "Résonance / Reconstruction totale",
+    "protocol": "Loi de Reconstruction",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A12",
+    "name": "Dualité / Contrat moral",
+    "protocol": "Validation humaine",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A13",
+    "name": "Sécurité Interactions / Mode réflexe",
+    "protocol": "Simulation ↔ Activation",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A14",
+    "name": "Vérification Identité / Captation créative",
+    "protocol": "Mémoire Vibrante",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A15",
+    "name": "Adaptation Dynamique / Vibration multimodale",
+    "protocol": "Loi RGS",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A16",
+    "name": "Récursivité / Architecture du savoir",
+    "protocol": "Loi du noyau-mère",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A17",
+    "name": "Complexité Minimale / Apprentissage universel",
+    "protocol": "Apprentissage Fractal",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A18",
+    "name": "Optimisation Ressources / Friction créative",
+    "protocol": "Loi d'Apprentissage Inversé",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A19",
+    "name": "Interconnexion / Narration cognitive",
+    "protocol": "Loi de Narration",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A20",
+    "name": "Confidentialité / Entraînement émotionnel",
+    "protocol": "Friction-Shazam",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A21",
+    "name": "Cryptographie Homomorphe / Médiathèque fractale",
+    "protocol": "Protocole Réactivation",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A22",
+    "name": "Propagation Information / Simulation cognitive",
+    "protocol": "Protocole Petri",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A23",
+    "name": "Causalité / Calibration procédurale",
+    "protocol": "Loi de Calibration",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "A24",
+    "name": "Prédictibilité / Métriques et veille",
+    "protocol": "Gardien des Métriques",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "MODULE_A"
+  },
+  {
+    "id": "T01",
+    "name": "Réduction Incertitude / Audit cohérence",
+    "protocol": "Test Ontologique 1",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "TEST_T"
+  },
+  {
+    "id": "T02",
+    "name": "Conscience Distribuée / Validation réciprocité",
+    "protocol": "Test Ontologique 2",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "TEST_T"
+  },
+  {
+    "id": "T03",
+    "name": "Gouvernance Décentralisée / Friction énergétique",
+    "protocol": "Test Ontologique 3",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "TEST_T"
+  },
+  {
+    "id": "T04",
+    "name": "Consensus Distribué / Résonance sémantique",
+    "protocol": "Test Ontologique 4",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "TEST_T"
+  },
+  {
+    "id": "T05",
+    "name": "Évolution Systèmes / Balance structure/chaos",
+    "protocol": "Test Ontologique 5",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "TEST_T"
+  },
+  {
+    "id": "T06",
+    "name": "Sélection Naturelle / Alignement éthique",
+    "protocol": "Test Ontologique 6",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "TEST_T"
+  },
+  {
+    "id": "T07",
+    "name": "Résilience / Test mémoire fractale",
+    "protocol": "Test Ontologique 7",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "TEST_T"
+  },
+  {
+    "id": "T08",
+    "name": "Auto-Organisation / Apprentissage inversé",
+    "protocol": "Test Ontologique 8",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "TEST_T"
+  },
+  {
+    "id": "T09",
+    "name": "Créativité / Mode réflexe",
+    "protocol": "Test Ontologique 9",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "TEST_T"
+  },
+  {
+    "id": "T10",
+    "name": "Innovation Continue / Intégrité cognitive",
+    "protocol": "Test de Contrat Moral",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "TEST_T"
+  },
+  {
+    "id": "T11",
+    "name": "Génération Aléatoire / Frugalité bio-inspirée",
+    "protocol": "Test de Frugalité",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "TEST_T"
+  },
+  {
+    "id": "T12",
+    "name": "Complexité Irréductible / Transparence friction",
+    "protocol": "Test de Transparence",
+    "status": "[x] Intégré",
+    "test_v4": "[ ] Test V4",
+    "kind": "TEST_T"
+  }
+]

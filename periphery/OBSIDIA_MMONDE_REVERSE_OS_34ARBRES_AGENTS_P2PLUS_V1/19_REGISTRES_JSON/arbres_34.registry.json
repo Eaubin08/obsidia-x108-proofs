@@ -1,0 +1,174 @@
+{
+  "trees": [
+    {
+      "id": "01",
+      "name": "Arbre de l’Humain",
+      "family": "I_FONDAMENTAUX"
+    },
+    {
+      "id": "02",
+      "name": "Arbre de la Conscience",
+      "family": "I_FONDAMENTAUX"
+    },
+    {
+      "id": "03",
+      "name": "Arbre de la Perception",
+      "family": "I_FONDAMENTAUX"
+    },
+    {
+      "id": "04",
+      "name": "Arbre du Sens",
+      "family": "I_FONDAMENTAUX"
+    },
+    {
+      "id": "05",
+      "name": "Arbre de l’Identité",
+      "family": "I_FONDAMENTAUX"
+    },
+    {
+      "id": "06",
+      "name": "Arbre de la Compréhension",
+      "family": "II_COGNITIFS"
+    },
+    {
+      "id": "07",
+      "name": "Arbre de l’Organisation",
+      "family": "II_COGNITIFS"
+    },
+    {
+      "id": "08",
+      "name": "Arbre de la Pensée",
+      "family": "II_COGNITIFS"
+    },
+    {
+      "id": "09",
+      "name": "Arbre de l’Intelligence",
+      "family": "II_COGNITIFS"
+    },
+    {
+      "id": "10",
+      "name": "Arbre du Langage",
+      "family": "II_COGNITIFS"
+    },
+    {
+      "id": "11",
+      "name": "Arbre de la Science",
+      "family": "III_CONNAISSANCE"
+    },
+    {
+      "id": "12",
+      "name": "Arbre de la Technique",
+      "family": "III_CONNAISSANCE"
+    },
+    {
+      "id": "13",
+      "name": "Arbre de l’Art",
+      "family": "III_CONNAISSANCE"
+    },
+    {
+      "id": "14",
+      "name": "Arbre de la Philosophie",
+      "family": "III_CONNAISSANCE"
+    },
+    {
+      "id": "15",
+      "name": "Arbre de la Spiritualité",
+      "family": "III_CONNAISSANCE"
+    },
+    {
+      "id": "16",
+      "name": "Arbre de la Relation",
+      "family": "IV_RELATIONNELS_SOCIAUX"
+    },
+    {
+      "id": "17",
+      "name": "Arbre du Collectif",
+      "family": "IV_RELATIONNELS_SOCIAUX"
+    },
+    {
+      "id": "18",
+      "name": "Arbre de la Transmission",
+      "family": "IV_RELATIONNELS_SOCIAUX"
+    },
+    {
+      "id": "19",
+      "name": "Arbre de la Culture",
+      "family": "IV_RELATIONNELS_SOCIAUX"
+    },
+    {
+      "id": "20",
+      "name": "Arbre de l’Action",
+      "family": "V_ACTION_TRANSFORMATION"
+    },
+    {
+      "id": "21",
+      "name": "Arbre de la Création",
+      "family": "V_ACTION_TRANSFORMATION"
+    },
+    {
+      "id": "22",
+      "name": "Arbre de la Transformation",
+      "family": "V_ACTION_TRANSFORMATION"
+    },
+    {
+      "id": "23",
+      "name": "Arbre du Temps",
+      "family": "VI_TEMPORELS_MEMORIELS"
+    },
+    {
+      "id": "24",
+      "name": "Arbre de la Mémoire",
+      "family": "VI_TEMPORELS_MEMORIELS"
+    },
+    {
+      "id": "25",
+      "name": "Arbre de l’Histoire",
+      "family": "VI_TEMPORELS_MEMORIELS"
+    },
+    {
+      "id": "26",
+      "name": "Arbre de la Cohérence",
+      "family": "VII_META_STRUCTURELS"
+    },
+    {
+      "id": "27",
+      "name": "Arbre de la Vérité",
+      "family": "VII_META_STRUCTURELS"
+    },
+    {
+      "id": "28",
+      "name": "Arbre de la Valeur",
+      "family": "VII_META_STRUCTURELS"
+    },
+    {
+      "id": "29",
+      "name": "Arbre de la Finalité",
+      "family": "VII_META_STRUCTURELS"
+    },
+    {
+      "id": "30",
+      "name": "Arbre Cognitif Global",
+      "family": "VIII_OBSIDIA_AGI"
+    },
+    {
+      "id": "31",
+      "name": "Arbre des Flux",
+      "family": "VIII_OBSIDIA_AGI"
+    },
+    {
+      "id": "32",
+      "name": "Arbre des Connexions",
+      "family": "VIII_OBSIDIA_AGI"
+    },
+    {
+      "id": "33",
+      "name": "Arbre de l’Optimisation",
+      "family": "VIII_OBSIDIA_AGI"
+    },
+    {
+      "id": "34",
+      "name": "Arbre de la Stabilité",
+      "family": "VIII_OBSIDIA_AGI"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LTCUPlus",
+  "type": "object",
+  "description": "Schema placeholder for LTCUPlus.",
+  "properties": {}
+}

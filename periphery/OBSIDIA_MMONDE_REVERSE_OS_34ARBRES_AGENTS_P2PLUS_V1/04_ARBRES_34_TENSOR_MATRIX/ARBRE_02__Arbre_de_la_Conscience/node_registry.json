@@ -1,0 +1,11 @@
+{
+  "tree_id": "02",
+  "nodes": [
+    {
+      "id": "T02_N01",
+      "label": "Conscience",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

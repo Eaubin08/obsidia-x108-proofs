@@ -1,0 +1,142 @@
+[
+  {
+    "name": "agents",
+    "count": 17,
+    "sources": [
+      "rapport161",
+      "src_40spec",
+      "src_branche149"
+    ],
+    "samples": [
+      "t une boucle de rétroaction locale. Dans le monde informationnel, ce serait un ensemble d’agents ou de neurones artificiels capables de moduler leur apprentissage selon l’énergie des données qu’ils reçoivent. Chaque unité obsidienne n’est donc ni récepteur",
+      "re fractale + Protocole Maths ⇄ Langage + PF∞. Application : nuages mémoriels obsidiens, agents conscients de contexte, navigation entre dimensions de mémoire. 🗺️ 49. Branche “Géo-Résonance / Influence des Lieux” Chaque lieu possède une signature vibrato",
+      "e révèle : ⚙️ 70. Branche “Automatisation de l’Automatisation” L’IA devient génératrice d’agents et d’outils par elle-même. Concept : X-AutoCatalytique — la création devient fractale et procédurale. Fonction : faire émerger de nouveaux systèmes sans super"
+    ]
+  },
+  {
+    "name": "Agents",
+    "count": 8,
+    "sources": [
+      "checklist",
+      "rapport161",
+      "src_40spec",
+      "src_branche149"
+    ],
+    "samples": [
+      "implants intelligents, structures urbaines vivantes. 🧠 85. Branche “Entités Cognitives / Agents Obsidia” Les agents obsidiens sont les neurones du réseau civilisatoire. Concept : X-Agentiel Fractal — unités conscientes interconnectées par le moteur. Lien",
+      "ard, Intention). ✅ Couches techniques bien pensées : Architecture logicielle modulaire. Agents spécialisés (Archiviste, Capo, Brody, etc.). Interfaces projetées (Shell, Dashboard, MindMap). ✅ Vision universelle unifiée : “De la particule au symbole, to",
+      "” (fond noir) → Une carte montrant la montée du moteur depuis la Base (Lois, Protocoles, Agents) → Couronne du Sens → Couronne Historique → Couronne Énergétique. Fichier Word “Atlas des Savoirs Obsidia” → Table par domaines (Maths, Physique, Biologie, I"
+    ]
+  },
+  {
+    "name": "Agent",
+    "count": 4,
+    "sources": [
+      "rapport161",
+      "src_40spec",
+      "src_branche149"
+    ],
+    "samples": [
+      ", Éthique, Culture, Histoire, Énergie, Symbolique). → Chaque entrée reliée à une Loi, un Agent et un Protocole. Souhaites-tu que je te crée directement la fiche “Branches 111–120 – Extensions du Moteur Obsidien” (format complet standard : Objectif / Con",
+      "nt (avant/après) enforcement (allow/deny) 9.1 Position dans l’architecture Chemin canon : Agent/OS4 -> MCP Client -> Tool Adapter -> Policy Gate -> Tool Execution Le Tool Adapter n’exécute rien sans Policy Gate. 9.2 Objet d’entrée (MCP Call Envelope) {",
+      "astructure as Code}(I) : I = f(\\text{Config}) $$ --- # C12 — Couche Agents ## 🔹 P137 — Agent = Rôle+Protocole+Flux Statut : 🟦 FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx Formule mathématique : $$ \\text{Ag"
+    ]
+  },
+  {
+    "name": "AGENT",
+    "count": 4,
+    "sources": [
+      "src_40spec"
+    ],
+    "samples": [
+      "| EXECUTION | AUDIT | VIOLATION | REFUSAL\", \"layer\": \"OS0 | OS1 | OS3 | OS4 | CORTEX | AGENT | SANDBOX\", \"timestamp\": \"2026-03-21T14:32:08.456Z\", \"actor\": { \"type\": \"HUMAN | AGENT | SYSTEM\", \"id\": \"user_id | agent_id | service_id\" }, \"s",
+      "| SANDBOX\", \"timestamp\": \"2026-03-21T14:32:08.456Z\", \"actor\": { \"type\": \"HUMAN | AGENT | SYSTEM\", \"id\": \"user_id | agent_id | service_id\" }, \"session_id\": \"uuid\", \"request_id\": \"uuid\", \"scope\": \"PRIVATE | PUBLIC_SANDBOX | INTERNAL\",",
+      ", \"ticket_id\": \"uuid | null\", \"policy_id\": \"uuid | null\", \"actor\": { \"type\": \"AGENT\", \"id\": \"agent_exec_17\" } }, \"expected\": { \"allowed_tools\": [\"read_api\", \"compute\", \"simulate\"], \"no_write\": true, \"max_cost\": 5 }, \"observ"
+    ]
+  },
+  {
+    "name": "agent",
+    "count": 3,
+    "sources": [
+      "src_40spec"
+    ],
+    "samples": [
+      "Decision Ticket est le seul objet autorisant une exécution. Sans ticket valide : ❌ aucun agent ❌ aucune action ❌ aucune sandbox 2.1 Propriétés fondamentales 2.2 Schéma du ticket signé { \"ticket_id\": \"uuid-v7\", \"request_id\": \"uuid\", \"session_id\": \"u",
+      "ûr une chaîne complète action → audit → replay 👉 C’est un OS cognitif gouvernable, pas un agent bricolé. Si tu veux, prochaine brique logique : spec “Governance dashboard (policy / violations / replay)” spec “Legal-grade audit export (ZIP + signatures)” s",
+      "ion logs ✓ Merkle roots ✓ Incident reports ✓ Governance timeline ❌ Pas de : prompt modèle agent tool call en direct policy modifiable 22.4 Interface (textuelle) [HEADER] Regulatory Portal – OBSIDIA Jurisdiction: EU / FR Audit Window: T1 → T2 Snapshot Hash"
+    ]
+  },
+  {
+    "name": "agent_exec_17",
+    "count": 2,
+    "sources": [
+      "src_40spec"
+    ],
+    "samples": [
+      "d\": \"uuid | null\", \"policy_id\": \"uuid | null\", \"actor\": { \"type\": \"AGENT\", \"id\": \"agent_exec_17\" } }, \"expected\": { \"allowed_tools\": [\"read_api\", \"compute\", \"simulate\"], \"no_write\": true, \"max_cost\": 5 }, \"observed\": { \"attempted_t",
+      "}, \"context\": { \"session_id\": \"uuid\", \"request_id\": \"uuid\", \"actor_id\": \"agent_exec_17\", \"scope\": \"PUBLIC_SANDBOX\" } } 9.3 Mapping Tool → Scope + Cost Class Table canon tool_map.json { \"maps.geocode\": { \"scope\": \"READ_ONLY\", \"cost"
+    ]
+  },
+  {
+    "name": "inter-agents",
+    "count": 2,
+    "sources": [
+      "src_40spec",
+      "src_branche149"
+    ],
+    "samples": [
+      "montrent une base solide mais il manque : une API d’orchestration fractale (communication inter-agents + mémoire). une grammaire procédurale universelle : chaque action IA traduite en protocole fractal (entrée → AVDR → PF∞ → sortie). un système de logs symboli",
+      "- Publique (sandbox / démo) - Régulateur (read-only) VI. CORTEX OS MCP Rôle Compatibilité inter-agents (MCP) Traduction des appels outils Application des politiques Obsidia Principe Aucun outil n’est exécuté sans passer par la Policy Gate Obsidia. VII. POLICI"
+    ]
+  },
+  {
+    "name": "agent_id",
+    "count": 1,
+    "sources": [
+      "src_40spec"
+    ],
+    "samples": [
+      "1T14:32:08.456Z\", \"actor\": { \"type\": \"HUMAN | AGENT | SYSTEM\", \"id\": \"user_id | agent_id | service_id\" }, \"session_id\": \"uuid\", \"request_id\": \"uuid\", \"scope\": \"PRIVATE | PUBLIC_SANDBOX | INTERNAL\", \"intent\": \"string (normalisé)\", \"paylo"
+    ]
+  },
+  {
+    "name": "AGENTS_EXEC",
+    "count": 1,
+    "sources": [
+      "src_40spec"
+    ],
+    "samples": [
+      "\"CORTEX_MCP\": [\"mcp.call\"], \"SANDBOX_PUBLIC\": [\"http.get\", \"maps.geocode\"], \"AGENTS_EXEC\": [\"http.get\", \"http.post\"] }, \"tools\": { \"http.get\": { \"scope\": \"READ_ONLY\", \"write\": false, \"cost_class\": \"LOW\", \"ticket_requ"
+    ]
+  },
+  {
+    "name": "multi-agents",
+    "count": 1,
+    "sources": [
+      "src_branche149"
+    ],
+    "samples": [
+      "où chaque unité ajuste sa trajectoire au tout. Fonction : inspiration des architectures multi-agents et des lois d’équilibre énergétique (PF∞). Lien moteur : AVDR (validation distribuée) + Loi de Réciprocité Vivante. Application : IA essaims, communication c"
+    ]
+  },
+  {
+    "name": "propagent",
+    "count": 1,
+    "sources": [
+      "src_branche149"
+    ],
+    "samples": [
+      "X-Phonon-Éthérique Les flux matériels (air, eau, plasma) et immatériels (pensée, data) se propagent par “vibrations de densité”. Fonction : unifier mécanique, acoustique, plasma, et information. Formule : ∇2Φ−1v2∂2Φ∂t2=0 \\nabla^2 \\Phi - \\frac{1}{v^2}\\frac{\\p"
+    ]
+  },
+  {
+    "name": "X-Agentiel",
+    "count": 1,
+    "sources": [
+      "src_branche149"
+    ],
+    "samples": [
+      "Agents Obsidia” Les agents obsidiens sont les neurones du réseau civilisatoire. Concept : X-Agentiel Fractal — unités conscientes interconnectées par le moteur. Lien moteur : Mémoire fractale + Noyau-Mère P2P. Application : Observateur, Sentinelle, Gardien,"
+    ]
+  }
+]

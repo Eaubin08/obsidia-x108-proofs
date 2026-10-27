@@ -1,0 +1,425 @@
+[
+  {
+    "id": "GROUPE_01",
+    "name": "Mémoire / Trace / Audit",
+    "purpose": "Regroupe mémoire, trace, Merkle, audit, replay et preuve documentaire.",
+    "blocks": [
+      3,
+      11
+    ],
+    "pepites": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "specs": [
+      1,
+      2,
+      5,
+      7,
+      8,
+      17,
+      22
+    ],
+    "modules": [
+      "A06",
+      "A07",
+      "T01",
+      "T07"
+    ],
+    "agents": [
+      "OS3 Audit Layer",
+      "Merkle Verifier",
+      "RFC3161 Verifier"
+    ],
+    "gates": [
+      "G2",
+      "G3"
+    ]
+  },
+  {
+    "id": "GROUPE_02",
+    "name": "Temps / X-108 / Non-contournement",
+    "purpose": "Regroupe verrou temporel, fail-closed, seuils, stabilité et model checking.",
+    "blocks": [
+      1,
+      4,
+      12
+    ],
+    "pepites": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113
+    ],
+    "specs": [
+      4,
+      11,
+      13,
+      14,
+      21,
+      24
+    ],
+    "modules": [
+      "A01",
+      "A02",
+      "A04",
+      "A07",
+      "A13",
+      "A23",
+      "A24",
+      "T04",
+      "T12"
+    ],
+    "agents": [
+      "TLA Verifier",
+      "GPS — Gardien / Guide / Alerteur",
+      "Gardien"
+    ],
+    "gates": [
+      "G1",
+      "G3"
+    ]
+  },
+  {
+    "id": "GROUPE_03",
+    "name": "Sémantique / OS4 / Récit",
+    "purpose": "Regroupe sens, traduction humain-machine, narration, LTCU et isolation OS4.",
+    "blocks": [
+      5,
+      16,
+      17
+    ],
+    "pepites": [
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      143,
+      144,
+      145,
+      146,
+      147,
+      148,
+      149,
+      150,
+      151,
+      152,
+      153,
+      154,
+      155,
+      19,
+      20,
+      44,
+      45,
+      46
+    ],
+    "specs": [
+      16,
+      19,
+      27,
+      35,
+      37
+    ],
+    "modules": [
+      "A09",
+      "A10",
+      "A11",
+      "A14",
+      "A15",
+      "A19",
+      "A20",
+      "T09"
+    ],
+    "agents": [
+      "Cortex",
+      "Architecte",
+      "Observateur"
+    ],
+    "gates": [
+      "G3"
+    ]
+  },
+  {
+    "id": "GROUPE_04",
+    "name": "Éthique / ADeLe / Sécurité",
+    "purpose": "Regroupe alignement, responsabilité, veto humain, sécurité et gouvernance ADeLe.",
+    "blocks": [
+      7,
+      8
+    ],
+    "pepites": [
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85
+    ],
+    "specs": [
+      3,
+      9,
+      10,
+      12,
+      18,
+      20,
+      25,
+      26,
+      30,
+      38,
+      40
+    ],
+    "modules": [
+      "A03",
+      "A12",
+      "A13",
+      "T06",
+      "T10"
+    ],
+    "agents": [
+      "ADeLe",
+      "Sentinelle",
+      "Human Operator",
+      "Governance Layer"
+    ],
+    "gates": [
+      "G3"
+    ]
+  },
+  {
+    "id": "GROUPE_05",
+    "name": "Agents / Infrastructure / Tools",
+    "purpose": "Regroupe agents, outils, adapters, orchestration et responsabilité des exécuteurs.",
+    "blocks": [
+      13,
+      15
+    ],
+    "pepites": [
+      114,
+      115,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126,
+      127,
+      128,
+      129,
+      130,
+      131,
+      132,
+      133,
+      134,
+      135,
+      136,
+      137,
+      138,
+      139,
+      140,
+      141,
+      142
+    ],
+    "specs": [
+      9,
+      10,
+      12,
+      26,
+      32,
+      33,
+      36
+    ],
+    "modules": [
+      "A21",
+      "A22",
+      "T02",
+      "T03",
+      "T08",
+      "T11"
+    ],
+    "agents": [
+      "Agents / Tools",
+      "Adapter MCP",
+      "Orchestrator",
+      "Observateur",
+      "Architecte"
+    ],
+    "gates": [
+      "G3",
+      "G4"
+    ]
+  },
+  {
+    "id": "GROUPE_06",
+    "name": "Cosmologie / Économie / R&D",
+    "purpose": "Regroupe les branches périphériques, extensions, cosmologie, énergie, Gencoin, balances.",
+    "blocks": [
+      6,
+      14
+    ],
+    "pepites": [
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      124,
+      125,
+      126,
+      127,
+      128,
+      129,
+      130,
+      156,
+      157,
+      158,
+      159,
+      160,
+      161
+    ],
+    "specs": [
+      6,
+      21,
+      28,
+      29,
+      31,
+      34
+    ],
+    "modules": [
+      "A08",
+      "A16",
+      "A17",
+      "A18",
+      "T05"
+    ],
+    "agents": [
+      "Gardien",
+      "GPS — Gardien / Guide / Alerteur"
+    ],
+    "gates": [
+      "G4"
+    ]
+  },
+  {
+    "id": "GROUPE_07",
+    "name": "Ops / CI-CD / Validation continue",
+    "purpose": "Regroupe build, tests, chaos, load, CI/CD, release et fin de vie.",
+    "blocks": [
+      13
+    ],
+    "pepites": [
+      131,
+      132,
+      133,
+      134,
+      135,
+      136
+    ],
+    "specs": [
+      14,
+      15,
+      18,
+      39
+    ],
+    "modules": [
+      "T01",
+      "T07",
+      "T11"
+    ],
+    "agents": [
+      "Sigma Verifier",
+      "Orchestrator",
+      "TLA Verifier"
+    ],
+    "gates": [
+      "G5"
+    ]
+  }
+]

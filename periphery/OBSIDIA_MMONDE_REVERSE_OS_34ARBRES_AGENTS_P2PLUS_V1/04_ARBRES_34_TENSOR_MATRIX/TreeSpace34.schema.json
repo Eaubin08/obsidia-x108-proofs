@@ -1,0 +1,7 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TreeSpace34",
+  "type": "object",
+  "description": "Schema placeholder for TreeSpace34.",
+  "properties": {}
+}

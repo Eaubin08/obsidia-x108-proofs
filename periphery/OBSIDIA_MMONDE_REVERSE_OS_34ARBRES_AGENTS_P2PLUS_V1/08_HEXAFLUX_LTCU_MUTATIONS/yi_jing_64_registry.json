@@ -1,0 +1,450 @@
+[
+  {
+    "id": "HEX_01",
+    "name": "Hexagram 1",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_02",
+    "name": "Hexagram 2",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_03",
+    "name": "Hexagram 3",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_04",
+    "name": "Hexagram 4",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_05",
+    "name": "Hexagram 5",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_06",
+    "name": "Hexagram 6",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_07",
+    "name": "Hexagram 7",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_08",
+    "name": "Hexagram 8",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_09",
+    "name": "Hexagram 9",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_10",
+    "name": "Hexagram 10",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_11",
+    "name": "Hexagram 11",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_12",
+    "name": "Hexagram 12",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_13",
+    "name": "Hexagram 13",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_14",
+    "name": "Hexagram 14",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_15",
+    "name": "Hexagram 15",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_16",
+    "name": "Hexagram 16",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_17",
+    "name": "Hexagram 17",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_18",
+    "name": "Hexagram 18",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_19",
+    "name": "Hexagram 19",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_20",
+    "name": "Hexagram 20",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_21",
+    "name": "Hexagram 21",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_22",
+    "name": "Hexagram 22",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_23",
+    "name": "Hexagram 23",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_24",
+    "name": "Hexagram 24",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_25",
+    "name": "Hexagram 25",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_26",
+    "name": "Hexagram 26",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_27",
+    "name": "Hexagram 27",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_28",
+    "name": "Hexagram 28",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_29",
+    "name": "Hexagram 29",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_30",
+    "name": "Hexagram 30",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_31",
+    "name": "Hexagram 31",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_32",
+    "name": "Hexagram 32",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_33",
+    "name": "Hexagram 33",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_34",
+    "name": "Hexagram 34",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_35",
+    "name": "Hexagram 35",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_36",
+    "name": "Hexagram 36",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_37",
+    "name": "Hexagram 37",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_38",
+    "name": "Hexagram 38",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_39",
+    "name": "Hexagram 39",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_40",
+    "name": "Hexagram 40",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_41",
+    "name": "Hexagram 41",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_42",
+    "name": "Hexagram 42",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_43",
+    "name": "Hexagram 43",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_44",
+    "name": "Hexagram 44",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_45",
+    "name": "Hexagram 45",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_46",
+    "name": "Hexagram 46",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_47",
+    "name": "Hexagram 47",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_48",
+    "name": "Hexagram 48",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_49",
+    "name": "Hexagram 49",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_50",
+    "name": "Hexagram 50",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_51",
+    "name": "Hexagram 51",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_52",
+    "name": "Hexagram 52",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_53",
+    "name": "Hexagram 53",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_54",
+    "name": "Hexagram 54",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_55",
+    "name": "Hexagram 55",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_56",
+    "name": "Hexagram 56",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_57",
+    "name": "Hexagram 57",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_58",
+    "name": "Hexagram 58",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_59",
+    "name": "Hexagram 59",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_60",
+    "name": "Hexagram 60",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_61",
+    "name": "Hexagram 61",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_62",
+    "name": "Hexagram 62",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_63",
+    "name": "Hexagram 63",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  },
+  {
+    "id": "HEX_64",
+    "name": "Hexagram 64",
+    "transition_role": "",
+    "non_decision": true,
+    "needs_human_validation": true
+  }
+]

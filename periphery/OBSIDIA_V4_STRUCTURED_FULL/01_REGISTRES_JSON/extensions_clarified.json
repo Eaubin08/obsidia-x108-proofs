@@ -1,0 +1,104 @@
+[
+  {
+    "id": "P162r",
+    "name": "Extension réservée 1",
+    "note": "Nom détaillé non fourni dans les docs source fournis.",
+    "status": "RESERVED_R_AND_D"
+  },
+  {
+    "id": "P163r",
+    "name": "Extension réservée 2",
+    "note": "Nom détaillé non fourni dans les docs source fournis.",
+    "status": "RESERVED_R_AND_D"
+  },
+  {
+    "id": "P164r",
+    "name": "Extension réservée 3",
+    "note": "Nom détaillé non fourni dans les docs source fournis.",
+    "status": "RESERVED_R_AND_D"
+  },
+  {
+    "id": "P165r",
+    "name": "Extension réservée 4",
+    "note": "Nom détaillé non fourni dans les docs source fournis.",
+    "status": "RESERVED_R_AND_D"
+  },
+  {
+    "id": "P166r",
+    "name": "Extension réservée 5",
+    "note": "Nom détaillé non fourni dans les docs source fournis.",
+    "status": "RESERVED_R_AND_D"
+  },
+  {
+    "id": "P167r",
+    "name": "Extension réservée 6",
+    "note": "Nom détaillé non fourni dans les docs source fournis.",
+    "status": "RESERVED_R_AND_D"
+  },
+  {
+    "id": "P168r",
+    "name": "Extension réservée 7",
+    "note": "Nom détaillé non fourni dans les docs source fournis.",
+    "status": "RESERVED_R_AND_D"
+  },
+  {
+    "id": "P169r",
+    "name": "Extension réservée 8",
+    "note": "Nom détaillé non fourni dans les docs source fournis.",
+    "status": "RESERVED_R_AND_D"
+  },
+  {
+    "id": "ACP",
+    "name": "Analyse de Contexte Profond",
+    "note": "Extension moteur mentionnée dans checklist / branche149.",
+    "status": "RESERVED_R_AND_D"
+  },
+  {
+    "id": "Petri",
+    "name": "Réseaux de Petri",
+    "note": "Extension moteur mentionnée dans checklist.",
+    "status": "RESERVED_R_AND_D"
+  },
+  {
+    "id": "Cosmique",
+    "name": "Alignement cycles longs et fractals",
+    "note": "Extension moteur mentionnée dans checklist.",
+    "status": "RESERVED_R_AND_D"
+  },
+  {
+    "id": "LTCU+",
+    "name": "Logic Translation Cognitive Unit avancée",
+    "note": "Extension moteur mentionnée dans checklist.",
+    "status": "RESERVED_R_AND_D"
+  },
+  {
+    "id": "Balance",
+    "name": "Balance exponentielle / balances périphériques",
+    "note": "Extension périphérique avancée, non noyau.",
+    "status": "RESERVED_R_AND_D"
+  },
+  {
+    "id": "GPS",
+    "name": "Gardien / guide / alerteur de cohérence",
+    "note": "Périphérie Sigma, non décisionnelle.",
+    "status": "RESERVED_R_AND_D"
+  },
+  {
+    "id": "Gencoin",
+    "name": "Économie / énergie / calibration",
+    "note": "Lié au bloc 14 Économie et énergie.",
+    "status": "RESERVED_R_AND_D"
+  },
+  {
+    "id": "Branches X/Y/Z/K/L/N",
+    "name": "Familles R&D",
+    "note": "À statut gouverné en G4.",
+    "status": "RESERVED_R_AND_D"
+  },
+  {
+    "id": "Variantes 70",
+    "name": "Variantes pépites",
+    "note": "À évaluer utile / redondante / spéculative / à supprimer.",
+    "status": "RESERVED_R_AND_D"
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "tree_id": "21",
+  "nodes": [
+    {
+      "id": "T21_N01",
+      "label": "Creation",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}
