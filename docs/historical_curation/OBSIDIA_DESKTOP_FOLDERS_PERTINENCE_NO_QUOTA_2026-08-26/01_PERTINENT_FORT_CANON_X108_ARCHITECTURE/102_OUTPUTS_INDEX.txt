@@ -1,0 +1,24 @@
+﻿
+Name                                            Length LastWriteTime      
+----                                            ------ -------------      
+00_RUN_STATUS.txt                                  102 07/06/2026 09:57:37
+00_scan_paths.txt                                  822 07/06/2026 09:57:35
+00_SCOPE.md                                        608 07/06/2026 09:57:34
+01_TARGET_PIVOT_FILES.txt                        62393 07/06/2026 09:57:53
+02_TARGET_PIVOT_FILES_HITS.txt                  121170 07/06/2026 09:57:57
+10_PEPITES_161_MAPPING_DETAIL.txt               986996 07/06/2026 09:58:18
+100_TOP_HIT_FILES_TARGETED.csv                   30034 07/06/2026 10:01:33
+101_READING_ORDER.md                               493 07/06/2026 10:01:33
+102_OUTPUTS_INDEX.txt                                0 07/06/2026 10:01:33
+11_PEPITES_FILES_BY_NAME.txt                     58361 07/06/2026 09:58:24
+20_CARTOGRAPHE_34_ARBRES_DETAIL.txt            1821554 07/06/2026 09:58:50
+30_CARTOGRAPHE_LOIS_PROTOCOLES_DETAIL.txt      2807237 07/06/2026 09:59:06
+40_CANON_REGISTRY_GUARDIAN_DETAIL.txt          4133515 07/06/2026 09:59:29
+50_PROOF_OBLIGATIONS_MEMORY_BINDING_DETAIL.txt  281498 07/06/2026 09:59:41
+60_AVDR_ACP_PHASE_MAPPER_DETAIL.txt             205317 07/06/2026 09:59:51
+70_PERIPHERAL_GOVERNORS_DETAIL.txt              499283 07/06/2026 10:00:03
+80_FIDELITY_LINEAGE_NON_TRAHISON_DETAIL.txt      78092 07/06/2026 10:00:18
+90_SPECS_01_40_DETAIL.txt                       126709 07/06/2026 10:00:35
+RG_ERRORS_TARGETED.log                               0 07/06/2026 09:57:53
+
+

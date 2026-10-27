@@ -1,0 +1,7 @@
+Fichier : obsidia_architecture.png
+
+Description :
+Schéma de l’architecture globale d’Obsidia. Connexions entre modules principaux (mémoire, AVDR, Cortex, agents…).
+
+Utilité :
+Permet de démontrer la modularité et l’approche systémique d’Obsidia.

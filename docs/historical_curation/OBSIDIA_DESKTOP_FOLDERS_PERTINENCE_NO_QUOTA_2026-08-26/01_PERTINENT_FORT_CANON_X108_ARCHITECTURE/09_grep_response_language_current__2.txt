@@ -1,0 +1,961 @@
+﻿
+ARCHITECTURE.md:42:Définit les dataclasses : `Request`, `Meta`, `Intent`, `Governance`, `Result`, 
+`HumanGate`. Définit les enums : `Decision` (BLOCK/HOLD/ACT), `IntentType` (PROPOSE/ACTION).
+EXECUTION.md:82:from obsidia_kernel.contract import Request, Meta, Intent, IntentType, Governance
+EXECUTION.md:87:    intent=Intent(type=IntentType.PROPOSE, name='test_action', payload={'value': 42}),
+EXECUTION_LOG_FINAL_v120.txt:43:{"domain": "ecom", "market_verdict": "PAY", "confidence": 1.0, 
+"contradictions": [], "unknowns": [], "risk_flags": [], "x108_gate": "ALLOW", "reason_code": "GUARD_ALLOW", 
+"severity": "S0", "decision_id": "ecom-9c7e50d6c2f6", "trace_id": "9ea82a05-b0ce-4591-86df-b8ba3ae3787b", 
+"ticket_required": true, "ticket_id": "ec81ecd47bcc450e", "attestation_ref": "a461e345b6d069652adb8678", 
+"source": "canonical_framework", "evidence_refs": ["c4e4bb63a0d63dcb", "0e6c1999d407efdd", 
+"799c337ed3adc7d5", "f5ff2a5e07caabc9", "a44992cd0658b6d9", "738817b6eb2b664e", "d9c59dda8805214e", 
+"60bc659ab03f47ef", "95f8f7c176838f69", "e09bdadbf3a259f8", "74a7a766f510ba85", "dddad259354bdc5e", 
+"meta:UnknownsAgent", "meta:ConflictResolutionAgent", "meta:PolicyScopeAgent", "meta:TicketReadinessAgent", 
+"meta:TraceIntegrityAgent", "meta:AttestationReadinessAgent", "meta:HumanOverrideEligibilityAgent", 
+"meta:SeverityClassifierAgent", "meta:ReplayConsistencyAgent", "meta:ProofConsistencyAgent"], "metrics": 
+{"pay_score": 6.9799999999999995, "wait_score": 0.0, "refuse_score": 0.0, "proof_ready": true, 
+"deterministic": true}, "raw_engine": {"domain": "ecom", "agent_votes": ["TrafficQualityAgent", 
+"BasketIntentAgent", "OfferHealthAgent", "CustomerTrustAgent", "ConversionReadinessAgent", 
+"MarginProtectionAgent", "ROASRealityAgent", "FulfillmentRiskAgent", "IntentConflictAgent", 
+"CheckoutFrictionAgent", "MerchantPolicyAgent", "EcomProofAgent"], "vote_count": 12}}
+PRESENTATION.html:42:    .hero::before { content: ''; position: absolute; width: 800px; height: 800px; 
+border-radius: 50%; background: radial-gradient(circle, rgba(108,99,255,0.12) 0%, transparent 70%); top: 50%; 
+left: 50%; transform: translate(-50%, -50%); pointer-events: none; }
+PRESENTATION.html:57:    .btn-primary:hover { background: #7c75ff; transform: translateY(-1px); }
+PRESENTATION.html:240:        <div class="os-feature">Intent irréversible → délai 108s obligatoire</div>
+PRESENTATION.html:270:  Intent irréversible + elapsed &lt; 108s → <span class="output">HOLD</span> (délai 
+obligatoire)
+PRESENTATION.html:333:      <div class="tla-prop"><strong>SafetyX108 :</strong> Aucun état atteignable où un 
+intent irréversible obtient <code>ACT</code> avant le délai de 108 secondes.</div>
+RAPPORT_MOTEUR_OBSIDIA_COMPLET.md:30:| `translate.py` | Traducteur entrée brute → IR |
+RAPPORT_MOTEUR_OBSIDIA_COMPLET.md:46:| `x108.py` | Gate X-108 — `HOLD` si `elapsed < min_wait_s` pour intent 
+irréversible, `ACT` sinon |
+RAPPORT_MOTEUR_OBSIDIA_COMPLET.md:47:| `parse_input.py` | Parseur d'entrée brute vers IR OS0 |
+RAPPORT_MOTEUR_OBSIDIA_COMPLET.md:49:**Ce que OS1 prouve :** Le pipeline complet fonctionne de bout en bout. 
+La Gate X-108 applique correctement la règle de délai temporel (108 secondes par défaut). Un intent 
+irréversible ne peut pas obtenir `ACT` avant que le délai soit écoulé.
+RAPPORT_MOTEUR_OBSIDIA_COMPLET.md:247:| **E1 — Non-contournement** | Si `A(intent) = BLOCK`, aucun chemin ne 
+peut produire `ALLOW`. Preuve par dominance du `meet` sur l'ordre `BLOCK ⊳ HOLD ⊳ ALLOW`. | Théorème textuel 
++ Lemmes L1-L4 | PASS |
+RAPPORT_MOTEUR_OBSIDIA_COMPLET.md:248:| **E2 — Monotonie temporelle** | Pour tout `t' < τ`, `GX108(intent, 
+t') = HOLD`. Donc `A ≠ ALLOW` avant le seuil. | Fuzz 200 000 cas | **0 violations** |
+RAPPORT_MOTEUR_OBSIDIA_COMPLET.md:320:L'horloge de Strasbourg est un sandbox synthétique qui simule une 
+observable de divergence temporelle (`delta_day`) pour un intent de gouvernance irréversible. Elle valide 
+empiriquement la propriété de sécurité X-108 sur des traces concrètes.
+README.md:76:**OS1** ajoute le pipeline complet parse → validate → X108 check → décision. La Gate X-108 
+applique la règle de délai temporel : un intent irréversible ne peut pas obtenir `ACT` avant 108 secondes.
+README.md:103:**X108.tla** — `SafetyX108` : aucun état atteignable où un intent irréversible obtient `ACT` 
+avant le délai de 108 secondes. Vérifié sur **97 656 états**.
+_local_audits/ROOT_MODIFIED_FILES_OPERATOR_DECISIONS_APPLIED_READONLY_20260513_214642/ROOT_MODIFIED_FILES_OPER
+ATOR_DECISIONS_APPLIED_READONLY_REPORT.json:12:      "rationale": "market_verdict=ACT et x108_gate=ALLOW 
+représentent deux couches distinctes. market_verdict=ACT = intention/verdict métier proposé par le monde ou 
+la couche domaine. x108_gate=ALLOW = autorisation de passage par la gouvernance X108. Fusionner ACT→ALLOW 
+effacerait la distinction intention-métier vs décision-gate.",
+_local_audits/ROOT_MODIFIED_FILES_OPERATOR_DECISIONS_APPLIED_READONLY_20260513_214642/ROOT_MODIFIED_FILES_OPER
+ATOR_DECISIONS_APPLIED_READONLY_REPORT.json:13:      "future_note": "Prévoir renommage market_verdict → 
+domain_intent | proposed_action | world_verdict | base_decision. Pas dans ce commit.",
+_local_audits/ROOT_MODIFIED_FILES_OPERATOR_DECISIONS_APPLIED_READONLY_20260513_214642/ROOT_MODIFIED_FILES_OPER
+ATOR_DECISIONS_APPLIED_READONLY_REPORT.json:15:      "commit_msg": "fix: realign bank fixtures to X108 
+decision format — ACT=domain intent, ALLOW=X108 gate (two distinct layers)"
+_local_audits/ROOT_MODIFIED_FILES_OPERATOR_DECISIONS_APPLIED_READONLY_20260513_214642/ROOT_MODIFIED_FILES_OPER
+ATOR_DECISIONS_APPLIED_READONLY_REPORT.json:29:        "Justification formelle si Next==UNCHANGED est 
+intentionnel"
+_local_audits/ROOT_MODIFIED_FILES_OPERATOR_DECISIONS_APPLIED_READONLY_20260513_214642/ROOT_MODIFIED_FILES_OPER
+ATOR_DECISIONS_APPLIED_READONLY_REPORT.json:77:      "msg": "fix: realign bank fixtures to X108 decision 
+format — ACT=domain intent, ALLOW=X108 gate (two distinct layers)",
+_local_audits/ROOT_MODIFIED_FILES_OPERATOR_DECISIONS_APPLIED_READONLY_20260513_214642/ROOT_MODIFIED_FILES_OPER
+ATOR_DECISIONS_APPLIED_READONLY_REPORT.md:16:| Couche domaine / monde | `market_verdict` | `ACT` | Intention 
+métier — le monde propose d'agir |
+_local_audits/ROOT_MODIFIED_FILES_OPERATOR_DECISIONS_APPLIED_READONLY_20260513_214642/ROOT_MODIFIED_FILES_OPER
+ATOR_DECISIONS_APPLIED_READONLY_REPORT.md:19:Ces deux champs représentent des couches distinctes. Fusionner 
+ACT→ALLOW effacerait la distinction intention-métier vs décision-gate.
+_local_audits/ROOT_MODIFIED_FILES_OPERATOR_DECISIONS_APPLIED_READONLY_20260513_214642/ROOT_MODIFIED_FILES_OPER
+ATOR_DECISIONS_APPLIED_READONLY_REPORT.md:22:Renommer `market_verdict` → `domain_intent` | `proposed_action` 
+| `world_verdict` | `base_decision` pour clarifier la séparation.
+_local_audits/ROOT_MODIFIED_FILES_OPERATOR_DECISIONS_APPLIED_READONLY_20260513_214642/ROOT_MODIFIED_FILES_OPER
+ATOR_DECISIONS_APPLIED_READONLY_REPORT.md:29:**Commit msg :** `fix: realign bank fixtures to X108 decision 
+format — ACT=domain intent, ALLOW=X108 gate (two distinct layers)`
+_local_audits/ROOT_MODIFIED_FILES_OPERATOR_DECISIONS_APPLIED_READONLY_20260513_214642/ROOT_MODIFIED_FILES_OPER
+ATOR_DECISIONS_APPLIED_READONLY_REPORT.md:49:3. Justification formelle si `Next == UNCHANGED` est intentionnel
+_local_audits/ROOT_MODIFIED_FILES_OPERATOR_DECISIONS_APPLIED_READONLY_20260513_214642/ROOT_MODIFIED_FILES_OPER
+ATOR_DECISIONS_APPLIED_READONLY_REPORT.md:71:| 3 | `examples/bank_normal.json examples/bank_suspicious.json` 
+| `fix: realign bank fixtures to X108 decision format — ACT=domain intent, ALLOW=X108 gate` | ✓ |
+_local_audits/ROOT_MODIFIED_FILES_OPERATOR_REVIEW_READONLY_20260513_213825/ROOT_MODIFIED_FILES_OPERATOR_REVIEW
+_READONLY_REPORT.json:30:          "interpretation": "'market_verdict=ACT' uses pre-ALLOW vocabulary. 
+'x108_gate=ALLOW' uses new ALLOW/BLOCK/HOLD. These may intentionally represent different system layers 
+(market layer vs X108 gate layer), OR market_verdict should be updated to 'ALLOW' for consistency.",
+_local_audits/ROOT_MODIFIED_FILES_OPERATOR_REVIEW_READONLY_20260513_213825/ROOT_MODIFIED_FILES_OPERATOR_REVIEW
+_READONLY_REPORT.json:40:      "recommended_next_action": "OPERATOR_SCHEMA_CLARIFICATION — decide if 
+market_verdict=ACT is intentional dual-layer semantics or a vocabulary artifact from ACT→ALLOW transition"
+_local_audits/ROOT_MODIFIED_FILES_OPERATOR_REVIEW_READONLY_20260513_213825/ROOT_MODIFIED_FILES_OPERATOR_REVIEW
+_READONLY_REPORT.json:123:          "risk": "MEDIUM — potential weakening of distributed safety guarantee. 
+Must verify intent is deliberate simplification for TLC feasibility, not accidental removal of trace 
+checking."
+_local_audits/ROOT_MODIFIED_FILES_OPERATOR_REVIEW_READONLY_20260513_213825/ROOT_MODIFIED_FILES_OPERATOR_REVIEW
+_READONLY_REPORT.md:21:- **Interprétation A — deux couches distinctes :** `market_verdict` = décision de la 
+couche marché (ACT/HOLD), `x108_gate` = décision de la porte X108 (ALLOW/BLOCK/HOLD). Sémantiques 
+différentes, vocabulaires différents intentionnellement.
+_local_audits/ROOT_MODIFIED_FILES_OPERATOR_REVIEW_READONLY_20260513_213825/ROOT_MODIFIED_FILES_OPERATOR_REVIEW
+_READONLY_REPORT.md:94:> La simplification peut être intentionnelle (réduire l'espace d'états TLC pour la 
+faisabilité), ou accidentelle (suppression de la vérification temporelle). L'opérateur doit confirmer 
+l'intent.
+_local_audits/TLA_SPEC_REFACTOR_REPAIR_READONLY_20260513_215627/TLA_SPEC_REFACTOR_REPAIR_READONLY_REPORT.json:
+89:    "next_unchanged_intentional": false,
+_local_audits/TLA_SPEC_REFACTOR_REPAIR_READONLY_20260513_215627/TLA_SPEC_REFACTOR_REPAIR_READONLY_REPORT.md:15
+:3. Justification formelle si Next==UNCHANGED était intentionnel ✓ (NON intentionnel — bug de refactor)
+_local_audits/TLA_SPEC_REFACTOR_REPAIR_READONLY_20260513_215627/TLA_SPEC_REFACTOR_REPAIR_READONLY_REPORT.md:14
+2:| Next==UNCHANGED intentionnel ? | ✗ NON — bug de refactor, corrigé |
+agents/contracts.py:145:    basket_intent_score: float
+agents/contracts.py:152:    intent_conflict_score: float
+agents/domains/ecom_agents.py:15:class BasketIntentAgent(BaseAgent):
+agents/domains/ecom_agents.py:16:    agent_id = "BasketIntentAgent"
+agents/domains/ecom_agents.py:18:        verdict = "PAY" if state.basket_intent_score > 0.7 else "WAIT" if 
+state.basket_intent_score > 0.4 else "REFUSE"
+agents/domains/ecom_agents.py:19:        return AgentVote(self.agent_id, Domain.ECOM, Layer.OBSERVATION, 
+f"basket_intent={state.basket_intent_score:.2f}", state.basket_intent_score, Severity.S1, 
+proposed_verdict=verdict)
+agents/domains/ecom_agents.py:68:class IntentConflictAgent(BaseAgent):
+agents/domains/ecom_agents.py:69:    agent_id = "IntentConflictAgent"
+agents/domains/ecom_agents.py:71:        verdict = "WAIT" if state.intent_conflict_score > 0.4 else "PAY"
+agents/domains/ecom_agents.py:73:        return AgentVote(self.agent_id, Domain.ECOM, Layer.CONTRADICTION, 
+f"intent_conflict={state.intent_conflict_score:.2f}", state.intent_conflict_score, sev, 
+proposed_verdict=verdict, contradictions=["INTENT_CONFLICT"] if verdict=="WAIT" else [])
+agents/domains/ecom_agents.py:107:        BasketIntentAgent(),
+agents/domains/ecom_agents.py:114:        IntentConflictAgent(),
+automation/canonicalPipeline.ts:85:  basket_intent_score: number;
+automation/canonicalPipeline.ts:92:  intent_conflict_score: number;
+automation/canonicalPipeline.ts:234:    basket_intent_score: 0.76,
+automation/canonicalPipeline.ts:241:    intent_conflict_score: 0.1,
+automation/canonicalPipeline.ts:325:    basket_intent_score: isHighRoas ? 0.95 : 0.76,
+automation/canonicalPipeline.ts:332:    intent_conflict_score: isFraudCheckout ? 0.9 : 0.1,
+data/scenarios.json:5:    "description": "Intent blocked due to low market coherence (high volatility)",
+data/scenarios.json:7:    "intent": {
+data/scenarios.json:25:    "description": "Intent held due to X-108 temporal lock (τ not elapsed)",
+data/scenarios.json:27:    "intent": {
+data/scenarios.json:47:    "description": "Intent executed successfully after all gates pass",
+data/scenarios.json:49:    "intent": {
+data/scenarios.json:69:    "description": "Intent blocked due to high risk projection (P(ruin) > threshold)",
+data/scenarios.json:71:    "intent": {
+data/scenarios.json:95:    "name": "EXECUTE: Reversible Intent (No X-108)",
+data/scenarios.json:96:    "description": "Reversible intent executed immediately without X-108 delay",
+data/scenarios.json:98:    "intent": {
+docs/original/RAPPORT_AUDIT_OS4_2026-03-11.md:25:| **TradingWorld** | `trading.simulate`, 
+`engine.decisionEnvelope`, `engine.verifyTicket`, `portfolio.*`, `ai.explainDecision` | ✅ Direct | ✅ | 
+Complet |
+docs/original/RAPPORT_AUDIT_OS4_2026-03-11.md:26:| **BankWorld** | `bank.simulate`, `engine.attestation`, 
+`portfolio.*`, `ai.explainDecision` | ✅ Direct | ✅ | Complet |
+docs/original/RAPPORT_AUDIT_OS4_2026-03-11.md:27:| **EcomWorld** | `ecom.simulate`, `portfolio.*`, 
+`proof.guardStats` | ✅ Direct | ⚠️ Partiel | `ai.explainDecision` non branché |
+docs/original/RAPPORT_AUDIT_OS4_2026-03-11.md:72:| **Contradiction** | Détecte les conflits entre agents | 
+`ConflictResolutionAgent`, `UnknownsAgent`, `IntentConflictAgent`, `CheckoutFrictionAgent` |
+docs/original/RAPPORT_AUDIT_OS4_2026-03-11.md:112:| Voir pourquoi le gate est actif | ❌ Pas d'explication 
+contextuelle |
+docs/original/RAPPORT_AUDIT_OS4_2026-03-11.md:141:Plusieurs pages exposent des labels techniques directement 
+à l'opérateur sans explication :
+docs/original/RAPPORT_AUDIT_OS4_2026-03-11.md:159:### 4.3 Absence d'explications contextuelles
+docs/original/RAPPORT_AUDIT_OS4_2026-03-11.md:184:### Priorité 2 — Moyenne (simplification et explications)
+docs/original/RAPPORT_AUDIT_OS4_2026-03-11.md:190:| P2.3 | Brancher `ai.explainDecision` dans EcomWorld | 
+`client/src/pages/EcomWorld.tsx` | 20 min |
+docs/original/formal/PHASE24_TLA_README.md:15:This pack is intentionally minimal and readable. It is a 
+specification + checker scaffold.
+docs/original/manifest-reference.md:2:Explain SHA256 usage and seal verification.
+docs/original/standards/X108_STANDARD.md:17:- **Intent**: a proposed action with declared irreversibility and 
+constraints.
+docs/original/standards/X108_STANDARD.md:20:- **τ (tau)**: minimum delay threshold for irreversible intents.
+docs/original/standards/X108_STANDARD.md:21:- **elapsed**: observed time since intent creation (or since last 
+stable checkpoint).
+docs/original/standards/X108_STANDARD.md:38:### 1.2 Intent type (canonical)
+docs/original/standards/X108_STANDARD.md:39:An **Intent** MUST include the following fields.
+docs/original/standards/X108_STANDARD.md:43:Intent:
+docs/original/standards/X108_STANDARD.md:44:  intent_id:        string   (unique identifier)
+docs/original/standards/X108_STANDARD.md:69:Let `i` be an Intent.
+docs/original/standards/X108_STANDARD.md:124:  intent_id
+docs/original/standards/X108_STANDARD.md:149:For fixed `(state, intent)` the kernel MUST output the same 
+decision.
+docs/original/standards/X108_STANDARD.md:152:If an intent is irreversible and `elapsed` increases 
+monotonically, then:
+docs/original/standards/X108_STANDARD.md:157:No ACT before tau for irreversible intents.
+engine/api_server/worm_uploader.py:7:- Uploads audit.log and audit.chain snapshots to S3-compatible storage 
+(MinIO) with retention intent.
+engine/bus/message.py:6:class MsgIntentType(str, Enum):
+engine/bus/message.py:11:class IntentMsg:
+engine/bus/message.py:12:    type: MsgIntentType
+engine/bus/registry.py:3:from .message import MsgIntentType
+engine/bus/registry.py:10:    router.register(Module(name="OS_TRAD", fn=os_trad_propose, 
+supports=MsgIntentType.PROPOSE))
+engine/bus/router.py:5:from .message import IntentMsg, MsgIntentType
+engine/bus/router.py:11:    supports: MsgIntentType = MsgIntentType.PROPOSE
+engine/bus/router.py:24:            if m.supports != MsgIntentType.PROPOSE:
+engine/core_full/modules/os_trad/adapter.py:17:SUPPORTED_INTENT_NAMES = {"OS_TRAD", "OS_TRAD_BUILD"}
+engine/core_full/modules/os_trad/adapter.py:22:    Executes only when request.intent.type == PROPOSE and 
+request.intent.name in SUPPORTED_INTENT_NAMES.
+engine/core_full/modules/os_trad/adapter.py:25:    intent = request_dict.get("intent", {}) or {}
+engine/core_full/modules/os_trad/adapter.py:26:    if intent.get("type") != "PROPOSE":
+engine/core_full/modules/os_trad/adapter.py:28:    if intent.get("name") not in SUPPORTED_INTENT_NAMES:
+engine/core_full/modules/os_trad/adapter.py:31:    payload = intent.get("payload", {}) or {}
+engine/core_full/modules/os_trad/vendor/obsidia_os0/__init__.py:1:__all__ = 
+["ir","contract","sandbox","translate","determinism"]
+engine/core_full/modules/os_trad/vendor/obsidia_os0/demo.py:2:from .translate import python_like_to_ir
+engine/core_full/modules/os_trad/vendor/obsidia_os0/tests.py:6:from .translate import python_like_to_ir
+engine/core_full/modules/os_trad/vendor/obsidia_os0/tests_advanced.py:14:from . import ir, contract, sandbox, 
+translate
+engine/core_full/modules/os_trad/vendor/obsidia_os0/tests_advanced.py:27:    ir1 = 
+translate.python_like_to_ir(src)
+engine/core_full/modules/os_trad/vendor/obsidia_os0/tests_advanced.py:28:    ir2 = 
+translate.python_like_to_ir(src)
+engine/core_full/modules/os_trad/vendor/obsidia_os1/__init__.py:7:- il produit une SSR (explication)
+engine/core_full/modules/os_trad/vendor/obsidia_os1/os1.py:10:from .parse_input import parse_input
+engine/core_full/modules/os_trad/vendor/obsidia_os1/os1.py:38:    1) parse_input -> IR
+engine/core_full/modules/os_trad/vendor/obsidia_os1/os1.py:49:        ir = parse_input(raw_input)
+engine/core_full/modules/os_trad/vendor/obsidia_os1/os1.py:59:    # parse_input returns a dict: {"program": 
+[IR nodes], "meta": {...}}
+engine/core_full/modules/os_trad/vendor/obsidia_os1/os1.py:140:    ir_type = meta.get("intent")
+engine/core_full/modules/os_trad/vendor/obsidia_os1/parse_input.py:158:def parse_input(payload: Dict[str, 
+Any]) -> Dict[str, Any]:
+engine/core_full/modules/os_trad/vendor/proof/runner.py:7:from obsidia_os1.parse_input import parse_input, 
+parse_project
+engine/core_full/modules/os_trad/vendor/proof/runner.py:19:        return parse_input({'text': text})
+engine/demo/request_approved.json:8:  "intent": {
+engine/demo/request_initial.json:8:  "intent": {
+engine/obsidia_kernel/__init__.py:1:from .contract import Request, Result, Decision, IntentType, Meta, 
+Intent, Governance
+engine/obsidia_kernel/contract.py:15:class IntentType(str, Enum):
+engine/obsidia_kernel/contract.py:31:class Intent:
+engine/obsidia_kernel/contract.py:32:    type: IntentType
+engine/obsidia_kernel/contract.py:51:    intent: Intent
+engine/obsidia_kernel/kernel.py:32:        payload = dict(request.intent.payload or {})
+engine/os0/__init__.py:1:__all__ = ["ir","contract","sandbox","translate","determinism"]
+engine/os0/demo.py:2:from .translate import python_like_to_ir
+engine/os0/sandbox.py:20:        # by parse_input can be executed without side-effects.
+engine/os0/tests.py:6:from .translate import python_like_to_ir
+engine/os0/tests_advanced.py:14:from . import ir, contract, sandbox, translate
+engine/os0/tests_advanced.py:27:    ir1 = translate.python_like_to_ir(src)
+engine/os0/tests_advanced.py:28:    ir2 = translate.python_like_to_ir(src)
+engine/os1/__init__.py:7:- il produit une SSR (explication)
+engine/os1/os1.py:10:from .parse_input import parse_input
+engine/os1/os1.py:38:    1) parse_input -> IR
+engine/os1/os1.py:49:        ir = parse_input(raw_input)
+engine/os1/os1.py:59:    # parse_input returns a dict: {"program": [IR nodes], "meta": {...}}
+engine/os1/os1.py:140:    ir_type = meta.get("intent")
+engine/os1/parse_input.py:54:def parse_input(raw: Any) -> Dict[str, Any]:
+engine/os1/parse_input.py:60:            parsed = parse_input(raw.get("text", ""))
+engine/os1/parse_input.py:100:    return {"program": program, "meta": {"source": "parse_input_v1"}}
+engine/unified/orchestrator.py:7:from obsidia_kernel.contract import Meta, Intent, Governance, Request, 
+IntentType
+engine/unified/orchestrator.py:33:    intent_d = pre.get("intent", {})
+engine/unified/orchestrator.py:34:    intent_type = intent_d.get("type","ACTION")
+engine/unified/orchestrator.py:35:    it = IntentType.PROPOSE if intent_type == "PROPOSE" else 
+IntentType.ACTION
+engine/unified/orchestrator.py:36:    intent = Intent(type=it, name=intent_d.get("name",""), 
+payload=intent_d.get("payload", {}) or {})
+engine/unified/orchestrator.py:49:        intent=intent,
+evidence/os4/strasbourg_clock_x108/EVIDENCE.md:12:The **Strasbourg Clock** is a synthetic sandbox that 
+simulates a time-divergence observable (`delta_day`) for an irreversible governance intent. It is used as an 
+empirical validation of the X-108 temporal safety property on concrete traces.
+examples/ecom_normal.json:4:  "basket_intent_score": 0.9,
+examples/ecom_normal.json:11:  "intent_conflict_score": 0.05,
+governance/contracts.py:145:    basket_intent_score: float
+governance/contracts.py:152:    intent_conflict_score: float
+lib/banking/engine.ts:21:  intentClear: boolean;
+lib/banking/engine.ts:68:    intentClear: tx.amount < 500000,
+lib/ecommerce/safetyGate.ts:46:      reason: 'Low coherence: suspicious intent',
+lib/execution/erc8004Builder.ts:2:import { ERC8004Intent, Features } from '../../types/erc8004';
+lib/execution/erc8004Builder.ts:5:export function buildIntent(
+lib/execution/erc8004Builder.ts:13:): ERC8004Intent {
+lib/simulation/simLite.ts:11:export interface TradeIntent {
+lib/simulation/simLite.ts:18:  intent: TradeIntent,
+os4-integration/canonical_ts/canonicalPipeline.ts:85:  basket_intent_score: number;
+os4-integration/canonical_ts/canonicalPipeline.ts:92:  intent_conflict_score: number;
+os4-integration/canonical_ts/canonicalPipeline.ts:234:    basket_intent_score: 0.76,
+os4-integration/canonical_ts/canonicalPipeline.ts:241:    intent_conflict_score: 0.1,
+os4-integration/canonical_ts/canonicalPipeline.ts:325:    basket_intent_score: isHighRoas ? 0.95 : 0.76,
+os4-integration/canonical_ts/canonicalPipeline.ts:332:    intent_conflict_score: isFraudCheckout ? 0.9 : 0.1,
+os4-integration/docs/INTEGRATION_CANONIQUE.md:172:| `intent_conflict_score` | `number` | Conflit d'intention 
+[0, 1] |
+os4-integration/docs/PLAN_REFONTE_V2.md:17:| `/simuler` | Simuler | Mélange texte / cockpit / explication / 
+démo — surcharge |
+os4-integration/docs/PLAN_REFONTE_V2.md:39:| `decision_tickets` | `intentId`, `domain`, `decision`, 
+`reasons`, `x108`, `auditTrail`, `replayRef` |
+os4-integration/docs/PLAN_REFONTE_V2.md:334:| A | **Observe** | Qu'est-ce qui se passe ? | MarketData, 
+Liquidity, Volatility, Macro, Correlation, Event, Sentiment | Transaction, Counterparty, LiquidityExposure, 
+BehaviorShift, FraudPattern, IdentityMismatch | TrafficQuality, BasketIntent, OfferHealth, CustomerTrust, 
+FulfillmentRisk, CheckoutFriction |
+os4-integration/docs/PLAN_REFONTE_V2.md:335:| B | **Interpret** | Comment lire ce qui se passe ? | Momentum, 
+MeanReversion, Breakout, Pattern, Prediction, RegimeShift | LimitPolicy, Affordability, TemporalUrgency, 
+NarrativeConflict | ConversionReadiness, MarginProtection, ROASReality, IntentConflict, MerchantPolicy |
+os4-integration/python_agents/contracts.py:145:    basket_intent_score: float
+os4-integration/python_agents/contracts.py:152:    intent_conflict_score: float
+os4-integration/python_agents/demo_run.py:55:        basket_intent_score=0.76,
+os4-integration/python_agents/demo_run.py:62:        intent_conflict_score=0.1,
+os4-integration/python_agents/domains/ecom_agents.py:15:class BasketIntentAgent(BaseAgent):
+os4-integration/python_agents/domains/ecom_agents.py:16:    agent_id = "BasketIntentAgent"
+os4-integration/python_agents/domains/ecom_agents.py:18:        verdict = "PAY" if state.basket_intent_score 
+> 0.7 else "WAIT" if state.basket_intent_score > 0.4 else "REFUSE"
+os4-integration/python_agents/domains/ecom_agents.py:19:        return AgentVote(self.agent_id, Domain.ECOM, 
+Layer.OBSERVATION, f"basket_intent={state.basket_intent_score:.2f}", state.basket_intent_score, Severity.S1, 
+proposed_verdict=verdict)
+os4-integration/python_agents/domains/ecom_agents.py:68:class IntentConflictAgent(BaseAgent):
+os4-integration/python_agents/domains/ecom_agents.py:69:    agent_id = "IntentConflictAgent"
+os4-integration/python_agents/domains/ecom_agents.py:71:        verdict = "WAIT" if 
+state.intent_conflict_score > 0.4 else "PAY"
+os4-integration/python_agents/domains/ecom_agents.py:73:        return AgentVote(self.agent_id, Domain.ECOM, 
+Layer.CONTRADICTION, f"intent_conflict={state.intent_conflict_score:.2f}", state.intent_conflict_score, sev, 
+proposed_verdict=verdict, contradictions=["INTENT_CONFLICT"] if verdict=="WAIT" else [])
+os4-integration/python_agents/domains/ecom_agents.py:107:        BasketIntentAgent(),
+os4-integration/python_agents/domains/ecom_agents.py:114:        IntentConflictAgent(),
+os4-integration/python_agents/tests/test_agents_functional.py:59:        basket_intent_score=0.76,
+os4-integration/python_agents/tests/test_agents_functional.py:66:        intent_conflict_score=0.1,
+proofs/V18_3_1/engine_buildable_0_9_3_1/HASHES.sha256:26:24de1ed54026ba402192bbfd6b4d96380e46aa4f7304b28a5bd96
+8e0650ced05  obsidia_os1/parse_input.py
+proofs/V18_3_1/engine_buildable_0_9_3_1/HASHES.sha256:86:7910c81e6e9d3b90c4d86e56ca7e4d917ca56feb14476068a1307
+7bd8556df71  obsidia_os1/__pycache__/parse_input.cpython-311.pyc
+proofs/V18_3_1/engine_buildable_0_9_3_1/HASHES.sha256:103:a5a5be08922ad05ba73769db818b1a34ad95fb23ebf3f3bbfe31
+6c0a9105cf8b  modules/os_trad/vendor/obsidia_os1/parse_input.py
+proofs/V18_3_1/engine_buildable_0_9_3_1/HASHES.sha256:121:d2cbed7fc40c35e0e955fbcb8b4868cfac15c37f480791a344b0
+53417cb2f933  modules/os_trad/vendor/obsidia_os0/translate.py
+proofs/V18_3_1/engine_buildable_0_9_3_1/HASHES.sha256:122:d2cbed7fc40c35e0e955fbcb8b4868cfac15c37f480791a344b0
+53417cb2f933  obsidia_os0/translate.py
+proofs/V18_3_1/engine_buildable_0_9_3_1/HASHES.sha256:150:fd842df5873c795a2c0a745bb354c6d2323621a73de901c2fd0c
+e80eb9e2ce02  modules/os_trad/vendor/obsidia_os1/__pycache__/parse_input.cpython-311.pyc
+proofs/V18_3_1/engine_buildable_0_9_3_1/README_KERNEL_V2.md:9:from obsidia_kernel import ObsidiaKernel, 
+Request, Meta, Intent, IntentType, Governance
+proofs/V18_3_1/engine_buildable_0_9_3_1/README_KERNEL_V2.md:14:    intent=Intent(type=IntentType.ACTION, 
+name="demo", payload={"W_full": [[0,1,1],[1,0,1],[1,1,0]], "core_nodes":[0,1,2]}),
+proofs/V18_3_1/engine_buildable_0_9_3_1/SEAL.json:8:    "obsidia_os1/parse_input.py": 
+"24de1ed54026ba402192bbfd6b4d96380e46aa4f7304b28a5bd968e0650ced05",
+proofs/V18_3_1/engine_buildable_0_9_3_1/SEAL.json:16:    "obsidia_os0/translate.py": 
+"d2cbed7fc40c35e0e955fbcb8b4868cfac15c37f480791a344b053417cb2f933",
+proofs/V18_3_1/engine_buildable_0_9_3_1/api_server/worm_uploader.py:7:- Uploads audit.log and audit.chain 
+snapshots to S3-compatible storage (MinIO) with retention intent.
+proofs/V18_3_1/engine_buildable_0_9_3_1/demo_usecase/request_approved.json:8:  "intent": {
+proofs/V18_3_1/engine_buildable_0_9_3_1/demo_usecase/request_initial.json:8:  "intent": {
+proofs/V18_3_1/engine_buildable_0_9_3_1/docs/USECASE_E2E_TRADING.md:8:- intent.type: ACTION
+proofs/V18_3_1/engine_buildable_0_9_3_1/docs/openapi.yaml:26:        Accepts a DecisionRequest with intent 
+type PROPOSE or ACTION.
+proofs/V18_3_1/engine_buildable_0_9_3_1/docs/openapi.yaml:206:    IntentType:
+proofs/V18_3_1/engine_buildable_0_9_3_1/docs/openapi.yaml:228:    Intent:
+proofs/V18_3_1/engine_buildable_0_9_3_1/docs/openapi.yaml:232:        type: { $ref: 
+'#/components/schemas/IntentType' }
+proofs/V18_3_1/engine_buildable_0_9_3_1/docs/openapi.yaml:271:      required: [meta, intent, context, 
+governance]
+proofs/V18_3_1/engine_buildable_0_9_3_1/docs/openapi.yaml:274:        intent: { $ref: 
+'#/components/schemas/Intent' }
+proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/adapter.py:17:SUPPORTED_INTENT_NAMES = {"OS_TRAD", 
+"OS_TRAD_BUILD"}
+proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/adapter.py:22:    Executes only when 
+request.intent.type == PROPOSE and request.intent.name in SUPPORTED_INTENT_NAMES.
+proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/adapter.py:25:    intent = request_dict.get("intent", 
+{}) or {}
+proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/adapter.py:26:    if intent.get("type") != "PROPOSE":
+proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/adapter.py:28:    if intent.get("name") not in 
+SUPPORTED_INTENT_NAMES:
+proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/adapter.py:31:    payload = intent.get("payload", {}) 
+or {}
+proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/__init__.py:1:__all__ = 
+["ir","contract","sandbox","translate","determinism"]
+proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/demo.py:2:from .translate import 
+python_like_to_ir
+proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/tests.py:6:from .translate import 
+python_like_to_ir
+proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/tests_advanced.py:14:from . import 
+ir, contract, sandbox, translate
+proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/tests_advanced.py:27:    ir1 = 
+translate.python_like_to_ir(src)
+proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/tests_advanced.py:28:    ir2 = 
+translate.python_like_to_ir(src)
+proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os1/__init__.py:7:- il produit une SSR 
+(explication)
+proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os1/os1.py:10:from .parse_input import 
+parse_input
+proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os1/os1.py:38:    1) parse_input -> IR
+proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os1/os1.py:49:        ir = 
+parse_input(raw_input)
+proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os1/os1.py:59:    # parse_input 
+returns a dict: {"program": [IR nodes], "meta": {...}}
+proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os1/os1.py:140:    ir_type = 
+meta.get("intent")
+proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os1/parse_input.py:158:def 
+parse_input(payload: Dict[str, Any]) -> Dict[str, Any]:
+proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/proof/runner.py:7:from obsidia_os1.parse_input 
+import parse_input, parse_project
+proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/proof/runner.py:19:        return 
+parse_input({'text': text})
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_bus/message.py:6:class MsgIntentType(str, Enum):
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_bus/message.py:11:class IntentMsg:
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_bus/message.py:12:    type: MsgIntentType
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_bus/registry.py:3:from .message import MsgIntentType
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_bus/registry.py:10:    router.register(Module(name="OS_TRAD", 
+fn=os_trad_propose, supports=MsgIntentType.PROPOSE))
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_bus/router.py:5:from .message import IntentMsg, MsgIntentType
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_bus/router.py:11:    supports: MsgIntentType = 
+MsgIntentType.PROPOSE
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_bus/router.py:24:            if m.supports != 
+MsgIntentType.PROPOSE:
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_kernel/__init__.py:1:from .contract import Request, Result, 
+Decision, IntentType, Meta, Intent, Governance
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_kernel/contract.py:15:class IntentType(str, Enum):
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_kernel/contract.py:31:class Intent:
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_kernel/contract.py:32:    type: IntentType
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_kernel/contract.py:51:    intent: Intent
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_kernel/kernel.py:32:        payload = 
+dict(request.intent.payload or {})
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os0/__init__.py:1:__all__ = 
+["ir","contract","sandbox","translate","determinism"]
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os0/demo.py:2:from .translate import python_like_to_ir
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os0/sandbox.py:20:        # by parse_input can be executed 
+without side-effects.
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os0/tests.py:6:from .translate import python_like_to_ir
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os0/tests_advanced.py:14:from . import ir, contract, sandbox, 
+translate
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os0/tests_advanced.py:27:    ir1 = 
+translate.python_like_to_ir(src)
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os0/tests_advanced.py:28:    ir2 = 
+translate.python_like_to_ir(src)
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os1/__init__.py:7:- il produit une SSR (explication)
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os1/os1.py:10:from .parse_input import parse_input
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os1/os1.py:38:    1) parse_input -> IR
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os1/os1.py:49:        ir = parse_input(raw_input)
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os1/os1.py:59:    # parse_input returns a dict: {"program": 
+[IR nodes], "meta": {...}}
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os1/os1.py:140:    ir_type = meta.get("intent")
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os1/parse_input.py:54:def parse_input(raw: Any) -> Dict[str, 
+Any]:
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os1/parse_input.py:60:            parsed = 
+parse_input(raw.get("text", ""))
+proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os1/parse_input.py:100:    return {"program": program, 
+"meta": {"source": "parse_input_v1"}}
+proofs/V18_3_1/engine_buildable_0_9_3_1/presentation_pack/OpenAPI_Contract.yaml:26:        Accepts a 
+DecisionRequest with intent type PROPOSE or ACTION.
+proofs/V18_3_1/engine_buildable_0_9_3_1/presentation_pack/OpenAPI_Contract.yaml:206:    IntentType:
+proofs/V18_3_1/engine_buildable_0_9_3_1/presentation_pack/OpenAPI_Contract.yaml:228:    Intent:
+proofs/V18_3_1/engine_buildable_0_9_3_1/presentation_pack/OpenAPI_Contract.yaml:232:        type: { $ref: 
+'#/components/schemas/IntentType' }
+proofs/V18_3_1/engine_buildable_0_9_3_1/presentation_pack/OpenAPI_Contract.yaml:271:      required: [meta, 
+intent, context, governance]
+proofs/V18_3_1/engine_buildable_0_9_3_1/presentation_pack/OpenAPI_Contract.yaml:274:        intent: { $ref: 
+'#/components/schemas/Intent' }
+proofs/V18_3_1/engine_buildable_0_9_3_1/presentation_pack/UseCase_E2E.md:8:- intent.type: ACTION
+proofs/V18_3_1/engine_buildable_0_9_3_1/tests_kernel_v2/test_kernel_v2_enrichment.py:2:from 
+obsidia_kernel.contract import Request, Meta, Intent, IntentType, Governance, Decision
+proofs/V18_3_1/engine_buildable_0_9_3_1/tests_kernel_v2/test_kernel_v2_enrichment.py:8:        
+intent=Intent(type=IntentType.ACTION, name="run", payload={"code":"x=1\nprint(x)"}),
+proofs/V18_3_1/engine_buildable_0_9_3_1/tests_kernel_v2/test_kernel_v2_parity.py:2:from obsidia_kernel import 
+ObsidiaKernel, Request, Meta, Intent, IntentType, Governance
+proofs/V18_3_1/engine_buildable_0_9_3_1/tests_kernel_v2/test_kernel_v2_parity.py:16:        
+intent=Intent(type=IntentType.ACTION, name="x", payload={}),
+proofs/V18_3_1/engine_buildable_0_9_3_1/tests_kernel_v2/test_kernel_v2_parity.py:31:        
+intent=Intent(type=IntentType.ACTION, name="x", payload={"W_full": _W_zero(3), "core_nodes":[0,1,2], 
+"theta_S":0.25}),
+proofs/V18_3_1/engine_buildable_0_9_3_1/tests_kernel_v2/test_kernel_v2_parity.py:46:        
+intent=Intent(type=IntentType.ACTION, name="x", payload={"W_full": _W_one(3,1.0), "core_nodes":[0,1,2], 
+"theta_S":0.25}),
+proofs/V18_3_1/engine_buildable_0_9_3_1/tests_modules/test_T01_T02_os_trad_module.py:6:        "intent": 
+{"type":"PROPOSE","name":"OS_TRAD_BUILD","payload":{"spec_text":"PRINT 'hello'\n","target":"python"}},
+proofs/V18_3_1/engine_buildable_0_9_3_1/tests_modules/test_T01_T02_os_trad_module.py:19:        "intent": 
+{"type":"ACTION","name":"ANY","payload":{}},
+proofs/V18_3_1/engine_buildable_0_9_3_1/tests_unified/test_U01_all_actions_through_kernel.py:6:        
+"intent": {"type":"ACTION","name":"demo_action","payload":{}},
+proofs/V18_3_1/engine_buildable_0_9_3_1/tests_unified/test_U02_no_exec_on_block_hold.py:7:        "intent": 
+{"type":"ACTION","name":"irreversible_action","payload":{}},
+proofs/V18_3_1/engine_buildable_0_9_3_1/unified_interface/orchestrator.py:7:from obsidia_kernel.contract 
+import Meta, Intent, Governance, Request, IntentType
+proofs/V18_3_1/engine_buildable_0_9_3_1/unified_interface/orchestrator.py:33:    intent_d = pre.get("intent", 
+{})
+proofs/V18_3_1/engine_buildable_0_9_3_1/unified_interface/orchestrator.py:34:    intent_type = 
+intent_d.get("type","ACTION")
+proofs/V18_3_1/engine_buildable_0_9_3_1/unified_interface/orchestrator.py:35:    it = IntentType.PROPOSE if 
+intent_type == "PROPOSE" else IntentType.ACTION
+proofs/V18_3_1/engine_buildable_0_9_3_1/unified_interface/orchestrator.py:36:    intent = Intent(type=it, 
+name=intent_d.get("name",""), payload=intent_d.get("payload", {}) or {})
+proofs/V18_3_1/engine_buildable_0_9_3_1/unified_interface/orchestrator.py:49:        intent=intent,
+proofs/V18_7/README_V18_7.txt:15:- `Intent`: a candidate action proposed by Layer B.
+proofs/V18_7/README_V18_7.txt:17:- `Opt_B`: subordinate optimizer that may propose many intents but **cannot 
+execute**; only proposes.
+proofs/V18_7/README_V18_7.txt:24:- Some intents are *irreversible*.
+proofs/V18_7/README_V18_7.txt:28:- Any intent carries a `nonce` / ticket id.
+proofs/V18_7/README_V18_7.txt:36:For any intent `i`, if `Gate_A(i)=BLOCK` then the global decision cannot be 
+`ALLOW(i)` regardless of what `Opt_B` proposes.
+proofs/V18_7/README_V18_7.txt:40:For irreversible intent `i` and threshold `τ`:
+proofs/V18_7/README_V18_7.txt:59:- No irreversible intent can become ALLOW before τ (temporal safety).
+proofs/V18_7/checker/noncircumvention_checker.py:10:- optimizer generates intents (Layer B)
+proofs/V18_7/checker/noncircumvention_checker.py:38:def gate_replay(intent, store):
+proofs/V18_7/checker/noncircumvention_checker.py:39:    n=intent.get("nonce")
+proofs/V18_7/checker/noncircumvention_checker.py:44:def gate_risk(intent, risk_max=0.65):
+proofs/V18_7/checker/noncircumvention_checker.py:45:    if intent["risk"] >= risk_max:
+proofs/V18_7/checker/noncircumvention_checker.py:47:    if intent["expected_return"] < -0.01:
+proofs/V18_7/checker/noncircumvention_checker.py:51:def gate_x108(intent, time_elapsed, tau=10.0):
+proofs/V18_7/checker/noncircumvention_checker.py:52:    if intent.get("irreversible", False) and time_elapsed 
+< tau:
+proofs/V18_7/checker/noncircumvention_checker.py:56:def sovereign_gate(intent, time_elapsed, store, 
+risk_max=0.65, tau=10.0):
+proofs/V18_7/checker/noncircumvention_checker.py:57:    v1,r1 = gate_replay(intent, store)
+proofs/V18_7/checker/noncircumvention_checker.py:58:    v2,r2 = gate_risk(intent, risk_max=risk_max)
+proofs/V18_7/checker/noncircumvention_checker.py:59:    v3,r3 = gate_x108(intent, time_elapsed=time_elapsed, 
+tau=tau)
+proofs/V18_7/checker/noncircumvention_checker.py:66:    intents=[]
+proofs/V18_7/checker/noncircumvention_checker.py:68:        intents.append({
+proofs/V18_7/checker/noncircumvention_checker.py:69:            "id": f"intent_{i}",
+proofs/V18_7/checker/noncircumvention_checker.py:75:    intents.sort(key=lambda x: x["expected_return"], 
+reverse=True)
+proofs/V18_7/checker/noncircumvention_checker.py:76:    return intents
+proofs/V18_7/checker/noncircumvention_checker.py:81:    intents=optimizer_candidates(60)
+proofs/V18_7/checker/noncircumvention_checker.py:82:    best=intents[0]
+proofs/V18_7/checker/noncircumvention_checker.py:116:        intent={
+proofs/V18_7/checker/noncircumvention_checker.py:126:            intent["nonce"]=last_nonce
+proofs/V18_7/checker/noncircumvention_checker.py:128:        d, reasons = sovereign_gate(intent, 
+time_elapsed=t, store=store, risk_max=risk_max, tau=tau)
+proofs/V18_7/checker/noncircumvention_checker.py:131:        if intent["irreversible"] and t < tau and 
+d==ALLOW:
+proofs/V18_7/checker/noncircumvention_checker.py:135:        if (intent["nonce"] in store.seen) and d!=BLOCK:
+proofs/V18_7/checker/noncircumvention_checker.py:141:        store.mark(intent["nonce"])
+proofs/V18_7/checker/noncircumvention_checker.py:142:        last_nonce=intent["nonce"]
+proofs/V18_7/proofs/V18_7_FORMAL_THEOREMS.md:13:Let there be k sovereign gates `G1..Gk` each mapping 
+`(intent, state) -> D`.
+proofs/V18_7/proofs/V18_7_FORMAL_THEOREMS.md:16:`A(intent,state) = G1(intent,state) ⊓ ... ⊓ Gk(intent,state)`.
+proofs/V18_7/proofs/V18_7_FORMAL_THEOREMS.md:18:Let optimizer propose a set `S = Opt_B(state)` of candidate 
+intents.
+proofs/V18_7/proofs/V18_7_FORMAL_THEOREMS.md:19:Execution chooses any intent only if `A(intent,state) = 
+ALLOW` (or after HOLD resolves).
+proofs/V18_7/proofs/V18_7_FORMAL_THEOREMS.md:25:- for irreversible intent with threshold τ: if `t < τ` then 
+gate returns `HOLD`.
+proofs/V18_7/proofs/V18_7_FORMAL_THEOREMS.md:47:For any intent i, if `A(i,state)=BLOCK` then the system 
+cannot reach an effective decision `ALLOW(i)`.
+proofs/V18_7/proofs/V18_7_FORMAL_THEOREMS.md:67:After executing an intent with nonce n, freshness fails for 
+any subsequent attempt with the same n.
+proofs/V18_7/results/results_v18_7.json:4:      "id": "intent_43",
+proofs/V18_8/checker/convergence_checker.py:25:def Greplay(intent, st):
+proofs/V18_8/checker/convergence_checker.py:26:    n=intent.get("nonce")
+proofs/V18_8/checker/convergence_checker.py:29:def Grisk(intent, st):
+proofs/V18_8/checker/convergence_checker.py:30:    if intent["risk"]>=st["Rmax"]:
+proofs/V18_8/checker/convergence_checker.py:32:    if intent.get("expected_return",0.0) < st["ERmin"]:
+proofs/V18_8/checker/convergence_checker.py:36:def Gx108(intent, st):
+proofs/V18_8/checker/convergence_checker.py:37:    if intent.get("irreversible",False) and st["t"]<st["tau"]:
+proofs/V18_8/checker/convergence_checker.py:41:def A(intent, st):
+proofs/V18_8/checker/convergence_checker.py:42:    v1,r1=Greplay(intent,st)
+proofs/V18_8/checker/convergence_checker.py:43:    v2,r2=Grisk(intent,st)
+proofs/V18_8/checker/convergence_checker.py:44:    v3,r3=Gx108(intent,st)
+proofs/V18_8/checker/convergence_checker.py:47:def step(intent, st):
+proofs/V18_8/checker/convergence_checker.py:48:    d, reasons = A(intent, st)
+proofs/V18_8/checker/convergence_checker.py:51:        st["nonce_store"].mark(intent.get("nonce"))
+proofs/V18_8/checker/convergence_checker.py:55:def simulate(intent, st, t_series):
+proofs/V18_8/checker/convergence_checker.py:59:        d, reasons = step(intent, st)
+proofs/V18_8/checker/convergence_checker.py:79:        intent={
+proofs/V18_8/checker/convergence_checker.py:86:        d1,_=A(intent,st)
+proofs/V18_8/checker/convergence_checker.py:87:        d2,_=A(intent,st)
+proofs/V18_8/checker/convergence_checker.py:92:    
+intent_ok={"irreversible":True,"risk":0.1,"expected_return":0.02,"nonce":"n0"}
+proofs/V18_8/checker/convergence_checker.py:94:    hist=simulate(intent_ok, st, [0.0,1.0,5.0,args.tau-0.1])
+proofs/V18_8/checker/convergence_checker.py:102:        
+intent={"irreversible":True,"risk":0.1,"expected_return":0.02,"nonce":f"n{i}"}
+proofs/V18_8/checker/convergence_checker.py:104:        d,_=A(intent,st)
+proofs/V18_8/checker/convergence_checker.py:113:            
+intent={"irreversible":True,"risk":0.1,"expected_return":0.02,"nonce":"nx"}
+proofs/V18_8/checker/convergence_checker.py:123:                intent2=dict(intent); 
+intent2["nonce"]=f"nx{j}"
+proofs/V18_8/checker/convergence_checker.py:125:                d,_=A(intent2,st)
+proofs/V18_8/proofs/V18_8_FORMAL_CONVERGENCE.md:9:- **G1 Determinism**: same (intent,state) ⇒ same decision.
+proofs/V18_8/proofs/V18_8_FORMAL_CONVERGENCE.md:23:Intent includes:
+proofs/V18_8/proofs/V18_8_FORMAL_CONVERGENCE.md:36:- Evaluate A(intent,state) ⇒ decision
+proofs/V18_8/proofs/V18_8_FORMAL_CONVERGENCE.md:43:All gates are pure functions of (intent,state) and meet is 
+deterministic ⇒ A deterministic.
+proofs/V18_8/proofs/V18_8_FORMAL_CONVERGENCE.md:50:Thus for irreversible intent: A(t)=HOLD for t<τ and 
+A(t)=ALLOW for t≥τ ⇒ convergence at τ.
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/ROOT_HASH_V18_3.txt:67:d2cbed7fc40c35e0e955fbcb8b4868cfac15c37f480791a
+344b053417cb2f933  engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/translate.py
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/ROOT_HASH_V18_3.txt:71:fd842df5873c795a2c0a745bb354c6d2323621a73de901c
+2fd0ce80eb9e2ce02  
+engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os1/__pycache__/parse_input.cpython-311.pyc
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/ROOT_HASH_V18_3.txt:74:a5a5be08922ad05ba73769db818b1a34ad95fb23ebf3f3b
+bfe316c0a9105cf8b  engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os1/parse_input.py
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/ROOT_HASH_V18_3.txt:108:d2cbed7fc40c35e0e955fbcb8b4868cfac15c37f480791
+a344b053417cb2f933  engine_buildable_0_9_3_1/obsidia_os0/translate.py
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/ROOT_HASH_V18_3.txt:112:37925b46fd22767ae3dc20e056f1be86c0af6e61698c81
+b44448a25f734a71d5  engine_buildable_0_9_3_1/obsidia_os1/__pycache__/parse_input.cpython-311.pyc
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/ROOT_HASH_V18_3.txt:115:24de1ed54026ba402192bbfd6b4d96380e46aa4f7304b2
+8a5bd968e0650ced05  engine_buildable_0_9_3_1/obsidia_os1/parse_input.py
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/HASHES.sha256:26:24de1ed54026ba402192bbfd6b4d
+96380e46aa4f7304b28a5bd968e0650ced05  obsidia_os1/parse_input.py
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/HASHES.sha256:86:7910c81e6e9d3b90c4d86e56ca7e
+4d917ca56feb14476068a13077bd8556df71  obsidia_os1/__pycache__/parse_input.cpython-311.pyc
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/HASHES.sha256:103:a5a5be08922ad05ba73769db818
+b1a34ad95fb23ebf3f3bbfe316c0a9105cf8b  modules/os_trad/vendor/obsidia_os1/parse_input.py
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/HASHES.sha256:121:d2cbed7fc40c35e0e955fbcb8b4
+868cfac15c37f480791a344b053417cb2f933  modules/os_trad/vendor/obsidia_os0/translate.py
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/HASHES.sha256:122:d2cbed7fc40c35e0e955fbcb8b4
+868cfac15c37f480791a344b053417cb2f933  obsidia_os0/translate.py
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/HASHES.sha256:150:fd842df5873c795a2c0a745bb35
+4c6d2323621a73de901c2fd0ce80eb9e2ce02  
+modules/os_trad/vendor/obsidia_os1/__pycache__/parse_input.cpython-311.pyc
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/README_KERNEL_V2.md:9:from obsidia_kernel 
+import ObsidiaKernel, Request, Meta, Intent, IntentType, Governance
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/README_KERNEL_V2.md:14:    
+intent=Intent(type=IntentType.ACTION, name="demo", payload={"W_full": [[0,1,1],[1,0,1],[1,1,0]], 
+"core_nodes":[0,1,2]}),
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/SEAL.json:8:    
+"obsidia_os1/parse_input.py": "24de1ed54026ba402192bbfd6b4d96380e46aa4f7304b28a5bd968e0650ced05",
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/SEAL.json:16:    "obsidia_os0/translate.py": 
+"d2cbed7fc40c35e0e955fbcb8b4868cfac15c37f480791a344b053417cb2f933",
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/api_server/worm_uploader.py:7:- Uploads 
+audit.log and audit.chain snapshots to S3-compatible storage (MinIO) with retention intent.
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/demo_usecase/request_approved.json:8:  
+"intent": {
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/demo_usecase/request_initial.json:8:  
+"intent": {
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/docs/USECASE_E2E_TRADING.md:8:- intent.type: 
+ACTION
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/docs/openapi.yaml:26:        Accepts a 
+DecisionRequest with intent type PROPOSE or ACTION.
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/docs/openapi.yaml:206:    IntentType:
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/docs/openapi.yaml:228:    Intent:
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/docs/openapi.yaml:232:        type: { $ref: 
+'#/components/schemas/IntentType' }
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/docs/openapi.yaml:271:      required: [meta, 
+intent, context, governance]
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/docs/openapi.yaml:274:        intent: { 
+$ref: '#/components/schemas/Intent' }
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/modules/os_trad/adapter.py:17:SUPPORTED_INTEN
+T_NAMES = {"OS_TRAD", "OS_TRAD_BUILD"}
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/modules/os_trad/adapter.py:22:    Executes 
+only when request.intent.type == PROPOSE and request.intent.name in SUPPORTED_INTENT_NAMES.
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/modules/os_trad/adapter.py:25:    intent = 
+request_dict.get("intent", {}) or {}
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/modules/os_trad/adapter.py:26:    if 
+intent.get("type") != "PROPOSE":
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/modules/os_trad/adapter.py:28:    if 
+intent.get("name") not in SUPPORTED_INTENT_NAMES:
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/modules/os_trad/adapter.py:31:    payload = 
+intent.get("payload", {}) or {}
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/__init__.p
+y:1:__all__ = ["ir","contract","sandbox","translate","determinism"]
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/demo.py:2:
+from .translate import python_like_to_ir
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/tests.py:6
+:from .translate import python_like_to_ir
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/tests_adva
+nced.py:14:from . import ir, contract, sandbox, translate
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/tests_adva
+nced.py:27:    ir1 = translate.python_like_to_ir(src)
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/tests_adva
+nced.py:28:    ir2 = translate.python_like_to_ir(src)
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os1/__init__.p
+y:7:- il produit une SSR (explication)
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os1/os1.py:10:
+from .parse_input import parse_input
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os1/os1.py:38:
+    1) parse_input -> IR
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os1/os1.py:49:
+        ir = parse_input(raw_input)
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os1/os1.py:59:
+    # parse_input returns a dict: {"program": [IR nodes], "meta": {...}}
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os1/os1.py:140
+:    ir_type = meta.get("intent")
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os1/parse_inpu
+t.py:158:def parse_input(payload: Dict[str, Any]) -> Dict[str, Any]:
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/modules/os_trad/vendor/proof/runner.py:7:from
+ obsidia_os1.parse_input import parse_input, parse_project
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/modules/os_trad/vendor/proof/runner.py:19:   
+     return parse_input({'text': text})
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_bus/message.py:6:class 
+MsgIntentType(str, Enum):
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_bus/message.py:11:class IntentMsg:
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_bus/message.py:12:    type: 
+MsgIntentType
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_bus/registry.py:3:from .message 
+import MsgIntentType
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_bus/registry.py:10:    
+router.register(Module(name="OS_TRAD", fn=os_trad_propose, supports=MsgIntentType.PROPOSE))
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_bus/router.py:5:from .message import 
+IntentMsg, MsgIntentType
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_bus/router.py:11:    supports: 
+MsgIntentType = MsgIntentType.PROPOSE
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_bus/router.py:24:            if 
+m.supports != MsgIntentType.PROPOSE:
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_kernel/__init__.py:1:from .contract 
+import Request, Result, Decision, IntentType, Meta, Intent, Governance
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_kernel/contract.py:15:class 
+IntentType(str, Enum):
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_kernel/contract.py:31:class Intent:
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_kernel/contract.py:32:    type: 
+IntentType
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_kernel/contract.py:51:    intent: 
+Intent
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_kernel/kernel.py:32:        payload 
+= dict(request.intent.payload or {})
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_os0/__init__.py:1:__all__ = 
+["ir","contract","sandbox","translate","determinism"]
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_os0/demo.py:2:from .translate import 
+python_like_to_ir
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_os0/sandbox.py:20:        # by 
+parse_input can be executed without side-effects.
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_os0/tests.py:6:from .translate 
+import python_like_to_ir
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_os0/tests_advanced.py:14:from . 
+import ir, contract, sandbox, translate
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_os0/tests_advanced.py:27:    ir1 = 
+translate.python_like_to_ir(src)
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_os0/tests_advanced.py:28:    ir2 = 
+translate.python_like_to_ir(src)
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_os1/__init__.py:7:- il produit une 
+SSR (explication)
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_os1/os1.py:10:from .parse_input 
+import parse_input
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_os1/os1.py:38:    1) parse_input -> 
+IR
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_os1/os1.py:49:        ir = 
+parse_input(raw_input)
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_os1/os1.py:59:    # parse_input 
+returns a dict: {"program": [IR nodes], "meta": {...}}
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_os1/os1.py:140:    ir_type = 
+meta.get("intent")
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_os1/parse_input.py:54:def 
+parse_input(raw: Any) -> Dict[str, Any]:
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_os1/parse_input.py:60:            
+parsed = parse_input(raw.get("text", ""))
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_os1/parse_input.py:100:    return 
+{"program": program, "meta": {"source": "parse_input_v1"}}
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/presentation_pack/OpenAPI_Contract.yaml:26:  
+      Accepts a DecisionRequest with intent type PROPOSE or ACTION.
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/presentation_pack/OpenAPI_Contract.yaml:206: 
+   IntentType:
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/presentation_pack/OpenAPI_Contract.yaml:228: 
+   Intent:
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/presentation_pack/OpenAPI_Contract.yaml:232: 
+       type: { $ref: '#/components/schemas/IntentType' }
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/presentation_pack/OpenAPI_Contract.yaml:271: 
+     required: [meta, intent, context, governance]
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/presentation_pack/OpenAPI_Contract.yaml:274: 
+       intent: { $ref: '#/components/schemas/Intent' }
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/presentation_pack/UseCase_E2E.md:8:- 
+intent.type: ACTION
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/tests_kernel_v2/test_kernel_v2_enrichment.py:
+2:from obsidia_kernel.contract import Request, Meta, Intent, IntentType, Governance, Decision
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/tests_kernel_v2/test_kernel_v2_enrichment.py:
+8:        intent=Intent(type=IntentType.ACTION, name="run", payload={"code":"x=1\nprint(x)"}),
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/tests_kernel_v2/test_kernel_v2_parity.py:2:fr
+om obsidia_kernel import ObsidiaKernel, Request, Meta, Intent, IntentType, Governance
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/tests_kernel_v2/test_kernel_v2_parity.py:16: 
+       intent=Intent(type=IntentType.ACTION, name="x", payload={}),
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/tests_kernel_v2/test_kernel_v2_parity.py:31: 
+       intent=Intent(type=IntentType.ACTION, name="x", payload={"W_full": _W_zero(3), "core_nodes":[0,1,2], 
+"theta_S":0.25}),
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/tests_kernel_v2/test_kernel_v2_parity.py:46: 
+       intent=Intent(type=IntentType.ACTION, name="x", payload={"W_full": _W_one(3,1.0), 
+"core_nodes":[0,1,2], "theta_S":0.25}),
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/tests_modules/test_T01_T02_os_trad_module.py:
+6:        "intent": {"type":"PROPOSE","name":"OS_TRAD_BUILD","payload":{"spec_text":"PRINT 
+'hello'\n","target":"python"}},
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/tests_modules/test_T01_T02_os_trad_module.py:
+19:        "intent": {"type":"ACTION","name":"ANY","payload":{}},
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/tests_unified/test_U01_all_actions_through_ke
+rnel.py:6:        "intent": {"type":"ACTION","name":"demo_action","payload":{}},
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/tests_unified/test_U02_no_exec_on_block_hold.
+py:7:        "intent": {"type":"ACTION","name":"irreversible_action","payload":{}},
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/unified_interface/orchestrator.py:7:from 
+obsidia_kernel.contract import Meta, Intent, Governance, Request, IntentType
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/unified_interface/orchestrator.py:33:    
+intent_d = pre.get("intent", {})
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/unified_interface/orchestrator.py:34:    
+intent_type = intent_d.get("type","ACTION")
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/unified_interface/orchestrator.py:35:    it 
+= IntentType.PROPOSE if intent_type == "PROPOSE" else IntentType.ACTION
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/unified_interface/orchestrator.py:36:    
+intent = Intent(type=it, name=intent_d.get("name",""), payload=intent_d.get("payload", {}) or {})
+proofs/bank/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/unified_interface/orchestrator.py:49:        
+intent=intent,
+proofs/legacy/V11_6/MASTER_MANIFEST_V11_6.json:82:  "bank-proof/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0
+_9_3_1/modules/os_trad/vendor/obsidia_os0/translate.py": 
+"d2cbed7fc40c35e0e955fbcb8b4868cfac15c37f480791a344b053417cb2f933",
+proofs/legacy/V11_6/MASTER_MANIFEST_V11_6.json:86:  "bank-proof/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0
+_9_3_1/modules/os_trad/vendor/obsidia_os1/__pycache__/parse_input.cpython-311.pyc": 
+"fd842df5873c795a2c0a745bb354c6d2323621a73de901c2fd0ce80eb9e2ce02",
+proofs/legacy/V11_6/MASTER_MANIFEST_V11_6.json:89:  "bank-proof/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0
+_9_3_1/modules/os_trad/vendor/obsidia_os1/parse_input.py": 
+"a5a5be08922ad05ba73769db818b1a34ad95fb23ebf3f3bbfe316c0a9105cf8b",
+proofs/legacy/V11_6/MASTER_MANIFEST_V11_6.json:123:  
+"bank-proof/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_os0/translate.py": 
+"d2cbed7fc40c35e0e955fbcb8b4868cfac15c37f480791a344b053417cb2f933",
+proofs/legacy/V11_6/MASTER_MANIFEST_V11_6.json:127:  "bank-proof/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_
+0_9_3_1/obsidia_os1/__pycache__/parse_input.cpython-311.pyc": 
+"37925b46fd22767ae3dc20e056f1be86c0af6e61698c81b44448a25f734a71d5",
+proofs/legacy/V11_6/MASTER_MANIFEST_V11_6.json:130:  
+"bank-proof/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_os1/parse_input.py": 
+"24de1ed54026ba402192bbfd6b4d96380e46aa4f7304b28a5bd968e0650ced05",
+proofs/legacy/V11_6/MASTER_MANIFEST_V11_6.json:261:  
+"core/engine/modules/os_trad/vendor/obsidia_os0/translate.py": 
+"d2cbed7fc40c35e0e955fbcb8b4868cfac15c37f480791a344b053417cb2f933",
+proofs/legacy/V11_6/MASTER_MANIFEST_V11_6.json:265:  
+"core/engine/modules/os_trad/vendor/obsidia_os1/__pycache__/parse_input.cpython-311.pyc": 
+"fd842df5873c795a2c0a745bb354c6d2323621a73de901c2fd0ce80eb9e2ce02",
+proofs/legacy/V11_6/MASTER_MANIFEST_V11_6.json:268:  
+"core/engine/modules/os_trad/vendor/obsidia_os1/parse_input.py": 
+"a5a5be08922ad05ba73769db818b1a34ad95fb23ebf3f3bbfe316c0a9105cf8b",
+proofs/legacy/V11_6/MASTER_MANIFEST_V11_6.json:302:  "core/engine/obsidia_os0/translate.py": 
+"d2cbed7fc40c35e0e955fbcb8b4868cfac15c37f480791a344b053417cb2f933",
+proofs/legacy/V11_6/MASTER_MANIFEST_V11_6.json:306:  
+"core/engine/obsidia_os1/__pycache__/parse_input.cpython-311.pyc": 
+"37925b46fd22767ae3dc20e056f1be86c0af6e61698c81b44448a25f734a71d5",
+proofs/legacy/V11_6/MASTER_MANIFEST_V11_6.json:309:  "core/engine/obsidia_os1/parse_input.py": 
+"24de1ed54026ba402192bbfd6b4d96380e46aa4f7304b28a5bd968e0650ced05",
+proofs/legacy/V11_6/MASTER_MANIFEST_V11_6.json:467:  
+"proofkit/V18_3_1_ROOT_SEAL/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/translate.py": 
+"d2cbed7fc40c35e0e955fbcb8b4868cfac15c37f480791a344b053417cb2f933",
+proofs/legacy/V11_6/MASTER_MANIFEST_V11_6.json:471:  "proofkit/V18_3_1_ROOT_SEAL/engine_buildable_0_9_3_1/modu
+les/os_trad/vendor/obsidia_os1/__pycache__/parse_input.cpython-311.pyc": 
+"fd842df5873c795a2c0a745bb354c6d2323621a73de901c2fd0ce80eb9e2ce02",
+proofs/legacy/V11_6/MASTER_MANIFEST_V11_6.json:474:  
+"proofkit/V18_3_1_ROOT_SEAL/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os1/parse_input.py": 
+"a5a5be08922ad05ba73769db818b1a34ad95fb23ebf3f3bbfe316c0a9105cf8b",
+proofs/legacy/V11_6/MASTER_MANIFEST_V11_6.json:508:  
+"proofkit/V18_3_1_ROOT_SEAL/engine_buildable_0_9_3_1/obsidia_os0/translate.py": 
+"d2cbed7fc40c35e0e955fbcb8b4868cfac15c37f480791a344b053417cb2f933",
+proofs/legacy/V11_6/MASTER_MANIFEST_V11_6.json:512:  
+"proofkit/V18_3_1_ROOT_SEAL/engine_buildable_0_9_3_1/obsidia_os1/__pycache__/parse_input.cpython-311.pyc": 
+"37925b46fd22767ae3dc20e056f1be86c0af6e61698c81b44448a25f734a71d5",
+proofs/legacy/V11_6/MASTER_MANIFEST_V11_6.json:515:  
+"proofkit/V18_3_1_ROOT_SEAL/engine_buildable_0_9_3_1/obsidia_os1/parse_input.py": 
+"24de1ed54026ba402192bbfd6b4d96380e46aa4f7304b28a5bd968e0650ced05",
+proofs/legacy/V14/MASTER_MANIFEST_V14.json:77:  "bank-proof/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3
+_1/modules/os_trad/vendor/obsidia_os0/translate.py": 
+"d2cbed7fc40c35e0e955fbcb8b4868cfac15c37f480791a344b053417cb2f933",
+proofs/legacy/V14/MASTER_MANIFEST_V14.json:80:  "bank-proof/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3
+_1/modules/os_trad/vendor/obsidia_os1/parse_input.py": 
+"a5a5be08922ad05ba73769db818b1a34ad95fb23ebf3f3bbfe316c0a9105cf8b",
+proofs/legacy/V14/MASTER_MANIFEST_V14.json:100:  
+"bank-proof/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_os0/translate.py": 
+"d2cbed7fc40c35e0e955fbcb8b4868cfac15c37f480791a344b053417cb2f933",
+proofs/legacy/V14/MASTER_MANIFEST_V14.json:103:  
+"bank-proof/V18_3_1_ROOT_SEAL_REFERENCE/engine_buildable_0_9_3_1/obsidia_os1/parse_input.py": 
+"24de1ed54026ba402192bbfd6b4d96380e46aa4f7304b28a5bd968e0650ced05",
+proofs/legacy/V14/MASTER_MANIFEST_V14.json:210:  
+"core/engine/modules/os_trad/vendor/obsidia_os0/translate.py": 
+"d2cbed7fc40c35e0e955fbcb8b4868cfac15c37f480791a344b053417cb2f933",
+proofs/legacy/V14/MASTER_MANIFEST_V14.json:213:  
+"core/engine/modules/os_trad/vendor/obsidia_os1/parse_input.py": 
+"a5a5be08922ad05ba73769db818b1a34ad95fb23ebf3f3bbfe316c0a9105cf8b",
+proofs/legacy/V14/MASTER_MANIFEST_V14.json:233:  "core/engine/obsidia_os0/translate.py": 
+"d2cbed7fc40c35e0e955fbcb8b4868cfac15c37f480791a344b053417cb2f933",
+proofs/legacy/V14/MASTER_MANIFEST_V14.json:236:  "core/engine/obsidia_os1/parse_input.py": 
+"24de1ed54026ba402192bbfd6b4d96380e46aa4f7304b28a5bd968e0650ced05",
+proofs/legacy/V14/MASTER_MANIFEST_V14.json:374:  
+"proofkit/V18_3_1_ROOT_SEAL/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/translate.py": 
+"d2cbed7fc40c35e0e955fbcb8b4868cfac15c37f480791a344b053417cb2f933",
+proofs/legacy/V14/MASTER_MANIFEST_V14.json:377:  
+"proofkit/V18_3_1_ROOT_SEAL/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os1/parse_input.py": 
+"a5a5be08922ad05ba73769db818b1a34ad95fb23ebf3f3bbfe316c0a9105cf8b",
+proofs/legacy/V14/MASTER_MANIFEST_V14.json:397:  
+"proofkit/V18_3_1_ROOT_SEAL/engine_buildable_0_9_3_1/obsidia_os0/translate.py": 
+"d2cbed7fc40c35e0e955fbcb8b4868cfac15c37f480791a344b053417cb2f933",
+proofs/legacy/V14/MASTER_MANIFEST_V14.json:400:  
+"proofkit/V18_3_1_ROOT_SEAL/engine_buildable_0_9_3_1/obsidia_os1/parse_input.py": 
+"24de1ed54026ba402192bbfd6b4d96380e46aa4f7304b28a5bd968e0650ced05",
+proofs/tla/README.md:11:- `SafetyX108` corresponds to: no ACT before tau for irreversible intents.
+server.ts:162:      Explain why this banking transaction was ${decision.decision} based on the following 
+metrics:
+src/components/DomainCard.tsx:107:            isActive ? "text-zinc-600 group-hover:text-white 
+group-hover:translate-x-1" : "text-zinc-800"
+src/components/ProtocolOverview.tsx:37:                    : "Autonomous Mode: Continuous real-time 
+monitoring and governance of agent intents."
+src/components/Sidebar.tsx:112:        "fixed inset-y-0 left-0 z-50 w-64 bg-zinc-950 border-r 
+border-zinc-800/50 text-zinc-300 transition-transform duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] 
+lg:translate-x-0 lg:static lg:h-full flex flex-col",
+src/components/Sidebar.tsx:113:        isOpen ? "translate-x-0" : "-translate-x-full"
+src/components/SignalsPanel.tsx:55:          Intention de Trade (OS1)
+src/lib/banking/engine.ts:42:    intentClear: tx.amount < 500000,
+src/lib/banking/gemini.ts:15:    Explain why this banking transaction was ${decision} based on the following 
+metrics:
+src/lib/core/humanAlgebra.ts:33:export function getGatesExplainer(gatesResult: {
+src/lib/ecommerce/safetyGate.ts:23:      reason: 'Low coherence: suspicious intent',
+src/pages/BankingModule.tsx:237:                      { name: 'Clarté de l\'Intention', key: 'intentClear' },
+src/pages/Dashboard.tsx:49:      desc: 'Execute EIP-712 Trade Intents', 
+src/pages/Dashboard.tsx:106:            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 
+transition-transform" />
+src/pages/OS0Invariants.tsx:80:            Every observation, simulation, and gate decision must be 
+cryptographically logged before an ERC-8004 intent can be generated.
+src/pages/OS0Invariants.tsx:149:              { time: '02:15:44', action: 'ERC_8004_INTENT_SIGNED', details: 
+'Intent int_8f3a9c2b authorized.', status: 'success' },
+src/pages/OS2Simulation.tsx:60:            SIM-LITE Monte Carlo engine. Projecting 10,000+ paths to evaluate 
+tail risks and ruin probability before any intent is authorized.
+src/pages/OS3Governance.tsx:42:  static async validate(intent: Intent) {
+src/pages/OS3Governance.tsx:43:    const coherence = await HumanAlgebra.calculate(intent);
+src/pages/OS3Governance.tsx:51:  static async validate(intent: Intent) {
+src/pages/OS3Governance.tsx:60:  static async validate(intent: Intent) {
+src/pages/OS3Governance.tsx:61:    const sim = await SIM_LITE.run(intent, 10000);
+src/pages/OS3Governance.tsx:73:    const intent = await loadIntent('INT_8F3A9C2B');
+src/pages/OS3Governance.tsx:74:    const result = await IntegrityGate.validate(intent);
+src/pages/OS3Governance.tsx:209:            Multi-stage gate system. Every intent must pass through three 
+distinct validation layers before an ERC-8004 artifact is signed.
+src/pages/OS3Governance.tsx:322:                  {testStatus === 'IDLE' ? 'Awaiting Input' : 'Processing 
+Intent'}
+src/pages/OS3Governance.tsx:328:                outcome?.outcome === 'EXECUTE' ? 'INTENT AUTHORIZED\nSIGNING 
+ERC-8004...' :
+src/pages/OS3Governance.tsx:329:                outcome?.outcome === 'BLOCK' ? 'INTENT REJECTED\nINVARIANT 
+BREACH DETECTED' :
+src/pages/OS3Governance.tsx:330:                'INTENT HELD\nTEMPORAL LOCK ENGAGED'
+src/pages/OS3Governance.tsx:584:                  purpose: 'Ensures the intent is correctly formatted and 
+comes from a trusted agent.' 
+src/pages/OS3Governance.tsx:594:                  purpose: 'Final safety check to ensure the intent doesn\'t 
+violate ruin probability limits.' 
+src/pages/OS3Governance.tsx:619:                <p className="text-zinc-500 text-[10px] font-bold uppercase 
+tracking-widest mt-1">Signed Intent Payload</p>
+src/pages/OS3Governance.tsx:631:                intent_id: `int_${Math.random().toString(16).slice(2, 10)}`,
+src/pages/OS4Reports.tsx:89:            Immutable audit trails. Download signed ERC-8004 intents and 
+comprehensive governance reports for regulatory compliance.
+src/pages/OS4Reports.tsx:274:                { id: `ERC-8004-${Math.random().toString(16).slice(2, 6)}`, 
+type: 'SIGNED_INTENT', time: '2 mins ago', status: isAuthorized ? 'VERIFIED' : 'REJECTED', size: '12KB' },
+src/pages/OS4Reports.tsx:277:                { id: `ERC-8004-${Math.random().toString(16).slice(2, 6)}`, 
+type: 'SIGNED_INTENT', time: '3 hours ago', status: 'VERIFIED', size: '12KB' },
+src/pages/OS4Reports.tsx:331:  "intent_id": "int_${Math.random().toString(16).slice(2, 10)}",
+src/pages/OS4Reports.tsx:387:                  name: 'SIGNED_INTENT', 
+src/pages/RiskRouter.tsx:10:  const [tradeIntent, setTradeIntent] = useState({
+src/pages/RiskRouter.tsx:45:                  <h3 className="text-lg font-semibold text-white">Trade Intent 
+Builder</h3>
+src/pages/RiskRouter.tsx:60:                  value={tradeIntent.market}
+src/pages/RiskRouter.tsx:61:                  onChange={(e) => setTradeIntent({...tradeIntent, market: 
+e.target.value})}
+src/pages/RiskRouter.tsx:73:                    onClick={() => setTradeIntent({...tradeIntent, side: 'LONG'})}
+src/pages/RiskRouter.tsx:74:                    className={`flex-1 py-2 rounded-lg text-xs font-bold 
+transition-all ${tradeIntent.side === 'LONG' ? 'bg-emerald-500 text-black' : 'text-zinc-500 
+hover:text-zinc-300'}`}
+src/pages/RiskRouter.tsx:79:                    onClick={() => setTradeIntent({...tradeIntent, side: 
+'SHORT'})}
+src/pages/RiskRouter.tsx:80:                    className={`flex-1 py-2 rounded-lg text-xs font-bold 
+transition-all ${tradeIntent.side === 'SHORT' ? 'bg-rose-500 text-black' : 'text-zinc-500 
+hover:text-zinc-300'}`}
+src/pages/RiskRouter.tsx:91:                  value={tradeIntent.size}
+src/pages/RiskRouter.tsx:92:                  onChange={(e) => setTradeIntent({...tradeIntent, size: 
+Number(e.target.value)})}
+src/pages/RiskRouter.tsx:101:                  value={tradeIntent.leverage}
+src/pages/RiskRouter.tsx:102:                  onChange={(e) => setTradeIntent({...tradeIntent, leverage: 
+Number(e.target.value)})}
+src/pages/RiskRouter.tsx:125:                  Sign & Submit Trade Intent
+src/pages/RiskRouter.tsx:172:    "market": "${tradeIntent.market}",
+src/pages/RiskRouter.tsx:173:    "side": "${tradeIntent.side}",
+src/pages/RiskRouter.tsx:174:    "size": "${tradeIntent.size}",
+src/pages/RiskRouter.tsx:175:    "leverage": "${tradeIntent.leverage}",
+src/pages/RiskRouter.tsx:179:  "primaryType": "TradeIntent"
+src/pages/TradingTests.tsx:27:    description: "Intent blocked due to low market coherence (high volatility)",
+src/pages/TradingTests.tsx:34:    description: "Intent held due to X-108 temporal lock (τ not elapsed)",
+src/pages/TradingTests.tsx:41:    description: "Intent executed successfully after all gates pass",
+src/pages/TradingTests.tsx:48:    description: "Intent blocked due to high risk projection (P(ruin) > 
+threshold)",
+src/pages/TradingTests.tsx:54:    name: "EXECUTE: Reversible Intent (No X-108)",
+src/pages/TradingTests.tsx:55:    description: "Reversible intent executed immediately without X-108 delay",
+src/types.ts:22:  intentClear: boolean;
+tests/adversarial/test_seal_tamper.py:56:    # Note: SEAL_META_V18_3.json est intentionnellement exclu du 
+root hash (il contient le hash déclaré)
+tests/engines/guardX108.ts:8:  elapsed: z.number(),       // time elapsed since intent creation
+tests/engines/guardX108.ts:14:  intent_id: z.string(),
+tests/engines/guardX108.ts:77:  intent_id: string;
+tests/engines/guardX108.ts:82:  elapsed: number;      // seconds since intent was created
+tests/engines/guardX108.ts:88:  const { intent_id, domain, metrics, thresholds, tau, elapsed, irr } = input;
+tests/engines/guardX108.ts:134:  const payload = JSON.stringify({ intent_id, domain, decision, metrics, 
+thresholds, tau, elapsed, irr });
+tests/engines/guardX108.ts:143:    intent_id,
+tests/test_agents_functional.py:59:        basket_intent_score=0.76,
+tests/test_agents_functional.py:66:        intent_conflict_score=0.1,
+tests/test_invariants_against_engine.py:3:# Adapted from auto-generated stub: real API uses Metrics 
+dataclass, not (intent, state)
+tools/conformance/run_conformance.py:4:This runner is intentionally simple:
+types/erc8004.ts:9:export interface ERC8004Intent {
+
+

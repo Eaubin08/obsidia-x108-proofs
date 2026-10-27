@@ -1,0 +1,7 @@
+🔍 Tri intelligent de documents
+
+Instructions : Fournir un texte ou document. L’IA le découpera en nœuds cognitifs, détectera les symboles, et générera un résumé structuré.
+
+Exemple :
+Input : Rapport mensuel Q3...
+→ [Résumé, Tags, Symboles, Intentions]

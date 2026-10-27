@@ -1,0 +1,15 @@
+﻿=== 10_guard_x108_decision ===
+PATTERN: GuardX108|max_contradictions|max_unknowns|min_confidence_allow|hold_confidence_floor|FRAUD_PATTERN|ALLOW|HOLD|BLOCK|RISK_FLAGS_REQUIRE_DELAY|UNKNOWNS_OR_CONFIDENCE_LOW|CONTRADICTION_THRESHOLD_REACHED|GUARD_ALLOW|reason_code|severity|decision_id|trace_id|ticket_required|ticket_id|attestation_ref|x108_gate|X108Gate
+PATHS:
+OK   C:\Users\User\Desktop\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents
+OK   C:\Users\User\Desktop\OBSIDIA_CORE_ONLY_FULL_MACHINERY\python_agents
+OK   C:\Users\User\Desktop\OBSIDIA_CORE_ONLY_FULL_MACHINERY\governance
+OK   C:\Users\User\Desktop\OBSIDIA_CORE_ONLY_FULL_MACHINERY\automation
+OK   C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\sigma
+OK   C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\periphery
+OK   C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\apps
+OK   C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\tests
+OK   C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\qa
+
+=== RESULTS ===
+NO_HITS

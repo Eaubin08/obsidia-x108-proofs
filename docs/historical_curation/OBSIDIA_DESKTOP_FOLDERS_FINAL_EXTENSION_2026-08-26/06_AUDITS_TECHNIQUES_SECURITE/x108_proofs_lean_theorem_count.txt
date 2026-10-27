@@ -1,0 +1,57 @@
+﻿proofs/lean\wip\ConsensusScratch.lean:5:theorem fold_count_succ
+proofs/lean\wip\ConsensusScratch.lean:19:theorem countDec_cons_same (d : Decision3) (xs : List Decision3) :
+proofs/lean\Obsidia\Consensus.lean:18:theorem aggregate4_act
+proofs/lean\Obsidia\Consensus.lean:27:theorem aggregate4_fail_closed
+proofs/lean\Obsidia\Consensus.lean:40:theorem aggregate4_unanimous
+proofs/lean\Obsidia\Consensus.lean:45:theorem no_act_and_hold_supermajority_4_aux
+proofs/lean\Obsidia\Consensus.lean:53:theorem no_act_and_block_supermajority_4_aux
+proofs/lean\Obsidia\Consensus.lean:61:theorem no_hold_and_block_supermajority_4_aux
+proofs/lean\Obsidia\Consensus.lean:69:theorem no_act_and_hold_supermajority_4
+proofs/lean\Obsidia\Consensus.lean:76:theorem no_act_and_block_supermajority_4
+proofs/lean\Obsidia\Consensus.lean:83:theorem no_hold_and_block_supermajority_4
+proofs/lean\Obsidia\Consensus.lean:90:theorem no_two_distinct_supermajorities_4
+proofs/lean\Obsidia\Basic.lean:21:theorem decision_eq_ACT_iff (m : Metrics) (theta : Rat) :
+proofs/lean\Obsidia\Basic.lean:35:theorem decision_eq_HOLD_iff (m : Metrics) (theta : Rat) :
+proofs/lean\Obsidia\Basic.lean:48:theorem D1_determinism (m : Metrics) (theta : Rat) :
+proofs/lean\Obsidia\Basic.lean:51:theorem G1_act_above_threshold (m : Metrics) (theta : Rat)
+proofs/lean\Obsidia\Basic.lean:58:theorem E2_no_act_below_threshold (m : Metrics) (theta : Rat)
+proofs/lean\Obsidia\Basic.lean:65:theorem G2_boundary_inclusive (m : Metrics) (theta : Rat)
+proofs/lean\Obsidia\Basic.lean:72:theorem G3_monotonicity (m1 m2 : Metrics) (theta : Rat)
+proofs/lean\Obsidia\Basic.lean:92:theorem L11_3_no_block (m : Metrics) (theta : Rat) :
+proofs/lean\Obsidia\Basic.lean:109:theorem L11_3_act (m : Metrics) (theta : Rat) (h : theta <= m.S) :
+proofs/lean\Obsidia\Basic.lean:115:theorem L11_3_hold (m : Metrics) (theta : Rat) (h : Not (theta <= m.S)) :
+proofs/lean\Obsidia\Basic.lean:121:theorem decision_not_both (m : Metrics) (theta : Rat) :
+proofs/lean\Obsidia\Refinement.lean:12:theorem lift_refines (d : Decision) :
+proofs/lean\Obsidia\Refinement.lean:16:theorem x108_is_lift (¤ä : Tau) (i : TInput) :
+proofs/lean\Obsidia\Refinement.lean:20:theorem x108_never_blocks (¤ä : Tau) (i : TInput) :
+proofs/lean\Obsidia\Refinement.lean:24:theorem refined_not_block (d : Decision) (d3 : Decision3)
+proofs/lean\Obsidia\Merkle.lean:8:theorem merkle2_left_mutation
+proofs/lean\Obsidia\Merkle.lean:17:theorem merkle2_right_mutation
+proofs/lean\Obsidia\CryptoAssumptions.lean:11:theorem H_injective_left
+proofs/lean\Obsidia\CryptoAssumptions.lean:17:theorem H_injective_right
+proofs/lean\Obsidia\CryptoAssumptions.lean:34:theorem decodeFold_H_of_decodable
+proofs/lean\Obsidia\CryptoAssumptions.lean:41:theorem append_nil_local {╬▒ : Type} : ÔêÇ (xs : List ╬▒), xs ++ [] = xs := by
+proofs/lean\Obsidia\CryptoAssumptions.lean:50:theorem append_assoc_local {╬▒ : Type} :
+proofs/lean\Obsidia\CryptoAssumptions.lean:60:theorem decodeFold_foldl_of_decodable :
+proofs/lean\Obsidia\CryptoAssumptions.lean:85:theorem decodeFold_foldl_neutral (xs : List Hash) :
+proofs/lean\Obsidia\CryptoAssumptions.lean:93:theorem foldl_H_injective
+proofs/lean\Obsidia\CryptoAssumptions.lean:116:theorem fileHash_inj (f g : File) (h : fileHash f = fileHash g) : f = g := by
+proofs/lean\Obsidia\CryptoAssumptions.lean:124:theorem combine_inj (xs ys : List Obsidia.Hash) (h : combine xs = combine ys) : xs = ys := by
+proofs/lean\Obsidia\TemporalBridge.lean:26:theorem canonicalize_preserves_nonneg (e : Int) (_h : 0 <= e) :
+proofs/lean\Obsidia\TemporalBridge.lean:30:theorem skew_negative_implies_hold (¤ä : Int) (i : TInput_Raw)
+proofs/lean\Obsidia\TemporalKernel.lean:17:theorem X108_no_act_before_tau (¤ä : Nat) (metrics : Metrics) (theta : Rat) (irr : Bool) (elapsed : Nat)
+proofs/lean\Obsidia\TemporalKernel.lean:26:theorem X108_after_tau_equals_base (¤ä : Nat) (metrics : Metrics) (theta : Rat) (irr : Bool) (elapsed : Nat)
+proofs/lean\Obsidia\TemporalKernel.lean:37:theorem X108_kernel_never_blocks (¤ä : Nat) (metrics : Metrics) (theta : Rat) (irr : Bool) (elapsed : Nat) :
+proofs/lean\Obsidia\TemporalKernel.lean:51:theorem X108_reversible_equals_base (¤ä : Nat) (metrics : Metrics) (theta : Rat) (elapsed : Nat) :
+proofs/lean\Obsidia\TemporalKernel.lean:56:theorem X108_irreversible_after_tau_equals_base (¤ä : Nat) (metrics : Metrics) (theta : Rat) (elapsed : Nat)
+proofs/lean\Obsidia\Seal.lean:14:theorem P13_Immutability
+proofs/lean\Obsidia\SystemModel.lean:25:theorem P17_KernelNeverBlocks (i : Input) :
+proofs/lean\Obsidia\SystemModel.lean:38:theorem P17_Determinism (s : State) (i : Input) :
+proofs/lean\Obsidia\SystemModel.lean:41:theorem P17_SealSensitive
+proofs/lean\Obsidia\SystemModel.lean:48:theorem P17_AuditLastIsComputed (s : State) (i : Input) :
+proofs/lean\Obsidia\SystemModel.lean:54:theorem auditLog_append_singleton_length
+proofs/lean\Obsidia\SystemModel.lean:64:theorem P17_AuditGrowth (s : State) (i : Input) :
+proofs/lean\Obsidia\SystemModel.lean:71:theorem P17_TransitionFstIsDecide (s : State) (i : Input) :
+proofs/lean\Obsidia\Sensitivity.lean:18:theorem merkleRoot_change_if_leaf_change
+proofs/lean\Obsidia\Sensitivity.lean:27:theorem globalSeal_change_if_root_change
+proofs/lean\Obsidia\Sensitivity.lean:34:theorem P15_Immutability_Strong

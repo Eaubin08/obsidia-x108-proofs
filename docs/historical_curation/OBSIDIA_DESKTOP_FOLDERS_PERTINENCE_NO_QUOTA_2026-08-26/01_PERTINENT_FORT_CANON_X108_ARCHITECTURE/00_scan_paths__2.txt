@@ -1,0 +1,12 @@
+﻿SCAN PATHS:
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\docs
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\documentation
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\periphery
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\agents
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\apps
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\sigma
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\.graph-memory
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\_graphiti_readonly_indexes
+C:\Users\User\Desktop\obsidia-engine-proof-core\docs
+C:\Users\User\Desktop\obsidia-engine-proof-core\agents
+C:\Users\User\Desktop\OBSIDIA_CORE_ONLY_FULL_MACHINERY

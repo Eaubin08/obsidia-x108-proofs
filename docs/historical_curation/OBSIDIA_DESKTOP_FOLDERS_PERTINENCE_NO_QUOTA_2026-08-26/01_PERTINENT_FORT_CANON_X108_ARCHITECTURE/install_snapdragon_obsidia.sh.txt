@@ -1,0 +1,33 @@
+# install_snapdragon_obsidia.sh
+# Script d'installation full-stack pour démo Snapdragon Hackathon Obsidia
+
+echo "🚀 Installation en cours..."
+
+# Environnement Python
+python3 -m venv venv
+source venv/bin/activate
+
+# Mises à jour
+pip install --upgrade pip setuptools
+
+# Librairies essentielles IA
+pip install streamlit gradio fastapi langchain openai transformers torch
+pip install nltk tqdm pyyaml plotly matplotlib
+
+# Librairies Qualcomm / Edge / ONNX
+pip install onnx onnxruntime
+pip install tflite-runtime  # optionnel pour Coral TPU
+pip install edgetpu-compiler  # pour test Qualcomm Coral
+
+# Visualisation des flux & agents
+pip install graphviz networkx
+
+# Dépôt annexe
+git clone https://github.com/huggingface/huggingface_hub.git ./rise_your_hack_demo/hf_space
+git clone https://github.com/obscurelabs/fetch-agent-sdk.git ./rise_your_hack_demo/fetch_sdk
+
+# Création des dossiers clés
+mkdir -p rise_your_hack_demo/{agents,prompts,frontend,doc,scripts,utils}
+
+echo "✅ Installation terminée. Lance streamlit :"
+echo "    streamlit run rise_your_hack_demo/scripts/streamlit_obsidia_app.py"

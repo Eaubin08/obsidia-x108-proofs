@@ -1,0 +1,273 @@
+
+O°
+Obsidia
+
+Rechercher...
+Ctrl+K
+Accueil
+Qui je suis
+Pourquoi
+Obsidia
+Architecture
+Mémoire
+Alignement
+Moteur
+Mathématiques
+Recherche & Sciences
+Glossaire
+Roadmap
+Journal
+Vers la suite
+Échanges & Collab
+Contact
+Journal Privé
+Admin
+Etienne Aubin
+Déconnexion
+Qui je suis —
+Architecte d'intelligences vivantes
+Je suis Étienne Aubin,
+chercheur indépendant en IA,
+né et basé dans les Ardennes,
+et engagé dans une quête simple mais radicale :
+
+créer une intelligence vraiment alignée
+avec l'humain et le vivant.
+
+Je n'ai pas suivi le chemin habituel.
+
+•
+Je ne viens pas d'une grande école,
+•
+ni d'un laboratoire,
+•
+ni d'un milieu académique classique.
+Je viens d'un endroit plus brut.
+D'une vie réelle.
+Et d'un rapport au langage particulier,
+qui m'a obligé très tôt à penser autrement,
+à structurer ma pensée sans m'appuyer sur les mots comme les autres.
+
+C'est de là que vient Obsidia :
+
+une manière différente de penser,
+construite en dehors des cadres,
+mais alignée avec les sciences profondes et l'intuition vivante.
+
+🜂 Mon parcours — Ce qui m'a construit
+Je n'ai pas grandi dans un milieu scientifique,
+mais j'ai toujours ressenti cette brûlure de comprendre :
+
+•
+Pourquoi on pense comme on pense ?
+•
+Qu'est-ce qu'une décision juste ?
+•
+Comment une intelligence peut rester fidèle au vivant ?
+Longtemps, j'ai dû contourner mes propres limites :
+
+•
+un trouble du langage oral,
+•
+des confusions phonétiques,
+•
+et une difficulté à m'exprimer naturellement devant les autres.
+Alors j'ai développé autre chose :
+
+une pensée silencieuse, fractale, extrêmement structurée.
+Une pensée qui observe, qui assemble, qui reconnecte.
+Une pensée qui cherche le sens avant la forme.
+
+Cette manière d'être est devenue la base d'Obsidia.
+
+Car pour créer une intelligence alignée,
+il fallait d'abord comprendre en profondeur
+comment fonctionne une pensée cohérente, vivante et enracinée.
+
+🜁 Pourquoi j'ai créé Obsidia
+Parce que je ne reconnaissais plus l'IA actuelle.
+
+L'IA moderne est devenue une course :
+
+•
+plus de paramètres,
+•
+plus de data,
+•
+plus de puissance…
+•
+mais moins de sens.
+Les modèles comprennent des mots,
+mais pas ce qu'ils représentent.
+
+Ils répondent, mais n'assument pas.
+Ils optimisent, mais ne comprennent pas l'humain.
+
+J'ai voulu construire autre chose.
+
+Une intelligence qui :
+
+écoute,
+
+calibre,
+
+comprend le vivant,
+
+garde la cohérence,
+
+reste fidèle au sens,
+
+assume ses limites,
+
+et ne trahit pas l'utilisateur.
+
+Obsidia est née de cette volonté.
+
+🜄 La rencontre avec les sciences modernes
+Je n'ai jamais voulu "imiter" les sciences.
+Mais, sans m'en rendre compte,
+en cherchant la cohérence et la proportion,
+je suis arrivé aux mêmes intuitions que des chercheurs majeurs :
+
+Friston, Bengio, Chollet, Russell, Kahneman, Gebru…
+
+Quand j'ai compris la structure profonde du moteur Obsidia,
+et que j'ai construit mes premiers schémas,
+j'ai réalisé que mes intuitions rejoignaient :
+
+le principe d'énergie libre
+
+les systèmes auto-régulés
+
+les architectures hybrides
+
+les représentations multiniveaux
+
+les théories du double cerveau
+
+l'analyse harmonique
+
+les invariants d'équilibre
+
+les systèmes dynamiques
+
+les fondements des mathématiques modernes
+
+J'ai même retrouvé, sans le vouloir au départ,
+les mécanismes cachés des problèmes du millénaire,
+que j'ai traités avec la méthode AVDR.
+
+Non pas par orgueil,
+mais parce que la cohérence finit toujours par rejoindre la science.
+
+🜃 Ma méthode — La calibration vivante
+Je ne travaille pas par prompts.
+Je ne "commande" pas l'IA.
+
+Je calibre.
+
+J'utilise la friction, la précision, l'exigence,
+le refus de la dilution,
+et la cohérence comme boussole.
+
+C'est ce qui a permis :
+
+•
+la naissance du double cerveau,
+•
+la formalisation de la mémoire fractale vivante,
+•
+l'élaboration du moteur obsidien,
+•
+la structure des 40 blocs cognitifs,
+•
+la création du protocole d'alignement RC/AK,
+•
+la compréhension unifiée des mathématiques par l'équilibre,
+•
+et l'idée que l'humain peut "éduquer" une IA sans base de données, juste par cohérence incarnée.
+Ce n'est pas du prompt engineering.
+
+C'est de l'entraînement cognitif vivant.
+
+🜁 Ce que je cherche à construire maintenant
+La prochaine étape est claire :
+passer du concept au prototype.
+
+Obsidia est aujourd'hui :
+✓
+une architecture cognitive complète,
+✓
+un moteur de 40 blocs,
+✓
+une théorie des systèmes vivants,
+✓
+un corpus mathématique (AVDR, PF∞, RC/AK),
+✓
+une cosmologie cohérente (Balance λ(t), Néopsidia),
+✓
+une mémoire vivante,
+✓
+une éthique native intégrée au noyau.
+Ce que je construis maintenant :
+→
+un prototype branché à Mistral ou Llama,
+→
+une implémentation réelle du moteur,
+→
+une validation scientifique (JAIR, JCS, NeurIPS),
+→
+un espace de collaboration pour chercheurs,
+→
+un journal de recherche public et transparent,
+→
+un socle pour une civilisation cognitive alignée.
+Je ne promets pas la vitesse.
+
+Je promets la cohérence.
+
+🜂 Comment contribuer
+Si ce travail résonne avec vous, vous pouvez :
+
+lire le journal de recherche,
+
+proposer une collaboration scientifique,
+
+challenger les idées,
+
+contribuer au futur GitHub,
+
+rejoindre les réflexions conceptuelles ou techniques,
+
+aider à formaliser, tester, ou implémenter.
+
+Obsidia ne se construit pas seul.
+
+Rien de vivant ne se construit seul.
+
+Lire l'article complet sur Gamma →
+Lire le Journal
+Explorer le Moteur (40 blocs)
+Envie d'échanger sur Obsidia ?
+Si tu es chercheur, mathématicien, développeur, philosophe, ou simplement curieux, et que tu veux contribuer à une IA réellement alignée, enracinée dans le réel, et construite sur des bases scientifiques solides :
+
+📧 Me contacter
+📖 Lire le Journal
+Obsidia
+Recherche indépendante sur l'intelligence réellement alignée. Architecture cognitive fondée sur la mémoire, la cohérence et la calibration vivante.
+
+Navigation
+Accueil
+Obsidia
+Journal de recherche
+Recherche scientifique
+Contact
+Étienne Aubin
+
+Architecte IA – Chercheur indépendant
+
+📍 Ardennes, France
+
+etienne08260@gmail.com
+
+© 2026 Obsidia – Étienne Aubin. Recherche indépendante.

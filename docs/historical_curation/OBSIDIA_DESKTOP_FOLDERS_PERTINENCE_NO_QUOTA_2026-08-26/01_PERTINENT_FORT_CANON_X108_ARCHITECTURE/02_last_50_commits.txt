@@ -1,0 +1,50 @@
+﻿ce52b38 (HEAD -> p57-core-machinery-runtime-binding-audit) test(p57): audit core machinery runtime binding candidates
+50c629b (origin/p56a-core-proof-metric-delta-audit, p56a-core-proof-metric-delta-audit) test(p56e): verify post patch metric reconciliation
+1e6d712 test(p56c): verify all proof domains preserve core rigor
+c503992 fix(p56d): bound sigma as post-guard veto layer
+059a6db fix(p56b): align os2 gamma with os3 authority
+c43bfc5 test(p56a): audit core proof metric deltas before fusion
+229dc54 (tag: v0.14-controlled-activation-freeze, origin/main, origin/HEAD, main) Merge pull request #14 from Eaubin08/p43-unconnected-runtime-surface-audit
+f73dc98 (origin/p43-unconnected-runtime-surface-audit, p43-unconnected-runtime-surface-audit) test(p55): freeze controlled activation chain
+c23f7dc feat(p54): add hold block sandbox for action gateway
+2a95782 feat(p53): activate world action bus dry-run controlled mode
+816ed32 feat(p52): activate graphiti memory readonly controlled mode
+6cbfaa5 feat(p51): activate brody readonly controlled mode
+46df7bd test(p50): define controlled activation readiness matrix
+5bacd72 test(p49): verify global runtime surface 100 coverage gate
+881ad27 feat(p48): classify full adapter coverage
+9394dd8 feat(p47): classify full module function coverage
+ee336fa feat(p46): classify full workbench view coverage
+2f357a7 feat(p45): bind and classify full api route coverage
+e1d6ba5 feat(p44): bind critical runtime surfaces to capability router
+40d78db test(p43): audit unconnected runtime surface coverage
+a4259ac (tag: v0.13-runtime-capability-osmap-proof) Merge pull request #13 from Eaubin08/p10-real-engine-controlled-bridge
+d9e73bf (origin/p10-real-engine-controlled-bridge, p10-real-engine-controlled-bridge) fix(p42b): make source runtime family discovery ci safe
+880791b test(p42a): verify final source pack coverage gate
+8a9ba06 chore(p41): freeze runtime capability os map proof pack
+d7cbff6 test(p40): validate live reload server matrix
+8c38f54 test(p39): add full server matrix runtime validation
+ee974de feat(p38): expose full os map in workbench
+5335a62 feat(p37): add runtime function inventory graph
+1ef8b20 feat(p36): add global capability path router
+b2dd76d fix(p35): sync csv registry and update hardcoded entry counts to 15853
+f46ee30 feat(p35): connect reverse os interlanguage canon to source runtime
+10139b1 chore(p34): canonize reverse os interlanguage evidence pack
+139e267 fix(p33): reconcile os trad evidence with core parent audit
+6df6f09 fix(p33): reconcile os trad deep index with content-only evidence
+fe38ee1 feat(p33): add os trad deep concept layer index and semantic enrichment
+c9dfea8 feat(p32): add os trad reverse os as source runtime family
+e31ac96 chore(p31): audit os trad reverse os and canonize corpus maps
+9bd2dc5 chore(p30): canonize source pack inventory and local source debts
+3ae0e30 feat(p29): expose source runtime status in api and workbench
+069edf9 feat(p28): add source runtime cache and smart family selection
+e0e46f5 feat(p27): propagate source pack context through brody engine
+9c25410 feat(p26): connect source packs to brody readonly context runtime
+0b780e4 (tag: v0.12-dryrun-preview-ready) Merge pull request #12 from Eaubin08/p8-runtime-dryrun-wiring
+090b603 (origin/p8-runtime-dryrun-wiring, p8-runtime-dryrun-wiring) feat(p24): extend source registry to 7 families — coverage repair
+70700b0 fix: make freeze dashboard f20 tag assertion partial-safe
+cb55987 fix: resolve final pr12 ci assertions
+2da4ec8 fix: make remaining legacy ci tests hermetic
+cdb636d fix: make legacy brody conscience test ci-safe
+11a1f95 fix: install test dependencies in periphery ci
+4aaa8aa fix: stabilize pr12 ci merge-ref tests

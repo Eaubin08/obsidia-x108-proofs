@@ -1,0 +1,23 @@
+component_id,label,CONFIG_PRESENT,SERVICE_REPORTED_UP,ENDPOINT_TESTED,COMPONENT_TESTED,INTEGRATION_TESTED,END_TO_END_TESTED,HISTORICAL_EVIDENCE_ONLY,NOT_PROVEN,evidence_path,note,audit_date
+OBSIDIA_API_8000,OBSIDIA_API port 8000,True,STALE_PREFREEZE,False,False,False,False,False,True,_runtime_wiring_preflight/FULL_SERVER_MATRIX_PORT_PREFLIGHT.txt,IN_USE_STALE pre-84cc0d0 — non relance en V4,2026-07-17
+OBSIDIA_API_8012,OBSIDIA_API port 8012 alt,True,STALE_PREFREEZE,False,False,False,False,False,True,_runtime_wiring_preflight/FULL_SERVER_MATRIX_PORT_PREFLIGHT.txt,IN_USE_STALE — meme raison,2026-07-17
+OBSIDIASHELL_8011,OBSIDIASHELL_GATEWAY port 8011,True,FREE_AT_PREFLIGHT,False,False,False,False,False,True,_runtime_wiring_preflight/FULL_SERVER_MATRIX_PORT_PREFLIGHT.txt,Repo separe obsidiashell-main/,2026-07-17
+NEO4J_7688,Neo4j Bolt custom 7688,True,IN_USE_AT_PREFLIGHT,False,False,False,False,True,False,_runtime_wiring_preflight/FULL_SERVER_MATRIX_PORT_PREFLIGHT.txt,Obsidiashell dependency — non teste en V4,2026-07-17
+MCP_SERVER,MCP server (.mcp.json),True,NOT_PROVEN,False,False,False,False,False,True,.mcp.json,Fichier config present — service non relance en V4,2026-07-17
+LEAN4_BUILD,Lean 4 lake build,True,NOT_PROVEN,False,False,False,False,True,False,lakefile.lean,Non relance en V4 — build precedent non documente ici,2026-07-17
+BRODY_API_ROUTE,Route /api/brody/chat,True,NOT_PROVEN,False,True,False,False,False,False,apps/obsidia_api/routes/brody.py,Route presente et syntaxiquement valide — non testee en V4,2026-07-17
+BRODY_SHAZAM,Route /api/brody/cognitive/shazam,True,NOT_PROVEN,False,True,False,False,False,False,apps/obsidia_api/routes/brody.py,Route presente — non testee,2026-07-17
+X108_KERNEL_ROUTE,Route /api/x108/*,True,NOT_PROVEN,False,True,False,False,False,False,apps/obsidia_api/routes/x108.py,Route presente — non testee,2026-07-17
+MEMORY_ROUTE,Routes /api/memory/*,True,NOT_PROVEN,False,True,False,False,False,False,apps/obsidia_api/routes/memory.py,Routes presentes — non testees,2026-07-17
+GRAPHITI_READONLY,Graphiti readonly graph,True,NOT_PROVEN,False,False,False,False,True,False,_runtime_wiring_preflight/P52_REAL_GRAPHITI_MEMORY_DISCOVERY.json,Index readonly existant a preflight — non reproduit en V4,2026-07-17
+GRAPHITI_WRITE,Graphiti write,False,NOT_PROVEN,False,False,False,False,False,True,None,Deferred LEVEL_4 — non branche en V4,2026-07-17
+SIGMA_PIPELINE,Sigma pipeline agregateur,True,NOT_PROVEN,False,False,False,False,True,False,sigma/,Fichiers presents — tests non reexecutes en V4,2026-07-17
+DOMAIN_BANK,Domain bank,True,NOT_PROVEN,False,False,False,False,True,False,domain_packets/bank_decisional_form_v0.yaml,Config presente — domaine non lance en V4,2026-07-17
+DOMAIN_TRADING,Domain trading,True,NOT_PROVEN,False,False,False,False,True,False,domain_packets/trading_decisional_form_v0.yaml,Config presente — non lance,2026-07-17
+DOMAIN_GPS,Domain gps defense,True,NOT_PROVEN,False,False,False,False,True,False,domain_packets/gps_defense_aviation_decisional_form_v0.yaml,Config presente — non lance,2026-07-17
+KERNEL_NODE,Kernel Node server.cjs,True,NOT_PROVEN,False,False,False,False,True,False,server.cjs / server.kernel.cjs,Lance durant audits precedents — non relance en V4,2026-07-17
+API_KERNEL_E2E,API -> Kernel integration E2E,False,NOT_PROVEN,False,False,False,False,False,True,None,Non testee — les deux composants presents mais liaison non etablie en V4,2026-07-17
+PROOFS_TLA,TLA+ proofs,True,NOT_PROVEN,False,False,False,False,True,False,proofs/tla/,Specs TLA presentes — non verifiees en V4,2026-07-17
+LEAN4_PROOFS,Lean 4 proofs,True,NOT_PROVEN,False,False,False,False,True,False,proofs/lean/,Fichiers presents — lake build non reexecute en V4,2026-07-17
+MERKLE_SEAL,Merkle seal / RFC3161,True,NOT_PROVEN,False,False,False,False,True,False,merkle_seal.json,Fichier present (modifie par background writer) — integrite non re-verifiee,2026-07-17
+GATEWAY_USAGE,Gateway usage JSONL,True,NOT_PROVEN,False,False,False,False,True,False,audit/obsidia_gateway_usage.jsonl,Fichier present et modifie — writer background actif,2026-07-17

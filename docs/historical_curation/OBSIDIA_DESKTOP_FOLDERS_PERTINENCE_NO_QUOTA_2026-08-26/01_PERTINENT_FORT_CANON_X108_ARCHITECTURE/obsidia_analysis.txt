@@ -1,0 +1,148 @@
+1. Intention & contexte
+Analyse du contexte et des intentions de la conversation.
+
+intention: Définir et structurer l'architecture d'Obsidia pour une mise en ligne progressive et sécurisée.
+contexte: Discussion sur la mise en ligne par couches, les interfaces, et les protocoles de communication avec le monde extérieur.
+
+
+2. Concepts explicitement cités (noms exacts)
+Liste des concepts et termes exacts utilisés dans la conversation.
+
+- plan de mise en public / mise en ligne par couches
+- hub Jarvis
+- traducteur universel
+- comptabilité totale entre les applis et le web
+- cortex os mcp
+- les deux autres os
+
+3. Nouveaux principes / règles / lois
+Nouveaux principes, règles ou lois mentionnés ou introduits.
+
+principe: Discipline de placement
+description: Chaque chose est exactement à sa place, mathématiquement en position forte.
+
+principe: Boucle infinie
+description: La boucle Obsidia fonctionne indépendamment de la source de données, des protocoles, du web, des standards, et des modes agentiques.
+
+principe: Traduction universelle
+description: Traduction des actions, flux, appels, états, et effets pour une comptabilité totale.
+
+
+4. Concepts évolutifs liés à la modularité
+Concepts liés à la modularité et leur évolution dans la conversation.
+
+concept: Modularité des agents
+description: Les agents sont jetables, interchangeables, et ne modifient pas le noyau.
+
+concept: Modularité des OS
+description: Les OS internes sont cloisonnés et ne sortent jamais du système.
+
+
+5. Schémas explicites
+Schémas ou structures explicitement décrits dans la conversation.
+
+schéma: Séparation stricte des niveaux (A → D)
+description: Niveau A: Noyau-Mère, Niveau B: Mémoire Intermédiaire, Niveau C: Agents Internes, Niveau D: Interfaces/Personas
+
+schéma: Mémoire — la séparation correcte (A/B/C)
+description: Mémoire utilisateur, Mémoire intermédiaire, Noyau-Mémoire
+
+schéma: Flux canonique (simplifié)
+description: Utilisateur → Interface/Persona → Barrières → Agents internes → Mémoire intermédiaire → Noyau-Mère → Effets
+
+
+6. Schémas implicites
+Schémas ou structures implicites ou sous-entendus dans la conversation.
+
+schéma: Hiérarchie des OS
+description: OS MCP, OS Agents, OS Interface, OS Cœur
+
+schéma: Plan de mise en ligne
+description: Mise en ligne progressive par couches
+
+
+7. Architecture technique décrite
+Description de l'architecture technique mentionnée dans la conversation.
+
+composant: Noyau-Mère
+description: Inviolable, offline, contient les lois, protocoles, invariants, gouvernance, éthique.
+
+composant: Mémoire Intermédiaire
+description: Zone tampon intelligente, filtrée, pondérée, mutualisable, conditionnelle, calibrable par persona.
+
+composant: Agents Internes
+description: 23 agents pivots, agents scientifiques, gardiens, archivistes, ordonnanceurs, etc.
+
+composant: Interfaces/Personas
+description: Masques fonctionnels, points d’accès, multimodaux, dialoguent, recherchent, s’adaptent, ont un style, une mémoire locale, sont calibrés utilisateur.
+
+
+8. Périmètre fonctionnel (fait / ne fait pas)
+Ce que le système fait et ne fait pas selon la conversation.
+
+fait: Traduction universelle des actions, flux, appels, états, effets.
+ne fait pas: Exposition directe du noyau ou des lois internes.
+
+fait: Orchestration des demandes via le hub Jarvis.
+ne fait pas: Prise de décision finale par les interfaces.
+
+
+9. Hiérarchie & autorité
+Hiérarchie et autorité des composants du système.
+
+niveau: Noyau-Mère
+autorité: Suprême, inviolable, ne s’adapte pas, le monde s’adapte à lui.
+
+niveau: Mémoire Intermédiaire
+autorité: Filtre et pondère, mutualise sans polluer, alimente Obsidia sans exposition.
+
+niveau: Agents Internes
+autorité: Exécutent, séparent les responsabilités, évitent les raccourcis, garantissent la cohérence, empêchent la dérive.
+
+niveau: Interfaces/Personas
+autorité: Dialoguent, recherchent, s’adaptent, mais n’ont pas de noyau, de lois propres, de décision globale.
+
+
+10. Temporalité & versionnement
+Temporalité et versionnement des concepts et composants.
+
+élément: Noyau-Mère
+temporalité: Inviolable, hors du temps, ne change pas.
+
+élément: Mémoire Intermédiaire
+temporalité: Active, filtrée, pondérée, mutualisable, conditionnelle.
+
+élément: Agents Internes
+temporalité: Droits différenciés, seuils, capacités limitées, barrières strictes.
+
+élément: Interfaces/Personas
+temporalité: Calibrables, adaptables, mais sans décision globale.
+
+
+11. Relations avec les autres conversations
+Relations avec d'autres conversations sans fusion.
+
+relation: Lien avec les autres conversations
+description: Cette conversation est autonome, mais peut être liée à d'autres conversations sans fusion.
+
+
+12. Manques & zones non écrites
+Manques ou zones non explicitement écrites dans la conversation.
+
+manque: Détails sur les protocoles de communication entre les agents et le noyau.
+description: Non explicitement décrits dans cette conversation.
+
+manque: Mécanismes de mise à jour du noyau.
+description: Non explicitement décrits dans cette conversation.
+
+
+13. Questions ouvertes nécessitant validation humaine
+Questions ouvertes nécessitant une validation humaine.
+
+question: Comment les agents internes communiquent-ils avec le noyau sans l’exposer ?
+description: Nécessite une validation humaine pour s'assurer que la sécurité et l'intégrité du noyau sont maintenues.
+
+question: Quels sont les critères de validation des mises à jour du noyau ?
+description: Nécessite une validation humaine pour s'assurer que les mises à jour respectent les principes de l'architecture.
+
+

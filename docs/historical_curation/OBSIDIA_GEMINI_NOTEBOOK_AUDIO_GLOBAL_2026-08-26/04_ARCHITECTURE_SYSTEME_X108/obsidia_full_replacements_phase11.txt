@@ -1,0 +1,457 @@
+-- FILE: Obsidia/TemporalX108.lean
+import Obsidia.Basic
+
+namespace Obsidia
+
+structure TInput where
+  metrics   : Metrics
+  theta     : Rat
+  irr       : Bool
+  createdAt : Int
+  now       : Int
+
+def elapsed (i : TInput) : Int :=
+  i.now - i.createdAt
+
+abbrev Tau := Int
+
+def beforeTau (τ : Tau) (i : TInput) : Bool :=
+  i.irr && decide (elapsed i < τ)
+
+def decideX108 (τ : Tau) (i : TInput) : Decision :=
+  if beforeTau τ i then Decision.HOLD
+  else decision i.metrics i.theta
+
+def decide3X108 (τ : Tau) (i : TInput) : Decision3 :=
+  liftDecision (decideX108 τ i)
+
+ theorem X108_no_act_before_tau (τ : Tau) (i : TInput)
+    (hIrr : i.irr = true)
+    (h : elapsed i < τ) :
+    decideX108 τ i = Decision.HOLD := by
+  have hdec : decide (elapsed i < τ) = true := by
+    by_cases hp : elapsed i < τ
+    · simp [hp]
+    · exact False.elim (hp h)
+  have hb : beforeTau τ i = true := by
+    unfold beforeTau
+    rw [hIrr, hdec]
+  unfold decideX108
+  rw [hb]
+
+theorem X108_skew_safe (τ : Tau) (i : TInput)
+    (hIrr : i.irr = true)
+    (hneg : elapsed i < 0)
+    (hTau : 0 ≤ τ) :
+    decideX108 τ i = Decision.HOLD := by
+  have hlt : elapsed i < τ := Int.lt_of_lt_of_le hneg hTau
+  exact X108_no_act_before_tau τ i hIrr hlt
+
+theorem X108_after_tau_equals_base (τ : Tau) (i : TInput)
+    (h : beforeTau τ i = false) :
+    decideX108 τ i = decision i.metrics i.theta := by
+  unfold decideX108
+  rw [h]
+
+theorem X108_kernel_never_blocks (τ : Tau) (i : TInput) :
+    decide3X108 τ i ≠ Decision3.BLOCK := by
+  unfold decide3X108
+  cases h : decideX108 τ i <;> simp [liftDecision]
+
+theorem X108_reversible_equals_base (τ : Tau) (i : TInput)
+    (hIrr : i.irr = false) :
+    decideX108 τ i = decision i.metrics i.theta := by
+  have hb : beforeTau τ i = false := by
+    unfold beforeTau
+    rw [hIrr]
+  exact X108_after_tau_equals_base τ i hb
+
+theorem X108_irreversible_after_tau_equals_base (τ : Tau) (i : TInput)
+    (hIrr : i.irr = true)
+    (hTau : τ ≤ elapsed i) :
+    decideX108 τ i = decision i.metrics i.theta := by
+  have hnot : ¬ elapsed i < τ := Int.not_lt.mpr hTau
+  have hdec : decide (elapsed i < τ) = false := by
+    by_cases hp : elapsed i < τ
+    · exact False.elim (hnot hp)
+    · simp [hp]
+  have hb : beforeTau τ i = false := by
+    unfold beforeTau
+    rw [hIrr, hdec]
+  exact X108_after_tau_equals_base τ i hb
+
+end Obsidia
+
+-- FILE: Obsidia/Refinement.lean
+import Obsidia.SystemModel
+import Obsidia.TemporalX108
+
+namespace Obsidia.Refinement
+
+open Obsidia
+open Obsidia.SystemModel
+
+def R_decision : Decision → Decision3 → Prop
+| Decision.HOLD, Decision3.HOLD => True
+| Decision.ACT,  Decision3.ACT  => True
+| _, _ => False
+
+theorem lift_refines (d : Decision) :
+    R_decision d (liftDecision d) := by
+  cases d <;> trivial
+
+theorem x108_is_lift (τ : Tau) (i : TInput) :
+    decide3X108 τ i = liftDecision (decideX108 τ i) := by
+  rfl
+
+theorem x108_never_blocks (τ : Tau) (i : TInput) :
+    decide3X108 τ i ≠ Decision3.BLOCK := by
+  exact Obsidia.X108_kernel_never_blocks τ i
+
+theorem refined_not_block (d : Decision) (d3 : Decision3)
+    (h : R_decision d d3) :
+    d3 ≠ Decision3.BLOCK := by
+  cases d <;> cases d3 <;> simp [R_decision] at h ⊢
+
+end Obsidia.Refinement
+
+-- FILE: Obsidia/Consensus.lean
+import Obsidia.Basic
+
+namespace Obsidia
+
+def countDec (d : Decision3) (xs : List Decision3) : Nat :=
+  xs.foldl (fun acc x => if x = d then acc + 1 else acc) 0
+
+def aggregate4 (d1 d2 d3 d4 : Decision3) : Decision3 :=
+  let xs : List Decision3 := [d1, d2, d3, d4]
+  if 3 ≤ countDec Decision3.ACT xs then
+    Decision3.ACT
+  else if 3 ≤ countDec Decision3.HOLD xs then
+    Decision3.HOLD
+  else if 3 ≤ countDec Decision3.BLOCK xs then
+    Decision3.BLOCK
+  else
+    Decision3.BLOCK
+
+theorem aggregate4_act
+  (d1 d2 d3 d4 : Decision3)
+  (h : 3 ≤ countDec Decision3.ACT [d1, d2, d3, d4]) :
+  aggregate4 d1 d2 d3 d4 = Decision3.ACT := by
+  cases d1 <;> cases d2 <;> cases d3 <;> cases d4 <;> decide
+
+theorem aggregate4_hold
+  (d1 d2 d3 d4 : Decision3)
+  (hAct : ¬ (3 ≤ countDec Decision3.ACT [d1, d2, d3, d4]))
+  (hHold : 3 ≤ countDec Decision3.HOLD [d1, d2, d3, d4]) :
+  aggregate4 d1 d2 d3 d4 = Decision3.HOLD := by
+  cases d1 <;> cases d2 <;> cases d3 <;> cases d4 <;> decide
+
+theorem aggregate4_block_by_supermajority
+  (d1 d2 d3 d4 : Decision3)
+  (hAct : ¬ (3 ≤ countDec Decision3.ACT [d1, d2, d3, d4]))
+  (hHold : ¬ (3 ≤ countDec Decision3.HOLD [d1, d2, d3, d4]))
+  (hBlock : 3 ≤ countDec Decision3.BLOCK [d1, d2, d3, d4]) :
+  aggregate4 d1 d2 d3 d4 = Decision3.BLOCK := by
+  cases d1 <;> cases d2 <;> cases d3 <;> cases d4 <;> decide
+
+theorem aggregate4_fail_closed
+  (d1 d2 d3 d4 : Decision3)
+  (hAct : ¬ (3 ≤ countDec Decision3.ACT [d1, d2, d3, d4]))
+  (hHold : ¬ (3 ≤ countDec Decision3.HOLD [d1, d2, d3, d4]))
+  (hBlock : ¬ (3 ≤ countDec Decision3.BLOCK [d1, d2, d3, d4])) :
+  aggregate4 d1 d2 d3 d4 = Decision3.BLOCK := by
+  cases d1 <;> cases d2 <;> cases d3 <;> cases d4 <;> decide
+
+theorem aggregate4_unanimous (d : Decision3) :
+  aggregate4 d d d d = d := by
+  cases d <;> decide
+
+theorem aggregate4_three_act (d : Decision3) :
+  aggregate4 Decision3.ACT Decision3.ACT Decision3.ACT d = Decision3.ACT := by
+  cases d <;> decide
+
+theorem no_two_distinct_supermajorities_4
+  (a b : Decision3) (d1 d2 d3 d4 : Decision3)
+  (hab : a ≠ b)
+  (ha : 3 ≤ countDec a [d1, d2, d3, d4])
+  (hb : 3 ≤ countDec b [d1, d2, d3, d4]) :
+  False := by
+  cases a <;> cases b <;> cases d1 <;> cases d2 <;> cases d3 <;> cases d4 <;> decide
+
+end Obsidia
+
+-- FILE: Obsidia/SystemModel.lean
+import Obsidia.Basic
+import Obsidia.Sensitivity
+
+namespace Obsidia.SystemModel
+
+structure AuditRecord where
+  metrics : Obsidia.Metrics
+  theta   : Rat
+  result  : Obsidia.Decision
+
+structure State where
+  repo     : Obsidia.Sensitivity.Repo
+  auditLog : List AuditRecord
+
+structure Input where
+  metrics : Obsidia.Metrics
+  theta   : Rat
+
+def decide (i : Input) : Obsidia.Decision :=
+  Obsidia.decision i.metrics i.theta
+
+def decideInstitutional (i : Input) : Obsidia.Decision3 :=
+  Obsidia.liftDecision (decide i)
+
+theorem P17_KernelNeverBlocks (i : Input) :
+    decideInstitutional i ≠ Obsidia.Decision3.BLOCK :=
+  Obsidia.L11_3_no_block i.metrics i.theta
+
+noncomputable def sealRepo (r : Obsidia.Sensitivity.Repo) : Obsidia.Hash :=
+  Obsidia.Sensitivity.merkleRoot r
+
+def transition (s : State) (i : Input) : Obsidia.Decision × State :=
+  let d    := decide i
+  let entry := AuditRecord.mk i.metrics i.theta d
+  let s'   := State.mk s.repo (s.auditLog ++ [entry])
+  (d, s')
+
+theorem P17_Determinism (s : State) (i : Input) :
+    transition s i = transition s i := rfl
+
+theorem P17_SealSensitive
+    (r r' : Obsidia.Sensitivity.Repo)
+    (h : r.leaves ≠ r'.leaves) :
+    sealRepo r ≠ sealRepo r' := by
+  unfold sealRepo
+  exact Obsidia.Sensitivity.merkleRoot_change_if_leaf_change r r' h
+
+theorem P17_AuditGrowth (s : State) (i : Input) :
+    (transition s i).2.auditLog.length = s.auditLog.length + 1 := by
+  unfold transition
+  rw [List.length_append]
+  rfl
+
+theorem P17_AuditLastIsComputed (s : State) (i : Input) :
+    (transition s i).2.auditLog =
+      s.auditLog ++ [AuditRecord.mk i.metrics i.theta (decide i)] := by
+  unfold transition
+  rfl
+
+theorem P17_TransitionFstIsDecide (s : State) (i : Input) :
+    (transition s i).1 = decide i := by
+  unfold transition
+  rfl
+
+end Obsidia.SystemModel
+
+-- FILE: Obsidia/Sensitivity.lean
+import Obsidia.Merkle
+import Obsidia.CryptoAssumptions
+
+namespace Obsidia.Sensitivity
+
+structure Repo where
+  leaves : List Obsidia.Hash
+
+def updateFile (i : Nat) (h : Obsidia.Hash) (r : Repo) : Repo :=
+  { leaves := r.leaves.set i h }
+
+def merkleRoot (r : Repo) : Obsidia.Hash :=
+  r.leaves.foldl Obsidia.H Obsidia.neutralHash
+
+def globalSeal (manifest root : Obsidia.Hash) : Obsidia.Hash :=
+  Obsidia.merkle2 manifest root
+
+theorem merkleRoot_change_if_leaf_change
+    (r r' : Repo)
+    (h : r.leaves ≠ r'.leaves) :
+    merkleRoot r ≠ merkleRoot r' := by
+  unfold merkleRoot
+  intro heq
+  apply h
+  exact Obsidia.foldl_H_injective r.leaves r'.leaves heq
+
+theorem globalSeal_change_if_root_change
+    (manifest root root' : Obsidia.Hash)
+    (h : root ≠ root') :
+    globalSeal manifest root ≠ globalSeal manifest root' := by
+  unfold globalSeal
+  exact Obsidia.merkle2_right_mutation manifest root root' h
+
+theorem P15_Immutability_Strong
+    (manifest : Obsidia.Hash)
+    (repo repo' : Repo)
+    (h : repo ≠ repo') :
+    globalSeal manifest (merkleRoot repo)
+    ≠
+    globalSeal manifest (merkleRoot repo') := by
+  have hleaves : repo.leaves ≠ repo'.leaves := by
+    intro heq
+    apply h
+    cases repo
+    cases repo'
+    simp_all
+  have hroot : merkleRoot repo ≠ merkleRoot repo' :=
+    merkleRoot_change_if_leaf_change repo repo' hleaves
+  exact globalSeal_change_if_root_change manifest (merkleRoot repo) (merkleRoot repo') hroot
+
+end Obsidia.Sensitivity
+
+-- FILE: Obsidia/Seal.lean
+import Obsidia.Merkle
+import Obsidia.CryptoAssumptions
+
+namespace Obsidia.Seal
+
+abbrev File := Obsidia.SealAssumptions.File
+
+open Obsidia.SealAssumptions
+
+theorem fileHash_inj (f g : File) (h : fileHash f = fileHash g) : f = g :=
+  SealAssumptions.fileHash_inj f g h
+
+def rootHash (files : List File) : Obsidia.Hash :=
+  combine (files.map fileHash)
+
+def globalSeal (mHash rHash : Obsidia.Hash) : Obsidia.Hash :=
+  Obsidia.merkle2 mHash rHash
+
+theorem P13_Immutability
+    (manifest : Obsidia.Hash) (files files2 : List File)
+    (hmap : files.map fileHash ≠ files2.map fileHash) :
+    globalSeal manifest (rootHash files) ≠ globalSeal manifest (rootHash files2) := by
+  have hroot : rootHash files ≠ rootHash files2 := by
+    unfold rootHash
+    intro heq
+    exact hmap (combine_inj _ _ heq)
+  unfold globalSeal
+  exact Obsidia.merkle2_right_mutation manifest (rootHash files) (rootHash files2) hroot
+
+end Obsidia.Seal
+
+-- FILE: Obsidia/Merkle.lean
+import Obsidia.CryptoAssumptions
+
+namespace Obsidia
+
+ def merkle2 (a b : Hash) : Hash :=
+  H a b
+
+theorem merkle2_left_mutation
+  (a a' b : Hash)
+  (h : a ≠ a') :
+  merkle2 a b ≠ merkle2 a' b := by
+  unfold merkle2
+  intro h_eq
+  apply h
+  exact H_injective_left h_eq
+
+theorem merkle2_right_mutation
+  (a b b' : Hash)
+  (h : b ≠ b') :
+  merkle2 a b ≠ merkle2 a b' := by
+  unfold merkle2
+  intro h_eq
+  apply h
+  exact H_injective_right h_eq
+
+end Obsidia
+
+-- FILE: Obsidia/CryptoAssumptions.lean
+namespace Obsidia
+
+inductive Hash where
+  | leaf : Nat → Hash
+  | node : Hash → Hash → Hash
+  deriving Repr, DecidableEq
+
+def H (a b : Hash) : Hash :=
+  Hash.node a b
+
+theorem H_injective_left
+  {a b c : Hash} (h : H a b = H c b) : a = c := by
+  unfold H at h
+  cases h
+  rfl
+
+theorem H_injective_right
+  {a b c : Hash} (h : H a b = H a c) : b = c := by
+  unfold H at h
+  cases h
+  rfl
+
+def neutralHash : Hash :=
+  Hash.leaf 0
+
+def decodeFold : Hash → Option (List Hash)
+  | Hash.leaf 0 => some []
+  | Hash.leaf _ => none
+  | Hash.node left right =>
+      match decodeFold left with
+      | some xs => some (xs ++ [right])
+      | none => none
+
+theorem decodeFold_foldl_of_decodable :
+    ∀ (xs : List Hash) (acc : Hash) (prefList : List Hash),
+      decodeFold acc = some prefList →
+      decodeFold (List.foldl H acc xs) = some (prefList ++ xs) := by
+  intro xs
+  induction xs with
+  | nil =>
+      intro acc prefList hdec
+      simpa [List.foldl, hdec]
+  | cons x xs ih =>
+      intro acc prefList hdec
+      have hstep : decodeFold (H acc x) = some (prefList ++ [x]) := by
+        unfold H
+        simp [decodeFold, hdec]
+      simpa [List.foldl, List.append_assoc] using
+        ih (H acc x) (prefList ++ [x]) hstep
+
+theorem decodeFold_foldl_neutral (xs : List Hash) :
+    decodeFold (List.foldl H neutralHash xs) = some xs := by
+  have h0 : decodeFold neutralHash = some [] := by
+    rfl
+  simpa [neutralHash] using
+    decodeFold_foldl_of_decodable xs neutralHash [] h0
+
+theorem foldl_H_injective
+    (xs ys : List Hash)
+    (h : List.foldl H neutralHash xs = List.foldl H neutralHash ys) :
+    xs = ys := by
+  have hx : decodeFold (List.foldl H neutralHash xs) = some xs :=
+    decodeFold_foldl_neutral xs
+  have hy : decodeFold (List.foldl H neutralHash ys) = some ys :=
+    decodeFold_foldl_neutral ys
+  rw [h] at hx
+  rw [hy] at hx
+  exact Option.some.inj hx.symm
+
+end Obsidia
+
+namespace Obsidia.SealAssumptions
+
+open Obsidia
+
+abbrev File := Nat
+
+def fileHash (f : File) : Obsidia.Hash :=
+  Obsidia.Hash.leaf f
+
+theorem fileHash_inj (f g : File) (h : fileHash f = fileHash g) : f = g := by
+  unfold fileHash at h
+  cases h
+  rfl
+
+def combine (xs : List Obsidia.Hash) : Obsidia.Hash :=
+  xs.foldl Obsidia.H Obsidia.neutralHash
+
+theorem combine_inj (xs ys : List Obsidia.Hash) (h : combine xs = combine ys) : xs = ys := by
+  unfold combine at h
+  exact Obsidia.foldl_H_injective xs ys h
+
+end Obsidia.SealAssumptions

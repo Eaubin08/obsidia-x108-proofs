@@ -1,0 +1,30 @@
+@echo off
+REM ─────────────────────────────────────────
+REM run_obsidia.cmd – Installation + lancement
+REM ─────────────────────────────────────────
+
+REM 1) Créer et/ou activer l’environnement virtuel
+if not exist "venv\Scripts\activate.bat" (
+    echo [*] Environnement virtuel absent, création…
+    python -m venv venv
+)
+echo [*] Activation de l'environnement virtuel…
+call venv\Scripts\activate.bat
+
+REM 2) Mettre à jour pip
+echo [*] Mise à jour de pip…
+python -m pip install --upgrade pip
+
+REM 3) Installer les dépendances principales
+echo [*] Installation des dépendances (requirements.txt)…
+pip install -r requirements.txt
+
+REM 4) Installer les dépendances UI
+echo [*] Installation des dépendances UI (requirements-ui.txt)…
+pip install -r requirements-ui.txt
+
+REM 5) Lancer l’application Streamlit
+echo [*] Démarrage de l’application Streamlit…
+streamlit run ui\app.py
+
+pause

@@ -1,0 +1,10 @@
+Checklist Obsidia Hackathon – Finalisation
+
+☑ Agents (36) créés et remplis
+☑ Protocoles fonctionnels + AVDR / ERA / GhostLogic
+☑ README_algo.md présent
+☑ Fichiers pitch et prompts remplis
+☑ Fichiers de mémoire et simulateurs prêts
+☑ Scripts de démonstration testables
+☐ Slides, vidéo, export à livrer lundi
+☐ README_final + checklist Github terminée

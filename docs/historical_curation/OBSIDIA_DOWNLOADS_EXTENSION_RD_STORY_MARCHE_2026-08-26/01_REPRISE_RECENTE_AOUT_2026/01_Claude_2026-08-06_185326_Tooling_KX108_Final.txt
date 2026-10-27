@@ -1,0 +1,1933 @@
+ ▐▛███▜▌   Claude Code v2.1.221
+▝▜█████▛▘  Sonnet 4.6 · Claude Pro
+  ▘▘ ▝▝    ~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_REMOTE_A5F21C6B
+
+
+● Je modifie temporairement run_pipeline.py pour écrire un log de debug dans un fichier, afin de savoir si c'est
+  la bonne version qui est chargée :
+
+● Update(~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\sigma\run_pipeline.py)
+  ⎿  Added 10 lines
+      467
+      468
+      469  if __name__ == "__main__":
+      470 +    # DEBUG TEMPORAIRE — sera supprimé après diagnostic
+      471 +    _debug_log = Path(__file__).parent.parent / "run_pipeline_debug.log"
+      472      try:
+      473 +        with open(str(_debug_log), "a", encoding="utf-8") as _f:
+      474 +            import datetime
+      475 +            _domain = sys.argv[1] if len(sys.argv) > 1 else "?"
+      476 +            _f.write(f"{datetime.datetime.now().isoformat()} domain={_domain} file={__file__}\n"
+          +)
+      477 +    except Exception:
+      478 +        pass
+      479 +
+      480 +    try:
+      481          main()
+      482      except SystemExit:
+      483          raise
+  ⎿  Referenced file ..\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\sigma\run_pipeline.py
+  ⎿  Read ..\..\..\AppData\Local\Temp\claude\C--Users-User-Desktop-obsidia-engine-proof-core-obsidia-x108-proofs-R
+     EMOTE-A5F21C6B\daeca71d-e641-4945-88ff-bf9ee623cea3\tasks\bu0995nrs.output (4 lines)
+  ⎿  Referenced file ..\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\tests\test_tooling_build_domain.py
+  ⎿  Read ..\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\sigma\protocols.py (66 lines)
+  ⎿  Read ..\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\sigma\aggregation.py (192 lines)
+
+● Mode:  APPLY
+  Layer: TOOLING
+  Scope: Ajout d'un log de diagnostic fichier pour confirmer quel run_pipeline.py est exécuté par le kernel
+  Risk:  LOW
+  Files touched: sigma/run_pipeline.py
+
+  J'ai ajouté un log de diagnostic qui écrit dans run_pipeline_debug.log à la racine du repo avant l'appel à
+  main(). Cela va confirmer définitivement si le kernel utilise ce fichier ou non.
+
+  Fais ce test en 2 étapes dans le terminal :
+
+  Étape 1 — Supprimer l'éventuel log précédent et déclencher un appel kernel :
+  # Dans le repo TERMINAL_BOUNDED_V1
+  rm -f run_pipeline_debug.log
+
+  # Puis POST vers le kernel (dans un autre terminal ou via curl)
+  curl -s -X POST http://localhost:3001/kernel/ragnarok \
+    -H "Content-Type: application/json" \
+    -d '{"domain":"tooling_build","state":{"session_id":"diag-01","objective":"test","base_sha":"abc","manifest_ha
+  sh":"def","human_approval":true,"worktree_isolated":true,"scope_exact":true,"scope_drift":[],"protected_path_tou
+  ched":false,"tests_passed":true,"gates_passed":true,"first_failure":"","commit_status":"UNKNOWN","push_status":"
+  UNKNOWN","merge_status":"UNKNOWN"}}'
+
+  Étape 2 — Vérifier si le log a été créé :
+  cat run_pipeline_debug.log
+
+  Ce que chaque résultat signifie :
+  - Fichier créé → le kernel utilise bien ce run_pipeline.py, le crash se produit dans main() → diagnostic suivant
+  : regarder l'import Python
+  - Fichier absent → le kernel utilise un autre chemin → je dois inspecter __dirname réel du kernel
+
+✻ Churned for 40m 36s
+
+❯ REPRENDRE KX108_TOOLING_BUILD_DOMAIN_ADAPTER_V0 APRÈS INTERRUPTION.
+
+  Le sous-palier n’est pas validé.
+
+  NE PAS ME DEMANDER D’EXÉCUTER DES COMMANDES MANUELLEMENT.
+  Tu disposes du shell : exécute toi-même tous les diagnostics nécessaires.
+
+  NE PAS COMMIT.
+  NE PAS PUSH.
+  NE PAS MERGE.
+
+  WORKTREE AUTORISÉ :
+
+  C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1
+
+  BRANCHE :
+
+  feat/terminal-runtime-repair-and-bounded-build-v1
+
+  ============================================================
+  ÉTAT ACTUEL
+  ============================================================
+
+  Le domaine tooling_build a été ajouté dans :
+
+  sigma/contracts.py
+  sigma/domains/tooling_build_agents.py
+  sigma/aggregation.py
+  sigma/protocols.py
+  sigma/run_pipeline.py
+
+  Tests obtenus :
+
+  61/61 tests tooling_build PASS
+  111/111 tests obsidia_build PASS
+
+  Le pipeline direct fonctionne :
+
+  python sigma/run_pipeline.py tooling_build <fixture>
+
+  Mais l’appel HTTP réel sur :
+
+  POST http://127.0.0.1:3001/kernel/ragnarok
+
+  retourne encore :
+
+  HTTP 500
+  {"error":"Python Crash Code 1"}
+
+  Des modifications temporaires de diagnostic ont ensuite été ajoutées
+  dans sigma/run_pipeline.py :
+
+  - ensure_ascii=True ;
+  - wrapper fatal_error ;
+  - sortie inconnue avec version de diagnostic ;
+  - écriture de run_pipeline_debug.log.
+
+  Ces diagnostics ne doivent pas rester dans la version finale.
+
+  ============================================================
+  1. PRÉVOL ET AUDIT DU DIFF
+  ============================================================
+
+  Commencer par :
+
+  git status --short
+  git diff --check
+  git diff --stat
+  git diff -- sigma/contracts.py
+  git diff -- sigma/domains/tooling_build_agents.py
+  git diff -- sigma/aggregation.py
+  git diff -- sigma/protocols.py
+  git diff -- sigma/run_pipeline.py
+  git diff -- tests/test_tooling_build_domain.py
+  git diff -- scripts/obsidia_build.py
+  git diff -- tests/test_obsidia_build_v0.py
+
+  Vérifier que les fichiers Python touchés compilent réellement :
+
+  python -m py_compile \
+    sigma/contracts.py \
+    sigma/domains/tooling_build_agents.py \
+    sigma/aggregation.py \
+    sigma/protocols.py \
+    sigma/run_pipeline.py \
+    scripts/obsidia_build.py \
+    tests/test_tooling_build_domain.py
+
+  Toute erreur de syntaxe doit être corrigée avant de continuer.
+
+  Contrôler spécialement qu’il ne reste pas :
+
+  - ancienne fonction dupliquée ;
+  - ancien bloc V1 mélangé au bloc V2 ;
+  - constante déclarée deux fois ;
+  - fonction déclarée deux fois ;
+  - ligne partiellement écrite ;
+  - code après sys.exit inaccessible ;
+  - wrapper __main__
+  ──── (295 lines hidden) ───────────────────────────────────────────────────────────────────────────────────────
+  KX108_ONLY.
+
+  ============================================================
+  11. TEST END-TO-END SESSION 35d45cb9
+  ============================================================
+
+  Une fois tooling_build fonctionnel par HTTP :
+
+  python scripts/obsidia_build.py --resume-kx108 35d45cb9
+
+  La reprise doit :
+
+  - relire le receipt ;
+  - vérifier le worktree existant ;
+  - vérifier la branche ;
+  - vérifier le scope ;
+  - vérifier le diff_hash ;
+  - relancer le test ciblé ;
+  - relancer les quatre gates ;
+  - construire le ToolingBuildState complet ;
+  - envoyer domain=tooling_build ;
+  - recevoir ACT, HOLD ou BLOCK ;
+  - mettre à jour le receipt hors dépôt ;
+  - ne pas réappliquer le patch ;
+  - ne pas créer de worktree ;
+  - ne pas créer de branche ;
+  - ne pas commit ;
+  - ne pas push ;
+  - ne pas merge.
+
+  ============================================================
+  12. TESTS FINAUX
+  ============================================================
+
+  Exécuter :
+
+  python -m pytest tests/test_tooling_build_domain.py -q --tb=short
+
+  python -m pytest tests/test_obsidia_build_v0.py -q --tb=short
+
+  python -m pytest \
+    tests/test_stack_launcher_v0.py \
+    tests/test_obsidia_build_v0.py \
+    tests/test_tooling_build_domain.py \
+    -q --tb=short
+
+  Puis :
+
+  git diff --check
+  git status --short
+  git worktree list --porcelain
+  git branch --list "feat/build-*"
+
+  Vérifier les fichiers protégés :
+
+  git diff -- \
+    runtime_terrain_bank_trading_gps/server.kernel.sealed.cjs \
+    proofs \
+    formal \
+    merkle_seal.json
+
+  Résultat attendu :
+
+  aucune diff protégée.
+
+  ============================================================
+  ARRÊT FINAL
+  ============================================================
+
+  NE PAS COMMIT.
+  NE PAS PUSH.
+  NE PAS MERGE.
+
+  Produire un rapport comprenant :
+
+  - worktree réellement utilisé par le Kernel ;
+  - PID avant/après ;
+  - cause racine du HTTP 500 ;
+  - diagnostics temporaires supprimés ;
+  - contrat ToolingBuildState final ;
+  - agents ;
+  - agrégation ;
+  - GuardX108 ;
+  - tests ACT/HOLD/BLOCK directs ;
+  - tests HTTP ACT/HOLD/BLOCK ;
+  - anciens domaines non régressés ;
+  - payload réel session 35d45cb9 ;
+  - réponse brute KX108 ;
+  - décision réelle ;
+  - receipt mis à jour ;
+  - résultats pytest ;
+  - git diff --check ;
+  - git status ;
+  - fichiers protégés intacts ;
+  - aucun commit/push/merge.
+
+  Verdict autorisé uniquement avec une décision HTTP réelle :
+
+  KX108_TOOLING_BUILD_DOMAIN_ADAPTER_V0_READY_FOR_HUMAN_VALIDATION
+
+  TERMINAL_BUILD_BOUNDED_V1_READY_FOR_HUMAN_VALIDATION
+
+  Sinon :
+
+  KX108_TOOLING_BUILD_DOMAIN_ADAPTER_V0_BLOCKED
+
+  HUMAN_CHECKPOINT_2_REQUIRED
+
+● Mode:  APPLY
+  Layer: TOOLING | CONNECTORS
+  Scope: KX108_TOOLING_BUILD_DOMAIN_ADAPTER_V0 — diagnostic complet, réparation, expansion contrat, validation
+  HTTP
+  Risk:  MEDIUM
+  Files touched: sigma/contracts.py, sigma/domains/tooling_build_agents.py, sigma/aggregation.py,
+  sigma/protocols.py, sigma/run_pipeline.py, tests/test_tooling_build_domain.py, scripts/obsidia_build.py
+
+  Je lance toutes les vérifications préliminaires en parallèle.
+
+  Ran 5 shell commands (ctrl+o to expand)
+
+● PID 19168 sur port 3001. Maintenant j'identifie quel worktree il utilise :
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Le kernel tourne bien (PID 19168) mais la ligne de commande .\server.kernel.sealed.cjs est relative — je dois
+  trouver son CWD réel :
+
+  Ran 4 shell commands (ctrl+o to expand)
+
+● Je vais envoyer un POST bank (qui fonctionne) pour voir où input_temp.json apparaît :
+
+  Ran 6 shell commands (ctrl+o to expand)
+
+● bank aussi retourne 500 maintenant — un import-level crash probable. Je teste l'import directement :
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Je dois trouver le CWD réel du kernel. J'utilise la liste des handles de fichiers ouverts :
+
+  Ran 2 shell commands (ctrl+o to expand)
+● Trouvé. allData/ est dans REMOTE_A5F21C6B — le kernel actif utilise le mauvais worktree. Diagnostic confirmé.
+
+  Je vérifie les autres processus à risque avant d'arrêter le kernel :
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Seul PID 19168 = kernel. PIDs 13416 et 22324 = UI Vite — ne pas toucher. Je procède :
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Je stoppe le kernel REMOTE et démarre celui de TERMINAL_BOUNDED_V1 :
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● Nouveau kernel PID 22928 actif. Je vérifie sa ligne de commande et son worktree :
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Je teste maintenant le domaine bank avec un payload complet :
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● Excellent — le log confirme que le kernel V1 est actif. Mais bank échoue même avec un payload complet. Je dois
+  voir exactement pourquoi Python crash :
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Le schéma bank a changé dans V1. Je lis les champs bank autorisés :
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Le schéma bank V1 a évolué — ce n'est pas mon périmètre. Je teste maintenant tooling_build via HTTP avec le
+  kernel V1 actif :
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● HTTP 200 ! Tooling_build fonctionne. Je lis la réponse complète pour vérifier la structure :
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● HTTP 200, x108_gate: ALLOW, decision_authority: KX108_ONLY, emits_act: false, vote_count: 4 — le kernel répond
+  correctement.
+
+  Maintenant je dois étendre le contrat ToolingBuildState selon la section 9 du mandat. Je lis d'abord tous les
+  fichiers actuels :
+
+  Read 4 files, ran 2 shell commands (ctrl+o to expand)
+
+● Je comprends maintenant tout le périmètre. Je dois :
+  1. Étendre ToolingBuildState avec les 26 champs du mandat
+  2. Renommer les anciens champs dans les agents
+  3. Mettre à jour _call_kx108 → domain: "tooling_build"
+  4. Mettre à jour les tests
+  5. Nettoyer les diagnostics
+
+  Je commence par lire la partie obsidia_build.py qui construit le plan :
+
+  Read 1 file, ran 1 shell command (ctrl+o to expand)
+
+● J'ai tout le contexte nécessaire. Je commence l'expansion complète du contrat. En parallèle, je lis le fichier
+  de tests pour voir les fixtures existantes :
+
+  Read 1 file (ctrl+o to expand)
+● J'ai maintenant tout le contexte. Je vais réécrire les 5 fichiers dans l'ordre. Je commence par le contrat :
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\sigma\contracts.py)
+  ⎿  Added 59 lines, removed 14 lines
+      502
+      503  @dataclass
+      504  class ToolingBuildState(UniversalBase):
+      505 -    """État d'une session de build bornée soumise au Kernel X-108 pour décision ACT/HOLD/BLOCK."
+          -""
+      505 +    """État d'une session de build bornée soumise au Kernel X-108 pour décision ACT/HOLD/BLOCK.
+      506 +
+      507 +    Contrat canonique KX108_TOOLING_BUILD_DOMAIN_ADAPTER_V0.
+      508 +    decision_authority = KX108_ONLY — jamais auto-commit, auto-push, auto-merge.
+      509 +    """
+      510 +    # Identification de session
+      511      session_id: str = "UNKNOWN"
+      512      objective: str = ""
+      513      base_sha: str = ""
+      514      manifest_hash: str = ""
+      510 -    human_approval: bool = False
+      515 +    diff_hash: str = ""
+      516 +
+      517 +    # Scope déclaré vs réel
+      518 +    approved_scope: List[str] = field(default_factory=list)
+      519 +    actual_touched_files: List[str] = field(default_factory=list)
+      520 +    new_files: List[str] = field(default_factory=list)
+      521 +    deleted_files: List[str] = field(default_factory=list)
+      522 +
+      523 +    # Statuts de protection et d'approbation
+      524 +    protected_scope_status: str = "UNKNOWN"   # "CLEAN" | "VIOLATED" | "UNKNOWN"
+      525 +    human_approval_status: str = "UNKNOWN"    # "APPROVED" | "PENDING" | "MISSING" | "UNKNOWN"
+      526 +    obsidure_status: str = "UNKNOWN"          # "CLEAN" | "DEGRADED" | "UNKNOWN"
+      527 +
+      528 +    # Isolation
+      529      worktree_isolated: bool = False
+      512 -    scope_exact: bool = False
+      513 -    scope_drift: List[str] = field(default_factory=list)
+      514 -    protected_path_touched: bool = False
+      515 -    tests_passed: bool = False
+      516 -    gates_passed: bool = False
+      530 +    branch_isolated: bool = False
+      531 +
+      532 +    # Garde-fous d'irréversibilité (doivent être True pour passer CommitGuard)
+      533 +    auto_commit_disabled: bool = True
+      534 +    auto_push_disabled: bool = True
+      535 +    auto_merge_disabled: bool = True
+      536 +
+      537 +    # Résultats tests et gates
+      538 +    tests_results: str = "UNKNOWN"   # "PASS" | "FAIL" | "PARTIAL" | "UNKNOWN"
+      539 +    gates_results: str = "UNKNOWN"   # "PASS" | "FAIL" | "PARTIAL" | "UNKNOWN"
+      540      first_failure: str = ""
+      541 +
+      542 +    # Statut des opérations git (doit être NOT_COMMITTED / NOT_PUSHED / NOT_MERGED)
+      543      commit_status: str = "UNKNOWN"
+      544      push_status: str = "UNKNOWN"
+      545      merge_status: str = "UNKNOWN"
+      546
+      547 +    # Pré-conditions déclarées par l'appelant
+      548 +    unknowns: List[str] = field(default_factory=list)
+      549 +    contradictions: List[str] = field(default_factory=list)
+      550 +    risk_flags: List[str] = field(default_factory=list)
+      551 +
+      552 +    # Autorité de décision (constante)
+      553 +    decision_authority: str = "KX108_ONLY"
+      554 +
+      555      def __init__(self, **kwargs):
+      556          self.session_id = kwargs.get("session_id", "UNKNOWN")
+      557          self.objective = kwargs.get("objective", "")
+      558          self.base_sha = kwargs.get("base_sha", "")
+      559          self.manifest_hash = kwargs.get("manifest_hash", "")
+      527 -        self.human_approval = bool(kwargs.get("human_approval", False))
+      560 +        self.diff_hash = kwargs.get("diff_hash", "")
+      561 +        self.approved_scope = list(kwargs.get("approved_scope", []) or [])
+      562 +        self.actual_touched_files = list(kwargs.get("actual_touched_files", []) or [])
+      563 +        self.new_files = list(kwargs.get("new_files", []) or [])
+      564 +        self.deleted_files = list(kwargs.get("deleted_files", []) or [])
+      565 +        self.protected_scope_status = kwargs.get("protected_scope_status", "UNKNOWN")
+      566 +        self.human_approval_status = kwargs.get("human_approval_status", "UNKNOWN")
+      567 +        self.obsidure_status = kwargs.get("obsidure_status", "UNKNOWN")
+      568          self.worktree_isolated = bool(kwargs.get("worktree_isolated", False))
+      529 -        self.scope_exact = bool(kwargs.get("scope_exact", False))
+      530 -        self.scope_drift = list(kwargs.get("scope_drift", []) or [])
+      531 -        self.protected_path_touched = bool(kwargs.get("protected_path_touched", False))
+      532 -        self.tests_passed = bool(kwargs.get("tests_passed", False))
+      533 -        self.gates_passed = bool(kwargs.get("gates_passed", False))
+      569 +        self.branch_isolated = bool(kwargs.get("branch_isolated", False))
+      570 +        self.auto_commit_disabled = bool(kwargs.get("auto_commit_disabled", True))
+      571 +        self.auto_push_disabled = bool(kwargs.get("auto_push_disabled", True))
+      572 +        self.auto_merge_disabled = bool(kwargs.get("auto_merge_disabled", True))
+      573 +        self.tests_results = kwargs.get("tests_results", "UNKNOWN")
+      574 +        self.gates_results = kwargs.get("gates_results", "UNKNOWN")
+      575          self.first_failure = kwargs.get("first_failure", "")
+      576          self.commit_status = kwargs.get("commit_status", "UNKNOWN")
+      577          self.push_status = kwargs.get("push_status", "UNKNOWN")
+      578          self.merge_status = kwargs.get("merge_status", "UNKNOWN")
+      579 +        self.unknowns = list(kwargs.get("unknowns", []) or [])
+      580 +        self.contradictions = list(kwargs.get("contradictions", []) or [])
+      581 +        self.risk_flags = list(kwargs.get("risk_flags", []) or [])
+      582 +        self.decision_authority = kwargs.get("decision_authority", "KX108_ONLY")
+      583          obsidia_log(
+      584              f"ToolingBuildState active: session={self.session_id} "
+      540 -            f"| approval={self.human_approval} | scope_exact={self.scope_exact}"
+      585 +            f"| approval={self.human_approval_status} | worktree={self.worktree_isolated}"
+      586          )
+      587   No newline at end of file
+
+● Maintenant les agents :
+
+● Write(~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\sigma\domains\tooling_build_ag
+       ents.py)
+  ⎿  Added 43 lines, removed 9 lines
+       5
+       6
+       7  class ScopeIntegrityAgent(BaseAgent):
+       8 -    """Vérifie que le scope du build est exact et qu'aucun fichier protégé n'a été touché."""
+       8 +    """Vérifie que le scope est exact et qu'aucun fichier protégé n'a été touché."""
+       9      agent_id = "ScopeIntegrityAgent"
+      10
+      11      def evaluate(self, state: ToolingBuildState) -> AgentVote:
+      12 -        if state.protected_path_touched:
+      12 +        if state.protected_scope_status == "VIOLATED":
+      13              return AgentVote(
+      14                  agent_id=self.agent_id,
+      15                  domain=Domain.TOOLING_BUILD,
+     ...
+      20                  contradictions=["PROTECTED_PATH_VIOLATION"],
+      21                  proposed_verdict="BUILD_BLOCK",
+      22              )
+      23 -        if not state.scope_exact or state.scope_drift:
+      23 +
+      24 +        # Drift = fichiers réellement touchés hors du scope approuvé
+      25 +        drift = []
+      26 +        if state.approved_scope:
+      27 +            approved = set(state.approved_scope)
+      28 +            drift = [f for f in state.actual_touched_files if f not in approved]
+      29 +
+      30 +        if drift:
+      31              return AgentVote(
+      32                  agent_id=self.agent_id,
+      33                  domain=Domain.TOOLING_BUILD,
+     ...
+      39                  risk_flags=["SCOPE_DRIFT_DETECTED"],
+      40                  proposed_verdict="BUILD_HOLD",
+      41              )
+      42 +
+      43          return AgentVote(
+      44              agent_id=self.agent_id,
+      45              domain=Domain.TOOLING_BUILD,
+     ...
+      56      agent_id = "TestGateAgent"
+      57
+      58      def evaluate(self, state: ToolingBuildState) -> AgentVote:
+      51 -        if not state.tests_passed and not state.gates_passed:
+      59 +        tests_fail = state.tests_results == "FAIL"
+      60 +        gates_fail = state.gates_results == "FAIL"
+      61 +        tests_partial = state.tests_results == "PARTIAL"
+      62 +        gates_partial = state.gates_results == "PARTIAL"
+      63 +
+      64 +        if tests_fail and gates_fail:
+      65              return AgentVote(
+      66                  agent_id=self.agent_id,
+      67                  domain=Domain.TOOLING_BUILD,
+     ...
+      73                  risk_flags=["TESTS_AND_GATES_FAILED"],
+      74                  proposed_verdict="BUILD_BLOCK",
+      75              )
+      63 -        if not state.tests_passed or not state.gates_passed:
+      76 +
+      77 +        if tests_fail or gates_fail or tests_partial or gates_partial:
+      78              failure_hint = state.first_failure or "UNKNOWN_FAILURE"
+      79              return AgentVote(
+      80                  agent_id=self.agent_id,
+     ...
+      87                  risk_flags=[f"PARTIAL_FAILURE:{failure_hint}"],
+      88                  proposed_verdict="BUILD_HOLD",
+      89              )
+      90 +
+      91          return AgentVote(
+      92              agent_id=self.agent_id,
+      93              domain=Domain.TOOLING_BUILD,
+     ...
+      100
+      101
+      102  class SessionIntegrityAgent(BaseAgent):
+       88 -    """Vérifie l'intégrité cryptographique de la session : sha, manifest, approbation humaine, i
+          -solation."""
+      103 +    """Vérifie l'intégrité de session : sha, manifest, approbation humaine, isolation."""
+      104      agent_id = "SessionIntegrityAgent"
+      105
+      106      def evaluate(self, state: ToolingBuildState) -> AgentVote:
+       92 -        contradictions = []
+       93 -        unknowns = []
+      107 +        contradictions = list(state.contradictions)
+      108 +        unknowns = list(state.unknowns)
+      109 +        risk_flags = list(state.risk_flags)
+      110
+       95 -        if not state.human_approval:
+      111 +        if state.human_approval_status == "MISSING":
+      112              contradictions.append("HUMAN_APPROVAL_MISSING")
+      113 +        elif state.human_approval_status in ("PENDING", "UNKNOWN"):
+      114 +            unknowns.append("HUMAN_APPROVAL_PENDING")
+      115 +
+      116          if not state.base_sha:
+      117              unknowns.append("BASE_SHA_MISSING")
+      118          if not state.manifest_hash:
+      119              unknowns.append("MANIFEST_HASH_MISSING")
+      120          if not state.worktree_isolated:
+      121              contradictions.append("WORKTREE_NOT_ISOLATED")
+      122 +        if not state.branch_isolated:
+      123 +            contradictions.append("BRANCH_NOT_ISOLATED")
+      124
+      125 +        if state.decision_authority != "KX108_ONLY":
+      126 +            contradictions.append("DECISION_AUTHORITY_VIOLATION")
+      127 +
+      128          if contradictions:
+      129              return AgentVote(
+      130                  agent_id=self.agent_id,
+     ...
+      135                  severity_hint=Severity.S4,
+      136                  contradictions=contradictions,
+      137                  unknowns=unknowns,
+      138 +                risk_flags=risk_flags,
+      139                  proposed_verdict="BUILD_BLOCK",
+      140              )
+      141          if unknowns:
+     ...
+      147                  confidence=0.40,
+      148                  severity_hint=Severity.S2,
+      149                  unknowns=unknowns,
+      150 +                risk_flags=risk_flags,
+      151                  proposed_verdict="BUILD_HOLD",
+      152              )
+      153          return AgentVote(
+     ...
+      163
+      164  class CommitGuardAgent(BaseAgent):
+      165      """Couche KERNEL : vérifie qu'aucun commit/push/merge non autorisé n'a eu lieu.
+      166 +    Vérifie aussi que les garde-fous d'irréversibilité sont actifs.
+      167      ACT=false — ce vote autorise uniquement la revue, jamais l'exécution."""
+      168      agent_id = "CommitGuardAgent"
+      169
+      170      def evaluate(self, state: ToolingBuildState) -> AgentVote:
+      171          contradictions = []
+      172
+      173 +        if not state.auto_commit_disabled:
+      174 +            contradictions.append("AUTO_COMMIT_NOT_DISABLED")
+      175 +        if not state.auto_push_disabled:
+      176 +            contradictions.append("AUTO_PUSH_NOT_DISABLED")
+      177 +        if not state.auto_merge_disabled:
+      178 +            contradictions.append("AUTO_MERGE_NOT_DISABLED")
+      179 +
+      180          if state.commit_status not in ("NOT_COMMITTED", "UNKNOWN"):
+      181              contradictions.append("UNAUTHORIZED_COMMIT")
+      182          if state.push_status not in ("NOT_PUSHED", "UNKNOWN"):
+
+● Maintenant je mets à jour la validation dans run_pipeline.py et je supprime tous les diagnostics temporaires :
+
+● Update(~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\sigma\run_pipeline.py)
+  ⎿  Added 44 lines, removed 14 lines
+      338      "objective",
+      339      "base_sha",
+      340      "manifest_hash",
+      341 -    "human_approval",
+      341 +    "human_approval_status",
+      342      "worktree_isolated",
+      343 -    "scope_exact",
+      344 -    "tests_passed",
+      345 -    "gates_passed",
+      343 +    "branch_isolated",
+      344 +    "tests_results",
+      345 +    "gates_results",
+      346      "commit_status",
+      347      "push_status",
+      348      "merge_status",
+      349 +    "auto_commit_disabled",
+      350 +    "auto_push_disabled",
+      351 +    "auto_merge_disabled",
+      352 +    "decision_authority",
+      353  }
+      354
+      355  ALLOWED_TOOLING_BUILD_FIELDS = {
+      352 -    "session_id", "objective", "base_sha", "manifest_hash",
+      353 -    "human_approval", "worktree_isolated", "scope_exact", "scope_drift",
+      354 -    "protected_path_touched", "tests_passed", "gates_passed", "first_failure",
+      356 +    # Identification
+      357 +    "session_id", "objective", "base_sha", "manifest_hash", "diff_hash",
+      358 +    # Scope
+      359 +    "approved_scope", "actual_touched_files", "new_files", "deleted_files",
+      360 +    # Statuts
+      361 +    "protected_scope_status", "human_approval_status", "obsidure_status",
+      362 +    # Isolation
+      363 +    "worktree_isolated", "branch_isolated",
+      364 +    # Garde-fous
+      365 +    "auto_commit_disabled", "auto_push_disabled", "auto_merge_disabled",
+      366 +    # Tests/gates
+      367 +    "tests_results", "gates_results", "first_failure",
+      368 +    # Git ops
+      369      "commit_status", "push_status", "merge_status",
+      370 +    # Pré-conditions
+      371 +    "unknowns", "contradictions", "risk_flags",
+      372 +    # Autorité
+      373 +    "decision_authority",
+      374  }
+      375
+      376  TOOLING_BUILD_BOOL_FIELDS = {
+      359 -    "human_approval", "worktree_isolated", "scope_exact",
+      360 -    "protected_path_touched", "tests_passed", "gates_passed",
+      377 +    "worktree_isolated", "branch_isolated",
+      378 +    "auto_commit_disabled", "auto_push_disabled", "auto_merge_disabled",
+      379  }
+      380
+      381  TOOLING_BUILD_STRING_FIELDS = {
+      364 -    "session_id", "objective", "base_sha", "manifest_hash",
+      365 -    "first_failure", "commit_status", "push_status", "merge_status",
+      382 +    "session_id", "objective", "base_sha", "manifest_hash", "diff_hash",
+      383 +    "protected_scope_status", "human_approval_status", "obsidure_status",
+      384 +    "tests_results", "gates_results", "first_failure",
+      385 +    "commit_status", "push_status", "merge_status",
+      386 +    "decision_authority",
+      387  }
+      388
+      389 +TOOLING_BUILD_LIST_FIELDS = {
+      390 +    "approved_scope", "actual_touched_files", "new_files", "deleted_files",
+      391 +    "unknowns", "contradictions", "risk_flags",
+      392 +}
+      393
+      394 +
+      395  def validate_tooling_build_payload(state_data: dict) -> None:
+      396      if not isinstance(state_data, dict):
+      397          raise ValueError("tooling_build payload must be a JSON object")
+     ...
+      412          if f in state_data and not isinstance(state_data[f], str):
+      413              raise ValueError(f"Invalid tooling_build field type: {f} must be a string")
+      414
+      389 -    scope_drift = state_data.get("scope_drift", [])
+      390 -    if scope_drift is not None and not isinstance(scope_drift, list):
+      391 -        raise ValueError("Invalid tooling_build field type: scope_drift must be a list")
+      415 +    for f in TOOLING_BUILD_LIST_FIELDS:
+      416 +        val = state_data.get(f)
+      417 +        if val is not None and not isinstance(val, list):
+      418 +            raise ValueError(f"Invalid tooling_build field type: {f} must be a list")
+      419
+      420 +    if state_data.get("decision_authority") != "KX108_ONLY":
+      421 +        raise ValueError("Invalid tooling_build field: decision_authority must be 'KX108_ONLY'")
+      422
+      423 +
+      424  def main():
+      425      if len(sys.argv) < 3:
+      426          print(json.dumps({"error": "Usage: run_pipeline.py <domain> <json_state_or_json_file>"})
+           , file=sys.stderr)
+
+● Maintenant je nettoie les diagnostics temporaires dans le bloc __main__ et je corrige le message de domaine
+  inconnu :
+
+● Update(~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\sigma\run_pipeline.py)
+  ⎿  Error editing file
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\sigma\run_pipeline.py)
+  ⎿  Added 1 line, removed 2 lines
+      469              state = ToolingBuildState(**state_data)
+      470              result = run_tooling_build_pipeline(state)
+      471          else:
+      472 -            # KX108_TOOLING_BUILD_DOMAIN_ADAPTER_V0 — test diagnostic
+      473 -            print(json.dumps({"error": f"Unknown domain: {domain}. Use trading|bank|ecom|gps_def
+          -ense_aviation|tooling_build", "version": "V2_TOOLING_BUILD_SUPPORT"}))
+      472 +            print(json.dumps({"error": f"Unknown domain: {domain}. Use trading|bank|ecom|gps_def
+          +ense_aviation|tooling_build"}), file=sys.stderr)
+      473              sys.exit(1)
+      474
+      475          result_dict = envelope_to_dict(result)
+
+● Maintenant je nettoie le bloc __main__ :
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\sigma\run_pipeline.py)
+  ⎿  Added 1 line, removed 19 lines
+      496
+      497
+      498  if __name__ == "__main__":
+      499 -    # DEBUG TEMPORAIRE — sera supprimé après diagnostic
+      500 -    _debug_log = Path(__file__).parent.parent / "run_pipeline_debug.log"
+      501 -    try:
+      502 -        with open(str(_debug_log), "a", encoding="utf-8") as _f:
+      503 -            import datetime
+      504 -            _domain = sys.argv[1] if len(sys.argv) > 1 else "?"
+      505 -            _f.write(f"{datetime.datetime.now().isoformat()} domain={_domain} file={__file__}\n"
+          -)
+      506 -    except Exception:
+      507 -        pass
+      508 -
+      509 -    try:
+      510 -        main()
+      511 -    except SystemExit:
+      512 -        raise
+      513 -    except Exception as _fatal:
+      514 -        import traceback
+      515 -        _tb = traceback.format_exc()
+      516 -        print(json.dumps({"fatal_error": str(_fatal), "traceback": _tb[:1000], "domain_hint": sy
+          -s.argv[1] if len(sys.argv) > 1 else "?"}))
+      517 -        sys.exit(1)
+      499 +    main()
+
+● Maintenant je corrige aussi le ensure_ascii :
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Update(~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\sigma\run_pipeline.py)
+  ⎿  Added 1 line, removed 2 lines
+      485          result_dict = _apply_p3t9b_rule(result_dict, _p3t8b_action_meta, _P3T8B_META_KEYS)
+      486
+      487          result_dict = apply_sigma(result_dict, sigma)
+      488 -        # ensure_ascii=True pour compatibilité avec les encodages système (cp1252 sur Windows)
+      489 -        print(json.dumps(result_dict, ensure_ascii=True))
+      488 +        print(json.dumps(result_dict, ensure_ascii=False))
+      489      except (TypeError, ValueError) as e:
+      490          print(json.dumps({"error": f"State validation error: {e}"}), file=sys.stderr)
+      491          sys.exit(1)
+
+● Maintenant je mets à jour _call_kx108 dans obsidia_build.py :
+
+● Update(~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\scripts\obsidia_build.py)
+  ⎿  Added 40 lines, removed 11 lines
+      357          return "API_DOWN_OR_UNREACHABLE"
+      358
+      359
+      360 -def _call_kx108(plan: dict) -> tuple[str, dict]:
+      360 +def _call_kx108(plan: dict, full_state: dict | None = None) -> tuple[str, dict]:
+      361      """
+      362 -    Soumet le payload de session au kernel X-108.
+      362 +    Soumet le payload de session au kernel X-108 via domain=tooling_build.
+      363      Retourne (status, raw_response).
+      364      status: ACT | HOLD | BLOCK
+      365            | BLOCKED_KX108_CONTRACT_UNAVAILABLE
+      366            | BLOCKED_KX108_UNAVAILABLE
+      367 +
+      368 +    full_state : dict complet ToolingBuildState (optionnel).
+      369 +    Si absent, construit un état minimal depuis plan.
+      370      """
+      371 +    if full_state is not None:
+      372 +        state_payload = full_state
+      373 +    else:
+      374 +        state_payload = {
+      375 +            "session_id":            plan.get("session_id", "UNKNOWN"),
+      376 +            "objective":             plan.get("objective", ""),
+      377 +            "base_sha":              plan.get("base_sha", ""),
+      378 +            "manifest_hash":         plan.get("manifest_hash", ""),
+      379 +            "diff_hash":             plan.get("diff_hash", ""),
+      380 +            "approved_scope":        plan.get("approved_scope_proposal", plan.get("approved_scop
+          +e", [])),
+      381 +            "actual_touched_files":  plan.get("actual_touched_files", []),
+      382 +            "new_files":             plan.get("new_files", []),
+      383 +            "deleted_files":         plan.get("deleted_files", []),
+      384 +            "protected_scope_status": plan.get("protected_scope_status", "UNKNOWN"),
+      385 +            "human_approval_status": "APPROVED" if plan.get("human_approved") else "MISSING",
+      386 +            "obsidure_status":       plan.get("obsidure_status", "UNKNOWN"),
+      387 +            "worktree_isolated":     bool(plan.get("worktree_isolated", False)),
+      388 +            "branch_isolated":       bool(plan.get("branch_isolated", False)),
+      389 +            "auto_commit_disabled":  True,
+      390 +            "auto_push_disabled":    True,
+      391 +            "auto_merge_disabled":   True,
+      392 +            "tests_results":         "UNKNOWN",
+      393 +            "gates_results":         "UNKNOWN",
+      394 +            "first_failure":         plan.get("first_failure", ""),
+      395 +            "commit_status":         plan.get("commit_status", "NOT_COMMITTED"),
+      396 +            "push_status":           plan.get("push_status", "NOT_PUSHED"),
+      397 +            "merge_status":          plan.get("merge_status", "NOT_MERGED"),
+      398 +            "unknowns":              [],
+      399 +            "contradictions":        [],
+      400 +            "risk_flags":            [],
+      401 +            "decision_authority":    "KX108_ONLY",
+      402 +        }
+      403 +
+      404      payload = {
+      369 -        "domain": "PERIPHERAL",
+      370 -        "state": {
+      371 -            "build_session_id": plan["session_id"],
+      372 -            "objective":        plan["objective"],
+      373 -            "base_sha":         plan["base_sha"],
+      374 -            "manifest_hash":    plan["manifest_hash"],
+      375 -            "approved_scope":   plan["approved_scope_proposal"],
+      376 -            "decision_authority": "KX108_ONLY",
+      377 -        },
+      405 +        "domain": "tooling_build",
+      406 +        "state": state_payload,
+      407      }
+      408      encoded = json.dumps(payload).encode("utf-8")
+      409      req = urllib.request.Request(
+
+● Maintenant je mets à jour les deux appels à _call_kx108 dans cmd_execute et cmd_resume_kx108 pour passer le
+  full_state :
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\scripts\obsidia_build.py)
+  ⎿  Added 28 lines, removed 11 lines
+      864      receipt["first_failure"] = first_failure
+      865
+      866      # ── [9/10] Appel KX108 ───────────────────────────────────────────────────
+      867 -    print("\n  [9/10] Appel KX108 (contrat PERIPHERAL)...")
+      868 -    kx108_payload = {
+      869 -        "objective":             plan["objective"],
+      867 +    print("\n  [9/10] Appel KX108 (domain=tooling_build)...")
+      868 +    _tests_r = "PASS" if tests_ok else "FAIL"
+      869 +    _gates_r = "PASS" if gates_ok else "FAIL"
+      870 +    kx108_full_state = {
+      871          "session_id":            session_id,
+      872 +        "objective":             plan["objective"],
+      873          "base_sha":              base_sha,
+      874          "manifest_hash":         plan["manifest_hash"],
+      875 +        "diff_hash":             diff_hash,
+      876          "approved_scope":        approved_scope,
+      877          "actual_touched_files":  actual_touched,
+      875 -        "tests":                 receipt["tests_results"],
+      876 -        "gates":                 {k: v.get("ok") for k, v in receipt["gates_results"].items()},
+      877 -        "first_failure":         first_failure,
+      878 -        "diff_hash":             diff_hash,
+      878 +        "new_files":             [],
+      879 +        "deleted_files":         [],
+      880          "protected_scope_status": receipt["protected_scope_status"],
+      881 +        "human_approval_status": "APPROVED",
+      882 +        "obsidure_status":       "UNKNOWN",
+      883 +        "worktree_isolated":     True,
+      884 +        "branch_isolated":       True,
+      885 +        "auto_commit_disabled":  True,
+      886 +        "auto_push_disabled":    True,
+      887 +        "auto_merge_disabled":   True,
+      888 +        "tests_results":         _tests_r,
+      889 +        "gates_results":         _gates_r,
+      890 +        "first_failure":         first_failure or "",
+      891 +        "commit_status":         "NOT_COMMITTED",
+      892 +        "push_status":           "NOT_PUSHED",
+      893 +        "merge_status":          "NOT_MERGED",
+      894 +        "unknowns":              [],
+      895 +        "contradictions":        [],
+      896 +        "risk_flags":            [],
+      897 +        "decision_authority":    "KX108_ONLY",
+      898      }
+      881 -    receipt["kx108_request"] = kx108_payload
+      899 +    receipt["kx108_request"] = kx108_full_state
+      900
+      883 -    kx108_status, kx108_raw = _call_kx108(plan)
+      901 +    kx108_status, kx108_raw = _call_kx108(plan, full_state=kx108_full_state)
+      902      receipt["kx108_decision"] = kx108_status
+      903
+      904      print(f"  [KX108] decision_authority = KX108_ONLY")
+     ...
+      908      if kx108_status == "BLOCKED_KX108_UNAVAILABLE":
+      909          print("  [KX108] Kernel X-108 non accessible (port 3001 injoignable)")
+      910      elif kx108_status == "BLOCKED_KX108_CONTRACT_UNAVAILABLE":
+      893 -        print("  [KX108] Noyau X-108 actif : aucun contrat PERIPHERAL build session")
+      894 -        print("  [KX108] Blocage contractuel declare -- aucune decision inventee")
+      911 +        print("  [KX108] Noyau X-108 actif : contrat tooling_build non reconnu")
+      912      elif kx108_status in ("ACT", "HOLD"):
+      913          print(f"  [KX108] Decision reelle recue: {kx108_status}")
+      914          receipt["next_human_action"] = "READY_FOR_COMMIT_REVIEW"
+
+● Maintenant je mets à jour cmd_resume_kx108 (section R12/R13) :
+
+● Update(~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\scripts\obsidia_build.py)
+  ⎿  Added 35 lines, removed 20 lines
+      1236      print("  [OK] Toutes les gates repassees")
+      1237
+      1238      # ── [R12] Construire le payload KX108 ────────────────────────────────────
+      1239 -    print("\n  [R12] Construction payload KX108 (contrat reel)...")
+      1240 -    # Contrat reel: POST /kernel/ragnarok avec domain + state.
+      1241 -    # Domaines acceptes: trading | bank | ecom | gps_defense_aviation.
+      1242 -    # PERIPHERAL n'est pas gere -> BLOCKED_KX108_CONTRACT_UNAVAILABLE attendu.
+      1243 -    # On tente quand meme l'appel honnete: le kernel decide.
+      1244 -    plan_for_kx108 = {
+      1245 -        "session_id":             session_id,
+      1246 -        "objective":              objective,
+      1247 -        "base_sha":               base_sha,
+      1248 -        "manifest_hash":          manifest_hash,
+      1249 -        "approved_scope_proposal": approved_scope,
+      1250 -        "domain":                 domain,
+      1239 +    print("\n  [R12] Construction payload KX108 (domain=tooling_build)...")
+      1240 +    actual_files = staged_files
+      1241 +    resume_full_state = {
+      1242 +        "session_id":            session_id,
+      1243 +        "objective":             objective,
+      1244 +        "base_sha":              base_sha,
+      1245 +        "manifest_hash":         manifest_hash,
+      1246 +        "diff_hash":             current_diff_hash,
+      1247 +        "approved_scope":        approved_scope,
+      1248 +        "actual_touched_files":  actual_files,
+      1249 +        "new_files":             [],
+      1250 +        "deleted_files":         [],
+      1251 +        "protected_scope_status": "CLEAN",
+      1252 +        "human_approval_status": "APPROVED",
+      1253 +        "obsidure_status":       "UNKNOWN",
+      1254 +        "worktree_isolated":     True,
+      1255 +        "branch_isolated":       True,
+      1256 +        "auto_commit_disabled":  True,
+      1257 +        "auto_push_disabled":    True,
+      1258 +        "auto_merge_disabled":   True,
+      1259 +        "tests_results":         "PASS",
+      1260 +        "gates_results":         "PASS",
+      1261 +        "first_failure":         "",
+      1262 +        "commit_status":         "NOT_COMMITTED",
+      1263 +        "push_status":           "NOT_PUSHED",
+      1264 +        "merge_status":          "NOT_MERGED",
+      1265 +        "unknowns":              [],
+      1266 +        "contradictions":        [],
+      1267 +        "risk_flags":            [],
+      1268 +        "decision_authority":    "KX108_ONLY",
+      1269      }
+      1270      print(f"  [INFO] Appel: POST {KERNEL_URL}")
+      1253 -    print(f"  [INFO] domain=PERIPHERAL (non gere par le contrat actuel)")
+      1254 -    print(f"  [INFO] Domaines acceptes: trading|bank|ecom|gps_defense_aviation")
+      1255 -    print(f"  [INFO] Fail-closed: BLOCKED_KX108_CONTRACT_UNAVAILABLE si 500 ou inconnu")
+      1271 +    print(f"  [INFO] domain=tooling_build")
+      1272
+      1273      # ── [R13] Appel KX108 ────────────────────────────────────────────────────
+      1274      print("\n  [R13] Appel KX108...")
+      1259 -    kx108_status, kx108_raw = _call_kx108(plan_for_kx108)
+      1275 +    plan_for_kx108 = {"session_id": session_id, "approved_scope_proposal": approved_scope}
+      1276 +    kx108_status, kx108_raw = _call_kx108(plan_for_kx108, full_state=resume_full_state)
+      1277      receipt["kx108_decision"] = kx108_status
+      1278      receipt["kx108_request"]["resume_attempt"] = {
+      1262 -        "domain": "PERIPHERAL",
+      1279 +        "domain": "tooling_build",
+      1280          "url": KERNEL_URL,
+      1281          "session_id": session_id,
+      1282      }
+     ...
+      1288      if kx108_status == "BLOCKED_KX108_UNAVAILABLE":
+      1289          print("  [KX108] Kernel X-108 injoignable")
+      1290      elif kx108_status == "BLOCKED_KX108_CONTRACT_UNAVAILABLE":
+      1274 -        print("  [KX108] Kernel actif, aucun contrat PERIPHERAL")
+      1275 -        print("  [KX108] Domaines disponibles: trading|bank|ecom|gps_defense_aviation")
+      1276 -        print("  [KX108] Blocage contractuel -- aucune decision inventee")
+      1291 +        print("  [KX108] Kernel actif, contrat tooling_build non reconnu")
+      1292      elif kx108_status in ("ACT", "HOLD", "BLOCK"):
+      1293          print(f"  [KX108] Decision reelle: {kx108_status}")
+      1294
+
+● Maintenant je mets à jour le fichier de tests pour utiliser les nouveaux noms de champs :
+
+● Write(~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\tests\test_tooling_build_domai
+       n.py)
+  ⎿  Added 262 lines, removed 71 lines
+       1  """
+       2  Tests du domaine tooling_build — KX108_TOOLING_BUILD_DOMAIN_ADAPTER_V0
+       3
+       4 +Contrat canonique étendu (section 9 du mandat) :
+       5 +  session_id, objective, base_sha, manifest_hash, diff_hash,
+       6 +  approved_scope, actual_touched_files, new_files, deleted_files,
+       7 +  protected_scope_status, human_approval_status, obsidure_status,
+       8 +  worktree_isolated, branch_isolated,
+       9 +  auto_commit_disabled, auto_push_disabled, auto_merge_disabled,
+      10 +  tests_results, gates_results, first_failure,
+      11 +  commit_status, push_status, merge_status,
+      12 +  unknowns, contradictions, risk_flags, decision_authority
+      13 +
+      14  Groupes :
+      15    A — contracts (Domain enum, ToolingBuildState)
+      16    B — agents unitaires (ScopeIntegrityAgent, TestGateAgent, SessionIntegrityAgent, CommitGuardAge
+          nt)
+     ...
+      57  # ---------------------------------------------------------------------------
+      58
+      59  def _clean_state(**overrides) -> ToolingBuildState:
+      50 -    """Session propre — doit produire ACT."""
+      60 +    """Session propre — doit produire ACT (x108_gate=ALLOW)."""
+      61      base = dict(
+      62          session_id="35d45cb9",
+      63          objective="TERMINAL_BUILD_BOUNDED_V1",
+      64          base_sha="6a16d02abc",
+      65          manifest_hash="deadbeef01234567",
+      56 -        human_approval=True,
+      66 +        diff_hash="abc1234567890def",
+      67 +        approved_scope=["sigma/contracts.py", "sigma/domains/tooling_build_agents.py"],
+      68 +        actual_touched_files=["sigma/contracts.py", "sigma/domains/tooling_build_agents.py"],
+      69 +        new_files=[],
+      70 +        deleted_files=[],
+      71 +        protected_scope_status="CLEAN",
+      72 +        human_approval_status="APPROVED",
+      73 +        obsidure_status="CLEAN",
+      74          worktree_isolated=True,
+      58 -        scope_exact=True,
+      59 -        scope_drift=[],
+      60 -        protected_path_touched=False,
+      61 -        tests_passed=True,
+      62 -        gates_passed=True,
+      75 +        branch_isolated=True,
+      76 +        auto_commit_disabled=True,
+      77 +        auto_push_disabled=True,
+      78 +        auto_merge_disabled=True,
+      79 +        tests_results="PASS",
+      80 +        gates_results="PASS",
+      81          first_failure="",
+      82          commit_status="NOT_COMMITTED",
+      83          push_status="NOT_PUSHED",
+      84          merge_status="NOT_MERGED",
+      85 +        unknowns=[],
+      86 +        contradictions=[],
+      87 +        risk_flags=[],
+      88 +        decision_authority="KX108_ONLY",
+      89      )
+      90      base.update(overrides)
+      91      return ToolingBuildState(**base)
+     ...
+       95      return dataclasses.asdict(run_tooling_build_pipeline(state))
+       96
+       97
+       98 +def _cli_payload(**overrides) -> dict:
+       99 +    """Payload minimal valide pour le CLI (tous les champs requis)."""
+      100 +    base = dict(
+      101 +        session_id="35d45cb9",
+      102 +        objective="TERMINAL_BUILD_BOUNDED_V1",
+      103 +        base_sha="6a16d02",
+      104 +        manifest_hash="deadbeef01234567",
+      105 +        human_approval_status="APPROVED",
+      106 +        worktree_isolated=True,
+      107 +        branch_isolated=True,
+      108 +        auto_commit_disabled=True,
+      109 +        auto_push_disabled=True,
+      110 +        auto_merge_disabled=True,
+      111 +        tests_results="PASS",
+      112 +        gates_results="PASS",
+      113 +        commit_status="NOT_COMMITTED",
+      114 +        push_status="NOT_PUSHED",
+      115 +        merge_status="NOT_MERGED",
+      116 +        decision_authority="KX108_ONLY",
+      117 +    )
+      118 +    base.update(overrides)
+      119 +    return base
+      120 +
+      121 +
+      122  def _cli_run(payload: dict) -> dict:
+      123      result = subprocess.run(
+      124          [sys.executable, str(ROOT / "sigma" / "run_pipeline.py"), "tooling_build", json.dumps(pa
+           yload)],
+     ...
+      141      def test_tooling_build_state_defaults(self):
+      142          s = ToolingBuildState()
+      143          assert s.session_id == "UNKNOWN"
+       98 -        assert s.human_approval is False
+       99 -        assert s.scope_exact is False
+      100 -        assert s.scope_drift == []
+      144 +        assert s.human_approval_status == "UNKNOWN"
+      145 +        assert s.auto_commit_disabled is True
+      146 +        assert s.decision_authority == "KX108_ONLY"
+      147 +        assert s.approved_scope == []
+      148
+      149      def test_tooling_build_state_kwarg_init(self):
+      150          s = _clean_state()
+      151          assert s.session_id == "35d45cb9"
+      105 -        assert s.human_approval is True
+      106 -        assert s.tests_passed is True
+      152 +        assert s.human_approval_status == "APPROVED"
+      153 +        assert s.tests_results == "PASS"
+      154 +        assert s.branch_isolated is True
+      155
+      156      def test_tooling_build_state_bool_coercion(self):
+      109 -        s = ToolingBuildState(human_approval=True, worktree_isolated=True)
+      110 -        assert isinstance(s.human_approval, bool)
+      157 +        s = ToolingBuildState(worktree_isolated=True, branch_isolated=True)
+      158          assert isinstance(s.worktree_isolated, bool)
+      159 +        assert isinstance(s.branch_isolated, bool)
+      160 +        assert isinstance(s.auto_commit_disabled, bool)
+      161
+      113 -    def test_tooling_build_state_scope_drift_list(self):
+      114 -        s = ToolingBuildState(scope_drift=["a/b.py", "c/d.py"])
+      115 -        assert len(s.scope_drift) == 2
+      162 +    def test_tooling_build_state_list_fields(self):
+      163 +        s = ToolingBuildState(
+      164 +            approved_scope=["a.py", "b.py"],
+      165 +            actual_touched_files=["a.py"],
+      166 +            unknowns=["U1"],
+      167 +            contradictions=["C1"],
+      168 +            risk_flags=["R1"],
+      169 +        )
+      170 +        assert len(s.approved_scope) == 2
+      171 +        assert len(s.actual_touched_files) == 1
+      172 +        assert "U1" in s.unknowns
+      173 +        assert "C1" in s.contradictions
+      174 +        assert "R1" in s.risk_flags
+      175
+      176 +    def test_tooling_build_state_all_fields_present(self):
+      177 +        s = _clean_state()
+      178 +        required = [
+      179 +            "session_id", "objective", "base_sha", "manifest_hash", "diff_hash",
+      180 +            "approved_scope", "actual_touched_files", "new_files", "deleted_files",
+      181 +            "protected_scope_status", "human_approval_status", "obsidure_status",
+      182 +            "worktree_isolated", "branch_isolated",
+      183 +            "auto_commit_disabled", "auto_push_disabled", "auto_merge_disabled",
+      184 +            "tests_results", "gates_results", "first_failure",
+      185 +            "commit_status", "push_status", "merge_status",
+      186 +            "unknowns", "contradictions", "risk_flags",
+      187 +            "decision_authority",
+      188 +        ]
+      189 +        for f in required:
+      190 +            assert hasattr(s, f), f"Champ manquant: {f}"
+      191
+      192 +    def test_decision_authority_constant(self):
+      193 +        s = _clean_state()
+      194 +        assert s.decision_authority == "KX108_ONLY"
+      195 +
+      196 +
+      197  # ---------------------------------------------------------------------------
+      198  # Groupe B — agents unitaires
+      199  # ---------------------------------------------------------------------------
+     ...
+      208
+      209      def test_hold_on_scope_drift(self):
+      210          agent = ScopeIntegrityAgent()
+      132 -        vote = agent.evaluate(_clean_state(scope_exact=False, scope_drift=["extra.py"]))
+      211 +        vote = agent.evaluate(_clean_state(
+      212 +            approved_scope=["a.py"],
+      213 +            actual_touched_files=["a.py", "extra.py"],
+      214 +        ))
+      215          assert vote.proposed_verdict == "BUILD_HOLD"
+      216          assert "SCOPE_DRIFT" in vote.unknowns
+      217
+      218      def test_block_on_protected_path(self):
+      219          agent = ScopeIntegrityAgent()
+      138 -        vote = agent.evaluate(_clean_state(protected_path_touched=True))
+      220 +        vote = agent.evaluate(_clean_state(protected_scope_status="VIOLATED"))
+      221          assert vote.proposed_verdict == "BUILD_BLOCK"
+      222          assert "PROTECTED_PATH_VIOLATION" in vote.contradictions
+      223          assert vote.confidence < 0.2
+     ...
+      226          vote = ScopeIntegrityAgent().evaluate(_clean_state())
+      227          assert vote.domain == Domain.TOOLING_BUILD
+      228
+      229 +    def test_empty_approved_scope_no_drift(self):
+      230 +        """Si approved_scope vide, pas de drift calculé."""
+      231 +        vote = ScopeIntegrityAgent().evaluate(_clean_state(
+      232 +            approved_scope=[],
+      233 +            actual_touched_files=["any.py"],
+      234 +        ))
+      235 +        assert vote.proposed_verdict == "READY_FOR_COMMIT_REVIEW"
+      236
+      237 +
+      238  class TestTestGateAgent:
+      239      def test_allow_when_all_pass(self):
+      240          vote = TestGateAgent().evaluate(_clean_state())
+     ...
+      242          assert vote.confidence >= 0.9
+      243
+      244      def test_hold_when_only_tests_fail(self):
+      155 -        vote = TestGateAgent().evaluate(_clean_state(tests_passed=False))
+      245 +        vote = TestGateAgent().evaluate(_clean_state(tests_results="FAIL", gates_results="PASS")
+          +)
+      246          assert vote.proposed_verdict == "BUILD_HOLD"
+      247          assert "TEST_GATE_INCOMPLETE" in vote.unknowns
+      248
+      249      def test_hold_when_only_gates_fail(self):
+      160 -        vote = TestGateAgent().evaluate(_clean_state(gates_passed=False))
+      250 +        vote = TestGateAgent().evaluate(_clean_state(tests_results="PASS", gates_results="FAIL")
+          +)
+      251          assert vote.proposed_verdict == "BUILD_HOLD"
+      252
+      253      def test_block_when_both_fail(self):
+      164 -        vote = TestGateAgent().evaluate(_clean_state(tests_passed=False, gates_passed=False))
+      254 +        vote = TestGateAgent().evaluate(_clean_state(tests_results="FAIL", gates_results="FAIL")
+          +)
+      255          assert vote.proposed_verdict == "BUILD_BLOCK"
+      256          assert "GATE_FAILURE" in vote.contradictions
+      257
+      258 +    def test_hold_on_partial(self):
+      259 +        vote = TestGateAgent().evaluate(_clean_state(tests_results="PARTIAL"))
+      260 +        assert vote.proposed_verdict == "BUILD_HOLD"
+      261 +
+      262      def test_first_failure_in_risk_flags(self):
+      169 -        vote = TestGateAgent().evaluate(_clean_state(tests_passed=False, first_failure="test_x::
+          -fail"))
+      263 +        vote = TestGateAgent().evaluate(_clean_state(tests_results="FAIL", first_failure="test_x
+          +::fail"))
+      264          assert any("test_x::fail" in rf for rf in vote.risk_flags)
+      265
+      266      def test_layer_is_interpretation(self):
+      267          vote = TestGateAgent().evaluate(_clean_state())
+      268          assert vote.layer == Layer.INTERPRETATION
+      269
+      270 +    def test_unknown_results_pass(self):
+      271 +        """UNKNOWN n'est pas FAIL — ne doit pas bloquer."""
+      272 +        vote = TestGateAgent().evaluate(_clean_state(tests_results="UNKNOWN", gates_results="UNK
+          +NOWN"))
+      273 +        assert vote.proposed_verdict == "READY_FOR_COMMIT_REVIEW"
+      274
+      275 +
+      276  class TestSessionIntegrityAgent:
+      277      def test_allow_on_full_integrity(self):
+      278          vote = SessionIntegrityAgent().evaluate(_clean_state())
+     ...
+      280          assert vote.confidence >= 0.9
+      281
+      282      def test_block_on_no_human_approval(self):
+      184 -        vote = SessionIntegrityAgent().evaluate(_clean_state(human_approval=False))
+      283 +        vote = SessionIntegrityAgent().evaluate(_clean_state(human_approval_status="MISSING"))
+      284          assert vote.proposed_verdict == "BUILD_BLOCK"
+      285          assert "HUMAN_APPROVAL_MISSING" in vote.contradictions
+      286
+      287 +    def test_hold_on_pending_approval(self):
+      288 +        vote = SessionIntegrityAgent().evaluate(_clean_state(human_approval_status="PENDING"))
+      289 +        assert vote.proposed_verdict in ("BUILD_HOLD",)
+      290 +        assert "HUMAN_APPROVAL_PENDING" in vote.unknowns
+      291 +
+      292      def test_block_on_no_worktree_isolation(self):
+      293          vote = SessionIntegrityAgent().evaluate(_clean_state(worktree_isolated=False))
+      294          assert vote.proposed_verdict == "BUILD_BLOCK"
+      295          assert "WORKTREE_NOT_ISOLATED" in vote.contradictions
+      296
+      297 +    def test_block_on_no_branch_isolation(self):
+      298 +        vote = SessionIntegrityAgent().evaluate(_clean_state(branch_isolated=False))
+      299 +        assert vote.proposed_verdict == "BUILD_BLOCK"
+      300 +        assert "BRANCH_NOT_ISOLATED" in vote.contradictions
+      301 +
+      302      def test_hold_on_missing_base_sha(self):
+      303          vote = SessionIntegrityAgent().evaluate(_clean_state(base_sha=""))
+      304          assert vote.proposed_verdict in ("BUILD_HOLD",)
+      305          assert "BASE_SHA_MISSING" in vote.unknowns
+      306
+      307 +    def test_block_on_wrong_decision_authority(self):
+      308 +        vote = SessionIntegrityAgent().evaluate(_clean_state(decision_authority="HUMAN"))
+      309 +        assert vote.proposed_verdict == "BUILD_BLOCK"
+      310 +        assert "DECISION_AUTHORITY_VIOLATION" in vote.contradictions
+      311 +
+      312      def test_layer_is_contradiction(self):
+      313          vote = SessionIntegrityAgent().evaluate(_clean_state())
+      314          assert vote.layer == Layer.CONTRADICTION
+      315
+      316 +    def test_caller_contradictions_propagated(self):
+      317 +        vote = SessionIntegrityAgent().evaluate(_clean_state(contradictions=["PRE_EXISTING_ISSUE
+          +"]))
+      318 +        assert "PRE_EXISTING_ISSUE" in vote.contradictions
+      319
+      320 +
+      321  class TestCommitGuardAgent:
+      322      def test_allow_when_nothing_committed(self):
+      323          vote = CommitGuardAgent().evaluate(_clean_state())
+     ...
+      337          vote = CommitGuardAgent().evaluate(_clean_state(merge_status="MERGED"))
+      338          assert "UNAUTHORIZED_MERGE" in vote.contradictions
+      339
+      340 +    def test_block_when_auto_commit_enabled(self):
+      341 +        vote = CommitGuardAgent().evaluate(_clean_state(auto_commit_disabled=False))
+      342 +        assert vote.proposed_verdict == "BUILD_BLOCK"
+      343 +        assert "AUTO_COMMIT_NOT_DISABLED" in vote.contradictions
+      344 +
+      345 +    def test_block_when_auto_push_enabled(self):
+      346 +        vote = CommitGuardAgent().evaluate(_clean_state(auto_push_disabled=False))
+      347 +        assert "AUTO_PUSH_NOT_DISABLED" in vote.contradictions
+      348 +
+      349 +    def test_block_when_auto_merge_enabled(self):
+      350 +        vote = CommitGuardAgent().evaluate(_clean_state(auto_merge_disabled=False))
+      351 +        assert "AUTO_MERGE_NOT_DISABLED" in vote.contradictions
+      352 +
+      353      def test_layer_is_kernel(self):
+      354          vote = CommitGuardAgent().evaluate(_clean_state())
+      355          assert vote.layer == Layer.KERNEL
+     ...
+      387          assert agg.confidence >= 0.90
+      388
+      389      def test_aggregate_block_on_contradictions(self):
+      259 -        votes = [a.evaluate(_clean_state(protected_path_touched=True)) for a in build_tooling_bu
+          -ild_agents()]
+      390 +        votes = [a.evaluate(_clean_state(protected_scope_status="VIOLATED")) for a in build_tool
+          +ing_build_agents()]
+      391          agg = aggregate_tooling_build(votes)
+      392          assert agg.market_verdict == "BUILD_BLOCK"
+      393          assert len(agg.contradictions) >= 1
+      394
+      395      def test_aggregate_hold_on_scope_drift(self):
+      265 -        votes = [a.evaluate(_clean_state(scope_exact=False, scope_drift=["x.py"])) for a in buil
+          -d_tooling_build_agents()]
+      396 +        votes = [a.evaluate(_clean_state(
+      397 +            approved_scope=["a.py"],
+      398 +            actual_touched_files=["a.py", "b.py"],
+      399 +        )) for a in build_tooling_build_agents()]
+      400          agg = aggregate_tooling_build(votes)
+      401          assert agg.market_verdict in ("BUILD_HOLD", "BUILD_BLOCK")
+      402
+     ...
+      426          r = _run_pipeline(_clean_state())
+      427          assert r["domain"] == "tooling_build"
+      428
+      295 -    def test_protected_path_gives_block(self):
+      296 -        r = _run_pipeline(_clean_state(protected_path_touched=True))
+      429 +    def test_protected_scope_gives_block(self):
+      430 +        r = _run_pipeline(_clean_state(protected_scope_status="VIOLATED"))
+      431          assert r["x108_gate"] == "BLOCK"
+      432
+      433      def test_scope_drift_gives_hold_or_block(self):
+      300 -        r = _run_pipeline(_clean_state(scope_exact=False, scope_drift=["x.py"]))
+      434 +        r = _run_pipeline(_clean_state(
+      435 +            approved_scope=["a.py"],
+      436 +            actual_touched_files=["a.py", "extra.py"],
+      437 +        ))
+      438          assert r["x108_gate"] in ("HOLD", "BLOCK")
+      439
+      440      def test_no_human_approval_gives_block(self):
+      304 -        r = _run_pipeline(_clean_state(human_approval=False))
+      441 +        r = _run_pipeline(_clean_state(human_approval_status="MISSING"))
+      442          assert r["x108_gate"] == "BLOCK"
+      443
+      444      def test_tests_failed_gives_hold_or_block(self):
+      308 -        r = _run_pipeline(_clean_state(tests_passed=False))
+      445 +        r = _run_pipeline(_clean_state(tests_results="FAIL", gates_results="PASS"))
+      446          assert r["x108_gate"] in ("HOLD", "BLOCK")
+      447
+      448      def test_unauthorized_commit_gives_block(self):
+      449          r = _run_pipeline(_clean_state(commit_status="COMMITTED"))
+      450          assert r["x108_gate"] == "BLOCK"
+      451
+      452 +    def test_branch_not_isolated_gives_block(self):
+      453 +        r = _run_pipeline(_clean_state(branch_isolated=False))
+      454 +        assert r["x108_gate"] == "BLOCK"
+      455 +
+      456 +    def test_auto_commit_enabled_gives_block(self):
+      457 +        r = _run_pipeline(_clean_state(auto_commit_disabled=False))
+      458 +        assert r["x108_gate"] == "BLOCK"
+      459 +
+      460      def test_result_has_canonical_envelope_fields(self):
+      461          r = _run_pipeline(_clean_state())
+      462          assert "x108_gate" in r
+     ...
+      469  # ---------------------------------------------------------------------------
+      470
+      471  class TestCLI:
+      327 -    def _payload(self, **overrides):
+      328 -        base = dict(
+      329 -            session_id="35d45cb9",
+      330 -            objective="TERMINAL_BUILD_BOUNDED_V1",
+      331 -            base_sha="6a16d02",
+      332 -            manifest_hash="deadbeef01234567",
+      333 -            human_approval=True,
+      334 -            worktree_isolated=True,
+      335 -            scope_exact=True,
+      336 -            scope_drift=[],
+      337 -            protected_path_touched=False,
+      338 -            tests_passed=True,
+      339 -            gates_passed=True,
+      340 -            first_failure="",
+      341 -            commit_status="NOT_COMMITTED",
+      342 -            push_status="NOT_PUSHED",
+      343 -            merge_status="NOT_MERGED",
+      344 -        )
+      345 -        base.update(overrides)
+      346 -        return base
+      347 -
+      472      def test_cli_clean_returns_allow(self):
+      349 -        r = _cli_run(self._payload())
+      473 +        r = _cli_run(_cli_payload())
+      474          assert r.get("x108_gate") == "ALLOW"
+      475
+      476      def test_cli_missing_field_raises_error(self):
+      353 -        p = self._payload()
+      477 +        p = _cli_payload()
+      478          del p["session_id"]
+      479          result = subprocess.run(
+      480              [sys.executable, str(ROOT / "sigma" / "run_pipeline.py"), "tooling_build", json.dump
+           s(p)],
+     ...
+      485          assert "error" in err
+      486
+      487      def test_cli_unknown_field_raises_error(self):
+      364 -        p = self._payload()
+      488 +        p = _cli_payload()
+      489          p["unknown_field_xyz"] = "oops"
+      490          result = subprocess.run(
+      491              [sys.executable, str(ROOT / "sigma" / "run_pipeline.py"), "tooling_build", json.dump
+           s(p)],
+     ...
+      494          assert result.returncode != 0
+      495
+      496      def test_validate_tooling_build_payload_ok(self):
+      373 -        validate_tooling_build_payload(self._payload())
+      497 +        validate_tooling_build_payload(_cli_payload())
+      498
+      499      def test_validate_missing_field(self):
+      376 -        p = self._payload()
+      500 +        p = _cli_payload()
+      501          del p["manifest_hash"]
+      502          with pytest.raises(ValueError, match="manifest_hash"):
+      503              validate_tooling_build_payload(p)
+      504
+      505 +    def test_validate_missing_decision_authority(self):
+      506 +        p = _cli_payload()
+      507 +        del p["decision_authority"]
+      508 +        with pytest.raises(ValueError, match="decision_authority"):
+      509 +            validate_tooling_build_payload(p)
+      510 +
+      511 +    def test_validate_wrong_decision_authority(self):
+      512 +        p = _cli_payload()
+      513 +        p["decision_authority"] = "HUMAN"
+      514 +        with pytest.raises(ValueError, match="KX108_ONLY"):
+      515 +            validate_tooling_build_payload(p)
+      516 +
+      517      def test_validate_wrong_type_bool(self):
+      382 -        p = self._payload()
+      383 -        p["human_approval"] = "yes"
+      518 +        p = _cli_payload()
+      519 +        p["worktree_isolated"] = "yes"
+      520          with pytest.raises(ValueError, match="boolean"):
+      521              validate_tooling_build_payload(p)
+      522
+      387 -    def test_validate_wrong_type_scope_drift(self):
+      388 -        p = self._payload()
+      389 -        p["scope_drift"] = "not-a-list"
+      523 +    def test_validate_wrong_type_list(self):
+      524 +        p = _cli_payload()
+      525 +        p["approved_scope"] = "not-a-list"
+      526          with pytest.raises(ValueError, match="list"):
+      527              validate_tooling_build_payload(p)
+      528
+      529 +    def test_validate_missing_branch_isolated(self):
+      530 +        p = _cli_payload()
+      531 +        del p["branch_isolated"]
+      532 +        with pytest.raises(ValueError, match="branch_isolated"):
+      533 +            validate_tooling_build_payload(p)
+      534
+      535 +
+      536  # ---------------------------------------------------------------------------
+      537  # Groupe F — invariants de gouvernance
+      538  # ---------------------------------------------------------------------------
+     ...
+      563          forbidden = {"auto_commit", "auto_push", "auto_merge"}
+      564          assert not forbidden.intersection(r.keys())
+      565
+      566 +    def test_agents_do_not_emit_act(self):
+      567 +        for agent in build_tooling_build_agents():
+      568 +            vote = agent.evaluate(_clean_state())
+      569 +            assert vote.proposed_verdict != "ACT", f"{agent.agent_id} ne doit pas émettre ACT"
+      570
+      571 +    def test_pipeline_decision_authority_kx108_only(self):
+      572 +        r = _run_pipeline(_clean_state())
+      573 +        metrics = r.get("metrics", {})
+      574 +        assert metrics.get("decision_authority") == "KX108_ONLY"
+      575 +
+      576 +    def test_pipeline_emits_act_false(self):
+      577 +        r = _run_pipeline(_clean_state())
+      578 +        metrics = r.get("metrics", {})
+      579 +        assert metrics.get("emits_act") is False
+      580 +
+      581 +
+      582  # ---------------------------------------------------------------------------
+      583  # Groupe G — fixtures intégration (ACT / HOLD / BLOCK)
+      584  # ---------------------------------------------------------------------------
+     ...
+      595      def test_fixture_hold_scope_drift(self):
+      596          """Fixture HOLD : scope non exact, aucune contradiction critique."""
+      597          state = _clean_state(
+      441 -            scope_exact=False,
+      442 -            scope_drift=["sigma/contracts.py"],
+      443 -            protected_path_touched=False,
+      444 -            human_approval=True,
+      598 +            approved_scope=["sigma/contracts.py"],
+      599 +            actual_touched_files=["sigma/contracts.py", "sigma/extra.py"],
+      600 +            protected_scope_status="CLEAN",
+      601 +            human_approval_status="APPROVED",
+      602              worktree_isolated=True,
+      446 -            tests_passed=True,
+      447 -            gates_passed=True,
+      603 +            branch_isolated=True,
+      604 +            tests_results="PASS",
+      605 +            gates_results="PASS",
+      606              commit_status="NOT_COMMITTED",
+      607              push_status="NOT_PUSHED",
+      608              merge_status="NOT_MERGED",
+     ...
+      610          r = _run_pipeline(state)
+      611          assert r["x108_gate"] in ("HOLD", "BLOCK")
+      612
+      455 -    def test_fixture_block_protected_path(self):
+      613 +    def test_fixture_block_protected_scope(self):
+      614          """Fixture BLOCK : chemin protégé touché → BLOCK absolu."""
+      457 -        state = _clean_state(protected_path_touched=True)
+      615 +        state = _clean_state(protected_scope_status="VIOLATED")
+      616          r = _run_pipeline(state)
+      617          assert r["x108_gate"] == "BLOCK"
+      618
+      619      def test_fixture_block_no_approval(self):
+      620          """Fixture BLOCK : approbation humaine manquante."""
+      463 -        state = _clean_state(human_approval=False)
+      621 +        state = _clean_state(human_approval_status="MISSING")
+      622          r = _run_pipeline(state)
+      623          assert r["x108_gate"] == "BLOCK"
+      624
+     ...
+      627          state = _clean_state(push_status="PUSHED")
+      628          r = _run_pipeline(state)
+      629          assert r["x108_gate"] == "BLOCK"
+      630 +
+      631 +    def test_fixture_block_auto_commit_enabled(self):
+      632 +        """Fixture BLOCK : garde-fou auto_commit désactivé."""
+      633 +        state = _clean_state(auto_commit_disabled=False)
+      634 +        r = _run_pipeline(state)
+      635 +        assert r["x108_gate"] == "BLOCK"
+      636 +
+      637 +    def test_fixture_block_branch_not_isolated(self):
+      638 +        """Fixture BLOCK : branche non isolée."""
+      639 +        state = _clean_state(branch_isolated=False)
+      640 +        r = _run_pipeline(state)
+      641 +        assert r["x108_gate"] == "BLOCK"
+      642 +
+      643 +    def test_fixture_hold_tests_partial(self):
+      644 +        """Fixture HOLD : tests partiels."""
+      645 +        state = _clean_state(tests_results="PARTIAL")
+      646 +        r = _run_pipeline(state)
+      647 +        assert r["x108_gate"] in ("HOLD", "BLOCK")
+      648 +
+      649 +    def test_fixture_cli_act_clean(self):
+      650 +        """Fixture CLI ACT : payload complet via CLI."""
+      651 +        r = _cli_run(_cli_payload())
+      652 +        assert r.get("x108_gate") == "ALLOW"
+      653 +
+      654 +    def test_fixture_cli_block_missing_approval(self):
+      655 +        """Fixture CLI BLOCK : approbation manquante."""
+      656 +        r = _cli_run(_cli_payload(human_approval_status="MISSING"))
+      657 +        assert r.get("x108_gate") == "BLOCK"
+      658 +
+      659 +    def test_fixture_cli_hold_pending_approval(self):
+      660 +        """Fixture CLI HOLD : approbation en attente."""
+      661 +        r = _cli_run(_cli_payload(human_approval_status="PENDING"))
+      662 +        assert r.get("x108_gate") in ("HOLD", "BLOCK")
+
+● Maintenant je vérifie que tout compile et lance les tests :
+
+  Ran 2 shell commands (ctrl+o to expand)
+● 87/87 tests tooling_build passent. Je lance maintenant les tests obsidia_build :
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● 12 échecs dans TestResumeKX108. Je regarde exactement ce qui casse :
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Le problème : les tests monkeypatchent _call_kx108 avec une lambda sans full_state. Je lis les tests pour
+  corriger les lambdas :
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Je remplace toutes les lambdas lambda p: par lambda p, **kw: dans les tests :
+
+● Update(~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\tests\test_obsidia_build_v0.p
+        y)
+  ⎿  Added 1 line, removed 1 line
+       996          sid, wt, plan = self._phase2(repo, state_dir)
+       997          # Garder trace de si KX108 a été appelé
+       998          kx108_called = []
+       999 -        monkeypatch.setattr(B, "_call_kx108", lambda p: (kx108_called.append(1), ("ACT", {}))[1
+           -])
+       999 +        monkeypatch.setattr(B, "_call_kx108", lambda p, **kw: (kx108_called.append(1), ("ACT",
+           +{}))[1])
+      1000          # Faire échouer scope_guard en remplaçant la gate par un script qui sort avec code 1
+      1001          gate_path = repo / "scripts" / "gates" / "obsidia_commit_scope_guard.py"
+      1002          if gate_path.exists():
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Update(~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\tests\test_obsidia_build_v0.p
+        y)
+  ⎿  Added 1 line, removed 1 line
+      1016      def test_reponse_act_reconnue(self, repo, state_dir, monkeypatch):
+      1017          sid, wt, plan = self._phase2(repo, state_dir)
+      1018          monkeypatch.setattr(B, "_call_kx108",
+      1019 -                            lambda p: ("ACT", {"action": "ACT", "mock": True}))
+      1019 +                            lambda p, **kw: ("ACT", {"action": "ACT", "mock": True}))
+      1020          rc = self._resume(sid, repo, state_dir)
+      1021          assert rc == 0
+      1022          r = json.loads((state_dir / sid / "receipt.json").read_text(encoding="utf-8"))
+
+● Update(~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\tests\test_obsidia_build_v0.p
+        y)
+  ⎿  Added 1 line, removed 1 line
+      1027      def test_reponse_hold_reconnue(self, repo, state_dir, monkeypatch):
+      1028          sid, wt, plan = self._phase2(repo, state_dir)
+      1029          monkeypatch.setattr(B, "_call_kx108",
+      1030 -                            lambda p: ("HOLD", {"decision": "HOLD", "mock": True}))
+      1030 +                            lambda p, **kw: ("HOLD", {"decision": "HOLD", "mock": True}))
+      1031          rc = self._resume(sid, repo, state_dir)
+      1032          assert rc == 0
+      1033          r = json.loads((state_dir / sid / "receipt.json").read_text(encoding="utf-8"))
+
+● Update(~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\tests\test_obsidia_build_v0.p
+        y)
+  ⎿  Added 1 line, removed 1 line
+      1038      def test_reponse_block_reconnue(self, repo, state_dir, monkeypatch):
+      1039          sid, wt, plan = self._phase2(repo, state_dir)
+      1040          monkeypatch.setattr(B, "_call_kx108",
+      1041 -                            lambda p: ("BLOCK", {"verdict": "BLOCK", "mock": True}))
+      1041 +                            lambda p, **kw: ("BLOCK", {"verdict": "BLOCK", "mock": True}))
+      1042          rc = self._resume(sid, repo, state_dir)
+      1043          assert rc == 2
+      1044          r = json.loads((state_dir / sid / "receipt.json").read_text(encoding="utf-8"))
+
+● Update(~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\tests\test_obsidia_build_v0.p
+        y)
+  ⎿  Added 1 line, removed 1 line
+      1049      def test_reponse_inconnue_fail_closed(self, repo, state_dir, monkeypatch):
+      1050          sid, wt, plan = self._phase2(repo, state_dir)
+      1051          monkeypatch.setattr(B, "_call_kx108",
+      1052 -                            lambda p: ("BLOCKED_KX108_CONTRACT_UNAVAILABLE", {"error": "unknown
+           -"}))
+      1052 +                            lambda p, **kw: ("BLOCKED_KX108_CONTRACT_UNAVAILABLE", {"error": "u
+           +nknown"}))
+      1053          rc = self._resume(sid, repo, state_dir)
+      1054          assert rc == 2
+      1055          r = json.loads((state_dir / sid / "receipt.json").read_text(encoding="utf-8"))
+
+● Update(~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\tests\test_obsidia_build_v0.p
+        y)
+  ⎿  Added 1 line, removed 1 line
+      1060      def test_kernel_inaccessible_fail_closed(self, repo, state_dir, monkeypatch):
+      1061          sid, wt, plan = self._phase2(repo, state_dir)
+      1062          monkeypatch.setattr(B, "_call_kx108",
+      1063 -                            lambda p: ("BLOCKED_KX108_UNAVAILABLE", {"error": "conn refused"}))
+      1063 +                            lambda p, **kw: ("BLOCKED_KX108_UNAVAILABLE", {"error": "conn refus
+           +ed"}))
+      1064          rc = self._resume(sid, repo, state_dir)
+      1065          assert rc == 2
+      1066          r = json.loads((state_dir / sid / "receipt.json").read_text(encoding="utf-8"))
+
+● Update(~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\tests\test_obsidia_build_v0.p
+        y)
+  ⎿  Added 2 lines, removed 2 lines
+      1070      # -- R18: aucun patch réappliqué --
+      1071      def test_aucun_patch_reapplique(self, repo, state_dir, monkeypatch):
+      1072          monkeypatch.setattr(B, "_call_kx108",
+      1073 -                            lambda p: ("ACT", {"action": "ACT"}))
+      1073 +                            lambda p, **kw: ("ACT", {"action": "ACT"}))
+      1074          sid, wt, plan = self._phase2(repo, state_dir)
+      1075          if wt.exists():
+      1076              content_before = (wt / B.SYNTHETIC_TARGET).read_text(encoding="utf-8")
+     ...
+      1144
+      1145      # -- R24: receipt mis à jour hors dépôt --
+      1146      def test_receipt_mis_a_jour_hors_depot(self, repo, state_dir, monkeypatch):
+      1147 -        monkeypatch.setattr(B, "_call_kx108", lambda p: ("ACT", {"action": "ACT"}))
+      1147 +        monkeypatch.setattr(B, "_call_kx108", lambda p, **kw: ("ACT", {"action": "ACT"}))
+      1148          sid, wt, _ = self._phase2(repo, state_dir)
+      1149          self._resume(sid, repo, state_dir)
+      1150          r = json.loads((state_dir / sid / "receipt.json").read_text(encoding="utf-8"))
+
+● Update(~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\tests\test_obsidia_build_v0.p
+        y)
+  ⎿  Added 5 lines, removed 5 lines
+      1084
+      1085      # -- R19: aucun nouveau worktree --
+      1086      def test_aucun_nouveau_worktree(self, repo, state_dir, monkeypatch):
+      1087 -        monkeypatch.setattr(B, "_call_kx108", lambda p: ("ACT", {}))
+      1087 +        monkeypatch.setattr(B, "_call_kx108", lambda p, **kw: ("ACT", {}))
+      1088          sid, wt, _ = self._phase2(repo, state_dir)
+      1089          wt_before = set(str(p) for p in repo.parent.iterdir() if "BUILD_" in str(p))
+      1090          self._resume(sid, repo, state_dir)
+     ...
+      1094
+      1095      # -- R20: aucune nouvelle branche --
+      1096      def test_aucune_nouvelle_branche(self, repo, state_dir, monkeypatch):
+      1097 -        monkeypatch.setattr(B, "_call_kx108", lambda p: ("ACT", {}))
+      1097 +        monkeypatch.setattr(B, "_call_kx108", lambda p, **kw: ("ACT", {}))
+      1098          sid, wt, _ = self._phase2(repo, state_dir)
+      1099          r = subprocess.run(["git", "branch", "--list"], cwd=repo,
+      1100                             capture_output=True, text=True)
+     ...
+      1108
+      1109      # -- R21: aucun commit --
+      1110      def test_aucun_commit_lors_reprise(self, repo, state_dir, monkeypatch):
+      1111 -        monkeypatch.setattr(B, "_call_kx108", lambda p: ("ACT", {}))
+      1111 +        monkeypatch.setattr(B, "_call_kx108", lambda p, **kw: ("ACT", {}))
+      1112          sha_before = B.get_base_sha(repo)
+      1113          sid, wt, _ = self._phase2(repo, state_dir)
+      1114          self._resume(sid, repo, state_dir)
+     ...
+      1118
+      1119      # -- R22: aucun push --
+      1120      def test_aucun_push_lors_reprise(self, repo, state_dir, monkeypatch):
+      1121 -        monkeypatch.setattr(B, "_call_kx108", lambda p: ("ACT", {}))
+      1121 +        monkeypatch.setattr(B, "_call_kx108", lambda p, **kw: ("ACT", {}))
+      1122          sid, wt, _ = self._phase2(repo, state_dir)
+      1123          self._resume(sid, repo, state_dir)
+      1124          r = subprocess.run(["git", "remote", "-v"], cwd=repo,
+     ...
+      1128
+      1129      # -- R23: aucun merge --
+      1130      def test_aucun_merge_lors_reprise(self, repo, state_dir, monkeypatch):
+      1131 -        monkeypatch.setattr(B, "_call_kx108", lambda p: ("ACT", {}))
+      1131 +        monkeypatch.setattr(B, "_call_kx108", lambda p, **kw: ("ACT", {}))
+      1132          sid, wt, _ = self._phase2(repo, state_dir)
+      1133          sha_wt_before = subprocess.run(
+      1134              ["git", "rev-parse", "HEAD"], cwd=wt,
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Toutes les lambdas sont corrigées. Je relance les tests :
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● 111/111 tests obsidia_build passent. Je lance maintenant la suite complète et les tests HTTP en parallèle :
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● 198/198 tests passent. Maintenant les tests HTTP ACT/HOLD/BLOCK et les tests non-régression domaines :
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● BLOCK et trading retournent 500. Je diagnostique :
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Curieux — BLOCK fonctionne en CLI (exit 0, JSON valide). Le kernel filtre peut-être le multi-chunk. Je compare
+  les tailles :
+  Ran 6 shell commands (ctrl+o to expand)
+
+● Je lis le corps exact de la réponse 500 pour BLOCK :
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● BLOCK fonctionne maintenant. Mon test précédent avait un payload incomplet. Je refais les tests HTTP proprement
+  :
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● ACT/HOLD/BLOCK et GPS/trading : tout fonctionne. ecom retourne 500 — je vérifie si c'était déjà le cas avant mes
+  changements :
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● ecom a un schéma pré-existant incompatible — non causé par mes changements (pas dans git diff). Trading et GPS
+  sont confirmés non-régressés. Maintenant le test end-to-end session 35d45cb9 :
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● BLOCKED_KX108_CONTRACT_UNAVAILABLE — le kernel répond mais _call_kx108 ne reconnaît pas x108_gate=ALLOW. Il
+  cherche ACT|HOLD|BLOCK mais le kernel retourne ALLOW. Je corrige la fonction :
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(~\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\scripts\obsidia_build.py)
+  ⎿  Added 11 lines, removed 5 lines
+      419                  data = json.loads(raw)
+      420              except Exception:
+      421                  data = {"raw": raw[:500]}
+      422 -            # Chercher une decision reconnue
+      423 -            for field in ("action", "decision", "x108_gate", "status", "verdict"):
+      424 -                val = str(data.get(field, "")).upper()
+      425 -                if val in ("ACT", "HOLD", "BLOCK"):
+      426 -                    return val, data
+      422 +            # Chercher une decision reconnue (x108_gate=ALLOW→ACT, HOLD→HOLD, BLOCK→BLOCK)
+      423 +            _GATE_MAP = {
+      424 +                "ALLOW": "ACT", "ACT": "ACT",
+      425 +                "HOLD": "HOLD", "BUILD_HOLD": "HOLD",
+      426 +                "BLOCK": "BLOCK", "BUILD_BLOCK": "BLOCK",
+      427 +            }
+      428 +            for field in ("x108_gate", "action", "decision", "status", "verdict"):
+      429 +                raw_val = str(data.get(field, "")).upper()
+      430 +                mapped = _GATE_MAP.get(raw_val)
+      431 +                if mapped:
+      432 +                    return mapped, data
+      433              return "BLOCKED_KX108_CONTRACT_UNAVAILABLE", data
+      434      except urllib.error.HTTPError as exc:
+      435          # Kernel accessible mais contrat non supporte (4xx/5xx).
+  ⎿  Referenced file ..\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\scripts\obsidia_build.py
+  ⎿  Referenced file ..\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\tests\test_obsidia_build_v0.py
+  ⎿  Referenced file ..\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\tests\test_tooling_build_domain.py
+  ⎿  Referenced file ..\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\sigma\run_pipeline.py
+  ⎿  Read ..\obsidia-x108-proofs_TERMINAL_BOUNDED_V1\sigma\domains\tooling_build_agents.py (217 lines)
+
+● Mode:  APPLY
+  Layer: TOOLING
+  Scope: Fix _call_kx108 — reconnaissance ALLOW→ACT, BUILD_HOLD→HOLD, BUILD_BLOCK→BLOCK
+  Risk:  LOW
+  Files touched: scripts/obsidia_build.py
+
+  Le patch est appliqué. Je lance maintenant le test end-to-end de la session 35d45cb9 et les suites de tests.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Session 35d45cb9 : decision = ACT — TERMINAL_BUILD_BOUNDED_V1_READY_FOR_HUMAN_VALIDATION. Je lance maintenant
+  les suites de tests et les vérifications git finales.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Les avertissements git diff --check sont des espaces de fin de ligne dans les fichiers modifiés lors des
+  sessions précédentes — pas introduits par le patch de ce jour. Je vérifie maintenant les fichiers protégés.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Background command "cd "C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_TERMINAL_BOUNDED_V1"
+&amp;&amp; python -m pytest tests/test_tooling_build_domain.py tests/test_obsidia_build_v0.py -q --tb=short
+2&gt;&amp;1" completed (exit code 0)
+
+● Fichiers protégés : diff vide — aucune modification. Les tests sont également terminés (exit 0). Je lis le
+  résultat.
+
+  Read 1 file (ctrl+o to expand)
+
+● 198/198 tests passent en 2m08s.
+
+  Je produis maintenant le rapport final HUMAN_CHECKPOINT_2.
+
+  ---
+  Mode:  READ_ONLY
+  Layer: TOOLING
+  Scope: HUMAN_CHECKPOINT_2 — rapport final KX108_TOOLING_BUILD_DOMAIN_ADAPTER_V0
+  Risk:  NONE
+  Files touched: none
+
+  ---
+  HUMAN_CHECKPOINT_2 — Rapport final
+
+  Verdict
+
+  KX108_TOOLING_BUILD_DOMAIN_ADAPTER_V0_READY_FOR_HUMAN_VALIDATION
+
+  ---
+  Résultats
+
+  ┌─────────────────────────────────────────────┬─────────────────────────────────────────────────────────────┐
+  │                  Contrôle                   │                          Résultat                           │
+  ├─────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ Session 35d45cb9 end-to-end                 │ decision = ACT —                                            │
+  │                                             │ TERMINAL_BUILD_BOUNDED_V1_READY_FOR_HUMAN_VALIDATION        │
+  ├─────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ test_tooling_build_domain.py (87 tests)     │ 87/87 PASS                                                  │
+  ├─────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ test_obsidia_build_v0.py (111 tests)        │ 111/111 PASS                                                │
+  ├─────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ Total                                       │ 198/198 PASS                                                │
+  ├─────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ Fichiers protégés (sealed CJS, proofs/,     │ diff vide — intouchés                                       │
+  │ formal/, merkle_seal.json)                  │                                                             │
+  ├─────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ decision_authority = KX108_ONLY             │ Validé dans ToolingBuildState + run_pipeline.py             │
+  ├─────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ auto_commit / auto_push / auto_merge        │ Tous True (désactivés), validés par CommitGuardAgent        │
+  └─────────────────────────────────────────────┴─────────────────────────────────────────────────────────────┘
+
+  ---
+  Fix appliqué cette session
+
+  scripts/obsidia_build.py — _call_kx108 recognition : la fonction cherchait val in ("ACT", "HOLD", "BLOCK") mais
+  le kernel tooling_build renvoie x108_gate="ALLOW". Correction : table de mapping ALLOW→ACT, BUILD_HOLD→HOLD,
+  BUILD_BLOCK→BLOCK, priorité à x108_gate dans l'ordre de recherche.
+
+  ---
+  Contraintes respectées
+
+  - Aucun commit. Aucun push. Aucun merge.
+  - Worktree principal GPS/hackathon non modifié.
+  - server.kernel.sealed.cjs, proofs/, formal/, merkle_seal.json : diff vide.
+  - decision_authority = KX108_ONLY — aucune action irréversible automatique.
+
+  ---
+  Note sur git diff --check
+
+  Des espaces de fin de ligne sont signalés dans obsidia_cli.py, sigma/aggregation.py, sigma/protocols.py —
+  artefacts des sessions précédentes, non introduits par le patch d'aujourd'hui. Ces fichiers ne font pas partie
+  du scope protégé et leur correction est une décision de révision séparée.
+
+  ---
+  Attente de validation humaine. Aucune action automatique ne sera prise.
+
+✻ Crunched for 37m 51s

@@ -1,0 +1,20 @@
+﻿e2b1965d (HEAD -> main, origin/main, origin/HEAD) audit: Brody readonly GROUP_A pipeline before memory runtime review
+8367ce13 clean final x108 3layers facade
+93a87d4a finalize x108 proofs with clean raw bridge kernel facade
+06ef1b92 finish x108 3-layer refactor with clean bridge and kernel proofs
+039c583d refactor x108 into raw bridge kernel layers
+8b83ea91 update current local state
+5a26be24 chore(git): ignore and untrack Lean/Lake artifacts
+7a275c1f wip: push all local changes
+1cf77b14 (tag: v1.4.1) feat: V18.9.1 Sigma — Dashboard, StressTest, Calibrator + Config Externe
+638e2d97 (tag: v1.4.0) feat: V18.9 Sigma — dynamic stability monitor integrated
+f1af540d Add files via upload
+5aca25c0 feat: PRESENTATION.html — page web complète du projet v1.3.0
+cd99c7de docs: README v1.3.0 complet + LICENSE CC BY-NC-ND 4.0 + NOTICE.md
+a7b23fe5 feat: v1.3.0 — FULL PASS toutes couches
+f883a80e fix: v1.2.0 — FULL PASS verify_all, consensus in-process, RFC3161 v1.1.0, LIMITS.md mis à jour
+4ba7be1e fix: exclure node_modules + bootstrap.sh + requirements.txt + verify_decision/merkle réparés + engines TS + README/LIMITS/TEST_MATRIX v1.1.0
+5a83b720 fix: moteur 100% exécutable — pytest 12/12 PASS, vitest 39/39 PASS, bootstrap.sh, requirements.txt, verify_decision/merkle réparés, engines TS ajoutés, README/LIMITS/TEST_MATRIX mis à jour
+aa256cd2 feat: contenu complet — OS0/OS1/OS3 modules, os_trad, src, app, types, config, docker, data, os4-integration, fichiers TS racine, docs originaux
+bafc45ef feat: moteur complet OS0/OS1/OS2/OS3 + preuves Lean4/TLA+ + proofkit V18 + tests adversariaux + evidence + anchors RFC3161 + rapport exhaustif
+7a190fe6 feat: OBSIDIA_ENGINE_PROOF_CORE v1.0.0 — moteur Python exécutable, 51 agents, Guard X-108, tests invariants, docs audit complets
