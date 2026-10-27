@@ -1,0 +1,302 @@
+{
+  "mission": "BRODY_WIDE_RND_DISCOVERY_AND_EDUCATION_EXTRACTION_V0",
+  "mode": "READ_ONLY",
+  "date": "2026-06-17",
+  "total_candidates": 42,
+  "candidates": [
+    {
+      "path": "README.md",
+      "category": "overview",
+      "educational_value": "HIGH",
+      "topics": ["P1 perimeter", "public freeze", "quick start", "reading paths"],
+      "status": "READ"
+    },
+    {
+      "path": "PUBLIC_STATUS.md",
+      "category": "status",
+      "educational_value": "HIGH",
+      "topics": ["P1 closed", "verification matrix", "P1 vs production", "canonical commits"],
+      "status": "READ"
+    },
+    {
+      "path": "START_HERE.md",
+      "category": "navigation",
+      "educational_value": "HIGH",
+      "topics": ["reader profiles", "auditor path", "developer path", "regulator path"],
+      "status": "READ"
+    },
+    {
+      "path": "PROOF_INDEX.md",
+      "category": "index",
+      "educational_value": "HIGH",
+      "topics": ["Lean 4 invariants", "TLA+ protocol", "tests", "Sigma", "RFC3161", "examples"],
+      "status": "READ"
+    },
+    {
+      "path": "USE_CASES.md",
+      "category": "business",
+      "educational_value": "HIGH",
+      "topics": ["banking fraud", "trading orders", "ecom fraud", "governance anomaly", "audit compliance"],
+      "status": "READ"
+    },
+    {
+      "path": "docs/KERNEL_OVERVIEW.md",
+      "category": "architecture",
+      "educational_value": "HIGH",
+      "topics": ["kernel role", "X-108 protocol", "ex ante", "ACT/HOLD/BLOCK", "trading/banking/ecom", "traceability", "invariants D1 E2 G1 G2 G3"],
+      "status": "READ"
+    },
+    {
+      "path": "docs/GLOSSAIRE.md",
+      "category": "definitions",
+      "educational_value": "HIGH",
+      "topics": ["Dual Obsidia", "Noyau Déterministe", "Espace Latent", "Chaîne Canonique", "X-108", "Reflex", "Merkle", "agents cognitifs"],
+      "status": "READ"
+    },
+    {
+      "path": "docs/SIGMA.md",
+      "category": "architecture",
+      "educational_value": "HIGH",
+      "topics": ["Sigma public P1", "pipeline", "monitor", "outputs", "position in P1"],
+      "status": "READ"
+    },
+    {
+      "path": "docs/LIMITS.md",
+      "category": "limits",
+      "educational_value": "MEDIUM",
+      "topics": ["TSA dependencies", "RFC3161 local vs network", "TLC Lean prerequisites", "formal model vs production"],
+      "status": "READ"
+    },
+    {
+      "path": "docs/brody/README.md",
+      "category": "brody",
+      "educational_value": "HIGH",
+      "topics": ["Brody modules", "sovereignty invariants", "relation to X108"],
+      "status": "READ"
+    },
+    {
+      "path": "docs/brody/BRODY_RESPONSE_CONTRACT_V1.md",
+      "category": "brody",
+      "educational_value": "HIGH",
+      "topics": ["contract fields", "KX108_ONLY", "forbidden actions", "BRODY_CONTRACT_VIOLATION"],
+      "status": "READ"
+    },
+    {
+      "path": "docs/brody/BRODY_NO_DECISION_POLICY_V1.md",
+      "category": "brody",
+      "educational_value": "HIGH",
+      "topics": ["Brody ne décide pas", "advisory only", "Brody/Sigma/X108/OS3 separation"],
+      "status": "READ"
+    },
+    {
+      "path": "docs/brody/BRODY_RUNTIME_READONLY_V1.md",
+      "category": "brody",
+      "educational_value": "HIGH",
+      "topics": ["query interface", "BrodyResponse fields", "forbidden actions"],
+      "status": "READ"
+    },
+    {
+      "path": "docs/brody/BRODY_LANGUAGE_ROUTING_V1.md",
+      "category": "brody",
+      "educational_value": "MEDIUM",
+      "topics": ["language detection", "LanguageRoute", "readonly routing"],
+      "status": "READ"
+    },
+    {
+      "path": "docs/architecture/OBSIDIA_FULL_AGENTIC_CONSTITUTIONAL_STACK_V0.md",
+      "category": "architecture",
+      "educational_value": "HIGH",
+      "topics": ["full pipeline", "INPUT to Feedback", "all layers"],
+      "status": "READ"
+    },
+    {
+      "path": "docs/architecture/BANK_TRADING_GPS_CALIBRATION_WORLDS_V0.md",
+      "category": "architecture",
+      "educational_value": "MEDIUM",
+      "topics": ["bank=économie", "trading=marché", "GPS=trajectoire/source/temps/énergie"],
+      "status": "READ"
+    },
+    {
+      "path": "docs/architecture/CONTROL_PLANE_ORCHESTRATOR_SPEC_V0.md",
+      "category": "architecture",
+      "educational_value": "MEDIUM",
+      "topics": ["control plane", "gate fusion", "no decision"],
+      "status": "READ"
+    },
+    {
+      "path": "docs/architecture/X108_REBRANCHING_POLICY_V0.md",
+      "category": "architecture",
+      "educational_value": "MEDIUM",
+      "topics": ["PeripheralSignalPacket", "Sigma/Guard", "OS3", "Gencoin"],
+      "status": "READ"
+    },
+    {
+      "path": "docs/architecture/AGENTIC_ENGINE_EXTENSION_MAP_V0.md",
+      "category": "architecture",
+      "educational_value": "MEDIUM",
+      "topics": ["agentic extension", "action lifecycle", "sequence governor", "dry-run gateway", "feedback memory"],
+      "status": "READ"
+    },
+    {
+      "path": "docs/WORLD_CALL_GATEWAY_INTEGRATION_REPORT.md",
+      "category": "world_calls",
+      "educational_value": "HIGH",
+      "topics": ["ActionCandidate", "WorldCallClass", "egress_allowed=False", "SovereignTicket", "dry_run_only=True"],
+      "status": "READ"
+    },
+    {
+      "path": "agents/registry.md",
+      "category": "agents",
+      "educational_value": "MEDIUM",
+      "topics": ["Top 5 agents", "ATLAS_INGESTOR", "CANON_GUARDIAN", "GRAPH_BUILDER", "TERMINAL_BUILDER", "PROOF_SENTINEL"],
+      "status": "READ"
+    },
+    {
+      "path": "formal/tla/X108.tla",
+      "category": "formal_proofs",
+      "educational_value": "HIGH",
+      "topics": ["TLA+ specification", "X108 protocol", "1.2M states explored", "0 violations"],
+      "status": "NOT_READ (referenced)"
+    },
+    {
+      "path": "formal/tla/DistributedX108.tla",
+      "category": "formal_proofs",
+      "educational_value": "HIGH",
+      "topics": ["distributed veto", "no deadlock", "TLA+"],
+      "status": "NOT_READ (referenced)"
+    },
+    {
+      "path": "sigma/run_pipeline.py",
+      "category": "sigma",
+      "educational_value": "HIGH",
+      "topics": ["Sigma pipeline execution", "domain routing", "public entry point"],
+      "status": "NOT_READ"
+    },
+    {
+      "path": "sigma/contracts.py",
+      "category": "sigma",
+      "educational_value": "HIGH",
+      "topics": ["Sigma contracts", "invariant enforcement"],
+      "status": "NOT_READ"
+    },
+    {
+      "path": "sigma/domains/bank_agents.py",
+      "category": "sigma",
+      "educational_value": "MEDIUM",
+      "topics": ["bank domain agents", "fraud detection", "transaction validation"],
+      "status": "NOT_READ"
+    },
+    {
+      "path": "sigma/domains/trading_agents.py",
+      "category": "sigma",
+      "educational_value": "MEDIUM",
+      "topics": ["trading agents", "volatility", "liquidity"],
+      "status": "NOT_READ"
+    },
+    {
+      "path": "sigma/domains/gps_defense_aviation_agents.py",
+      "category": "sigma",
+      "educational_value": "MEDIUM",
+      "topics": ["GPS agents", "defense", "aviation", "source conflict", "brownout"],
+      "status": "NOT_READ"
+    },
+    {
+      "path": "sigma/examples/bank_suspicious.json",
+      "category": "examples",
+      "educational_value": "HIGH",
+      "topics": ["canonical bank scenario", "fraud score", "BLOCK verdict"],
+      "status": "NOT_READ"
+    },
+    {
+      "path": "sigma/examples/gps_omega_chaos.json",
+      "category": "examples",
+      "educational_value": "MEDIUM",
+      "topics": ["GPS chaos scenario", "multi-source failure"],
+      "status": "NOT_READ"
+    },
+    {
+      "path": "periphery/agents/brody_memory_agent.py",
+      "category": "brody",
+      "educational_value": "MEDIUM",
+      "topics": ["memory agent", "candidate memory", "read-only"],
+      "status": "NOT_READ"
+    },
+    {
+      "path": "apps/obsidia_api/brody_full_runtime_orchestrator.py",
+      "category": "brody",
+      "educational_value": "HIGH",
+      "topics": ["full Brody runtime", "orchestration", "pipeline"],
+      "status": "NOT_READ"
+    },
+    {
+      "path": "apps/obsidia_api/brody_semantic_query_router.py",
+      "category": "brody",
+      "educational_value": "MEDIUM",
+      "topics": ["semantic routing", "query handling"],
+      "status": "NOT_READ"
+    },
+    {
+      "path": "apps/obsidia_api/brody_rights_authority_matrix.py",
+      "category": "brody",
+      "educational_value": "HIGH",
+      "topics": ["authority matrix", "KX108_ONLY", "rights enforcement"],
+      "status": "NOT_READ"
+    },
+    {
+      "path": ".claude/context/OBSIDIA_IDENTITY.md",
+      "category": "doctrine",
+      "educational_value": "HIGH",
+      "topics": ["Obsidia identity", "what it is and isn't"],
+      "status": "NOT_READ"
+    },
+    {
+      "path": ".claude/context/WORKFLOW.md",
+      "category": "doctrine",
+      "educational_value": "MEDIUM",
+      "topics": ["workflow modes", "classify/inspect/diagnose/propose/patch/verify"],
+      "status": "NOT_READ"
+    },
+    {
+      "path": ".graph-memory/SANDBOX_POLICY.md",
+      "category": "graphiti",
+      "educational_value": "MEDIUM",
+      "topics": ["Graphiti sandbox", "readonly indexes", "no write"],
+      "status": "NOT_READ"
+    },
+    {
+      "path": "docs/RFC3161.md",
+      "category": "cryptography",
+      "educational_value": "MEDIUM",
+      "topics": ["RFC3161 timestamp", "TSA", "anchor schema", "cross-platform QA"],
+      "status": "NOT_READ"
+    },
+    {
+      "path": "_local_audits/BRODY_OUTPUT_PRINCIPLE_EXTENSION_AUDIT.md",
+      "category": "history",
+      "educational_value": "MEDIUM",
+      "topics": ["Brody output extension audit", "development history"],
+      "status": "NOT_READ"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/",
+      "category": "archive",
+      "educational_value": "MEDIUM",
+      "topics": ["V4 structured archive", "blocs 17", "pépites 161", "specs 40", "modules A1-A24"],
+      "status": "NOT_READ (directory)"
+    },
+    {
+      "path": "periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/",
+      "category": "archive",
+      "educational_value": "MEDIUM",
+      "topics": ["monde reverse", "34 arbres tenseur", "shazam cognitif", "double cerveau", "agents 52"],
+      "status": "NOT_READ (directory)"
+    },
+    {
+      "path": "_external_benchmarks/",
+      "category": "benchmarks",
+      "educational_value": "MEDIUM",
+      "topics": ["SWE-bench", "BFCL", "AgentDojo", "TAU-bench", "WebArena", "GAIA", "OSWorld"],
+      "status": "NOT_READ (directory)"
+    }
+  ]
+}

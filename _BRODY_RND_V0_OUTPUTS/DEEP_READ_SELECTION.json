@@ -1,0 +1,129 @@
+{
+  "mission": "BRODY_WIDE_RND_DISCOVERY_AND_EDUCATION_EXTRACTION_V0",
+  "mode": "READ_ONLY",
+  "date": "2026-06-17",
+  "total_deep_read": 20,
+  "selection_rationale": "Priorité aux fichiers fondateurs : spécification du kernel, identité Brody, cas d'usage domaines réels, architecture stack, preuves formelles (par référence), limites structurelles.",
+  "files_deep_read": [
+    {
+      "path": "README.md",
+      "lines_read": 180,
+      "key_extracts": ["P1 public freeze commit 99e966a / tag p1-freeze-2026-04-22", "trois commits de référence : bd87e15, 99e966a, p1-freeze-2026-04-22", "lecture recommandée PUBLIC_STATUS → P1_FREEZE_NOTE → README"],
+      "educational_classification": "FONDATEUR"
+    },
+    {
+      "path": "PUBLIC_STATUS.md",
+      "lines_read": 85,
+      "key_extracts": ["P1 FERMÉ", "matrice 9 domaines tous PASS", "tableau P1 public vs production", "règle d'interprétation : PASS ≠ déploiement production"],
+      "educational_classification": "FONDATEUR"
+    },
+    {
+      "path": "START_HERE.md",
+      "lines_read": 57,
+      "key_extracts": ["4 profils : auditeur formel, développeur, chercheur vérification, décideur/régulateur", "commandes verify_decision.py, verify_all.py, lake build"],
+      "educational_classification": "NAVIGATION"
+    },
+    {
+      "path": "PROOF_INDEX.md",
+      "lines_read": 169,
+      "key_extracts": ["5 invariants Lean 4 prouvés : D1, E2, G1, G2, G3", "TLA+ 1,2M états 0 violation", "22/22 tests Python PASS", "39/39 tests TypeScript PASS", "1M+ cas adversariaux"],
+      "educational_classification": "FONDATEUR"
+    },
+    {
+      "path": "USE_CASES.md",
+      "lines_read": 167,
+      "key_extracts": ["5 cas : bank fraud 8k€, trading 500 BTC, ecom 500€, governance anomaly, audit régulateur", "pipeline : réception → validation → vote → agrégation → décision → scellement → ancrage → exécution", "Decision ID DEC-BANK-20260403T235959Z-a7f2e8c1"],
+      "educational_classification": "BUSINESS"
+    },
+    {
+      "path": "docs/KERNEL_OVERVIEW.md",
+      "lines_read": 281,
+      "key_extracts": ["paradigme ex ante : Agent → [KERNEL X-108] → ACT/HOLD/BLOCK → Trace/Preuve", "3 domaines : Trading, Banking, E-Commerce", "8 étapes : Réception→Validation→Vote→Agrégation→Décision→Scellement→Ancrage→Exécution", "Merkle Root + RFC3161 = immuabilité", "5 invariants prouvés"],
+      "educational_classification": "SPECIFICATION_CORE"
+    },
+    {
+      "path": "docs/GLOSSAIRE.md",
+      "lines_read": 54,
+      "key_extracts": ["Dual Obsidia = Espace Latent + Noyau Déterministe", "Chaîne Canonique = Sens→Organisation→Cohérence→Temps→Mémoire", "Friction Cognitive = Le Douteur", "Mémoire Fractale Stabilisée", "Dérive Silencieuse", "4 agents cognitifs : Le Douteur, Le Nettoyeur Cognitif, L'Empathe, Le Clarificateur/Shazam"],
+      "educational_classification": "DEFINITIONS"
+    },
+    {
+      "path": "docs/SIGMA.md",
+      "lines_read": 80,
+      "key_extracts": ["Sigma public P1 = couche minimale", "outputs : market_verdict, x108_gate, reason_code, decision_id, trace_id, ticket_required, attestation_ref", "Sigma public ≠ Sigma production"],
+      "educational_classification": "ARCHITECTURE"
+    },
+    {
+      "path": "docs/LIMITS.md",
+      "lines_read": 64,
+      "key_extracts": ["TSA = dépendances tierces", "RFC3161 local ≠ RFC3161 réseau", "prérequis : Java/TLA, Lean4/Lake, Python 3.11+", "modèle formel ≠ production complète"],
+      "educational_classification": "LIMITS"
+    },
+    {
+      "path": "docs/brody/README.md",
+      "lines_read": 36,
+      "key_extracts": ["5 modules : brody_runtime_readonly, brody_response_contract, brody_context_query, brody_response_sanitizer, brody_language_router", "invariants souveraineté : decision_authority=KX108_ONLY, advisory_only=True, memory_write=False, emits_act=False, readonly=True", "Brody répond. X108 décide. Sigma agrège. OS3 prouve."],
+      "educational_classification": "BRODY_CORE"
+    },
+    {
+      "path": "docs/brody/BRODY_RESPONSE_CONTRACT_V1.md",
+      "lines_read": 44,
+      "key_extracts": ["8 champs contrat : decision_authority, advisory_only, memory_write, kernel_mutation, emits_act, emits_verdict, readonly, context_signal_only", "BRODY_CONTRACT_VIOLATION si violation", "ABSOLUTE INVARIANT"],
+      "educational_classification": "BRODY_CORE"
+    },
+    {
+      "path": "docs/brody/BRODY_NO_DECISION_POLICY_V1.md",
+      "lines_read": 54,
+      "key_extracts": ["séparation Brody/Sigma/X108/OS3", "Brody CAN : answer questions, provide analysis, route language, reference context, suggest flags (advisory)", "Brody CANNOT : issue ALLOW/BLOCK/ACT, override X108, write memory, emit verdicts"],
+      "educational_classification": "BRODY_CORE"
+    },
+    {
+      "path": "docs/brody/BRODY_RUNTIME_READONLY_V1.md",
+      "lines_read": 46,
+      "key_extracts": ["inputs : query, language, context_refs, confidence", "outputs : BrodyResponse avec response_id, content, decision_authority=KX108_ONLY"],
+      "educational_classification": "BRODY_CORE"
+    },
+    {
+      "path": "docs/brody/BRODY_LANGUAGE_ROUTING_V1.md",
+      "lines_read": 40,
+      "key_extracts": ["détection langue ISO", "LanguageRoute : detected_lang, confidence, route, readonly=True, can_emit_act=False"],
+      "educational_classification": "BRODY_MODULE"
+    },
+    {
+      "path": "docs/architecture/OBSIDIA_FULL_AGENTIC_CONSTITUTIONAL_STACK_V0.md",
+      "lines_read": 1,
+      "key_extracts": ["stack complet : INPUT → Control Plane → Data → Provenance → Memory → Sigma → EML → Energy → Timeverse → OCS → Operational Constance → Permission/Economic → X-108 → OS3 → Gencoin → Feedback"],
+      "educational_classification": "ARCHITECTURE_CORE"
+    },
+    {
+      "path": "docs/WORLD_CALL_GATEWAY_INTEGRATION_REPORT.md",
+      "lines_read": 80,
+      "key_extracts": ["pipeline : ActionCandidate → classify_risk → classify_world_call → compute_autonomy → issue_ticket → Gateway.check → WorldActionBus.publish", "egress_allowed=False ALWAYS", "dry_run_only=True ALWAYS", "WorldCallClass : NO_WORLD_CALL, READ_ONLY, REVERSIBLE, IRREVERSIBLE, CRITICAL(bloqué), FORBIDDEN(bloqué)"],
+      "educational_classification": "WORLD_CALLS"
+    },
+    {
+      "path": "docs/architecture/BANK_TRADING_GPS_CALIBRATION_WORLDS_V0.md",
+      "lines_read": 1,
+      "key_extracts": ["Bank=économie", "Trading=marché", "GPS=trajectoire/source/temps/énergie"],
+      "educational_classification": "DOMAINS"
+    },
+    {
+      "path": "docs/architecture/X108_REBRANCHING_POLICY_V0.md",
+      "lines_read": 1,
+      "key_extracts": ["PeripheralSignalPacket → Sigma/Guard → OS3 → Gencoin"],
+      "educational_classification": "ARCHITECTURE"
+    },
+    {
+      "path": "agents/registry.md",
+      "lines_read": 36,
+      "key_extracts": ["5 agents fondateurs", "ATLAS_INGESTOR, CANON_GUARDIAN, GRAPH_BUILDER, TERMINAL_BUILDER, PROOF_SENTINEL", "9 familles dans OBSIDIA_TOUS_LES_AGENTS.docx (52 agents)"],
+      "educational_classification": "AGENTS"
+    },
+    {
+      "path": ".claude/memory/SCRATCH.md",
+      "lines_read": 34,
+      "key_extracts": ["session state : V18_3_1 root hash mismatch en cours", "settings.json nettoyé", "investigation PROOF_SENTINEL déferrée"],
+      "educational_classification": "SESSION_STATE"
+    }
+  ]
+}

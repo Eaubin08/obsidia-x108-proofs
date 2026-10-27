@@ -1,0 +1,109 @@
+{
+  "mission": "BRODY_WIDE_RND_DISCOVERY_AND_EDUCATION_EXTRACTION_V0",
+  "mode": "READ_ONLY | DISCOVERY_ONLY | EXTRACTION_ONLY",
+  "date": "2026-06-17",
+  "status": "COMPLETED",
+  "verdict": "PASS",
+
+  "phases_summary": {
+    "phase_1_cartographie": {
+      "status": "COMPLETED",
+      "files_discovered": 49535,
+      "directories_mapped": 30,
+      "output": "WIDE_DISCOVERY_FILE_MAP.md"
+    },
+    "phase_2_grep_conceptuel": {
+      "status": "COMPLETED",
+      "candidates_identified": 42,
+      "key_concepts_located": ["BRODY", "X108", "Sigma", "Lean4", "TLA+", "RFC3161", "Merkle", "WorldCallGateway", "Graphiti", "OS3/OS4"],
+      "output": "WIDE_DISCOVERY_CANDIDATES.json"
+    },
+    "phase_3_deep_reads": {
+      "status": "COMPLETED",
+      "files_deep_read": 20,
+      "output": "DEEP_READ_SELECTION.json"
+    },
+    "phase_4_production": {
+      "status": "COMPLETED",
+      "files_produced": 14,
+      "output_directory": "_BRODY_RND_V0_OUTPUTS/"
+    }
+  },
+
+  "outputs_produced": [
+    { "file": "WIDE_DISCOVERY_FILE_MAP.md", "status": "CREATED" },
+    { "file": "WIDE_DISCOVERY_CANDIDATES.json", "status": "CREATED" },
+    { "file": "DEEP_READ_SELECTION.json", "status": "CREATED" },
+    { "file": "BRODY_PROJECT_HISTORY.md", "status": "CREATED" },
+    { "file": "BRODY_IDENTITY_PSEUDO_LLM.md", "status": "CREATED" },
+    { "file": "OBSIDIA_X108_MACHINATION_FULL.md", "status": "CREATED" },
+    { "file": "REAL_DOMAINS_BANK_TRADING_GPS_DEFENSE.md", "status": "CREATED" },
+    { "file": "WORLD_CONNECTION_AND_SCRAP_NCP_BOUNDARY.md", "status": "CREATED" },
+    { "file": "BRODY_SEMANTIC_EDUCATION_MAP_FULL.md", "status": "CREATED" },
+    { "file": "BRODY_FORBIDDEN_BELIEFS_AND_FAILURE_MODES.md", "status": "CREATED" },
+    { "file": "CANONICAL_VS_OLD_RND_SOURCES.json", "status": "CREATED" },
+    { "file": "BRODY_EDUCATION_MODULES_V0.md", "status": "CREATED" },
+    { "file": "EXTRACTION_LIMITS_AND_DEFERRED_SCOPE.md", "status": "CREATED" },
+    { "file": "BRODY_WIDE_RND_DISCOVERY_AND_EDUCATION_EXTRACTION_VERDICT.json", "status": "CREATED" }
+  ],
+
+  "constraints_respected": {
+    "READ_ONLY": true,
+    "DISCOVERY_ONLY": true,
+    "EXTRACTION_ONLY": true,
+    "NO_PATCH": true,
+    "NO_COMMIT": true,
+    "NO_PUSH": true,
+    "NO_TAG": true,
+    "NO_MEMORY_WRITE": true,
+    "NO_GRAPHITI_WRITE": true,
+    "NO_NEO4J_WRITE": true,
+    "NO_RUNTIME_BINDING": true,
+    "NO_WEB": true,
+    "NO_SCRAPING": true,
+    "NO_NETWORK": true,
+    "NO_ACT": true,
+    "NO_PROVIDER_BINDING": true,
+    "NO_PATH_COMPUTE": true
+  },
+
+  "key_findings": {
+    "brody_identity": "FIRST_CLASS_X108_MODULE — READONLY / ADVISORY_ONLY. Brody répond. X108 décide.",
+    "kernel_architecture": "Noyau déterministe ex ante. 5 invariants Lean 4. TLA+ 1.2M états. Verdicts : ACT/HOLD/BLOCK.",
+    "sigma_status": "Couche Sigma minimale publique en P1. Production propriétaire non publiée.",
+    "p1_status": "FERMÉ. Tag p1-freeze-2026-04-22. Commit 99e966a. 9 domaines PASS.",
+    "real_domains": "Bank (économie), Trading (marché), GPS/Defense (trajectoire/source/temps/énergie), E-Commerce, Gouvernance.",
+    "world_calls_v4": "egress_allowed=False TOUJOURS. dry_run_only=True TOUJOURS. Aucune sortie réelle.",
+    "brody_contract": "8 champs invariants. Violation → BRODY_CONTRACT_VIOLATION. ABSOLUTE INVARIANT.",
+    "formal_proofs": "Lean 4 : 5 invariants prouvés. TLA+ : 2 specs, 0 violation, veto distribué sans deadlock.",
+    "traceability": "Decision ID + Trace ID + Merkle Root + RFC3161 = immuabilité cryptographique.",
+    "agent_registry": "52 agents en 9 familles dans OBSIDIA_TOUS_LES_AGENTS.docx (non committé). Top 5 dans agents/registry.md.",
+    "gencoin": "N'est PAS un token crypto. Politique explicite dans docs/blockchain/GENCOIN_NOT_A_TOKEN_POLICY_V1.md.",
+    "anti_pattern_forbidden": "Everything-connects-to-everything interdit. Graphiti en sandbox read-only dans ce repo."
+  },
+
+  "educational_value_summary": {
+    "for_developers": "7 modules éducatifs V0 produits couvrant : kernel, BRODY, Sigma, preuves formelles, domaines réels, World Call Gateway, limites.",
+    "for_auditors": "Cartographie complète, candidats classifiés par valeur, sources canoniques vs R&D identifiées.",
+    "for_researchers": "Concepts formels documentés : Lean 4 invariants, TLA+ model checking, RFC3161 timestamping, Merkle trees.",
+    "for_domain_experts": "Scénarios bank/trading/GPS/ecom/governance documentés avec invariants et cas d'usage concrets."
+  },
+
+  "deferred_scope_summary": {
+    "periphery_modules_unread": "~50 modules Python",
+    "apps_obsidia_api_unread": "~25 modules brody_*.py",
+    "tla_specs_unreaded_directly": "formal/tla/X108.tla, DistributedX108.tla",
+    "v4_archive_unread": "periphery/OBSIDIA_V4_STRUCTURED_FULL/ (161 pépites, 40 specs, A1-A24)",
+    "agent_registry_partial": "47/52 agents non documentés dans ce repo",
+    "external_benchmarks_unread": "8 benchmarks (_external_benchmarks/)",
+    "doctrine_context_partial": ".claude/context/ — OBSIDIA_IDENTITY, WORKFLOW, PROTECTED_SCOPE non lus directement"
+  },
+
+  "recommendations": [
+    "BRODY_RND_V1 : Lire periphery/event_bus.py + control_plane.py + avdr.py pour compléter le stack",
+    "BRODY_RND_V1 : Lire apps/obsidia_api/brody_full_runtime_orchestrator.py pour l'orchestration complète",
+    "BRODY_RND_V1 : Lire formal/tla/X108.tla directement pour les invariants TLA+ exacts",
+    "BRODY_RND_V1 : Lire .claude/context/OBSIDIA_IDENTITY.md + PROTECTED_SCOPE.md",
+    "BRODY_RND_V1 : Extraire periphery/OBSIDIA_V4_STRUCTURED_FULL/03_PEPITES_161/ (pépites conceptuelles)"
+  ]
+}

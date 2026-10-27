@@ -1,0 +1,165 @@
+{
+  "mission": "BRODY_WIDE_RND_DISCOVERY_AND_EDUCATION_EXTRACTION_V0",
+  "mode": "READ_ONLY",
+  "date": "2026-06-17",
+  "description": "Classification des sources : canoniques (référence gelée P1) vs anciennes R&D (archives, brouillons, explorations)",
+  "canonical_sources": [
+    {
+      "path": "proofs/lean/",
+      "status": "CANONICAL_FROZEN",
+      "freeze_ref": "p1-freeze-2026-04-22 / commit 99e966a",
+      "content": "Preuves Lean 4 formelles — invariants D1, E2, G1, G2, G3",
+      "authority": "HIGHEST — preuves mathématiques"
+    },
+    {
+      "path": "formal/tla/",
+      "status": "CANONICAL_FROZEN",
+      "freeze_ref": "p1-freeze-2026-04-22",
+      "content": "X108.tla, DistributedX108.tla, MC configs, TLC results",
+      "authority": "HIGHEST — spécifications TLA+ formelles"
+    },
+    {
+      "path": "sigma/",
+      "status": "CANONICAL_PUBLIC",
+      "freeze_ref": "p1-freeze-2026-04-22",
+      "content": "Sigma public minimal : run_pipeline.py, sigma_monitor.py, contracts.py, protocols.py, examples/, tests/",
+      "authority": "HIGH — couche Sigma publique canonique",
+      "note": "Sigma production complète non publié"
+    },
+    {
+      "path": "docs/",
+      "status": "CANONICAL_PUBLIC",
+      "freeze_ref": "p1-freeze-2026-04-22 + post-freeze docs",
+      "content": "KERNEL_OVERVIEW, SIGMA, RFC3161, LIMITS, GLOSSAIRE, architecture/, brody/, blockchain/, world_calls/, act/, agents/",
+      "authority": "HIGH — documentation officielle"
+    },
+    {
+      "path": "docs/brody/",
+      "status": "CANONICAL_V1",
+      "freeze_ref": "post-P1 (mai 2026)",
+      "content": "5 contrats BRODY — BRODY_RESPONSE_CONTRACT_V1, BRODY_NO_DECISION_POLICY_V1, BRODY_RUNTIME_READONLY_V1, BRODY_LANGUAGE_ROUTING_V1",
+      "authority": "HIGH — contrats souveraineté BRODY"
+    },
+    {
+      "path": "periphery/brody/",
+      "status": "CANONICAL_MODULE",
+      "freeze_ref": "post-P1",
+      "content": "5 modules BRODY runtime : brody_runtime_readonly.py, brody_response_contract.py, brody_context_query.py, brody_response_sanitizer.py, brody_language_router.py",
+      "authority": "HIGH — implémentation BRODY canonique"
+    },
+    {
+      "path": "examples/",
+      "status": "CANONICAL_PUBLIC",
+      "freeze_ref": "p1-freeze-2026-04-22",
+      "content": "bank_normal.json, bank_suspicious.json, trading_bullish.json, ecom_normal.json",
+      "authority": "HIGH — scénarios canoniques publics"
+    },
+    {
+      "path": "agents/registry.md + agents/registry.json",
+      "status": "CANONICAL",
+      "freeze_ref": "post-P1",
+      "content": "Top 5 agents fondateurs extraits de OBSIDIA_TOUS_LES_AGENTS.docx",
+      "authority": "HIGH — registre agents officiel du repo"
+    },
+    {
+      "path": "proofs/verifiers/",
+      "status": "CANONICAL_PUBLIC",
+      "freeze_ref": "p1-freeze-2026-04-22",
+      "content": "verify_all.py, verify_decision.py, verify_merkle.py",
+      "authority": "HIGH — vérificateurs exécutables canoniques"
+    },
+    {
+      "path": ".claude/context/",
+      "status": "CANONICAL_DOCTRINE",
+      "freeze_ref": "session config",
+      "content": "OBSIDIA_IDENTITY, WORKFLOW, PROTECTED_SCOPE, AGENTIC_ROUTING, TOKEN_POLICY, FRACTAL_INFERENCE",
+      "authority": "HIGH — doctrine opérationnelle"
+    },
+    {
+      "path": "CLAUDE.md",
+      "status": "CANONICAL_ENTRYPOINT",
+      "freeze_ref": "session config",
+      "content": "Entrypoint doctrine Claude Code pour ce repo",
+      "authority": "HIGH — source de vérité de session"
+    }
+  ],
+  "old_rnd_sources": [
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/",
+      "status": "OLD_RND_ARCHIVE",
+      "origin": "V4 structurée — 14 sous-dossiers, blocs 17, pépites 161, specs 40, modules A1-A24",
+      "note": "Archive R&D antérieure. Contient des travaux de recherche conceptuels. À distinguer des specs V5/post-P1.",
+      "educational_value": "MEDIUM — contexte historique de l'architecture"
+    },
+    {
+      "path": "periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/",
+      "status": "OLD_RND_ARCHIVE",
+      "origin": "Monde inversé, 34 arbres tenseur-matrice, shazam cognitif, double cerveau, agents 52, bridge MCP",
+      "note": "Archive R&D exploratoire. Structures conceptuelles avancées pour le monde Obsidia.",
+      "educational_value": "MEDIUM — concepts architecturaux avancés"
+    },
+    {
+      "path": ".deepseek/pastes/",
+      "status": "SESSION_HISTORY",
+      "origin": "Pastes DeepSeek depuis 2026-05-19 au 2026-05-21 — sessions de debug BRODY",
+      "note": "Historique de sessions de développement. Valeur éducative limitée hors contexte de développement.",
+      "educational_value": "LOW — historique debug"
+    },
+    {
+      "path": "_local_audits/",
+      "status": "DEVELOPMENT_HISTORY",
+      "origin": "Audits locaux datés 2026-05-14 à 2026-05-23",
+      "note": "Historique de développement et de validation. Utile pour comprendre l'évolution du module BRODY.",
+      "educational_value": "MEDIUM — historique de développement"
+    },
+    {
+      "path": "patches/",
+      "status": "OLD_PATCHES",
+      "origin": "Patches overlay V5A, FULL_STACK_COMPLETE, FINAL_COMPLETION",
+      "note": "Archives de patches appliqués. Non-canoniques par eux-mêmes.",
+      "educational_value": "LOW"
+    },
+    {
+      "path": "TRI_RAPPORT_*.md (racine, 14 fichiers)",
+      "status": "OPERATIONAL_LOGS",
+      "origin": "Rapports de tri 2026-05-20 → 2026-06-17",
+      "note": "Rapports opérationnels de maintenance du repo. Valeur éducative technique limitée.",
+      "educational_value": "LOW"
+    },
+    {
+      "path": "_orphan_scan_*.txt (v1-v8)",
+      "status": "OPERATIONAL_LOGS",
+      "origin": "Scans d'orphelins successifs",
+      "note": "Logs de maintenance. Pas de valeur éducative directe.",
+      "educational_value": "NONE"
+    },
+    {
+      "path": "DEEPSEEK_*.md (racine, 5 fichiers)",
+      "status": "EXTERNAL_AUDIT_REPORTS",
+      "origin": "Rapports d'audit DeepSeek",
+      "note": "Audits externes utiles pour comprendre les points faibles identifiés.",
+      "educational_value": "MEDIUM — retours d'audit externe"
+    },
+    {
+      "path": "_external_benchmarks/",
+      "status": "RESEARCH_BENCHMARKS",
+      "origin": "SWE-bench, BFCL, AgentDojo, TAU-bench, WebArena, GAIA, OSWorld — wrappers Obsidia",
+      "note": "Benchmarks externes encapsulés pour évaluation Obsidia. R&D en cours.",
+      "educational_value": "MEDIUM — comparaison avec benchmarks industrie"
+    },
+    {
+      "path": "Demo-obsidia-x108-proof/",
+      "status": "DEMO",
+      "origin": "Version démo décompressée",
+      "note": "Démo publique. Subset du repo principal.",
+      "educational_value": "LOW — redondant avec le repo principal"
+    }
+  ],
+  "source_of_truth_registry": {
+    "agents": "OBSIDIA_TOUS_LES_AGENTS.docx (52 agents, 9 familles) — NON committé dans ce repo",
+    "freeze": "commit 99e966a / tag p1-freeze-2026-04-22",
+    "kernel_spec": "docs/KERNEL_OVERVIEW.md v1.4.0",
+    "brody_contract": "docs/brody/BRODY_RESPONSE_CONTRACT_V1.md",
+    "proof_kit": "proofs/PROOFKIT_REPORT.json"
+  }
+}
