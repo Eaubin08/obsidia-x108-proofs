@@ -456,11 +456,11 @@ class GuardX108:
             severity = Severity.S2
             if canonical_market_verdict in ("TRAJECTORY_VALID", "AUTHORIZE", "ALLOW"):
                 canonical_market_verdict = "HOLD"
-        elif market_v in ("BLOCK", "ABORT_TRAJECTORY", "REFUSE", "DENY"):
+        elif market_v in ("BLOCK", "ABORT_TRAJECTORY", "REFUSE", "DENY", "BUILD_BLOCK"):
             falsified_votes = [f[0] for f in falsified_alerts_rejected]
             has_other_blocking_votes = any(
                 v for v in getattr(aggregate, "agent_votes", [])
-                if v not in falsified_votes and v.proposed_verdict in ("BLOCK", "ABORT_TRAJECTORY", "REFUSE", "DENY")
+                if v not in falsified_votes and v.proposed_verdict in ("BLOCK", "ABORT_TRAJECTORY", "REFUSE", "DENY", "BUILD_BLOCK")
             )
             if falsified_alerts_rejected and not has_other_blocking_votes:
                 # Les seuls votes de blocage étaient falsifiés et ont été formellement réfutés par vérification indépendante
@@ -472,7 +472,7 @@ class GuardX108:
                 gate = X108Gate.BLOCK
                 reason = f"MARKET_CONSENSUS_REJECT_{market_v}"
                 severity = Severity.S4
-        elif market_v in ("HOLD", "RECALC_TRAJECTORY", "DEGRADED_NAVIGATION", "DELAY"):
+        elif market_v in ("HOLD", "RECALC_TRAJECTORY", "DEGRADED_NAVIGATION", "DELAY", "BUILD_HOLD"):
             gate = X108Gate.HOLD
             reason = f"MARKET_VERDICT_REQUIRES_HOLD_{market_v}"
             severity = Severity.S2
@@ -485,7 +485,7 @@ class GuardX108:
             gate = X108Gate.HOLD
             reason = "RISK_FLAGS_REQUIRE_DELAY"
             severity = Severity.S2
-        elif market_v in ("AUTHORIZE", "TRAJECTORY_VALID", "ALLOW", "PAY", "EXECUTE_LONG", "EXECUTE_SHORT"):
+        elif market_v in ("AUTHORIZE", "TRAJECTORY_VALID", "ALLOW", "PAY", "EXECUTE_LONG", "EXECUTE_SHORT", "READY_FOR_COMMIT_REVIEW"):
             gate = X108Gate.ALLOW
             reason = "GUARD_ALLOW"
             severity = Severity.S0 if aggregate.confidence >= self.config.min_confidence_allow else Severity.S1
