@@ -296,19 +296,44 @@ def verify_v2_seal(root_dir: Path, seal_file: Path, check_git: bool = True) -> t
     if recomputed_chained_root != declared_chained_root:
         errors.append(f"Racine chaînée finale altérée : déclarée '{declared_chained_root}', recalculée '{recomputed_chained_root}'")
         
-    # Vérification HEAD Git (optionnelle si exécuté sur clone sans git)
+    # Vérification de provenance Git non circulaire (optionnelle si exécuté sur clone sans git)
     if check_git and (root_dir / ".git").exists():
-        try:
-            proc = subprocess.run(
-                ["git", "-C", str(root_dir), "rev-parse", "HEAD"],
-                capture_output=True, text=True, check=True
-            )
-            current_head = proc.stdout.strip()
-            declared_head = seal_doc.get("git_head")
-            if declared_head and declared_head != current_head:
-                errors.append(f"HEAD Git désynchronisé : déclaré '{declared_head}', repo courant '{current_head}'")
-        except Exception:
-            pass
+        subject_commit = (
+            seal_doc.get("subject_commit") or 
+            seal_doc.get("provenance", {}).get("subject_commit") or 
+            seal_doc.get("git_head")
+        )
+        if subject_commit:
+            try:
+                # 1. Vérifier l'existence physique du commit sujet dans la base d'objets Git
+                proc_cat = subprocess.run(
+                    ["git", "-C", str(root_dir), "cat-file", "-t", subject_commit],
+                    capture_output=True, text=True
+                )
+                if proc_cat.returncode != 0 or proc_cat.stdout.strip() != "commit":
+                    errors.append(
+                        f"Git subject_commit introuvable ou non commit: '{subject_commit}' (HEAD Git désynchronisé)"
+                    )
+                else:
+                    # 2. Obtenir le HEAD actuel
+                    proc = subprocess.run(
+                        ["git", "-C", str(root_dir), "rev-parse", "HEAD"],
+                        capture_output=True, text=True, check=True
+                    )
+                    current_head = proc.stdout.strip()
+                    
+                    # 3. Contrat non circulaire : subject_commit doit être HEAD ou ancêtre de HEAD
+                    if current_head != subject_commit:
+                        proc_ancestor = subprocess.run(
+                            ["git", "-C", str(root_dir), "merge-base", "--is-ancestor", subject_commit, current_head],
+                            capture_output=True, text=True
+                        )
+                        if proc_ancestor.returncode != 0:
+                            errors.append(
+                                f"Rupture de lignée Git : subject_commit '{subject_commit}' n'est ni HEAD ni un ancêtre de '{current_head}' (HEAD Git désynchronisé)"
+                            )
+            except Exception as e:
+                errors.append(f"Erreur vérification Git provenance: {e}")
             
     is_valid = (len(errors) == 0)
     details = {
