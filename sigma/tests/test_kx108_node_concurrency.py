@@ -30,6 +30,7 @@ SEALED_HASHES = {
     ),
     "merkle_seal.json": (
         "cf9e5938089f61cc88242d24dfcefb5f8b88ec6823280251d9e5b7c8c594ec94",
+        "ba13b0c0d72380fcb6c2ec10234104b2728f616b983ca5fa3f252288a169c010",
     ),
 }
 
