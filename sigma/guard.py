@@ -4,7 +4,10 @@ import hashlib
 import uuid
 from dataclasses import dataclass
 
-from .contracts import CanonicalDecisionEnvelope, DomainAggregate, Severity, X108Gate, SourceTag
+from .contracts import (
+    CanonicalDecisionEnvelope, DomainAggregate, Severity, X108Gate, SourceTag,
+    AuthorityLevel, ObligationDirective, RULE_CONTRACT_REGISTRY, RuleContract
+)
 
 
 @dataclass
@@ -321,25 +324,178 @@ class GuardX108:
         contradiction_count = len(aggregate.contradictions)
         unknown_count = len(aggregate.unknowns)
         risk_count = len(aggregate.risk_flags)
+        market_v = str(getattr(aggregate, "market_verdict", "HOLD")).upper()
+        domain_val = aggregate.domain.value if hasattr(aggregate.domain, "value") else str(aggregate.domain)
 
-        if contradiction_count >= self.config.max_contradictions_before_block or "FRAUD_PATTERN" in aggregate.risk_flags:
+        # 1. Validation des mesures et qualification des règles contractuelles
+        stale_or_invalid_measures = []
+        mandatory_vetoes = []
+        unresolved_blocks = []
+        advisory_blocks = []
+        falsified_alerts_rejected = []
+
+        for v in getattr(aggregate, "agent_votes", []):
+            rule_id = getattr(v, "rule_id", "") or ""
+            if not rule_id:
+                # Vote sans règle contractuelle : purement consultatif / d'observation
+                # S'il a proposé BLOCK ou ABORT_TRAJECTORY, c'est consultatif (ne peut pas être un veto souverain)
+                if v.proposed_verdict in ("BLOCK", "ABORT_TRAJECTORY"):
+                    advisory_blocks.append((v, None))
+                continue
+
+            contract = RULE_CONTRACT_REGISTRY.get(rule_id)
+            if contract is None:
+                # Règle inconnue ou usurpée : ne peut conférer d'autorité impérative
+                stale_or_invalid_measures.append((v, f"UNKNOWN_RULE_{rule_id}"))
+                continue
+
+            # Vérification de scope domaine (DOIT être faite AVANT l'évaluation de la mesure)
+            rule_domain = contract.domain.value if hasattr(contract.domain, "value") else str(contract.domain)
+            if rule_domain.lower() not in (domain_val.lower(), "meta", "cross_domain"):
+                # Règle hors périmètre : ignorée pour la décision de ce domaine
+                continue
+
+            # Vérification de révocation ou version de règle
+            if contract.is_revoked or getattr(v, "rule_version", "1.0") != contract.version:
+                stale_or_invalid_measures.append((v, f"REVOKED_OR_WRONG_VERSION_{rule_id}"))
+                continue
+
+            # Vérification de qualification de la mesure (provenance, horodatage, validité, valeur observée)
+            val = getattr(v, "observed_value", None)
+            prov = getattr(v, "measure_provenance", None)
+            age = getattr(v, "measure_age_s", None)
+            is_valid = getattr(v, "measure_valid", None)
+
+            is_qualified = (
+                is_valid is True
+                and prov is not None and len(str(prov).strip()) > 0
+                and age is not None and 0.0 <= float(age) <= contract.max_allowed_age_s
+                and val is not None
+            )
+
+            if not is_qualified:
+                # Une mesure absente ou non qualifiée doit conserver explicitement son statut UNKNOWN
+                # Elle ne peut pas satisfaire une contrainte
+                stale_or_invalid_measures.append((v, f"UNQUALIFIED_MEASURE_{rule_id}"))
+                continue
+
+            # Si la règle est purement ADVISORY : elle ne peut jamais être souveraine
+            if contract.authority_level == AuthorityLevel.ADVISORY:
+                if v.proposed_verdict in ("BLOCK", "ABORT_TRAJECTORY"):
+                    advisory_blocks.append((v, contract))
+                continue
+
+            # VÉRIFICATION INDÉPENDANTE DU PRÉDICAT DÉTERMINISTE PAR KX108 (MANDATORY & CONTRACT_UNRESOLVED)
+            if contract.predicate is not None:
+                try:
+                    predicate_violated = bool(contract.predicate(val))
+                except Exception:
+                    predicate_violated = True
+            else:
+                predicate_violated = False
+
+            # Détection d'alerte falsifiée : l'agent déclare une violation alors que le prédicat est nominal
+            agent_claimed_violation = (
+                getattr(v, "predicate_violated", None) is True
+                or v.proposed_verdict in ("BLOCK", "ABORT_TRAJECTORY")
+            )
+
+            if agent_claimed_violation and not predicate_violated:
+                # Alerte falsifiée rejetée par KX108 !
+                falsified_alerts_rejected.append((v, contract))
+                continue
+
+            # Prédicat déterministe violé (indépendamment du signal déclaré par l'agent)
+            if predicate_violated:
+                if contract.authority_level == AuthorityLevel.MANDATORY_VETO:
+                    mandatory_vetoes.append((v, contract))
+                elif contract.authority_level == AuthorityLevel.CONTRACT_UNRESOLVED:
+                    if contract.obligation == ObligationDirective.MUST_BLOCK:
+                        unresolved_blocks.append((v, contract))
+                    else:
+                        advisory_blocks.append((v, contract))
+
+        # 2. Arbitrage souverain KX108
+        canonical_market_verdict = aggregate.market_verdict
+
+        if mandatory_vetoes:
+            # Obligation souveraine absolue : s'applique indépendamment de la gravité (même S1) et des scores
+            v_mand, c_mand = mandatory_vetoes[0]
+            gate = X108Gate.BLOCK
+            reason = f"MANDATORY_RULE_VIOLATION_{c_mand.rule_id}"
+            severity = Severity.S4
+            if canonical_market_verdict in ("TRAJECTORY_VALID", "AUTHORIZE", "ALLOW"):
+                canonical_market_verdict = v_mand.proposed_verdict if v_mand.proposed_verdict in ("BLOCK", "ABORT_TRAJECTORY") else "BLOCK"
+        elif unresolved_blocks:
+            # Traitement conservatoire fail-closed des règles non résolues (interdit ALLOW)
+            v_unres, c_unres = unresolved_blocks[0]
+            gate = X108Gate.BLOCK
+            reason = f"CONSERVATIVE_UNRESOLVED_RULE_BLOCK_{c_unres.rule_id}"
+            severity = Severity.S4
+            if canonical_market_verdict in ("TRAJECTORY_VALID", "AUTHORIZE", "ALLOW"):
+                canonical_market_verdict = v_unres.proposed_verdict if v_unres.proposed_verdict in ("BLOCK", "ABORT_TRAJECTORY") else "BLOCK"
+        elif stale_or_invalid_measures:
+            # Mesure absente, périmée, corrompue ou règle révoquée -> jamais ALLOW
+            v_inv, r_code = stale_or_invalid_measures[0]
+            gate = X108Gate.HOLD
+            reason = f"INVALID_OR_STALE_MEASURE_{r_code}"
+            severity = Severity.S2
+            if canonical_market_verdict in ("TRAJECTORY_VALID", "AUTHORIZE", "ALLOW"):
+                canonical_market_verdict = "HOLD"
+        elif contradiction_count >= self.config.max_contradictions_before_block or "FRAUD_PATTERN" in aggregate.risk_flags:
             gate = X108Gate.BLOCK
             reason = "CONTRADICTION_THRESHOLD_REACHED"
             severity = Severity.S4
+            if canonical_market_verdict not in ("BLOCK", "ABORT_TRAJECTORY"):
+                canonical_market_verdict = "BLOCK"
+        elif advisory_blocks:
+            # RÈGLE FONDAMENTALE : un agent ADVISORY ne produit JAMAIS un BLOCK souverain
+            gate = X108Gate.HOLD
+            rule_id_tag = advisory_blocks[0][1].rule_id if advisory_blocks[0][1] else advisory_blocks[0][0].agent_id
+            reason = f"ADVISORY_ALERT_HOLD_{rule_id_tag}"
+            severity = Severity.S2
+            if canonical_market_verdict in ("TRAJECTORY_VALID", "AUTHORIZE", "ALLOW"):
+                canonical_market_verdict = "HOLD"
+        elif market_v in ("BLOCK", "ABORT_TRAJECTORY", "REFUSE", "DENY"):
+            falsified_votes = [f[0] for f in falsified_alerts_rejected]
+            has_other_blocking_votes = any(
+                v for v in getattr(aggregate, "agent_votes", [])
+                if v not in falsified_votes and v.proposed_verdict in ("BLOCK", "ABORT_TRAJECTORY", "REFUSE", "DENY")
+            )
+            if falsified_alerts_rejected and not has_other_blocking_votes:
+                # Les seuls votes de blocage étaient falsifiés et ont été formellement réfutés par vérification indépendante
+                gate = X108Gate.ALLOW if (unknown_count <= self.config.max_unknowns_before_hold and aggregate.confidence >= self.config.hold_confidence_floor) else X108Gate.HOLD
+                reason = "FALSIFIED_ALERTS_DISMISSED_ALLOW" if gate == X108Gate.ALLOW else "FALSIFIED_ALERTS_DISMISSED_HOLD"
+                severity = Severity.S0 if gate == X108Gate.ALLOW else Severity.S2
+                canonical_market_verdict = "TRAJECTORY_VALID" if "TRAJECTORY" in market_v else "AUTHORIZE"
+            else:
+                gate = X108Gate.BLOCK
+                reason = f"MARKET_CONSENSUS_REJECT_{market_v}"
+                severity = Severity.S4
+        elif market_v in ("HOLD", "RECALC_TRAJECTORY", "DEGRADED_NAVIGATION", "DELAY"):
+            gate = X108Gate.HOLD
+            reason = f"MARKET_VERDICT_REQUIRES_HOLD_{market_v}"
+            severity = Severity.S2
         elif unknown_count > self.config.max_unknowns_before_hold or aggregate.confidence < self.config.hold_confidence_floor:
             gate = X108Gate.HOLD
             reason = "UNKNOWNS_OR_CONFIDENCE_LOW"
             severity = Severity.S2
-        elif risk_count >= 2 and aggregate.confidence < self.config.min_confidence_allow:
+        elif risk_count >= 2:
+            # Séparation stricte : un score élevé ne neutralise jamais deux alertes de risque
             gate = X108Gate.HOLD
             reason = "RISK_FLAGS_REQUIRE_DELAY"
             severity = Severity.S2
-        else:
+        elif market_v in ("AUTHORIZE", "TRAJECTORY_VALID", "ALLOW", "PAY", "EXECUTE_LONG", "EXECUTE_SHORT"):
             gate = X108Gate.ALLOW
             reason = "GUARD_ALLOW"
             severity = Severity.S0 if aggregate.confidence >= self.config.min_confidence_allow else Severity.S1
+        else:
+            gate = X108Gate.HOLD
+            reason = f"CONSERVATIVE_HOLD_{market_v}"
+            severity = Severity.S2
 
-        decision_id = f"{aggregate.domain.value}-{uuid.uuid4().hex[:12]}"
+        domain_str = aggregate.domain.value if hasattr(aggregate.domain, "value") else str(aggregate.domain)
+        decision_id = f"{domain_str}-{uuid.uuid4().hex[:12]}"
         trace_id = str(uuid.uuid4())
         ticket_required = gate == X108Gate.ALLOW
         ticket_id = uuid.uuid4().hex[:16] if ticket_required else None
@@ -348,8 +504,8 @@ class GuardX108:
         consensus_surface = _x108_consensus_surface(aggregate.agent_votes)
 
         return CanonicalDecisionEnvelope(
-            domain=aggregate.domain.value,
-            market_verdict=aggregate.market_verdict,
+            domain=domain_str,
+            market_verdict=canonical_market_verdict,
             confidence=aggregate.confidence,
             contradictions=aggregate.contradictions,
             unknowns=aggregate.unknowns,
@@ -366,7 +522,7 @@ class GuardX108:
             evidence_refs=aggregate.evidence_refs,
             metrics=aggregate.extra_metrics,
             raw_engine={
-                "domain": aggregate.domain.value,
+                "domain": domain_str,
                 "agent_votes": [v.agent_id for v in aggregate.agent_votes],
                 "vote_count": len(aggregate.agent_votes),
                 "agent_vote_details": consensus_surface["agent_vote_details"],

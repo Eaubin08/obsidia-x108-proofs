@@ -17,12 +17,19 @@ def build_agent_registry():
 
 
 def _apply_meta_agents(aggregate):
+    if not hasattr(aggregate, "agent_votes") or aggregate.agent_votes is None:
+        aggregate.agent_votes = []
     for meta_agent in build_meta_agents():
         meta_vote = meta_agent.evaluate(aggregate)
+        aggregate.agent_votes.append(meta_vote)
         aggregate.contradictions.extend(meta_vote.contradictions)
         aggregate.unknowns.extend(meta_vote.unknowns)
         aggregate.risk_flags.extend(meta_vote.risk_flags)
         aggregate.evidence_refs.append(f"meta:{meta_vote.agent_id}")
+    aggregate.unknowns = sorted(set(aggregate.unknowns))
+    aggregate.risk_flags = sorted(set(aggregate.risk_flags))
+    aggregate.contradictions = sorted(set(aggregate.contradictions))
+    aggregate.evidence_refs = sorted(set(aggregate.evidence_refs))
     return aggregate
 
 

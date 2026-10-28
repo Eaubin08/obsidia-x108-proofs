@@ -13,15 +13,24 @@ class SourceAvailabilityAgent(BaseAgent):
             missing.append("INERTIAL_MISSING")
         if not state.radio_available:
             missing.append("RADIO_MISSING")
+        is_missing = bool(missing)
+        obs = {"gps": state.gps_available, "inertial": state.inertial_available, "radio": state.radio_available}
         return AgentVote(
             agent_id=self.agent_id,
             domain=Domain.GPS_DEFENSE_AVIATION,
             layer=Layer.OBSERVATION,
             claim="source availability",
-            confidence=0.95 if not missing else 0.35,
-            severity_hint=Severity.S0 if not missing else Severity.S3,
+            confidence=0.95 if not is_missing else 0.35,
+            severity_hint=Severity.S0 if not is_missing else Severity.S3,
             unknowns=missing,
-            proposed_verdict="RECALC_TRAJECTORY" if missing else "TRAJECTORY_VALID",
+            proposed_verdict="RECALC_TRAJECTORY" if is_missing else "TRAJECTORY_VALID",
+            rule_id="RULE_GPS_SOURCE_AVAILABILITY",
+            rule_version="1.0",
+            measure_provenance="gnss.sensors.availability",
+            measure_age_s=0.0,
+            measure_valid=True,
+            observed_value=obs,
+            predicate_violated=is_missing,
         )
 
 class TrajectoryIntegrityAgent(BaseAgent):
@@ -33,12 +42,19 @@ class TrajectoryIntegrityAgent(BaseAgent):
         return AgentVote(
             self.agent_id,
             Domain.GPS_DEFENSE_AVIATION,
-            Layer.INTERPRETATION,
+            Layer.PROOF,
             "trajectory integrity",
             max(0.0, 1.0 - drift),
             Severity.S4 if drift >= 0.85 else Severity.S2 if drift >= 0.6 else Severity.S0,
             risk_flags=risk,
             proposed_verdict=verdict,
+            rule_id="INV_GPS_DRIFT_MAX",
+            rule_version="1.0",
+            measure_provenance="gnss.avionics.inertial",
+            measure_age_s=0.0,
+            measure_valid=True,
+            observed_value=drift,
+            predicate_violated=(drift >= 0.85),
         )
 
 class SourceConflictAgent(BaseAgent):
@@ -56,6 +72,13 @@ class SourceConflictAgent(BaseAgent):
             Severity.S4 if conflict >= 0.8 else Severity.S2 if conflict >= 0.5 else Severity.S0,
             contradictions=contradictions,
             proposed_verdict=verdict,
+            rule_id="RULE_GPS_SENSOR_FUSION",
+            rule_version="1.0",
+            measure_provenance="gnss.sensors.fusion",
+            measure_age_s=0.0,
+            measure_valid=True,
+            observed_value=conflict,
+            predicate_violated=(conflict >= 0.80),
         )
 
 class TimeSkewAgent(BaseAgent):
@@ -75,6 +98,13 @@ class TimeSkewAgent(BaseAgent):
             risk_flags=risk,
             unknowns=severe_unknowns,
             proposed_verdict=verdict,
+            rule_id="RULE_GPS_TEMPORAL_ALIGNMENT",
+            rule_version="1.0",
+            measure_provenance="gnss.timing.atomic_clock",
+            measure_age_s=0.0,
+            measure_valid=True,
+            observed_value=skew,
+            predicate_violated=(skew >= 0.90),
         )
 
 class BrownoutAgent(BaseAgent):
@@ -94,6 +124,13 @@ class BrownoutAgent(BaseAgent):
             risk_flags=risk,
             unknowns=severe_unknowns,
             proposed_verdict=verdict,
+            rule_id="RULE_GPS_BROWNOUT_DEFENSE",
+            rule_version="1.0",
+            measure_provenance="gnss.power.bus",
+            measure_age_s=0.0,
+            measure_valid=True,
+            observed_value=b,
+            predicate_violated=(b >= 0.90),
         )
 
 class AttestationReadinessAgent(BaseAgent):
@@ -109,6 +146,13 @@ class AttestationReadinessAgent(BaseAgent):
             Severity.S0 if ready else Severity.S2,
             unknowns=[] if ready else ["ATTESTATION_NOT_READY"],
             proposed_verdict="TRAJECTORY_VALID" if ready else "RECALC_TRAJECTORY",
+            rule_id="RULE_GPS_HARDWARE_ATTESTATION",
+            rule_version="1.0",
+            measure_provenance="gnss.hardware.hsm",
+            measure_age_s=0.0,
+            measure_valid=True,
+            observed_value=ready,
+            predicate_violated=(not ready),
         )
 
 def build_gps_defense_aviation_agents():
