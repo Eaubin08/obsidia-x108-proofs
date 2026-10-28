@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing import Any
 
@@ -43,8 +43,11 @@ def _merge_periphery_into_aggregate(aggregate: Any, packet: PeripheralSignalPack
 
 
 def _apply_meta_agents(aggregate: Any) -> Any:
+    if not hasattr(aggregate, "agent_votes") or aggregate.agent_votes is None:
+        aggregate.agent_votes = []
     for meta_agent in build_meta_agents():
         meta_vote = meta_agent.evaluate(aggregate)
+        aggregate.agent_votes.append(meta_vote)
         aggregate.contradictions.extend(meta_vote.contradictions)
         aggregate.unknowns.extend(meta_vote.unknowns)
         aggregate.risk_flags.extend(meta_vote.risk_flags)

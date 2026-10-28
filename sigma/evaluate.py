@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from enum import Enum
 from typing import Any
@@ -142,16 +142,15 @@ def _enrich_with_packet(
         registry_domain = {"runtime_bound": False, "agent_count": 0, "agents": []}
     packet = build_sigma_domain_packet(domain, registry_domain, payload)
 
-    # Rescue any legacy pipeline x108_gate (string or non-F62 dict) so the
-    # normalized F62 dict from the packet is never overwritten.
+    # Préserver impérativement x108_gate comme chaîne souveraine issue de GuardX108
     raw_gate = base.get("x108_gate")
-    if raw_gate is not None and not _is_f62_x108_gate(raw_gate):
-        base = dict(base)  # avoid mutating caller's dict
-        del base["x108_gate"]
-        base["pipeline_x108_gate_observed"] = raw_gate
+    if "x108_gate" in packet:
+        packet["sigma_advisory_gate"] = packet["x108_gate"]
 
-    # base wins on remaining key conflicts — preserves all F61 flat sovereignty flags
-    return {**packet, **base}
+    result = {**packet, **base}
+    if raw_gate is not None:
+        result["x108_gate"] = str(raw_gate)
+    return result
 
 
 def evaluate_sigma_domain(
