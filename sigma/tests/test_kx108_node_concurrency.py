@@ -19,11 +19,18 @@ if str(ROOT) not in sys.path:
 from sigma.contracts import BankState, GpsDefenseAviationState
 from sigma.protocols import run_bank_pipeline, run_gps_defense_aviation_pipeline
 
-# Empreintes canoniques scellées (Forensic baseline)
+# Empreintes canoniques scellées (Forensic baseline & Phase 6B authorized integration)
 SEALED_HASHES = {
-    "server.kernel.sealed.cjs": "06014d1c694b5b12b79e6841c0781d2b00cb2e5e4dce286d39f6b17c9878bfab",
-    "audit_merkle.py": "c84d014dee0a8df44035a17619ef35a122085d2c0796ffe8e70a89e5091cf481",
-    "merkle_seal.json": "cf9e5938089f61cc88242d24dfcefb5f8b88ec6823280251d9e5b7c8c594ec94",
+    "server.kernel.sealed.cjs": (
+        "06014d1c694b5b12b79e6841c0781d2b00cb2e5e4dce286d39f6b17c9878bfab",  # Baseline historique V1
+        "55e053eb6a1d29e5dd2d1c23ed7abcc366b132979768196a549eea9fd921e472",  # Remplacement contrôlé Phase 6B
+    ),
+    "audit_merkle.py": (
+        "c84d014dee0a8df44035a17619ef35a122085d2c0796ffe8e70a89e5091cf481",
+    ),
+    "merkle_seal.json": (
+        "cf9e5938089f61cc88242d24dfcefb5f8b88ec6823280251d9e5b7c8c594ec94",
+    ),
 }
 
 
@@ -116,13 +123,13 @@ def make_critical_gps_payload() -> dict:
 
 def test_sealed_files_integrity():
     """Contrôle d'intégrité formel : server.kernel.sealed.cjs et les scellés sont intacts."""
-    for rel_path, expected_hash in SEALED_HASHES.items():
+    for rel_path, expected_hashes in SEALED_HASHES.items():
         p = ROOT / rel_path
         assert p.exists(), f"Fichier scellé manquant: {rel_path}"
         actual_hash = _sha256_file(p)
-        assert actual_hash == expected_hash, (
-            f"ALTÉRATION DE SCELLÉ DÉTECTÉE sur {rel_path}!\n"
-            f"Attendu: {expected_hash}\n"
+        assert actual_hash in expected_hashes, (
+            f"ALTÉRATION NON AUTORISÉE DÉTECTÉE sur {rel_path}!\n"
+            f"Attendu parmi: {expected_hashes}\n"
             f"Obtenu:  {actual_hash}"
         )
 

@@ -1,0 +1,133 @@
+{
+  "version": "obsidia.kx108.merkle_seal.v2",
+  "status": "LOCAL_SEAL / EXTERNAL_TIMESTAMP_PENDING",
+  "issued_at_utc": "2026-10-28T12:47:44.244178+00:00",
+  "git_head": "4113d99655407f84bfddb1744fdf26a7252d3fc0",
+  "algorithm": "SHA-256",
+  "leaf_canonicalization": "path:sha256",
+  "leaf_ordering": "lexicographical_ascii",
+  "historical_anchor": {
+    "root_value": "1bc96a52bdbcc4d0538c3bf2",
+    "nature": "TRUNCATED_PREFIX_96BIT",
+    "length_chars": 24,
+    "source_file": "merkle_seal.json",
+    "historical_proofs_count": 8007,
+    "historical_status": "FINAL_SCELLÉ_RAGNAROK"
+  },
+  "v2_scope": {
+    "file_count": 26,
+    "manifest": [
+      {
+        "path": ".gitignore",
+        "sha256": "2ee862fe27a39d4fe7d102416d1bde821d47f58357db0933dc0e769fd7de7993"
+      },
+      {
+        "path": "apps/obsidia_api/routes/blockchain.py",
+        "sha256": "1fd7866c5a301445858b5d8c9cc47a304b90c82242e6025c984989d7a2ad6c36"
+      },
+      {
+        "path": "periphery/sigma_bridge.py",
+        "sha256": "5adc8b35c2c79e9e62361a3195f7f7334a5287035176e25c8591656591b04f50"
+      },
+      {
+        "path": "periphery/world_calls/sovereign_ticket.py",
+        "sha256": "aa733a8fa0d184599442b8bb45d97abd3853c3a15b9b2e67e52a31d30f04d71e"
+      },
+      {
+        "path": "periphery/world_calls/ticket_store.py",
+        "sha256": "c71eb5da1ecbf78a8275c3192cd372d54d90ac9f64e9419199a4fa4a52125345"
+      },
+      {
+        "path": "scripts/obsidure_bounded_apply.py",
+        "sha256": "6687790ee070529813a3c4bc960dcd9a5cf9f284e2fefc7b4fc747cba139437d"
+      },
+      {
+        "path": "server.kernel.isolated.cjs",
+        "sha256": "55e053eb6a1d29e5dd2d1c23ed7abcc366b132979768196a549eea9fd921e472"
+      },
+      {
+        "path": "server.kernel.sealed.cjs",
+        "sha256": "55e053eb6a1d29e5dd2d1c23ed7abcc366b132979768196a549eea9fd921e472"
+      },
+      {
+        "path": "sigma/aggregation.py",
+        "sha256": "08bbfc9b837b89499815ba78f58e259b0fc285affcb7754ca4c289e1cd4a1745"
+      },
+      {
+        "path": "sigma/contracts.py",
+        "sha256": "cf0138f7832a86c389c48a85ff45ee91ebab0ad8c1a6526359b389e80b665a25"
+      },
+      {
+        "path": "sigma/domains/bank_agents.py",
+        "sha256": "87a27e4266559cdac0a2137d2569f00ddf03cce8b8f64c27f006758045356861"
+      },
+      {
+        "path": "sigma/domains/gps_defense_aviation_agents.py",
+        "sha256": "46d0cce03eb3e1e3f75a3a136d1df80d9fa0e50e972ecdf6cacb732afb5fe0e6"
+      },
+      {
+        "path": "sigma/domains/meta_agents.py",
+        "sha256": "3cc37b20b71e681f395740d85fddc2a05dac48f21a9612d5ced310920cf10155"
+      },
+      {
+        "path": "sigma/evaluate.py",
+        "sha256": "8d3ab217d64841f02d46fc4fa7962ac3f52684d08fbbe62c286d9a0f4f4a769f"
+      },
+      {
+        "path": "sigma/guard.py",
+        "sha256": "61483b97f04c1bc45a6c2aa5f70fa46a190d21efe28688ecc1ddebedd2f39455"
+      },
+      {
+        "path": "sigma/packets.py",
+        "sha256": "3b774de869af5dd4f353921108db9db2ae874c352dbb36d02b40e923603d7e2d"
+      },
+      {
+        "path": "sigma/protocols.py",
+        "sha256": "8ee101972efaac64e898d9586b9c51cfc43f62fef743a28a8f83b0d6f5591c56"
+      },
+      {
+        "path": "sigma/registry.py",
+        "sha256": "a9552f6e1049b5efda4b24df59fe57bcd3f15d531821257fb77cbda19340a0a3"
+      },
+      {
+        "path": "sigma/run_pipeline.py",
+        "sha256": "892c95e8863f6d3ec37a1584c2a0c5b574336f639576fc26e57969c36e07abdf"
+      },
+      {
+        "path": "sigma/tests/test_gps_semantics.py",
+        "sha256": "272ac6f65261523ff4527d40a50a8b9d703cc8b00d58abc528518cf9c8e7f02e"
+      },
+      {
+        "path": "sigma/tests/test_kx108_authority_p0.py",
+        "sha256": "41ae1ff3dbba1892f82a879bdd52279535e16c03d398da7835efbd57bce8fc17"
+      },
+      {
+        "path": "sigma/tests/test_kx108_node_concurrency.py",
+        "sha256": "4afb5ff2f8ce76b433193dbc90dfdf94c163885df00e2d3236bc0e88a74e7fa7"
+      },
+      {
+        "path": "sigma/tests/test_kx108_phase2c_reconciliation.py",
+        "sha256": "e08d9f29c980a9d5d6054ec5e140bf95103f44c0369c8a82896eef0be6fad3a9"
+      },
+      {
+        "path": "sigma/tests/test_kx108_pre_decision_write_safety.py",
+        "sha256": "1e898f3f2302dac15c4f2c17aaf1638a885f8085f74677e0e23792f1be58a0c5"
+      },
+      {
+        "path": "sigma/tests/test_kx108_sovereign_ticket_security.py",
+        "sha256": "2b8e6187f420ed4ffdc68e43042ed1d572b2af70555fa9e5a0b06ed13a8814a1"
+      },
+      {
+        "path": "sigma/tooling/governed_bounded_apply.py",
+        "sha256": "37005091ef88e508d03a1bedc2cac729ee08ed4b393b118a22ec7069eb0e1604"
+      }
+    ],
+    "v2_scope_root": "8fd8bbf3645f2d600d10a67b54cde50c4b2ea37ee80f10775d128d40c20242dc"
+  },
+  "chained_v2_root": "bd84e22f8e0b7c648d40164f6bddec015a3dcfd0cabc2fa0ea00f9529c90aa05",
+  "rfc3161": {
+    "status": "PENDING_EXTERNAL_TSA",
+    "token_present": false,
+    "notes": "Aucun jeton TSA tiers n'a été inséré artificiellement. Attente d'ancrage externe officiel."
+  }
+}
