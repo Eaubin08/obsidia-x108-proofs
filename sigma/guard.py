@@ -4,10 +4,26 @@ import hashlib
 import uuid
 from dataclasses import dataclass
 
-from .contracts import (
-    CanonicalDecisionEnvelope, DomainAggregate, Severity, X108Gate, SourceTag,
-    AuthorityLevel, ObligationDirective, RULE_CONTRACT_REGISTRY, RuleContract
-)
+try:
+    from .contracts import (
+        CanonicalDecisionEnvelope, DomainAggregate, Severity, X108Gate, SourceTag,
+        AuthorityLevel, ObligationDirective, RULE_CONTRACT_REGISTRY, RuleContract
+    )
+except ImportError:
+    from .contracts import (
+        CanonicalDecisionEnvelope, DomainAggregate, Severity, X108Gate, SourceTag
+    )
+    from enum import Enum
+    class AuthorityLevel(str, Enum):
+        MANDATORY_VETO = "MANDATORY_VETO"
+        CONTRACT_UNRESOLVED = "CONTRACT_UNRESOLVED"
+        ADVISORY = "ADVISORY"
+    class ObligationDirective(str, Enum):
+        MUST_BLOCK = "MUST_BLOCK"
+        MUST_HOLD = "MUST_HOLD"
+        EVALUATE = "EVALUATE"
+    RULE_CONTRACT_REGISTRY = {}
+    RuleContract = None
 
 
 @dataclass
