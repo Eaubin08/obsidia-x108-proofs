@@ -142,14 +142,15 @@ def _enrich_with_packet(
         registry_domain = {"runtime_bound": False, "agent_count": 0, "agents": []}
     packet = build_sigma_domain_packet(domain, registry_domain, payload)
 
-    # Préserver impérativement x108_gate comme chaîne souveraine issue de GuardX108
+    # F62 is a READ_ONLY presentation packet. Its x108_gate field describes
+    # the KX108 authority boundary; it is not an executable sovereign verdict.
+    # Keep the pipeline verdict separately as observed data. Do not let an
+    # advisory packet replace or issue a KX108 decision.
     raw_gate = base.get("x108_gate")
-    if "x108_gate" in packet:
-        packet["sigma_advisory_gate"] = packet["x108_gate"]
-
     result = {**packet, **base}
+    result["x108_gate"] = dict(packet["x108_gate"])
     if raw_gate is not None:
-        result["x108_gate"] = str(raw_gate)
+        result["pipeline_x108_gate_observed"] = str(raw_gate)
     return result
 
 
