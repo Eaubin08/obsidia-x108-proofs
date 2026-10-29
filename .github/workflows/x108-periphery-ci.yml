@@ -22,6 +22,10 @@ jobs:
           if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
           if [ -f requirements-dev.txt ]; then python -m pip install -r requirements-dev.txt; fi
           python -m pip install pytest
+      - name: Configure isolated Git identity for synthetic repository tests
+        run: |
+          git config --global user.name "Obsidia CI Tests"
+          git config --global user.email "obsidia-ci-tests@users.noreply.github.com"
       - name: Python syntax check
         run: python -m compileall periphery -q
       - name: Generate manifest for tests
