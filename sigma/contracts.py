@@ -77,6 +77,364 @@ class UniversalBase:
         setattr(self, name, new_attr)
         return new_attr
 
+class AuthorityLevel(str, Enum):
+    MANDATORY_VETO = "MANDATORY_VETO"
+    CONTRACT_UNRESOLVED = "CONTRACT_UNRESOLVED"
+    ADVISORY = "ADVISORY"
+
+
+class ObligationDirective(str, Enum):
+    MUST_BLOCK = "MUST_BLOCK"
+    MUST_HOLD = "MUST_HOLD"
+    EVALUATE = "EVALUATE"
+
+
+@dataclass(frozen=True)
+class RuleContract:
+    rule_id: str
+    provenance: str
+    version: str
+    domain: Domain | str
+    applicable_scope: str
+    authority_level: AuthorityLevel
+    obligation: ObligationDirective
+    max_allowed_age_s: float = 300.0
+    is_revoked: bool = False
+    predicate: Any = None
+
+
+# Registre canonique des contraintes réutilisant les spécifications formelles Obsidia (Spec 13, Spec 04, Invariant Graph)
+RULE_CONTRACT_REGISTRY: dict[str, RuleContract] = {
+    # GPS / Défense / Aviation
+    "INV_GPS_DRIFT_MAX": RuleContract(
+        rule_id="INV_GPS_DRIFT_MAX",
+        provenance="Spec 13 (P116) / Invariant Graph",
+        version="1.0",
+        domain=Domain.GPS_DEFENSE_AVIATION,
+        applicable_scope="TRAJECTORY_SAFETY",
+        authority_level=AuthorityLevel.MANDATORY_VETO,
+        obligation=ObligationDirective.MUST_BLOCK,
+        max_allowed_age_s=30.0,
+        predicate=lambda val: (float(val) >= 0.85) if val is not None else False,
+    ),
+    "RULE_GPS_SOURCE_AVAILABILITY": RuleContract(
+        rule_id="RULE_GPS_SOURCE_AVAILABILITY",
+        provenance="sigma.domains.gps_defense_aviation_agents",
+        version="1.0",
+        domain=Domain.GPS_DEFENSE_AVIATION,
+        applicable_scope="SENSOR_AVAILABILITY",
+        authority_level=AuthorityLevel.CONTRACT_UNRESOLVED,
+        obligation=ObligationDirective.MUST_HOLD,
+        max_allowed_age_s=60.0,
+        predicate=lambda val: (any(not v for v in val.values()) if isinstance(val, dict) else False),
+    ),
+    "RULE_GPS_SENSOR_FUSION": RuleContract(
+        rule_id="RULE_GPS_SENSOR_FUSION",
+        provenance="sigma.domains.gps_defense_aviation_agents",
+        version="1.0",
+        domain=Domain.GPS_DEFENSE_AVIATION,
+        applicable_scope="SENSOR_FUSION",
+        authority_level=AuthorityLevel.CONTRACT_UNRESOLVED,
+        obligation=ObligationDirective.MUST_HOLD,
+        max_allowed_age_s=60.0,
+        predicate=lambda val: (float(val) >= 0.80) if val is not None else False,
+    ),
+    "RULE_GPS_TEMPORAL_ALIGNMENT": RuleContract(
+        rule_id="RULE_GPS_TEMPORAL_ALIGNMENT",
+        provenance="sigma.domains.gps_defense_aviation_agents",
+        version="1.0",
+        domain=Domain.GPS_DEFENSE_AVIATION,
+        applicable_scope="TEMPORAL_ALIGNMENT",
+        authority_level=AuthorityLevel.CONTRACT_UNRESOLVED,
+        obligation=ObligationDirective.MUST_HOLD,
+        max_allowed_age_s=30.0,
+        predicate=lambda val: (float(val) >= 0.90) if val is not None else False,
+    ),
+    "RULE_GPS_BROWNOUT_DEFENSE": RuleContract(
+        rule_id="RULE_GPS_BROWNOUT_DEFENSE",
+        provenance="sigma.domains.gps_defense_aviation_agents",
+        version="1.0",
+        domain=Domain.GPS_DEFENSE_AVIATION,
+        applicable_scope="POWER_DEFENSE",
+        authority_level=AuthorityLevel.CONTRACT_UNRESOLVED,
+        obligation=ObligationDirective.MUST_HOLD,
+        max_allowed_age_s=30.0,
+        predicate=lambda val: (float(val) >= 0.90) if val is not None else False,
+    ),
+    "RULE_GPS_HARDWARE_ATTESTATION": RuleContract(
+        rule_id="RULE_GPS_HARDWARE_ATTESTATION",
+        provenance="Spec 12 / Spec 13",
+        version="1.0",
+        domain=Domain.GPS_DEFENSE_AVIATION,
+        applicable_scope="ATTESTATION",
+        authority_level=AuthorityLevel.CONTRACT_UNRESOLVED,
+        obligation=ObligationDirective.MUST_HOLD,
+        max_allowed_age_s=300.0,
+        predicate=lambda val: (not bool(val)),
+    ),
+
+    # Bank
+    "INV_BANK_REGULATORY_BLOCK": RuleContract(
+        rule_id="INV_BANK_REGULATORY_BLOCK",
+        provenance="Spec 13 (P114) / AML-CFT Compliance",
+        version="1.0",
+        domain=Domain.BANK,
+        applicable_scope="REGULATORY_COMPLIANCE",
+        authority_level=AuthorityLevel.MANDATORY_VETO,
+        obligation=ObligationDirective.MUST_BLOCK,
+        max_allowed_age_s=3600.0,
+        predicate=lambda val: bool(val),
+    ),
+    "RULE_BANK_AFFORDABILITY": RuleContract(
+        rule_id="RULE_BANK_AFFORDABILITY",
+        provenance="sigma.domains.bank_agents / CONTRACT_UNRESOLVED",
+        version="1.0",
+        domain=Domain.BANK,
+        applicable_scope="CREDIT_SOLVENCY",
+        authority_level=AuthorityLevel.CONTRACT_UNRESOLVED,
+        obligation=ObligationDirective.MUST_BLOCK,
+        max_allowed_age_s=3600.0,
+        predicate=lambda val: (float(val) <= 0.40) if val is not None else False,
+    ),
+    "RULE_BANK_LIMIT_POLICY": RuleContract(
+        rule_id="RULE_BANK_LIMIT_POLICY",
+        provenance="sigma.domains.bank_agents / CONTRACT_UNRESOLVED",
+        version="1.0",
+        domain=Domain.BANK,
+        applicable_scope="EXPOSURE_LIMIT",
+        authority_level=AuthorityLevel.CONTRACT_UNRESOLVED,
+        obligation=ObligationDirective.MUST_BLOCK,
+        max_allowed_age_s=3600.0,
+        predicate=lambda val: (float(val) > 1.0) if val is not None else False,
+    ),
+    "RULE_BANK_FRAUD_PATTERN": RuleContract(
+        rule_id="RULE_BANK_FRAUD_PATTERN",
+        provenance="sigma.domains.bank_agents / CONTRACT_UNRESOLVED",
+        version="1.0",
+        domain=Domain.BANK,
+        applicable_scope="FRAUD_DETECTION",
+        authority_level=AuthorityLevel.CONTRACT_UNRESOLVED,
+        obligation=ObligationDirective.MUST_BLOCK,
+        max_allowed_age_s=3600.0,
+        predicate=lambda val: (float(val) > 0.75) if val is not None else False,
+    ),
+    "RULE_BANK_IDENTITY_MISMATCH": RuleContract(
+        rule_id="RULE_BANK_IDENTITY_MISMATCH",
+        provenance="sigma.domains.bank_agents / CONTRACT_UNRESOLVED",
+        version="1.0",
+        domain=Domain.BANK,
+        applicable_scope="IDENTITY_TRUST",
+        authority_level=AuthorityLevel.CONTRACT_UNRESOLVED,
+        obligation=ObligationDirective.MUST_BLOCK,
+        max_allowed_age_s=3600.0,
+        predicate=lambda val: (float(val) > 0.75) if val is not None else False,
+    ),
+    "RULE_BANK_COUNTERPARTY": RuleContract(
+        rule_id="RULE_BANK_COUNTERPARTY",
+        provenance="sigma.domains.bank_agents / CONTRACT_UNRESOLVED",
+        version="1.0",
+        domain=Domain.BANK,
+        applicable_scope="COUNTERPARTY_VERIFICATION",
+        authority_level=AuthorityLevel.CONTRACT_UNRESOLVED,
+        obligation=ObligationDirective.MUST_HOLD,
+        max_allowed_age_s=3600.0,
+        predicate=lambda val: (not bool(val)),
+    ),
+    "RULE_BANK_LIQUIDITY_EXPOSURE": RuleContract(
+        rule_id="RULE_BANK_LIQUIDITY_EXPOSURE",
+        provenance="sigma.domains.bank_agents / CONTRACT_UNRESOLVED",
+        version="1.0",
+        domain=Domain.BANK,
+        applicable_scope="LIQUIDITY_EXPOSURE",
+        authority_level=AuthorityLevel.CONTRACT_UNRESOLVED,
+        obligation=ObligationDirective.MUST_HOLD,
+        max_allowed_age_s=3600.0,
+        predicate=lambda val: (float(val) > 0.90) if val is not None else False,
+    ),
+    "RULE_BANK_PROOF": RuleContract(
+        rule_id="RULE_BANK_PROOF",
+        provenance="sigma.domains.bank_agents / CONTRACT_UNRESOLVED",
+        version="1.0",
+        domain=Domain.BANK,
+        applicable_scope="AUDIT_TRAIL",
+        authority_level=AuthorityLevel.CONTRACT_UNRESOLVED,
+        obligation=ObligationDirective.MUST_HOLD,
+        max_allowed_age_s=3600.0,
+        predicate=lambda val: (val.get("elapsed_s", 0) < 108.0 or val.get("failed", 0) > 0) if isinstance(val, dict) else False,
+    ),
+    "RULE_BANK_CONTEXT_ADVISORY": RuleContract(
+        rule_id="RULE_BANK_CONTEXT_ADVISORY",
+        provenance="sigma.domains.bank_agents / ADVISORY",
+        version="1.0",
+        domain=Domain.BANK,
+        applicable_scope="TRANSACTION_ENRICHMENT",
+        authority_level=AuthorityLevel.ADVISORY,
+        obligation=ObligationDirective.EVALUATE,
+        max_allowed_age_s=3600.0,
+        predicate=lambda val: False,
+    ),
+    "RULE_BANK_TEMPORAL_URGENCY": RuleContract(
+        rule_id="RULE_BANK_TEMPORAL_URGENCY",
+        provenance="sigma.domains.bank_agents / ADVISORY",
+        version="1.0",
+        domain=Domain.BANK,
+        applicable_scope="BEHAVIORAL_TIMING",
+        authority_level=AuthorityLevel.ADVISORY,
+        obligation=ObligationDirective.EVALUATE,
+        max_allowed_age_s=3600.0,
+        predicate=lambda val: (float(val) > 0.75) if val is not None else False,
+    ),
+    "RULE_BANK_BEHAVIOR_SHIFT": RuleContract(
+        rule_id="RULE_BANK_BEHAVIOR_SHIFT",
+        provenance="sigma.domains.bank_agents / ADVISORY",
+        version="1.0",
+        domain=Domain.BANK,
+        applicable_scope="STATISTICAL_SHIFT",
+        authority_level=AuthorityLevel.ADVISORY,
+        obligation=ObligationDirective.EVALUATE,
+        max_allowed_age_s=3600.0,
+        predicate=lambda val: (float(val) > 0.50) if val is not None else False,
+    ),
+    "RULE_BANK_NARRATIVE_CONFLICT": RuleContract(
+        rule_id="RULE_BANK_NARRATIVE_CONFLICT",
+        provenance="sigma.domains.bank_agents / ADVISORY",
+        version="1.0",
+        domain=Domain.BANK,
+        applicable_scope="NARRATIVE_HEURISTIC",
+        authority_level=AuthorityLevel.ADVISORY,
+        obligation=ObligationDirective.EVALUATE,
+        max_allowed_age_s=3600.0,
+        predicate=lambda val: (float(val) > 0.45) if val is not None else False,
+    ),
+    "RULE_BANK_RECOVERY_PATH": RuleContract(
+        rule_id="RULE_BANK_RECOVERY_PATH",
+        provenance="sigma.domains.bank_agents / ADVISORY",
+        version="1.0",
+        domain=Domain.BANK,
+        applicable_scope="RECOVERY_ENRICHMENT",
+        authority_level=AuthorityLevel.ADVISORY,
+        obligation=ObligationDirective.EVALUATE,
+        max_allowed_age_s=3600.0,
+        predicate=lambda val: False,
+    ),
+    # Méta-Agents / Gouvernance Transverse
+    "RULE_META_POLICY_SCOPE": RuleContract(
+        rule_id="RULE_META_POLICY_SCOPE",
+        provenance="sigma.domains.meta_agents / PolicyScopeAgent",
+        version="1.0",
+        domain=Domain.META,
+        applicable_scope="GLOBAL_POLICY_ENFORCEMENT",
+        authority_level=AuthorityLevel.MANDATORY_VETO,
+        obligation=ObligationDirective.MUST_BLOCK,
+        max_allowed_age_s=60.0,
+        predicate=lambda val: any(flag in {"LIMIT_PRESSURE", "MERCHANT_POLICY_CONSTRAINT"} for flag in (val.get("risk_flags", []) if isinstance(val, dict) else [])) if val is not None else False,
+    ),
+    "RULE_META_PROOF_CONSISTENCY": RuleContract(
+        rule_id="RULE_META_PROOF_CONSISTENCY",
+        provenance="sigma.domains.meta_agents / ProofConsistencyAgent",
+        version="1.0",
+        domain=Domain.META,
+        applicable_scope="PROOF_COHERENCE",
+        authority_level=AuthorityLevel.MANDATORY_VETO,
+        obligation=ObligationDirective.MUST_BLOCK,
+        max_allowed_age_s=60.0,
+        predicate=lambda val: not (bool(val.get("market_verdict")) and float(val.get("confidence", -1.0)) >= 0.0) if isinstance(val, dict) else True,
+    ),
+    "RULE_META_TICKET_READINESS": RuleContract(
+        rule_id="RULE_META_TICKET_READINESS",
+        provenance="sigma.domains.meta_agents / TicketReadinessAgent",
+        version="1.0",
+        domain=Domain.META,
+        applicable_scope="TICKET_PREPARATION",
+        authority_level=AuthorityLevel.ADVISORY,
+        obligation=ObligationDirective.EVALUATE,
+        max_allowed_age_s=60.0,
+        predicate=lambda val: bool(val.get("unknowns") or val.get("contradictions")) if isinstance(val, dict) else False,
+    ),
+    "RULE_META_CONFLICT_RESOLUTION": RuleContract(
+        rule_id="RULE_META_CONFLICT_RESOLUTION",
+        provenance="sigma.domains.meta_agents / ConflictResolutionAgent",
+        version="1.0",
+        domain=Domain.META,
+        applicable_scope="CONTRADICTION_DETECTION",
+        authority_level=AuthorityLevel.ADVISORY,
+        obligation=ObligationDirective.EVALUATE,
+        max_allowed_age_s=60.0,
+        predicate=lambda val: bool(val.get("contradictions")) if isinstance(val, dict) else False,
+    ),
+    "RULE_META_UNKNOWNS": RuleContract(
+        rule_id="RULE_META_UNKNOWNS",
+        provenance="sigma.domains.meta_agents / UnknownsAgent",
+        version="1.0",
+        domain=Domain.META,
+        applicable_scope="UNKNOWNS_DETECTION",
+        authority_level=AuthorityLevel.ADVISORY,
+        obligation=ObligationDirective.EVALUATE,
+        max_allowed_age_s=60.0,
+        predicate=lambda val: bool(val.get("unknowns")) if isinstance(val, dict) else False,
+    ),
+    "RULE_META_TRACE_INTEGRITY": RuleContract(
+        rule_id="RULE_META_TRACE_INTEGRITY",
+        provenance="sigma.domains.meta_agents / TraceIntegrityAgent",
+        version="1.0",
+        domain=Domain.META,
+        applicable_scope="TRACE_COMPLETENESS",
+        authority_level=AuthorityLevel.ADVISORY,
+        obligation=ObligationDirective.EVALUATE,
+        max_allowed_age_s=60.0,
+        predicate=lambda val: not (int(val.get("vote_count", 0)) >= 3 and int(val.get("evidence_count", 0)) >= 1) if isinstance(val, dict) else False,
+    ),
+    "RULE_META_ATTESTATION_READINESS": RuleContract(
+        rule_id="RULE_META_ATTESTATION_READINESS",
+        provenance="sigma.domains.meta_agents / AttestationReadinessAgent",
+        version="1.0",
+        domain=Domain.META,
+        applicable_scope="ATTESTATION_VALIDATION",
+        authority_level=AuthorityLevel.ADVISORY,
+        obligation=ObligationDirective.EVALUATE,
+        max_allowed_age_s=60.0,
+        predicate=lambda val: not bool(val.get("proof_ready", False)) if isinstance(val, dict) else False,
+    ),
+    "RULE_META_HUMAN_OVERRIDE": RuleContract(
+        rule_id="RULE_META_HUMAN_OVERRIDE",
+        provenance="sigma.domains.meta_agents / HumanOverrideEligibilityAgent",
+        version="1.0",
+        domain=Domain.META,
+        applicable_scope="HUMAN_INTERVENTION",
+        authority_level=AuthorityLevel.ADVISORY,
+        obligation=ObligationDirective.EVALUATE,
+        max_allowed_age_s=60.0,
+        predicate=lambda val: False,
+    ),
+    "RULE_META_SEVERITY_CLASSIFIER": RuleContract(
+        rule_id="RULE_META_SEVERITY_CLASSIFIER",
+        provenance="sigma.domains.meta_agents / SeverityClassifierAgent",
+        version="1.0",
+        domain=Domain.META,
+        applicable_scope="SEVERITY_MONITORING",
+        authority_level=AuthorityLevel.ADVISORY,
+        obligation=ObligationDirective.EVALUATE,
+        max_allowed_age_s=60.0,
+        predicate=lambda val: False,
+    ),
+    "RULE_META_REPLAY_CONSISTENCY": RuleContract(
+        rule_id="RULE_META_REPLAY_CONSISTENCY",
+        provenance="sigma.domains.meta_agents / ReplayConsistencyAgent",
+        version="1.0",
+        domain=Domain.META,
+        applicable_scope="REPLAY_DETERMINISM",
+        authority_level=AuthorityLevel.ADVISORY,
+        obligation=ObligationDirective.EVALUATE,
+        max_allowed_age_s=60.0,
+        predicate=lambda val: not bool(val.get("deterministic", True)) if isinstance(val, dict) else False,
+    ),
+}
+
+RULE_AUTHORITY_REGISTRY: dict[str, AuthorityLevel] = {
+    k: v.authority_level for k, v in RULE_CONTRACT_REGISTRY.items()
+}
+
+
 @dataclass(init=False)
 class AgentVote(UniversalBase):
     agent_id: str = "A1_MEM"
@@ -91,9 +449,25 @@ class AgentVote(UniversalBase):
     risk_flags: List[str] = field(default_factory=list)
     evidence_refs: List[str] = field(default_factory=list)
     severity_hint: Severity = field(default_factory=lambda: Severity.S0)
+    authority_level: AuthorityLevel = field(default=AuthorityLevel.ADVISORY)
+    rule_id: str = ""
+    rule_version: str = "1.0"
+    measure_provenance: Optional[str] = None
+    measure_age_s: Optional[float] = None
+    measure_valid: Optional[bool] = None
+    predicate_violated: Optional[bool] = None
+    observed_value: Any = None
 
     def __init__(self, *args, **kwargs):
-        if len(args) >= 2 and isinstance(args[1], (Domain, str)) and str(args[1]) in [d.value for d in Domain] + [d.name for d in Domain]:
+        is_domain_arg = False
+        if len(args) >= 2:
+            a1 = args[1]
+            if isinstance(a1, Domain):
+                is_domain_arg = True
+            elif isinstance(a1, str) and (a1 in [d.value for d in Domain] or a1 in [d.name for d in Domain] or a1.startswith("Domain.")):
+                is_domain_arg = True
+
+        if is_domain_arg:
             field_order = ["agent_id", "domain", "layer", "claim", "confidence", "severity_hint"]
             for i, value in enumerate(args):
                 if i < len(field_order): kwargs.setdefault(field_order[i], value)
@@ -119,6 +493,28 @@ class AgentVote(UniversalBase):
         severity = kwargs.pop("severity_hint", Severity.S0)
         try: self.severity_hint = severity if isinstance(severity, Severity) else Severity(severity)
         except: self.severity_hint = Severity.S0
+
+        self.rule_id = kwargs.pop("rule_id", "")
+        self.rule_version = kwargs.pop("rule_version", "1.0")
+        self.measure_provenance = kwargs.pop("measure_provenance", None)
+        age = kwargs.pop("measure_age_s", None)
+        self.measure_age_s = float(age) if age is not None else None
+        valid = kwargs.pop("measure_valid", None)
+        self.measure_valid = bool(valid) if valid is not None else None
+        self.observed_value = kwargs.pop("observed_value", None)
+        self.predicate_violated = kwargs.pop("predicate_violated", None)
+
+        # L'autorité dérive EXCLUSIVEMENT de la règle contractuelle enregistrée (aucun nom d'agent ne confère d'autorité)
+        contract = RULE_CONTRACT_REGISTRY.get(self.rule_id)
+        if contract:
+            self.authority_level = contract.authority_level
+        else:
+            auth = kwargs.pop("authority_level", None)
+            if auth:
+                try: self.authority_level = AuthorityLevel(auth)
+                except: self.authority_level = AuthorityLevel.ADVISORY
+            else:
+                self.authority_level = AuthorityLevel.ADVISORY
 
         for k, v in kwargs.items(): setattr(self, k, v)
         try: self.confidence = float(self.confidence)
@@ -150,6 +546,12 @@ class DomainAggregate(UniversalBase):
             self.contradictions.extend(list(getattr(av, "contradictions", []) or []))
             self.unknowns.extend(list(getattr(av, "unknowns", []) or []))
             self.risk_flags.extend(list(getattr(av, "risk_flags", []) or []))
+
+        # Déduplication déterministe avec préservation de l'ordre d'apparition
+        self.contradictions = list(dict.fromkeys(self.contradictions))
+        self.unknowns = list(dict.fromkeys(self.unknowns))
+        self.risk_flags = list(dict.fromkeys(self.risk_flags))
+        self.evidence_refs = list(dict.fromkeys(self.evidence_refs))
         
         verdict = str(getattr(self, "market_verdict", "HOLD")).upper()
         

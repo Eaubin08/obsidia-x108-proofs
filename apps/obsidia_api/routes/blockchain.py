@@ -23,7 +23,7 @@ from periphery.gencoin_sandbox.regime_metrics import compute_regime_metrics
 from periphery.gencoin_sandbox.regime_truth_gate import apply_regime_truth_gate
 from periphery.world_calls.obsidia_gateway import ObsidiaGateway
 from periphery.world_calls.sovereign_ticket import issue_sovereign_ticket
-from periphery.world_calls.ticket_store import store_ticket, load_tickets
+from periphery.world_calls.ticket_store import store_ticket, load_tickets, verify_and_consume_sovereign_ticket
 from periphery.world_calls.world_action_bus import publish_event
 from periphery.world_calls.world_call_classifier import classify_world_call, WorldCallClass
 from periphery.blockchain.blockchain_action_classifier import classify_blockchain_action, BlockchainActionClass
@@ -178,9 +178,25 @@ async def blockchain_gencoin_compute(payload: GencoinComputePayload):
 
     action_candidate.payload["total_debt"] = debt.total_debt
 
+    # Sécurisation Souveraine KX108 : aucun payload client ne fournit d'autorisation souveraine
+    all_tickets = load_tickets()
+    sovereign_ticket_data = next((t for t in all_tickets if t.get("ticket_id") == payload.ticket_id), None)
+    if sovereign_ticket_data is None:
+        verified_x108_gate = "HOLD"
+    else:
+        try:
+            verify_and_consume_sovereign_ticket(
+                sovereign_ticket_data,
+                required_scope="gencoin",
+                expected_action_id=payload.action_id or None,
+            )
+            verified_x108_gate = "ALLOW"
+        except Exception:
+            verified_x108_gate = "HOLD"
+
     ticket = SimpleNamespace(
         ticket_id=payload.ticket_id,
-        x108_gate=payload.x108_gate,
+        x108_gate=verified_x108_gate,
         input_hash=payload.input_hash,
         output_hash=payload.output_hash,
         trace_hash=payload.trace_hash,
@@ -323,8 +339,11 @@ async def blockchain_world_gateway(payload: GatewayPayload):
     computed_autonomy = compute_autonomy_level(arc, wcc)
     effective_autonomy = AutonomyLevel(min(5, max(int(computed_autonomy), payload.autonomy_level)))
 
+    # Sécurisation souveraine KX108 : un appelant HTTP ne peut jamais injecter un ALLOW
+    gateway_gate = "HOLD" if payload.x108_gate == "ALLOW" else payload.x108_gate
+
     # Egress policy
-    egress_gate, egress_reason = evaluate_egress_policy(wcc, arc, effective_autonomy, payload.x108_gate)
+    egress_gate, egress_reason = evaluate_egress_policy(wcc, arc, effective_autonomy, gateway_gate)
 
     # Route X25 conformity
     route_decision = route_x25(payload.action_id, wcc, effective_autonomy)
@@ -332,7 +351,7 @@ async def blockchain_world_gateway(payload: GatewayPayload):
     ticket = issue_sovereign_ticket(
         action_id=payload.action_id,
         os3_ticket_id=payload.os3_ticket_id,
-        x108_gate=payload.x108_gate,
+        x108_gate=gateway_gate,
         scope=payload.scope,
         autonomy_level=int(effective_autonomy),
         world_call_class=str(wcc),
@@ -388,8 +407,21 @@ async def blockchain_world_bus_dispatch(payload: BusDispatchPayload):
     computed_autonomy = compute_autonomy_level(arc, wcc_enum)
     effective_autonomy = AutonomyLevel(min(5, max(int(computed_autonomy), payload.autonomy_level)))
 
-    # Egress policy — blocked events hold gate
-    x108_gate = "HOLD" if payload.blocked else "ALLOW"
+    # Egress policy — aucun payload client ne peut forcer un ALLOW
+    all_tickets = load_tickets()
+    sovereign_ticket_data = next((t for t in all_tickets if t.get("ticket_id") == payload.sovereign_ticket_id), None)
+    if payload.blocked or sovereign_ticket_data is None:
+        x108_gate = "HOLD"
+    else:
+        try:
+            verify_and_consume_sovereign_ticket(
+                sovereign_ticket_data,
+                required_scope="world_bus",
+                expected_action_id=payload.action_id or None,
+            )
+            x108_gate = "ALLOW"
+        except Exception:
+            x108_gate = "HOLD"
     egress_gate, egress_reason = evaluate_egress_policy(wcc_enum, arc, effective_autonomy, x108_gate)
 
     # Route X25 conformity check
@@ -618,7 +650,8 @@ async def blockchain_classifiers_fraud_check(payload: FraudCheckPayload):
         all_gates.append(contract_decision.gate)
     if bridge_decision:
         all_gates.append(bridge_decision.gate)
-    aggregate_gate = "BLOCK" if "BLOCK" in all_gates else ("HOLD" if "HOLD" in all_gates else "ALLOW")
+    # Périphérie : évaluation de risque non souveraine — émet BLOCK ou HOLD, jamais ALLOW
+    aggregate_gate = "BLOCK" if "BLOCK" in all_gates else "HOLD"
 
     all_flags = list(tx_sim.risk_flags)
     if defi_decision:

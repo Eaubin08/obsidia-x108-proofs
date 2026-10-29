@@ -45,6 +45,11 @@ _external_sources/
 MonProjet/allData/*.json
 MonProjet/input_temp.json
 
+# --- Obsidia runtime tickets & locks ---
+audit/consumed_nonces.jsonl
+.obsidia_wal/
+*.lock
+
 # === OBSIDIA PUBLIC HYGIENE ===
 
 # Private / staging / external source snapshots

@@ -4,7 +4,7 @@ import hashlib
 from collections import defaultdict
 from typing import Iterable
 
-from .contracts import AgentVote, Domain, DomainAggregate, Layer
+from .contracts import AgentVote, Domain, DomainAggregate, Layer, Severity
 
 
 def _hash_ref(text: str) -> str:

@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from .domains.bank_agents import build_bank_agents
 from .domains.gps_defense_aviation_agents import build_gps_defense_aviation_agents

@@ -42,6 +42,16 @@ ALLOWED_BANK_FIELDS = {f.name for f in dataclasses.fields(BankState)}
 
 
 def load_state(arg: str) -> dict:
+    raw_arg = str(arg).strip()
+    if raw_arg == "-":
+        raw = sys.stdin.read()
+        try:
+            parsed = json.loads(raw)
+            if not isinstance(parsed, dict):
+                raise ValueError("JSON state must be an object")
+            return parsed
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON from stdin: {e}")
     """
     Accept both:
       - direct JSON payload passed as argv[2]

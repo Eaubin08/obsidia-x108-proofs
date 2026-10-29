@@ -50,6 +50,14 @@ from sigma.contracts import ToolingBuildState
 from sigma.protocols import run_tooling_build_pipeline
 
 import dataclasses as _dc
+from sigma.tooling.governed_bounded_apply import (
+    GovernedBoundedApply,
+    PatchProposal,
+    PatchOperation,
+    GovernedApplyResult,
+    SealedRollbackEvidence,
+)
+from periphery.world_calls.sovereign_ticket import issue_sovereign_ticket
 
 APPLY_RECEIPT_BASE: Path = Path(
     os.environ.get("LOCALAPPDATA", str(Path.home() / "AppData" / "Local"))
@@ -498,11 +506,57 @@ def run_obsidure_bounded_apply_pipeline(
     worktree: str,
     approved_scope: List[str],
     worktree_root: Path,
+    agent: Optional[AgentObsidure] = None,
+    dry_run_only: bool = False,
     test_commands: Optional[List[List[str]]] = None,
     gate_commands: Optional[List[List[str]]] = None,
-    dry_run_only: bool = False,
-    agent: Optional[AgentObsidure] = None,
+    injected_operations: Optional[List[Dict[str, Any]]] = None,
 ) -> Dict[str, Any]:
+    if injected_operations is not None:
+        ops = []
+        for op in injected_operations:
+            ops.append(PatchOperation(
+                path=op.get("path", ""),
+                content=op.get("content", ""),
+                op_type=op.get("type", "WRITE"),
+            ))
+        proposal = PatchProposal(
+            proposal_id=proposal_id,
+            base_sha=base_sha,
+            target_worktree=str(worktree_root),
+            approved_scope=approved_scope,
+            operations=ops,
+        )
+        if dry_run_only:
+            engine = GovernedBoundedApply()
+            valid, reason, state = engine.pre_check(proposal)
+            return {
+                "status": "OBSIDURE_DRYRUN_READY_FOR_PROPOSAL_REVIEW" if valid else f"BLOCK_{reason}",
+                "kx108_decision": "NOT_EVALUATED" if valid else "BLOCK",
+                "next_human_action": "REVIEW_DRYRUN" if valid else "BLOCK",
+                "receipt_path": None,
+                "proposal_id": proposal_id,
+                "base_sha": base_sha,
+                "dry_run": True,
+            }
+        engine = GovernedBoundedApply()
+        result = engine.apply_proposal_governed(proposal)
+        return {
+            "status": f"OBSIDURE_BOUNDED_APPLY_V2_{result.status}",
+            "proposal_id": proposal_id,
+            "session_id": session_id,
+            "base_sha": base_sha,
+            "kx108_decision": "ACT" if result.kx108_pre_gate == "ALLOW" and result.status == "COMMITTED" else result.kx108_pre_gate,
+            "kx108_x108_gate": result.kx108_pre_gate,
+            "kx108_reason": result.kx108_reason,
+            "ticket_id": result.ticket_id,
+            "disk_written": result.disk_written,
+            "rolled_back": result.rolled_back,
+            "modified_files": result.modified_files,
+            "decision_authority": "KX108_ONLY",
+            "error_detail": result.error_detail,
+        }
+
     """
     Pipeline complet OBSIDURE_BOUNDED_APPLY_V1.
 
