@@ -26,6 +26,10 @@ jobs:
         run: |
           git config --global user.name "Obsidia CI Tests"
           git config --global user.email "obsidia-ci-tests@users.noreply.github.com"
+      - name: Install Lean toolchain for canonical conformance tests
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
       - name: Python syntax check
         run: python -m compileall periphery -q
       - name: Generate manifest for tests
